@@ -98,7 +98,7 @@ pub type Command {
     experimental: Option(Bool),
     deprecated: Option(Bool),
     parameters: Option(List(PropertyDefinition)),
-    returns: Option(List(Type)),
+    returns: Option(List(PropertyDefinition)),
   )
 }
 
@@ -108,7 +108,7 @@ pub type Event {
     description: Option(String),
     experimental: Option(Bool),
     deprecated: Option(Bool),
-    parameters: List(Type),
+    parameters: Option(List(PropertyDefinition)),
   )
 }
 
@@ -261,6 +261,25 @@ fn todo_list_parser(_input: d.Dynamic) {
 pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
   let assert Ok(json_string) = file.read(from: from)
 
+  let command_decoder = d.decode6(
+    Command,
+    field("name", d.string),
+    optional_field("description", d.string),
+    optional_field("experimental", d.bool),
+    optional_field("deprecated", d.bool),
+    optional_field("parameters", d.list(parse_property_def)),
+    optional_field("returns", d.list(parse_property_def)),
+  )
+
+  let event_decoder = d.decode5(
+    Event,
+    field("name", d.string),
+    optional_field("description", d.string),
+    optional_field("experimental", d.bool),
+    optional_field("deprecated", d.bool),
+    optional_field("parameters", d.list(parse_property_def)),
+  )
+
   let domain_decoder =
     d.decode7(
       Domain,
@@ -268,8 +287,8 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
       optional_field("experimental", d.bool),
       optional_field("dependencies", d.list(d.string)),
       optional_field("types", d.list(parse_type_def)),
-      field("commands", todo_list_parser),
-      optional_field("events", todo_list_parser),
+      field("commands", d.list(command_decoder)),
+      optional_field("events", d.list(event_decoder)),
       optional_field("description", d.string),
     )
 
