@@ -1,10 +1,11 @@
 //// Download the latest protocol JSON files from the official repository
-//// And place them in the local assets folder
-//// -- panic when anything goes wrong
+//// and place them in the local assets folder.
+//// This script will panic if anything goes wrong.
 //// 
 //// Protocol Repo is here:
 //// https://github.com/ChromeDevTools/devtools-protocol
 //// 
+
 import gleam/http/request
 import gleam/httpc
 import gleam/io
