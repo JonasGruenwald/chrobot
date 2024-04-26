@@ -1,10 +1,13 @@
-import gleam/http.{Get}
+//// Download the latest protocol JSON files from the official repository
+//// And place them in the local assets folder
+//// -- panic when anything goes wrong
+//// 
+//// Protocol Repo is here:
+//// https://github.com/ChromeDevTools/devtools-protocol
+//// 
 import gleam/http/request
-import gleam/http/response.{type Response}
 import gleam/httpc
 import gleam/io
-import gleam/result
-import gleeunit/should
 import simplifile as file
 
 const browser_protocol_url = "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json"
@@ -13,9 +16,6 @@ const js_protocol_url = "https://raw.githubusercontent.com/ChromeDevTools/devtoo
 
 const destination_dir = "./assets/"
 
-/// Download the latest protocol JSON files from the official repository
-/// And place them in the local assets folder
-/// -- panic when anything goes wrong
 pub fn main() {
   download(
     from: browser_protocol_url,
