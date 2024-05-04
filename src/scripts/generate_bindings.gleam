@@ -253,11 +253,6 @@ fn parse_type(input: d.Dynamic) -> Result(Type, List(d.DecodeError)) {
   }
 }
 
-// cheecky placeholder
-fn todo_list_parser(_input: d.Dynamic) {
-  Ok([])
-}
-
 pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
   let assert Ok(json_string) = file.read(from: from)
 
