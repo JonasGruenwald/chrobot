@@ -5,10 +5,9 @@
 //// All messages to the browser are sent through this actor to the port, and responses are returned to the sender.
 //// The actor manages associating responses with the correct request by adding auto-incrementing ids to the requests,
 //// so callers don't need to worry about this.
-//// 
 
+import filepath as path
 import gleam/dynamic as d
-import gleam/erlang/atom
 import gleam/erlang/os
 import gleam/erlang/process.{type Subject}
 import gleam/io
@@ -21,7 +20,9 @@ import gleam/result
 import gleam/string
 import simplifile as file
 
-const message_timeout: Int = 5000
+const default_message_timeout: Int = 5000
+
+// --- PUBLIC API ---
 
 pub type LaunchError {
   UnknowOperatingSystem
@@ -37,18 +38,29 @@ pub type BrowserInstance {
   BrowserInstance(port: Port)
 }
 
-type PendingRequest {
-  PendingRequest(id: Int, reply_with: Subject(Result(d.Dynamic, Nil)))
-}
-
-type BrowserState {
-  BrowserState(
-    instance: BrowserInstance,
-    next_id: Int,
-    unanswered_requests: List(PendingRequest),
+pub type BrowserVersion {
+  BrowserVersion(
+    protocol_version: String,
+    product: String,
+    revision: String,
+    user_agent: String,
+    js_version: String,
   )
 }
 
+/// Launch a browser with the given configuration,
+/// to populate the arguments, use `get_default_chrome_args`
+/// 
+/// ## Example
+/// ```gleam
+/// let config =
+/// browser.BrowserConfig(
+///   path: "chrome/linux-116.0.5793.0/chrome-linux64/chrome",
+///   args: browser.get_default_chrome_args(),
+///   start_timeout: 5000,
+/// )
+/// let assert Ok(browser_subject) = browser.launch_with_config(config)
+/// ```
 pub fn launch_with_config(cfg: BrowserConfig) {
   let launch_result =
     actor.start_spec(actor.Spec(
@@ -58,10 +70,7 @@ pub fn launch_with_config(cfg: BrowserConfig) {
     ))
 
   case launch_result {
-    Ok(browser) -> {
-      io.debug(get_version(browser))
-      Ok(browser)
-    }
+    Ok(browser) -> Ok(browser)
     Error(err) -> {
       io.println("Failed to start browser")
       io.debug(err)
@@ -70,22 +79,46 @@ pub fn launch_with_config(cfg: BrowserConfig) {
   }
 }
 
+/// Try to find a chrome installation and launch it with default arguments
+/// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
+/// If that fails, it will try to find a system chrome installation in some common places.
+/// 
+/// For consistency it would be preferrable to not use this function and instead use `launch_with_config` with a `BrowserConfig`
+/// that specifies the path to the chrome executable.
 pub fn launch() {
-  use chrome_path <- result.try(get_default_chrome_path())
-  io.println("Resolved chrome path: " <> chrome_path)
-
+  use resolved_chrome_path <- result.try(result.lazy_or(get_local_chrome_path(), get_system_chrome_path))
   launch_with_config(BrowserConfig(
-    path: chrome_path,
+    path: resolved_chrome_path,
     args: get_default_chrome_args(),
     start_timeout: 10_000,
   ))
 }
 
-fn log(instance: BrowserInstance, message: String) {
-  io.println("[Browser:" <> string.inspect(instance) <> "] " <> message)
+/// Hardcoded protocol call to get the browser version
+/// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser/#method-getVersion 
+pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, Nil) {
+  use res <- result.try(actor.call(
+    browser,
+    Call(_, "Browser.getVersion", option.None),
+    default_message_timeout,
+  ))
+  let version_decoder =
+    d.decode5(
+      BrowserVersion,
+      d.field("protocolVersion", d.string),
+      d.field("product", d.string),
+      d.field("revision", d.string),
+      d.field("userAgent", d.string),
+      d.field("jsVersion", d.string),
+    )
+  case version_decoder(res) {
+    Ok(version) -> Ok(version)
+    Error(_) -> Error(Nil)
+  }
 }
 
-/// Get the default arguments the browser should be started with
+/// Get the default arguments the browser should be started with,
+/// to be used inside the `launch_with_config` function
 pub fn get_default_chrome_args() {
   [
     "--headless", "--disable-accelerated-2d-canvas", "--disable-gpu",
@@ -107,35 +140,71 @@ pub fn get_default_chrome_args() {
   ]
 }
 
-fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
-  let existing_paths =
-    paths
-    |> list.filter(fn(current) {
-      case file.verify_is_file(current) {
-        Ok(res) -> res
-        Error(_) -> False
-      }
-    })
-
-  case existing_paths {
-    [first, ..] -> Ok(first)
-    [] -> Error(CouldNotFindExecutable)
+/// Returns whether the given path is a local chrome installation, of the kind
+/// created by `npx @puppeteer/browsers install chrome`.
+/// This can be used to scan a directory with `simplifile.get_files`.
+pub fn is_local_chrome_path(
+  relative_path: String,
+  os_family: os.OsFamily,
+) -> Bool {
+  case os_family, path.split(relative_path) {
+    os.Darwin,
+      [
+        "chrome",
+        "mac" <> _,
+        "chrome-" <> _,
+        "Google Chrom" <> _,
+        "Contents",
+        "MacOS",
+        "Google Chrom" <> _,
+      ]
+    -> {
+      True
+    }
+    os.Linux, ["chrome", "linux" <> _, "chrome-" <> _, "chrome"] -> {
+      True
+    }
+    // No idea if this works, I don't have a windows computer to test
+    os.WindowsNt, ["chrome", "win" <> _, "chrome-" <> _, "chrome.exe"] -> {
+      True
+    }
+    _, _ -> False
   }
 }
 
-/// Try to find a chrome executable in some obvious places
-/// (It should be preferred to set the path explicitly if possible)
-fn get_default_chrome_path() {
+/// Try to find a hermetic chrome installation in the current directory,
+/// of the kind installed by `npx @puppeteer/browsers install chrome`.
+/// The installation must be in a directory called `chrome`.
+pub fn get_local_chrome_path() {
+  case file.verify_is_directory("chrome") {
+    Ok(True) -> {
+      let files_res =
+        result.replace_error(file.get_files("chrome"), CouldNotFindExecutable)
+      use files <- result.try(files_res)
+      list.find(files, fn(file) { is_local_chrome_path(file, os.family()) })
+      |> result.replace_error(CouldNotFindExecutable)
+    }
+    _ -> {
+      Error(CouldNotFindExecutable)
+    }
+  }
+}
+
+/// Try to find a system chrome installation in some obvious places.
+pub fn get_system_chrome_path() {
   case os.family() {
     os.Darwin ->
       get_first_existing_path([
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta",
         "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+        "/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
       ])
     os.Linux ->
       get_first_existing_path([
-        "/usr/bin/google-chrome", "/usr/bin/chromium",
+        "/opt/google/chrome/chrome", "/opt/google/chrome-beta/chrome",
+        "/opt/google/chrome-unstable/chrome", "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
       ])
     os.WindowsNt ->
@@ -149,22 +218,12 @@ fn get_default_chrome_path() {
   }
 }
 
-pub type Message {
-  Stop
-  BrowserDown
-  Call(
-    reply_with: Subject(Result(d.Dynamic, Nil)),
-    method: String,
-    params: Option(Json),
-  )
-  Send(method: String, params: Option(Json))
-  Anything(d.Dynamic)
-  PortResponse(String)
-}
+// --- INITIALIZATION ---
 
+/// Returns a function that can be passed to the actor spec to initialize the actor
 fn create_init_fn(cfg: BrowserConfig) {
   fn() {
-    io.println("Starting browser with path: " <> cfg.path)
+    io.println("Starting browser exectuable: " <> cfg.path)
     let cmd = cfg.path
     let args = ["--remote-debugging-pipe", ..cfg.args]
     // io.println(cmd <> " " <> string.join(args, " "))
@@ -188,12 +247,12 @@ fn create_init_fn(cfg: BrowserConfig) {
   }
 }
 
-type IntermediatePortMessage {
-  IntermediatePortMessage(head: atom.Atom, body: String)
-}
+// --- MESSAGE HANDLING ---
 
+/// Map a raw message from the port to a message that the actor can handle
+/// Right now, the only message that is handled is a data message
 fn map_port_message(message: d.Dynamic) {
-  // This matches a data message from the port
+  // This matches a data message from the port like {data, "string"}
   // not ideal but actually should be fine since data messages are the only messages 
   // from the port that will arrive as a tuple with a string as the second element
   // other messages will be atoms (closed/connected)
@@ -203,6 +262,32 @@ fn map_port_message(message: d.Dynamic) {
   }
 }
 
+type BrowserState {
+  BrowserState(
+    instance: BrowserInstance,
+    next_id: Int,
+    unanswered_requests: List(PendingRequest),
+  )
+}
+
+pub type Message {
+  Stop
+  BrowserDown
+  Call(
+    reply_with: Subject(Result(d.Dynamic, Nil)),
+    method: String,
+    params: Option(Json),
+  )
+  Send(method: String, params: Option(Json))
+  Anything(d.Dynamic)
+  PortResponse(String)
+}
+
+type PendingRequest {
+  PendingRequest(id: Int, reply_with: Subject(Result(d.Dynamic, Nil)))
+}
+
+/// The main loop of the actor, handling all messages
 fn loop(message: Message, state: BrowserState) {
   case message {
     Stop -> {
@@ -230,15 +315,6 @@ fn loop(message: Message, state: BrowserState) {
     }
   }
 }
-
-@external(erlang, "chrobot_ffi", "open_browser_port")
-fn open_browser_port(
-  command: String,
-  args: List(String),
-) -> Result(Port, d.Dynamic)
-
-@external(erlang, "chrobot_ffi", "send_to_port")
-fn send_to_port(port: Port, message: String) -> Result(d.Dynamic, d.Dynamic)
 
 /// Send a request to the browser and expect a response
 /// Request params must already be encoded into a JSON structure by the caller
@@ -400,6 +476,16 @@ fn handle_port_response(
   }
 }
 
+// --- HELPERS ---
+
+/// Send a JSON encoded string to the browser instance,
+/// the JSON payload must already include the `id` field.
+/// This function appends a null byte to the end of the message,
+/// which is used by the browser to detect when a message ends.
+fn send_to_browser(instance: BrowserInstance, data: Json) {
+  send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
+}
+
 fn add_optional_params(payload: List(#(String, Json)), params: Option(Json)) {
   case params {
     option.Some(data) -> [#("params", data), ..payload]
@@ -407,20 +493,34 @@ fn add_optional_params(payload: List(#(String, Json)), params: Option(Json)) {
   }
 }
 
-/// Send a JSON encoded string to the browser instance
-/// The JSON payload must include an `id` field
-fn send_to_browser(instance: BrowserInstance, data: Json) {
-  send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
+fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
+  let existing_paths =
+    paths
+    |> list.filter(fn(current) {
+      case file.verify_is_file(current) {
+        Ok(res) -> res
+        Error(_) -> False
+      }
+    })
+
+  case existing_paths {
+    [first, ..] -> Ok(first)
+    [] -> Error(CouldNotFindExecutable)
+  }
 }
 
-// fn request_version(port: Port) {
-//   send_to_port(port, "{\"id\":1,\"method\":\"Browser.getVersion\"}\u{0000}")
-// }
-
-pub fn get_version(browser: Subject(Message)) {
-  actor.call(
-    browser,
-    Call(_, "Browser.getVersion", option.None),
-    message_timeout,
-  )
+fn log(instance: BrowserInstance, message: String) {
+  io.println("[Browser:" <> string.inspect(instance) <> "] " <> message)
 }
+
+// --- EXTERNALS ---
+// Gleam does not support working with ports directly yet so we need to use FFI
+
+@external(erlang, "chrobot_ffi", "open_browser_port")
+fn open_browser_port(
+  command: String,
+  args: List(String),
+) -> Result(Port, d.Dynamic)
+
+@external(erlang, "chrobot_ffi", "send_to_port")
+fn send_to_port(port: Port, message: String) -> Result(d.Dynamic, d.Dynamic)
