@@ -4,6 +4,12 @@ Protocol Explorer: https://chromedevtools.github.io/devtools-protocol/
 
 Nice guide: https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md
 
+# Experiment
+
+```json
+{"id" : 1, "method": "Browser.getVersion"}
+```
+
 # Components
 
 ## Generated Protocol Binding Modules
@@ -38,7 +44,3 @@ Should at least offer the following:
 - Launching a browser instance with the required flags and managing it
 - Creating and managing a websocket connection to the devtools protocol
 - Encoding and decoding messages to the protocol
-
-```mermaid
-
-```
