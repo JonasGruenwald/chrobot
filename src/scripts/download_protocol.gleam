@@ -27,13 +27,8 @@ pub fn main() {
 
 fn download(from origin_url: String, to destination_path: String) -> Nil {
   io.println("Making request to " <> origin_url)
-  // Prepare a HTTP request record
   let assert Ok(request) = request.to(origin_url)
-
-  // Send the HTTP request to the server
   let assert Ok(res) = httpc.send(request)
-
-  // We get a response record back
   case res.status {
     200 -> {
       io.println("Writing response to " <> destination_path)
