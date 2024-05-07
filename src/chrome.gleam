@@ -65,12 +65,12 @@ pub type BrowserVersion {
 /// ## Example
 /// ```gleam
 /// let config =
-/// browser.BrowserConfig(
+/// BrowserConfig(
 ///   path: "chrome/linux-116.0.5793.0/chrome-linux64/chrome",
-///   args: browser.get_default_chrome_args(),
+///   args: get_default_chrome_args(),
 ///   start_timeout: 5000,
 /// )
-/// let assert Ok(browser_subject) = browser.launch_with_config(config)
+/// let assert Ok(browser_subject) = launch_with_config(config)
 /// ```
 pub fn launch_with_config(cfg: BrowserConfig) {
   let launch_result =

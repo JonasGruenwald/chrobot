@@ -1,5 +1,4 @@
-import browser
-import chrobot
+import chrome
 import gleam/erlang/process
 import gleam/io
 
@@ -11,7 +10,7 @@ pub fn main() {
   //     start_timeout: 5000,
   //   )
   // let assert Ok(browser_subject) = browser.launch_with_config(config)
-  let assert Ok(browser_subject) = browser.launch()
+  let assert Ok(browser_subject) = chrome.launch()
   io.print("Browser launched ")
   process.sleep_forever()
 }

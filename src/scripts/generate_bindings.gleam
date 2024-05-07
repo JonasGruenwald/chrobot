@@ -15,6 +15,8 @@
 //// - A root file `src/protocol.gleam` is generated with general information
 //// - A module is generated for each domain in the protocol under `src/protocol/`
 //// - Generated files should be put through `gleam format` before committing
+//// 
+//// This script will panic if anything goes wrong, do not import this module anywere
 
 import gleam/dynamic.{field, optional_field} as d
 import gleam/int
@@ -23,6 +25,7 @@ import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/string
 import gleam/string_builder as sb
 import justin.{snake_case}
 import simplifile as file
@@ -39,6 +42,7 @@ pub type Domain {
   Domain(
     domain: String,
     experimental: Option(Bool),
+    deprecated: Option(Bool),
     dependencies: Option(List(String)),
     types: Option(List(TypeDefinition)),
     commands: List(Command),
@@ -123,7 +127,10 @@ pub type Event {
 }
 
 pub fn main() {
-  let assert Ok(protocol) = parse_protocol("./assets/browser_protocol.json")
+  let assert Ok(browser_protocol) =
+    parse_protocol("./assets/browser_protocol.json")
+  let assert Ok(js_protocol) = parse_protocol("./assets/js_protocol.json")
+  let protocol = merge_protocols(browser_protocol, js_protocol)
   io.println(
     "Browser protocol version: "
     <> protocol.version.major
@@ -131,12 +138,19 @@ pub fn main() {
     <> protocol.version.minor,
   )
   print_protocol_stats(protocol)
-  let stable_protocol = protocol_without_experimental(protocol)
+  let stable_protocol = get_stable_protocol(protocol)
   io.println("Stable protocol (experimental items removed):")
   print_protocol_stats(stable_protocol)
   let target = "src/protocol.gleam"
   io.println("Writing root protocol module to: " <> target)
   let assert Ok(_) = file.write(gen_root_module(stable_protocol), to: target)
+  let assert Ok(_) = file.create_directory_all("src/protocol")
+  list.each(stable_protocol.domains, fn(domain) {
+    let target = "src/protocol/" <> snake_case(domain.domain) <> ".gleam"
+    io.println("Writing domain module to: " <> target)
+    let assert Ok(_) =
+      file.write(gen_domain_module(stable_protocol, domain), to: target)
+  })
 }
 
 // --- UTILS ---
@@ -167,19 +181,21 @@ fn get_protocol_stats(protocol: Protocol) {
   )
 }
 
-fn propdef_without_experimental(
+fn get_stable_propdef(
   propdef: PropertyDefinition,
 ) -> Result(PropertyDefinition, Nil) {
-  case propdef.experimental {
-    Some(True) -> Error(Nil)
-    _ -> Ok(propdef)
+  case propdef.experimental, propdef.deprecated {
+    Some(True), _ -> Error(Nil)
+    _, Some(True) -> Error(Nil)
+    _, _ -> Ok(propdef)
   }
 }
 
-fn event_without_experimental(event: Event) -> Result(Event, Nil) {
-  case event.experimental {
-    Some(True) -> Error(Nil)
-    _ ->
+fn get_stable_event(event: Event) -> Result(Event, Nil) {
+  case event.experimental, event.deprecated {
+    Some(True), _ -> Error(Nil)
+    _, Some(True) -> Error(Nil)
+    _, _ ->
       Ok(
         Event(
           name: event.name,
@@ -189,7 +205,7 @@ fn event_without_experimental(event: Event) -> Result(Event, Nil) {
           parameters: {
             case event.parameters {
               Some(params) ->
-                Some(list.filter_map(params, propdef_without_experimental))
+                Some(list.filter_map(params, get_stable_propdef))
               None -> None
             }
           },
@@ -198,10 +214,11 @@ fn event_without_experimental(event: Event) -> Result(Event, Nil) {
   }
 }
 
-fn command_without_experimental(command: Command) -> Result(Command, Nil) {
-  case command.experimental {
-    Some(True) -> Error(Nil)
-    _ ->
+fn get_stable_command(command: Command) -> Result(Command, Nil) {
+  case command.experimental, command.deprecated {
+    Some(True), _ -> Error(Nil)
+    _, Some(True) -> Error(Nil)
+    _, _ ->
       Ok(
         Command(
           name: command.name,
@@ -211,14 +228,14 @@ fn command_without_experimental(command: Command) -> Result(Command, Nil) {
           parameters: {
             case command.parameters {
               Some(params) ->
-                Some(list.filter_map(params, propdef_without_experimental))
+                Some(list.filter_map(params, get_stable_propdef))
               None -> None
             }
           },
           returns: {
             case command.returns {
               Some(returns) ->
-                Some(list.filter_map(returns, propdef_without_experimental))
+                Some(list.filter_map(returns, get_stable_propdef))
               None -> None
             }
           },
@@ -227,12 +244,11 @@ fn command_without_experimental(command: Command) -> Result(Command, Nil) {
   }
 }
 
-fn type_without_experimental(
-  param_type: TypeDefinition,
-) -> Result(TypeDefinition, Nil) {
-  case param_type.experimental {
-    Some(True) -> Error(Nil)
-    _ -> Ok(param_type)
+fn get_stable_type(param_type: TypeDefinition) -> Result(TypeDefinition, Nil) {
+  case param_type.experimental, param_type.deprecated {
+    Some(True), _ -> Error(Nil)
+    _, Some(True) -> Error(Nil)
+    _, _ -> Ok(param_type)
   }
 }
 
@@ -240,32 +256,34 @@ fn type_without_experimental(
 /// Note: The protocol still contains deprecated items, and the 'experimental' field is not removed.
 /// The check is NOT performed recursively into nested types / property definitions, just at the top level.
 /// Note that this might leave some optional lists as empty if all items are experimental.
-pub fn protocol_without_experimental(protocol: Protocol) -> Protocol {
+pub fn get_stable_protocol(protocol: Protocol) -> Protocol {
   Protocol(
     version: protocol.version,
     domains: list.filter_map(protocol.domains, fn(domain) {
-      case domain.experimental {
-        Some(True) -> Error(Nil)
-        _ -> {
+      case domain.experimental, domain.deprecated {
+        Some(True), _ -> Error(Nil)
+        _, Some(True) -> Error(Nil)
+        _, _ -> {
           Ok(Domain(
             domain: domain.domain,
             experimental: domain.experimental,
+            deprecated: domain.deprecated,
             dependencies: domain.dependencies,
             types: {
               case domain.types {
                 Some(types) ->
-                  Some(list.filter_map(types, type_without_experimental))
+                  Some(list.filter_map(types, get_stable_type))
                 None -> None
               }
             },
             commands: list.filter_map(
               domain.commands,
-              command_without_experimental,
+              get_stable_command,
             ),
             events: {
               case domain.events {
                 Some(events) ->
-                  Some(list.filter_map(events, event_without_experimental))
+                  Some(list.filter_map(events, get_stable_event))
                 None -> None
               }
             },
@@ -274,6 +292,14 @@ pub fn protocol_without_experimental(protocol: Protocol) -> Protocol {
         }
       }
     }),
+  )
+}
+
+fn merge_protocols(left: Protocol, right: Protocol) -> Protocol {
+  let assert True = left.version == right.version
+  Protocol(
+    version: left.version,
+    domains: list.append(left.domains, right.domains),
   )
 }
 
@@ -407,10 +433,11 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
     )
 
   let domain_decoder =
-    d.decode7(
+    d.decode8(
       Domain,
       field("domain", d.string),
       optional_field("experimental", d.bool),
+      optional_field("deprecated", d.bool),
       optional_field("dependencies", d.list(d.string)),
       optional_field("types", d.list(parse_type_def)),
       field("commands", d.list(command_decoder)),
@@ -432,10 +459,11 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
 }
 
 // --- CODEGEN ---
+
 fn gen_preamble(protocol: Protocol) {
   "
 // ---------------------------------------------------------------------------
-// |  !!!!!!   This is an autogenerated file. Do not edit manually   !!!!!!  |
+// |  !!!!!!   This is an autogenerated file - Do not edit manually  !!!!!!  |
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 //// > This module was generated from the Chrome DevTools Protocol version **" <> protocol.version.major <> "." <> protocol.version.minor <> "**\n"
@@ -453,9 +481,16 @@ pub fn gen_root_module(protocol: Protocol) {
   |> sb.append(
     "////
 //// This is the protocol definition entrypoint, which contains protocol version information.  
-//// Each domain in the protocol is represented as a submodule under `/protocol`.   
-\n\n",
+//// Each domain in the protocol is represented as a submodule under `/protocol`.  \n////\n",
   )
+  |> sb.append(
+    "//// For reference: [See the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/",
+  )
+  |> sb.append(protocol.version.major)
+  |> sb.append("-")
+  |> sb.append(protocol.version.minor)
+  |> sb.append("/")
+  |> sb.append(")\n\n")
   |> sb.append("const version_major = \"" <> protocol.version.major <> "\"\n")
   |> sb.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
   |> sb.append(gen_function_comment(
@@ -465,8 +500,37 @@ pub fn gen_root_module(protocol: Protocol) {
   |> sb.to_string()
 }
 
+fn multiline_module_comment(content: String) {
+  string.replace(content, "\n", "\n//// ")
+}
+
+fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
+  sb.new()
+  |> sb.append("//// ## " <> domain.domain <> " Domain")
+  |> sb.append("  \n////\n")
+  |> sb.append("//// ")
+  |> sb.append(
+    option.unwrap(
+      domain.description,
+      "This protocol domain has no description.",
+    )
+    |> multiline_module_comment(),
+  )
+  |> sb.append("  \n////\n")
+  |> sb.append(
+    "//// [View this domain on the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/",
+  )
+  |> sb.append(protocol.version.major)
+  |> sb.append("-")
+  |> sb.append(protocol.version.minor)
+  |> sb.append("/")
+  |> sb.append(domain.domain)
+  |> sb.append("/)\n\n")
+}
+
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   sb.new()
   |> sb.append(gen_preamble(protocol))
+  |> sb.append_builder(gen_domain_module_header(protocol, domain))
   |> sb.to_string()
 }

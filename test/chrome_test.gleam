@@ -1,4 +1,4 @@
-import browser
+import chrome
 import gleam/erlang/os
 import gleam/list
 import gleeunit/should
@@ -6,11 +6,11 @@ import gleeunit/should
 pub fn is_local_chrome_path_test() {
   let valid_mac_path =
     "chrome/mac_arm-126.0.6458.0/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
-  browser.is_local_chrome_path(valid_mac_path, os.Darwin)
+  chrome.is_local_chrome_path(valid_mac_path, os.Darwin)
   |> should.equal(True)
 
   let valid_linux_path = "chrome/linux-116.0.5793.0/chrome-linux64/chrome"
-  browser.is_local_chrome_path(valid_linux_path, os.Linux)
+  chrome.is_local_chrome_path(valid_linux_path, os.Linux)
   |> should.equal(True)
 }
 
@@ -368,7 +368,7 @@ pub fn is_local_chrome_path_haystack_test() {
   ]
 
   let needle =
-    list.filter(haystack, fn(i) { browser.is_local_chrome_path(i, os.Darwin) })
+    list.filter(haystack, fn(i) { chrome.is_local_chrome_path(i, os.Darwin) })
 
   list.length(needle)
   |> should.equal(1)
