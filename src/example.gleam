@@ -1,4 +1,5 @@
 import browser
+import chrobot
 import gleam/erlang/process
 import gleam/io
 
@@ -11,10 +12,6 @@ pub fn main() {
   //   )
   // let assert Ok(browser_subject) = browser.launch_with_config(config)
   let assert Ok(browser_subject) = browser.launch()
-  let assert Ok(version) = browser.get_version(browser_subject)
-  io.debug(#("version: ", version))
-  process.sleep(4000)
-  io.println("now closing browser")
-  browser.quit(browser_subject)
+  io.print("Browser launched ")
   process.sleep_forever()
 }

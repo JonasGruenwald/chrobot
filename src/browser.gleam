@@ -1,6 +1,6 @@
 //// An actor that manages an instance of the chrome browser via an erlang port.
 //// The browser is started to allow remote debugging via pipes, once the pipe is disconnected,
-//// chrome should quite automatically.
+//// chrome should quit automatically.
 //// 
 //// All messages to the browser are sent through this actor to the port, and responses are returned to the sender.
 //// The actor manages associating responses with the correct request by adding auto-incrementing ids to the requests,
@@ -8,7 +8,6 @@
 //// 
 //// When the browser managed by this actor is closed, the actor will also exit.
 //// 
-//// TODO 
 
 import filepath as path
 import gleam/dynamic as d
@@ -33,6 +32,8 @@ pub type LaunchError {
   UnknowOperatingSystem
   CouldNotFindExecutable
   FailedToStart
+  UnresponsiveAfterStart
+  ProtocolVersionMismatch
 }
 
 pub type BrowserConfig {
