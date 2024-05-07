@@ -204,8 +204,7 @@ fn get_stable_event(event: Event) -> Result(Event, Nil) {
           deprecated: event.deprecated,
           parameters: {
             case event.parameters {
-              Some(params) ->
-                Some(list.filter_map(params, get_stable_propdef))
+              Some(params) -> Some(list.filter_map(params, get_stable_propdef))
               None -> None
             }
           },
@@ -227,8 +226,7 @@ fn get_stable_command(command: Command) -> Result(Command, Nil) {
           deprecated: command.deprecated,
           parameters: {
             case command.parameters {
-              Some(params) ->
-                Some(list.filter_map(params, get_stable_propdef))
+              Some(params) -> Some(list.filter_map(params, get_stable_propdef))
               None -> None
             }
           },
@@ -252,10 +250,9 @@ fn get_stable_type(param_type: TypeDefinition) -> Result(TypeDefinition, Nil) {
   }
 }
 
-/// Return the protocol with experimental domains, types, commands, parameters and events removed.  
-/// Note: The protocol still contains deprecated items, and the 'experimental' field is not removed.
+/// Return the protocol with experimental and deprecated domains, types, commands, parameters and events removed.  
 /// The check is NOT performed recursively into nested types / property definitions, just at the top level.
-/// Note that this might leave some optional lists as empty if all items are experimental.
+/// Note that this might leave some optional lists as empty if all items are experimental / deprecated.
 pub fn get_stable_protocol(protocol: Protocol) -> Protocol {
   Protocol(
     version: protocol.version,
@@ -271,19 +268,14 @@ pub fn get_stable_protocol(protocol: Protocol) -> Protocol {
             dependencies: domain.dependencies,
             types: {
               case domain.types {
-                Some(types) ->
-                  Some(list.filter_map(types, get_stable_type))
+                Some(types) -> Some(list.filter_map(types, get_stable_type))
                 None -> None
               }
             },
-            commands: list.filter_map(
-              domain.commands,
-              get_stable_command,
-            ),
+            commands: list.filter_map(domain.commands, get_stable_command),
             events: {
               case domain.events {
-                Some(events) ->
-                  Some(list.filter_map(events, get_stable_event))
+                Some(events) -> Some(list.filter_map(events, get_stable_event))
                 None -> None
               }
             },
@@ -504,6 +496,17 @@ fn multiline_module_comment(content: String) {
   string.replace(content, "\n", "\n//// ")
 }
 
+fn gen_imports(domain: Domain) {
+  let domain_imports =
+    option.unwrap(domain.dependencies, [])
+    |> list.map(fn(dependency) {
+      "import protocol/" <> snake_case(dependency) <> "\n"
+    })
+
+  ["import chrome\n", ..domain_imports]
+  |> string.join("")
+}
+
 fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
   sb.new()
   |> sb.append("//// ## " <> domain.domain <> " Domain")
@@ -526,6 +529,7 @@ fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
   |> sb.append("/")
   |> sb.append(domain.domain)
   |> sb.append("/)\n\n")
+  |> sb.append(gen_imports(domain))
 }
 
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
