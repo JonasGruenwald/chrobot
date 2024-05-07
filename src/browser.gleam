@@ -5,9 +5,14 @@
 //// All messages to the browser are sent through this actor to the port, and responses are returned to the sender.
 //// The actor manages associating responses with the correct request by adding auto-incrementing ids to the requests,
 //// so callers don't need to worry about this.
+//// 
+//// When the browser managed by this actor is closed, the actor will also exit.
+//// 
+//// TODO 
 
 import filepath as path
 import gleam/dynamic as d
+import gleam/erlang/atom
 import gleam/erlang/os
 import gleam/erlang/process.{type Subject}
 import gleam/io
@@ -49,7 +54,10 @@ pub type BrowserVersion {
 }
 
 /// Launch a browser with the given configuration,
-/// to populate the arguments, use `get_default_chrome_args`
+/// to populate the arguments, use `get_default_chrome_args`.
+/// 
+/// Be aware that this function will not validate that the browser launched successfully,
+/// please use the higher level functions from the root chrobot module instead if you want these guarantees.
 /// 
 /// ## Example
 /// ```gleam
@@ -79,14 +87,21 @@ pub fn launch_with_config(cfg: BrowserConfig) {
   }
 }
 
-/// Try to find a chrome installation and launch it with default arguments
+/// Try to find a chrome installation and launch it with default arguments.
+/// 
 /// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
 /// If that fails, it will try to find a system chrome installation in some common places.
 /// 
 /// For consistency it would be preferrable to not use this function and instead use `launch_with_config` with a `BrowserConfig`
 /// that specifies the path to the chrome executable.
+/// 
+/// Be aware that this function will not validate that the browser launched successfully,
+/// please use the higher level functions from the root chrobot module instead if you want these guarantees.
 pub fn launch() {
-  use resolved_chrome_path <- result.try(result.lazy_or(get_local_chrome_path(), get_system_chrome_path))
+  use resolved_chrome_path <- result.try(result.lazy_or(
+    get_local_chrome_path(),
+    get_system_chrome_path,
+  ))
   launch_with_config(BrowserConfig(
     path: resolved_chrome_path,
     args: get_default_chrome_args(),
@@ -94,12 +109,61 @@ pub fn launch() {
   ))
 }
 
+/// Quit the browser and shut down the actor
+/// This function will attempt graceful shutdown, if the browser does not respond in time,
+/// it will also send a kill signal to the actor to force it to shut down.
+/// The result typing reflects the success of graceful shutdown.
+pub fn quit(browser: Subject(Message)) {
+  // set a deadline for a kill signal to be sent if the browser does not respond in time
+  let _ = process.send_after(browser, default_message_timeout, Kill)
+  // invoke graceful shutdown of the browser
+  actor.call(browser, Call(_, "Browser.close", None), default_message_timeout)
+  |> result.replace(Nil)
+}
+
+/// Convenience function that lets you defer quitting the browser after you are done with it,
+/// it's meant for a `use` expression like this:
+/// 
+/// ```gleam
+/// let assert Ok(browser_subject) = browser.launch()
+/// use <- browser.defer_quit(browser_subject)
+/// // do stuff with the browser
+/// ```
+pub fn defer_quit(browser: Subject(Message), block) {
+  block()
+  quit(browser)
+}
+
+/// Issue a protocol call to the browser and expect a response
+pub fn call(
+  browser: Subject(Message),
+  method: String,
+  params: Option(Json),
+  time_out,
+) -> Result(d.Dynamic, Nil) {
+  actor.call(browser, Call(_, method, params), time_out)
+}
+
+/// Issue a protocol call to the browser without waiting for a response,
+/// when the response arrives, it will be discarded.
+/// It's probably best to not use this and instead just use `call` and discard unneeded responses.
+/// All protocol calls yield a response and can be used with `call`, even if they
+/// don't specify any response parameters.
+pub fn send(
+  browser: Subject(Message),
+  method: String,
+  params: Option(Json),
+) -> Nil {
+  process.send(browser, Send(method, params))
+}
+
 /// Hardcoded protocol call to get the browser version
 /// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser/#method-getVersion 
 pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, Nil) {
-  use res <- result.try(actor.call(
+  use res <- result.try(call(
     browser,
-    Call(_, "Browser.getVersion", option.None),
+    "Browser.getVersion",
+    None,
     default_message_timeout,
   ))
   let version_decoder =
@@ -235,8 +299,7 @@ fn create_init_fn(cfg: BrowserConfig) {
         actor.Ready(
           BrowserState(instance, 0, []),
           process.new_selector()
-            |> process.selecting_record2(port, map_port_message)
-            |> process.selecting_anything(fn(anything) { Anything(anything) }),
+            |> process.selecting_record2(port, map_port_message),
         )
       }
       Error(err) -> {
@@ -250,15 +313,33 @@ fn create_init_fn(cfg: BrowserConfig) {
 // --- MESSAGE HANDLING ---
 
 /// Map a raw message from the port to a message that the actor can handle
-/// Right now, the only message that is handled is a data message
-fn map_port_message(message: d.Dynamic) {
+fn map_port_message(message: d.Dynamic) -> Message {
   // This matches a data message from the port like {data, "string"}
   // not ideal but actually should be fine since data messages are the only messages 
-  // from the port that will arrive as a tuple with a string as the second element
-  // other messages will be atoms (closed/connected)
+  // from the port that will arrive as a tuple with a string as the second element,
+  // and these are the main messages we are interested in and want to handle quickly.
+  //
+  // other messages will be atoms (closed/connected) and {exit_code, int}
+  // which are handled by the fallback map function below
   case d.element(1, d.string)(message) {
     Ok(data) -> PortResponse(data)
-    Error(_) -> Anything(message)
+    Error(_) -> map_non_data_port_msg(message)
+  }
+}
+
+/// Handle a message from the port that is not a data message.
+/// Right now we are handling exit_code messages, which tell us that the port 
+/// has exited or failed to properly start.
+fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
+  let decoded_msg = d.tuple2(atom.from_dynamic, d.int)(msg)
+  case decoded_msg {
+    Ok(#(atom_exit_status, exit_status)) -> {
+      case atom_exit_status == atom.create_from_string("exit_status") {
+        True -> PortExit(exit_status)
+        False -> UnexpectedPortMessage(msg)
+      }
+    }
+    Error(_) -> UnexpectedPortMessage(msg)
   }
 }
 
@@ -271,16 +352,16 @@ type BrowserState {
 }
 
 pub type Message {
-  Stop
-  BrowserDown
+  Kill
   Call(
     reply_with: Subject(Result(d.Dynamic, Nil)),
     method: String,
     params: Option(Json),
   )
   Send(method: String, params: Option(Json))
-  Anything(d.Dynamic)
+  UnexpectedPortMessage(d.Dynamic)
   PortResponse(String)
+  PortExit(Int)
 }
 
 type PendingRequest {
@@ -290,13 +371,11 @@ type PendingRequest {
 /// The main loop of the actor, handling all messages
 fn loop(message: Message, state: BrowserState) {
   case message {
-    Stop -> {
-      log(state.instance, "Stopping on request")
-      todo
-      actor.Stop(process.Normal)
-    }
-    BrowserDown -> {
-      log(state.instance, "Stopping because browser exited")
+    Kill -> {
+      log(
+        state.instance,
+        "Received kill signal, actor is shutting down, this is unuasual and means the browser did not respond to a shutdown request in time!",
+      )
       actor.Stop(process.Normal)
     }
     Call(client, method, params) -> {
@@ -308,8 +387,28 @@ fn loop(message: Message, state: BrowserState) {
     PortResponse(data) -> {
       handle_port_response(state, data)
     }
-    Anything(msg) -> {
-      log(state.instance, "Got an unexpected message")
+    PortExit(exit_status) -> {
+      case exit_status {
+        0 -> {
+          log(state.instance, "Browser exited normally, actor is shutting down")
+          actor.Stop(process.Normal)
+        }
+        _ -> {
+          log(
+            state.instance,
+            "Browser exited with status: "
+              <> string.inspect(exit_status)
+              <> " browser actor is shutting down",
+          )
+          actor.Stop(process.Abnormal(reason: "browser exited abnormally"))
+        }
+      }
+    }
+    UnexpectedPortMessage(msg) -> {
+      log(
+        state.instance,
+        "Got an unexpected message from the port! This should not happen!",
+      )
       io.debug(msg)
       actor.continue(state)
     }
@@ -336,6 +435,7 @@ fn handle_call(
     Error(_) -> {
       log(state.instance, "Request call to browser was unsuccessful!")
       io.debug(#(client, payload))
+      process.send(client, Error(Nil))
       actor.continue(BrowserState(
         instance: state.instance,
         next_id: request_id + 1,
@@ -392,7 +492,7 @@ type BrowserResponse {
   )
 }
 
-/// Find the pending request in the state and send the response data to the client
+/// Find the pending request in the state and send the response data to the client.
 /// Failure to find the associated request will log an error and ignore the response
 fn answer_request(
   state: BrowserState,
@@ -413,17 +513,15 @@ fn answer_request(
       rest
     }
     Error(Nil) -> {
-      log(
-        state.instance,
-        "Received a response for an unknown request, id:" <> string.inspect(id),
-      )
-      io.debug(data)
+      // Silently discard the response if there is no request to match it
+      // this happens if clients use send instead of call, which does not create
+      // a pending request
       state.unanswered_requests
     }
   }
 }
 
-/// Handele a message from the browser, delivered via the port
+/// Handele a message from the browser, delivered via the port.
 /// The message can be a response to a request or an event
 fn handle_port_response(
   state: BrowserState,
@@ -486,6 +584,7 @@ fn send_to_browser(instance: BrowserInstance, data: Json) {
   send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
 }
 
+/// Add the params key to a JSON object if it is not None
 fn add_optional_params(payload: List(#(String, Json)), params: Option(Json)) {
   case params {
     option.Some(data) -> [#("params", data), ..payload]
@@ -510,7 +609,7 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
 }
 
 fn log(instance: BrowserInstance, message: String) {
-  io.println("[Browser:" <> string.inspect(instance) <> "] " <> message)
+  io.println(string.inspect(instance) <> ": " <> message)
 }
 
 // --- EXTERNALS ---

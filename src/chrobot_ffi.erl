@@ -12,9 +12,11 @@
 % avoiding the commmon port-related problem of zombie processes.
 open_browser_port(Command, Args) ->
     PortName = {spawn_executable, Command},
-    Options = [{args, Args}, binary, nouse_stdio],
+    Options = [{args, Args}, binary, nouse_stdio, exit_status],
     try erlang:open_port(PortName, Options) of
-        PortId -> {ok, PortId}
+        PortId ->
+            erlang:link(PortId),
+            {ok, PortId}
     catch
         error:Reason -> {error, Reason}
     end.

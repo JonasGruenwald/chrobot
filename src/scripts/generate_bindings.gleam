@@ -2,19 +2,28 @@
 //// based on the protocol spec which is loaded from a local json file
 //// 
 //// 1. The protocol JSON file is first parsed into an internal representation
+//// 
 //// Parsing Notes:
 //// We use the common 'Type' type to deal with the base concept of types in the
 //// protocol, this includes top  level type definitions, object properties,
 //// command parameters and command returns, which all wrap 'Type' with some 
 //// additional attributes on top.
+//// 
+//// 2. Files are generated based on the parsed protocol
+//// 
+//// Codegen Notes:
+//// - A root file `src/protocol/protocol.gleam` is generated with general information
+//// - A module is generated for each domain in the protocol under `src/protocol/`
+//// - Generated files should be put through `gleam format` before committing
 
 import gleam/dynamic.{field, optional_field} as d
-import gleam/io
 import gleam/int
+import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/string_builder as sb
 import simplifile as file
 
 pub type Protocol {
@@ -73,7 +82,7 @@ pub type TypeDefinition {
   )
 }
 
-/// Property defintions are a type or a reference with some additional info
+/// Property defintions are a type or a reference with some additional info.
 /// We use them to represent:
 /// - Object Properties (for nesting)
 /// - Command Parameters
@@ -121,7 +130,15 @@ pub fn main() {
     <> protocol.version.minor,
   )
   print_protocol_stats(protocol)
+  let stable_protocol = protocol_without_experimental(protocol)
+  io.println("Stable protocol (experimental items removed):")
+  print_protocol_stats(stable_protocol)
+  let target = "src/protocol.gleam"
+  io.println("Writing root protocol module to: " <> target)
+  let assert Ok(_) = file.write(gen_root_module(stable_protocol), to: target)
 }
+
+// --- UTILS ---
 
 fn get_protocol_stats(protocol: Protocol) {
   #(
@@ -149,10 +166,119 @@ fn get_protocol_stats(protocol: Protocol) {
   )
 }
 
-fn print_protocol_stats(protocol: Protocol) {
-  let #(num_domains, num_types, num_commands, num_events) = get_protocol_stats(
-    protocol,
+fn propdef_without_experimental(
+  propdef: PropertyDefinition,
+) -> Result(PropertyDefinition, Nil) {
+  case propdef.experimental {
+    Some(True) -> Error(Nil)
+    _ -> Ok(propdef)
+  }
+}
+
+fn event_without_experimental(event: Event) -> Result(Event, Nil) {
+  case event.experimental {
+    Some(True) -> Error(Nil)
+    _ ->
+      Ok(
+        Event(
+          name: event.name,
+          description: event.description,
+          experimental: event.experimental,
+          deprecated: event.deprecated,
+          parameters: {
+            case event.parameters {
+              Some(params) ->
+                Some(list.filter_map(params, propdef_without_experimental))
+              None -> None
+            }
+          },
+        ),
+      )
+  }
+}
+
+fn command_without_experimental(command: Command) -> Result(Command, Nil) {
+  case command.experimental {
+    Some(True) -> Error(Nil)
+    _ ->
+      Ok(
+        Command(
+          name: command.name,
+          description: command.description,
+          experimental: command.experimental,
+          deprecated: command.deprecated,
+          parameters: {
+            case command.parameters {
+              Some(params) ->
+                Some(list.filter_map(params, propdef_without_experimental))
+              None -> None
+            }
+          },
+          returns: {
+            case command.returns {
+              Some(returns) ->
+                Some(list.filter_map(returns, propdef_without_experimental))
+              None -> None
+            }
+          },
+        ),
+      )
+  }
+}
+
+fn type_without_experimental(
+  param_type: TypeDefinition,
+) -> Result(TypeDefinition, Nil) {
+  case param_type.experimental {
+    Some(True) -> Error(Nil)
+    _ -> Ok(param_type)
+  }
+}
+
+/// Return the protocol with experimental domains, types, commands, parameters and events removed
+/// Note: The protocol still contains deprecated items, and the 'experimental' field is not removed.
+/// The check is NOT performed recursively into nested types / property definitions, just at the top level.
+/// Note that this might leave some optional lists as empty if all items are experimental.
+pub fn protocol_without_experimental(protocol: Protocol) -> Protocol {
+  Protocol(
+    version: protocol.version,
+    domains: list.filter_map(protocol.domains, fn(domain) {
+      case domain.experimental {
+        Some(True) -> Error(Nil)
+        _ -> {
+          Ok(Domain(
+            domain: domain.domain,
+            experimental: domain.experimental,
+            dependencies: domain.dependencies,
+            types: {
+              case domain.types {
+                Some(types) ->
+                  Some(list.filter_map(types, type_without_experimental))
+                None -> None
+              }
+            },
+            commands: list.filter_map(
+              domain.commands,
+              command_without_experimental,
+            ),
+            events: {
+              case domain.events {
+                Some(events) ->
+                  Some(list.filter_map(events, event_without_experimental))
+                None -> None
+              }
+            },
+            description: domain.description,
+          ))
+        }
+      }
+    }),
   )
+}
+
+fn print_protocol_stats(protocol: Protocol) {
+  let #(num_domains, num_types, num_commands, num_events) =
+    get_protocol_stats(protocol)
   io.println(
     "Protocol Stats: "
     <> "Domains: "
@@ -166,6 +292,8 @@ fn print_protocol_stats(protocol: Protocol) {
   )
   Nil
 }
+
+// --- PARSING ---
 
 fn parse_type_def(
   input: d.Dynamic,
@@ -256,24 +384,26 @@ fn parse_type(input: d.Dynamic) -> Result(Type, List(d.DecodeError)) {
 pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
   let assert Ok(json_string) = file.read(from: from)
 
-  let command_decoder = d.decode6(
-    Command,
-    field("name", d.string),
-    optional_field("description", d.string),
-    optional_field("experimental", d.bool),
-    optional_field("deprecated", d.bool),
-    optional_field("parameters", d.list(parse_property_def)),
-    optional_field("returns", d.list(parse_property_def)),
-  )
+  let command_decoder =
+    d.decode6(
+      Command,
+      field("name", d.string),
+      optional_field("description", d.string),
+      optional_field("experimental", d.bool),
+      optional_field("deprecated", d.bool),
+      optional_field("parameters", d.list(parse_property_def)),
+      optional_field("returns", d.list(parse_property_def)),
+    )
 
-  let event_decoder = d.decode5(
-    Event,
-    field("name", d.string),
-    optional_field("description", d.string),
-    optional_field("experimental", d.bool),
-    optional_field("deprecated", d.bool),
-    optional_field("parameters", d.list(parse_property_def)),
-  )
+  let event_decoder =
+    d.decode5(
+      Event,
+      field("name", d.string),
+      optional_field("description", d.string),
+      optional_field("experimental", d.bool),
+      optional_field("deprecated", d.bool),
+      optional_field("parameters", d.list(parse_property_def)),
+    )
 
   let domain_decoder =
     d.decode7(
@@ -298,4 +428,37 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
     )
 
   json.decode(from: json_string, using: protocol_decoder)
+}
+
+// --- CODEGEN ---
+
+fn gen_preamble(protocol: Protocol) {
+  "
+// This is an autogenerated file. Do not edit manually.  
+// Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.  
+//// > This module was generated from the Chrome DevTools Protocol version **" <> protocol.version.major <> "." <> protocol.version.minor <> "**\n"
+}
+
+fn gen_function_comment(content: String) {
+  "/// " <> content <> "\n"
+}
+
+/// Generate the root module for the protocol bindings
+/// This is just an entrypoint with some documentation, and the version number
+pub fn gen_root_module(protocol: Protocol) {
+  sb.new()
+  |> sb.append(gen_preamble(protocol))
+  |> sb.append(
+    "////
+//// This is the protocol definition entrypoint, which contains protocol version information.
+////  Each domain in the protocol is represented as a submodule under `/protocol`.
+\n\n",
+  )
+  |> sb.append("const version_major = \"" <> protocol.version.major <> "\"\n")
+  |> sb.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
+  |> sb.append(gen_function_comment(
+    "Get the protocol version as a tuple of major and minor version",
+  ))
+  |> sb.append("pub fn version() { #(version_major, version_minor)}\n")
+  |> sb.to_string()
 }
