@@ -8,6 +8,8 @@
 //// 
 //// When the browser managed by this actor is closed, the actor will also exit.
 //// 
+//// To start a browser, it's preferrable to use the launch functions from the root chrobot module,
+//// which perform additional checks and validations.
 
 import filepath as path
 import gleam/dynamic as d
@@ -33,7 +35,7 @@ pub type LaunchError {
   CouldNotFindExecutable
   FailedToStart
   UnresponsiveAfterStart
-  ProtocolVersionMismatch
+  ProtocolVersionMismatch(supported_version: String, got_version: String)
 }
 
 pub type BrowserConfig {

@@ -39,7 +39,7 @@ pub fn launch_with_config(config: browser.BrowserConfig) {
   validate_launch(browser.launch_with_config(config))
 }
 
-/// Validate that the browser responds to protocola messages, 
+/// Validate that the browser responds to protocol messages, 
 /// and that the protocol version matches the one supported by this library.
 fn validate_launch(
   launch_result: Result(Subject(browser.Message), browser.LaunchError),
@@ -53,6 +53,10 @@ fn validate_launch(
   use actual_version <- result.try(version_response)
   case target_protocol_version == actual_version.protocol_version {
     True -> Ok(instance)
-    False -> Error(browser.ProtocolVersionMismatch)
+    False ->
+      Error(browser.ProtocolVersionMismatch(
+        target_protocol_version,
+        actual_version.protocol_version,
+      ))
   }
 }

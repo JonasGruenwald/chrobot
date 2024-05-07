@@ -1,7 +1,7 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleeunit/should
-import scripts/generate_bindings.{parse_protocol}
+import scripts/generate_bindings.{parse_protocol, to_snake_case}
 
 pub fn parse_browser_protocol_test() {
   let assert Ok(protocol) = parse_protocol("./assets/browser_protocol.json")
@@ -54,7 +54,8 @@ pub fn parse_js_protocol_test() {
   }
 
   // There should be a property named "type" in there
-  let assert Ok(type_property) = list.find(target_properties, fn(p) { p.name == "type"  })
+  let assert Ok(type_property) =
+    list.find(target_properties, fn(p) { p.name == "type" })
 
   // This "type" property should be of type string with enum values
   let assert Ok(enum_values) = case type_property.inner {
@@ -65,5 +66,21 @@ pub fn parse_js_protocol_test() {
   // One of the enum values should be "window"
   list.any(enum_values, fn(v) { v == "window" })
   |> should.be_true
+}
 
+pub fn to_snake_case_test() {
+  to_snake_case("DOM")
+  |> should.equal("dom")
+
+  to_snake_case("NodeId")
+  |> should.equal("node_id")
+
+  to_snake_case("DeepSerializedValue")
+  |> should.equal("deep_serialized_value")
+
+  to_snake_case("DOMDebugger")
+  |> should.equal("dom_debugger")
+
+  to_snake_case("addPrivacySandboxEnrollmentOverride")
+  |> should.equal("add_privacy_sandbox_enrollment_override")
 }
