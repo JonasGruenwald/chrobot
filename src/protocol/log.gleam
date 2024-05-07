@@ -13,3 +13,12 @@
 import chrome
 import protocol/network
 import protocol/runtime
+
+/// Log entry.
+pub type LogEntry
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Violation configuration setting.
+pub type ViolationSetting
+// TODO -- codegen for this type definition is not implemented 

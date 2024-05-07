@@ -14,3 +14,14 @@
 import chrome
 import protocol/dom
 import protocol/runtime
+
+/// DOM breakpoint type.
+pub type DOMBreakpointType {
+  DOMBreakpointTypeSubtreeModified
+  DOMBreakpointTypeAttributeModified
+  DOMBreakpointTypeNodeRemoved
+}
+
+/// Object event listener.
+pub type EventListener
+// TODO -- codegen for this type definition is not implemented 

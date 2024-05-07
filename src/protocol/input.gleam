@@ -11,3 +11,21 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+
+pub type TouchPoint
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type MouseButton {
+  MouseButtonNone
+  MouseButtonLeft
+  MouseButtonMiddle
+  MouseButtonRight
+  MouseButtonBack
+  MouseButtonForward
+}
+
+/// UTC time in seconds, counted from January 1, 1970.
+pub type TimeSinceEpoch {
+  TimeSinceEpoch(Float)
+}

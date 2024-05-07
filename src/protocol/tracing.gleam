@@ -12,3 +12,6 @@
 
 import chrome
 import protocol/io
+
+pub type TraceConfig
+// TODO -- codegen for this type definition is not implemented 

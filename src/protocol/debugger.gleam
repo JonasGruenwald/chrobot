@@ -13,3 +13,47 @@
 
 import chrome
 import protocol/runtime
+
+/// Breakpoint identifier.
+pub type BreakpointId {
+  BreakpointId(String)
+}
+
+/// Call frame identifier.
+pub type CallFrameId {
+  CallFrameId(String)
+}
+
+/// Location in the source code.
+pub type Location
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// JavaScript call frame. Array of call frames form the call stack.
+pub type CallFrame
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Scope description.
+pub type Scope
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Search match for resource.
+pub type SearchMatch
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type BreakLocation
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Enum of possible script languages.
+pub type ScriptLanguage {
+  ScriptLanguageJavaScript
+  ScriptLanguageWebAssembly
+}
+
+/// Debug symbols available for a wasm script.
+pub type DebugSymbols
+// TODO -- codegen for this type definition is not implemented 

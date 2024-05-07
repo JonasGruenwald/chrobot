@@ -18,3 +18,118 @@
 
 import chrome
 import protocol/runtime
+
+/// Unique DOM node identifier.
+pub type NodeId {
+  NodeId(Int)
+}
+
+/// Unique DOM node identifier used to reference a node that may not have been pushed to the
+/// front-end.
+pub type BackendNodeId {
+  BackendNodeId(Int)
+}
+
+/// Backend node with a friendly name.
+pub type BackendNode
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Pseudo element type.
+pub type PseudoType {
+  PseudoTypeFirstLine
+  PseudoTypeFirstLetter
+  PseudoTypeBefore
+  PseudoTypeAfter
+  PseudoTypeMarker
+  PseudoTypeBackdrop
+  PseudoTypeSelection
+  PseudoTypeTargetText
+  PseudoTypeSpellingError
+  PseudoTypeGrammarError
+  PseudoTypeHighlight
+  PseudoTypeFirstLineInherited
+  PseudoTypeScrollMarker
+  PseudoTypeScrollMarkers
+  PseudoTypeScrollbar
+  PseudoTypeScrollbarThumb
+  PseudoTypeScrollbarButton
+  PseudoTypeScrollbarTrack
+  PseudoTypeScrollbarTrackPiece
+  PseudoTypeScrollbarCorner
+  PseudoTypeResizer
+  PseudoTypeInputListButton
+  PseudoTypeViewTransition
+  PseudoTypeViewTransitionGroup
+  PseudoTypeViewTransitionImagePair
+  PseudoTypeViewTransitionOld
+  PseudoTypeViewTransitionNew
+}
+
+/// Shadow root type.
+pub type ShadowRootType {
+  ShadowRootTypeUserAgent
+  ShadowRootTypeOpen
+  ShadowRootTypeClosed
+}
+
+/// Document compatibility mode.
+pub type CompatibilityMode {
+  CompatibilityModeQuirksMode
+  CompatibilityModeLimitedQuirksMode
+  CompatibilityModeNoQuirksMode
+}
+
+/// ContainerSelector physical axes
+pub type PhysicalAxes {
+  PhysicalAxesHorizontal
+  PhysicalAxesVertical
+  PhysicalAxesBoth
+}
+
+/// ContainerSelector logical axes
+pub type LogicalAxes {
+  LogicalAxesInline
+  LogicalAxesBlock
+  LogicalAxesBoth
+}
+
+/// Physical scroll orientation
+pub type ScrollOrientation {
+  ScrollOrientationHorizontal
+  ScrollOrientationVertical
+}
+
+/// DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes.
+/// DOMNode is a base node mirror type.
+pub type Node
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// A structure holding an RGBA color.
+pub type RGBA
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
+pub type Quad
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Box model.
+pub type BoxModel
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// CSS Shape Outside details.
+pub type ShapeOutsideInfo
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Rectangle.
+pub type Rect
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type CSSComputedStyleProperty
+// TODO -- codegen for this type definition is not implemented 

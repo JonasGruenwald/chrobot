@@ -16,3 +16,72 @@ import protocol/dom
 import protocol/io
 import protocol/network
 import protocol/runtime
+
+/// Unique frame identifier.
+pub type FrameId {
+  FrameId(String)
+}
+
+/// Information about the Frame on the page.
+pub type Frame
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Information about the Frame hierarchy.
+pub type FrameTree
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Unique script identifier.
+pub type ScriptIdentifier {
+  ScriptIdentifier(String)
+}
+
+/// Transition type.
+pub type TransitionType {
+  TransitionTypeLink
+  TransitionTypeTyped
+  TransitionTypeAddressBar
+  TransitionTypeAutoBookmark
+  TransitionTypeAutoSubframe
+  TransitionTypeManualSubframe
+  TransitionTypeGenerated
+  TransitionTypeAutoToplevel
+  TransitionTypeFormSubmit
+  TransitionTypeReload
+  TransitionTypeKeyword
+  TransitionTypeKeywordGenerated
+  TransitionTypeOther
+}
+
+/// Navigation history entry.
+pub type NavigationEntry
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Javascript dialog type.
+pub type DialogType {
+  DialogTypeAlert
+  DialogTypeConfirm
+  DialogTypePrompt
+  DialogTypeBeforeunload
+}
+
+/// Error while paring app manifest.
+pub type AppManifestError
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Layout viewport position and dimensions.
+pub type LayoutViewport
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Visual viewport position, dimensions, and scale.
+pub type VisualViewport
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Viewport for capturing screenshot.
+pub type Viewport
+// TODO -- codegen for this type definition is not implemented 

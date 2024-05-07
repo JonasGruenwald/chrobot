@@ -11,3 +11,38 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+
+/// An internal certificate ID value.
+pub type CertificateId {
+  CertificateId(Int)
+}
+
+/// A description of mixed content (HTTP resources on HTTPS pages), as defined by
+/// https://www.w3.org/TR/mixed-content/#categories
+pub type MixedContentType {
+  MixedContentTypeBlockable
+  MixedContentTypeOptionallyBlockable
+  MixedContentTypeNone
+}
+
+/// The security level of a page or resource.
+pub type SecurityState {
+  SecurityStateUnknown
+  SecurityStateNeutral
+  SecurityStateInsecure
+  SecurityStateSecure
+  SecurityStateInfo
+  SecurityStateInsecureBroken
+}
+
+/// An explanation of an factor contributing to the security state.
+pub type SecurityStateExplanation
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// The action to take when a certificate error occurs. continue will continue processing the
+/// request and cancel will cancel the request.
+pub type CertificateErrorAction {
+  CertificateErrorActionContinue
+  CertificateErrorActionCancel
+}

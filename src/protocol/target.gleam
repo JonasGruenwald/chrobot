@@ -11,3 +11,15 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+
+pub type TargetID {
+  TargetID(String)
+}
+
+/// Unique identifier of attached debugging session.
+pub type SessionID {
+  SessionID(String)
+}
+
+pub type TargetInfo
+// TODO -- codegen for this type definition is not implemented 

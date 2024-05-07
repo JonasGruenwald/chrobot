@@ -27,7 +27,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleam/string_builder as sb
-import justin.{snake_case}
+import justin.{pascal_case, snake_case}
 import simplifile as file
 
 pub type Protocol {
@@ -452,6 +452,36 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
 
 // --- CODEGEN ---
 
+fn append_if(builder: sb.StringBuilder, value: String, predicate: Bool) {
+  case predicate {
+    True -> sb.append(builder, value)
+    False -> builder
+  }
+}
+
+fn append_optional(
+  builder: sb.StringBuilder,
+  val: Option(a),
+  callback: fn(a) -> String,
+) {
+  case val {
+    Some(a) -> sb.append(builder, callback(a))
+    None -> builder
+  }
+}
+
+fn to_gleam_primitive(protocol_primitive: String) {
+  case protocol_primitive {
+    "number" -> "Float"
+    "integer" -> "Int"
+    "string" -> "String"
+    "boolean" -> "Bool"
+    _ -> {
+      panic as "can't translate to gleam primitive: " <> protocol_primitive
+    }
+  }
+}
+
 fn gen_preamble(protocol: Protocol) {
   "
 // ---------------------------------------------------------------------------
@@ -461,8 +491,8 @@ fn gen_preamble(protocol: Protocol) {
 //// > This module was generated from the Chrome DevTools Protocol version **" <> protocol.version.major <> "." <> protocol.version.minor <> "**\n"
 }
 
-fn gen_function_comment(content: String) {
-  "/// " <> content <> "\n"
+fn gen_attached_comment(content: String) {
+  "/// " <> string.replace(content, "\n", "\n/// ") <> "\n"
 }
 
 /// Generate the root module for the protocol bindings
@@ -485,7 +515,7 @@ pub fn gen_root_module(protocol: Protocol) {
   |> sb.append(")\n\n")
   |> sb.append("const version_major = \"" <> protocol.version.major <> "\"\n")
   |> sb.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
-  |> sb.append(gen_function_comment(
+  |> sb.append(gen_attached_comment(
     "Get the protocol version as a tuple of major and minor version",
   ))
   |> sb.append("pub fn version() { #(version_major, version_minor)}\n")
@@ -530,11 +560,44 @@ fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
   |> sb.append(domain.domain)
   |> sb.append("/)\n\n")
   |> sb.append(gen_imports(domain))
+  |> sb.append("\n\n")
+}
+
+fn gen_type_def_body(t: TypeDefinition) {
+  case t.inner {
+    PrimitiveType(type_name) -> {
+      t.id <> "(" <> to_gleam_primitive(type_name) <> ")\n"
+    }
+
+    EnumType(enum) -> {
+      enum
+      |> list.map(fn(item) { t.id <> pascal_case(item) <> "\n" })
+      |> string.join("")
+    }
+    _ -> "// TODO -- codegen for this type definition is not implemented \n"
+  }
+}
+
+fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
+  builder
+  |> append_optional(t.description, gen_attached_comment)
+  // ID is already PascalCase!
+  |> sb.append("pub type ")
+  |> sb.append(t.id)
+  |> sb.append("{\n")
+  |> sb.append(gen_type_def_body(t))
+  |> sb.append("}\n\n")
+}
+
+fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
+  option.unwrap(domain.types, [])
+  |> list.fold(sb.new(), gen_type_def)
 }
 
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   sb.new()
   |> sb.append(gen_preamble(protocol))
   |> sb.append_builder(gen_domain_module_header(protocol, domain))
+  |> sb.append_builder(gen_type_definitions(domain))
   |> sb.to_string()
 }

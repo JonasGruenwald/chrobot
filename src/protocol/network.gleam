@@ -15,3 +15,248 @@ import chrome
 import protocol/debugger
 import protocol/runtime
 import protocol/security
+
+/// Resource type as it was perceived by the rendering engine.
+pub type ResourceType {
+  ResourceTypeDocument
+  ResourceTypeStylesheet
+  ResourceTypeImage
+  ResourceTypeMedia
+  ResourceTypeFont
+  ResourceTypeScript
+  ResourceTypeTextTrack
+  ResourceTypeXhr
+  ResourceTypeFetch
+  ResourceTypePrefetch
+  ResourceTypeEventSource
+  ResourceTypeWebSocket
+  ResourceTypeManifest
+  ResourceTypeSignedExchange
+  ResourceTypePing
+  ResourceTypeCspViolationReport
+  ResourceTypePreflight
+  ResourceTypeOther
+}
+
+/// Unique loader identifier.
+pub type LoaderId {
+  LoaderId(String)
+}
+
+/// Unique request identifier.
+pub type RequestId {
+  RequestId(String)
+}
+
+/// Unique intercepted request identifier.
+pub type InterceptionId {
+  InterceptionId(String)
+}
+
+/// Network level fetch failure reason.
+pub type ErrorReason {
+  ErrorReasonFailed
+  ErrorReasonAborted
+  ErrorReasonTimedOut
+  ErrorReasonAccessDenied
+  ErrorReasonConnectionClosed
+  ErrorReasonConnectionReset
+  ErrorReasonConnectionRefused
+  ErrorReasonConnectionAborted
+  ErrorReasonConnectionFailed
+  ErrorReasonNameNotResolved
+  ErrorReasonInternetDisconnected
+  ErrorReasonAddressUnreachable
+  ErrorReasonBlockedByClient
+  ErrorReasonBlockedByResponse
+}
+
+/// UTC time in seconds, counted from January 1, 1970.
+pub type TimeSinceEpoch {
+  TimeSinceEpoch(Float)
+}
+
+/// Monotonically increasing time in seconds since an arbitrary point in the past.
+pub type MonotonicTime {
+  MonotonicTime(Float)
+}
+
+/// Request / response headers as keys / values of JSON object.
+pub type Headers
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// The underlying connection technology that the browser is supposedly using.
+pub type ConnectionType {
+  ConnectionTypeNone
+  ConnectionTypeCellular2g
+  ConnectionTypeCellular3g
+  ConnectionTypeCellular4g
+  ConnectionTypeBluetooth
+  ConnectionTypeEthernet
+  ConnectionTypeWifi
+  ConnectionTypeWimax
+  ConnectionTypeOther
+}
+
+/// Represents the cookie's 'SameSite' status:
+/// https://tools.ietf.org/html/draft-west-first-party-cookies
+pub type CookieSameSite {
+  CookieSameSiteStrict
+  CookieSameSiteLax
+  CookieSameSiteNone
+}
+
+/// Timing information for the request.
+pub type ResourceTiming
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Loading priority of a resource request.
+pub type ResourcePriority {
+  ResourcePriorityVeryLow
+  ResourcePriorityLow
+  ResourcePriorityMedium
+  ResourcePriorityHigh
+  ResourcePriorityVeryHigh
+}
+
+/// Post data entry for HTTP request
+pub type PostDataEntry
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// HTTP request data.
+pub type Request
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Details of a signed certificate timestamp (SCT).
+pub type SignedCertificateTimestamp
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Security details about a request.
+pub type SecurityDetails
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Whether the request complied with Certificate Transparency policy.
+pub type CertificateTransparencyCompliance {
+  CertificateTransparencyComplianceUnknown
+  CertificateTransparencyComplianceNotCompliant
+  CertificateTransparencyComplianceCompliant
+}
+
+/// The reason why request was blocked.
+pub type BlockedReason {
+  BlockedReasonOther
+  BlockedReasonCsp
+  BlockedReasonMixedContent
+  BlockedReasonOrigin
+  BlockedReasonInspector
+  BlockedReasonSubresourceFilter
+  BlockedReasonContentType
+  BlockedReasonCoepFrameResourceNeedsCoepHeader
+  BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage
+  BlockedReasonCorpNotSameOrigin
+  BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep
+  BlockedReasonCorpNotSameSite
+}
+
+/// The reason why request was blocked.
+pub type CorsError {
+  CorsErrorDisallowedByMode
+  CorsErrorInvalidResponse
+  CorsErrorWildcardOriginNotAllowed
+  CorsErrorMissingAllowOriginHeader
+  CorsErrorMultipleAllowOriginValues
+  CorsErrorInvalidAllowOriginValue
+  CorsErrorAllowOriginMismatch
+  CorsErrorInvalidAllowCredentials
+  CorsErrorCorsDisabledScheme
+  CorsErrorPreflightInvalidStatus
+  CorsErrorPreflightDisallowedRedirect
+  CorsErrorPreflightWildcardOriginNotAllowed
+  CorsErrorPreflightMissingAllowOriginHeader
+  CorsErrorPreflightMultipleAllowOriginValues
+  CorsErrorPreflightInvalidAllowOriginValue
+  CorsErrorPreflightAllowOriginMismatch
+  CorsErrorPreflightInvalidAllowCredentials
+  CorsErrorPreflightMissingAllowExternal
+  CorsErrorPreflightInvalidAllowExternal
+  CorsErrorPreflightMissingAllowPrivateNetwork
+  CorsErrorPreflightInvalidAllowPrivateNetwork
+  CorsErrorInvalidAllowMethodsPreflightResponse
+  CorsErrorInvalidAllowHeadersPreflightResponse
+  CorsErrorMethodDisallowedByPreflightResponse
+  CorsErrorHeaderDisallowedByPreflightResponse
+  CorsErrorRedirectContainsCredentials
+  CorsErrorInsecurePrivateNetwork
+  CorsErrorInvalidPrivateNetworkAccess
+  CorsErrorUnexpectedPrivateNetworkAccess
+  CorsErrorNoCorsRedirectModeNotFollow
+  CorsErrorPreflightMissingPrivateNetworkAccessId
+  CorsErrorPreflightMissingPrivateNetworkAccessName
+  CorsErrorPrivateNetworkAccessPermissionUnavailable
+  CorsErrorPrivateNetworkAccessPermissionDenied
+}
+
+pub type CorsErrorStatus
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Source of serviceworker response.
+pub type ServiceWorkerResponseSource {
+  ServiceWorkerResponseSourceCacheStorage
+  ServiceWorkerResponseSourceHttpCache
+  ServiceWorkerResponseSourceFallbackCode
+  ServiceWorkerResponseSourceNetwork
+}
+
+/// Source of service worker router.
+pub type ServiceWorkerRouterSource {
+  ServiceWorkerRouterSourceNetwork
+  ServiceWorkerRouterSourceCache
+  ServiceWorkerRouterSourceFetchEvent
+  ServiceWorkerRouterSourceRaceNetworkAndFetchHandler
+}
+
+/// HTTP response data.
+pub type Response
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// WebSocket request data.
+pub type WebSocketRequest
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// WebSocket response data.
+pub type WebSocketResponse
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
+pub type WebSocketFrame
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Information about the cached resource.
+pub type CachedResource
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Information about the request initiator.
+pub type Initiator
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Cookie object
+pub type Cookie
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Cookie parameter object
+pub type CookieParam
+// TODO -- codegen for this type definition is not implemented 

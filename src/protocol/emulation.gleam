@@ -14,3 +14,19 @@ import chrome
 import protocol/dom
 import protocol/page
 import protocol/runtime
+
+/// Screen orientation.
+pub type ScreenOrientation
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type DisplayFeature
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type DevicePosture
+
+// TODO -- codegen for this type definition is not implemented 
+
+pub type MediaFeature
+// TODO -- codegen for this type definition is not implemented 

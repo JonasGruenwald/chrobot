@@ -15,3 +15,85 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+
+/// Unique script identifier.
+pub type ScriptId {
+  ScriptId(String)
+}
+
+/// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
+pub type SerializationOptions
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Represents deep serialized value.
+pub type DeepSerializedValue
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Unique object identifier.
+pub type RemoteObjectId {
+  RemoteObjectId(String)
+}
+
+/// Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
+/// `-Infinity`, and bigint literals.
+pub type UnserializableValue {
+  UnserializableValue(String)
+}
+
+/// Mirror object referencing original JavaScript object.
+pub type RemoteObject
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Object property descriptor.
+pub type PropertyDescriptor
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Object internal property descriptor. This property isn't normally visible in JavaScript code.
+pub type InternalPropertyDescriptor
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Represents function call argument. Either remote object id `objectId`, primitive `value`,
+/// unserializable primitive value or neither of (for undefined) them should be specified.
+pub type CallArgument
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Id of an execution context.
+pub type ExecutionContextId {
+  ExecutionContextId(Int)
+}
+
+/// Description of an isolated world.
+pub type ExecutionContextDescription
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Detailed information about exception (or error) that was thrown during script compilation or
+/// execution.
+pub type ExceptionDetails
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Number of milliseconds since epoch.
+pub type Timestamp {
+  Timestamp(Float)
+}
+
+/// Number of milliseconds.
+pub type TimeDelta {
+  TimeDelta(Float)
+}
+
+/// Stack entry for runtime errors and assertions.
+pub type CallFrame
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Call frames for assertions or error messages.
+pub type StackTrace
+// TODO -- codegen for this type definition is not implemented 

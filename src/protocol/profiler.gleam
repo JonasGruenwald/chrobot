@@ -13,3 +13,32 @@
 import chrome
 import protocol/debugger
 import protocol/runtime
+
+/// Profile node. Holds callsite information, execution statistics and child nodes.
+pub type ProfileNode
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Profile.
+pub type Profile
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Specifies a number of samples attributed to a certain source position.
+pub type PositionTickInfo
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Coverage data for a source range.
+pub type CoverageRange
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Coverage data for a JavaScript function.
+pub type FunctionCoverage
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Coverage data for a JavaScript script.
+pub type ScriptCoverage
+// TODO -- codegen for this type definition is not implemented 

@@ -14,3 +14,34 @@ import chrome
 import protocol/io
 import protocol/network
 import protocol/page
+
+/// Unique request identifier.
+pub type RequestId {
+  RequestId(String)
+}
+
+/// Stages of the request to handle. Request will intercept before the request is
+/// sent. Response will intercept after the response is received (but before response
+/// body is received).
+pub type RequestStage {
+  RequestStageRequest
+  RequestStageResponse
+}
+
+pub type RequestPattern
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Response HTTP header entry
+pub type HeaderEntry
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Authorization challenge for HTTP status code 401 or 407.
+pub type AuthChallenge
+
+// TODO -- codegen for this type definition is not implemented 
+
+/// Response to an AuthChallenge.
+pub type AuthChallengeResponse
+// TODO -- codegen for this type definition is not implemented 
