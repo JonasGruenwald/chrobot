@@ -1,4 +1,6 @@
-# justin
+# justin (Fork)
+
+Forked from: https://github.com/lpil/justin
 
 Convert between snake_case, camelCase, and other cases in Gleam.
 
@@ -30,3 +32,17 @@ pub fn main() {
 ```
 
 Further documentation can be found at <https://hexdocs.pm/justin>.
+
+## Fork Notes
+
+This fork of lpil/justin adds support for the following use case:
+
+```gleam
+  justin.snake_case("DOMDebugger")
+  |> should.equal("dom_debugger")
+  justin.snake_case("CSSLayerData")
+  |> should.equal("css_layer_data")
+```
+
+Which is deliberately not supported upstream, see:
+https://github.com/lpil/justin/pull/2
