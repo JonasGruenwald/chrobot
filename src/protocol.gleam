@@ -1,4 +1,4 @@
-//// > This module was generated from the Chrome DevTools Protocol version **1.3**
+//// > ⚙️  This module was generated from the Chrome DevTools Protocol version **1.3**
 ////
 //// This is the protocol definition entrypoint, which contains protocol version information.  
 //// Each domain in the protocol is represented as a submodule under `/protocol`.  
