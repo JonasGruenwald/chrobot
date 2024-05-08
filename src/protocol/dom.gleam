@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dynamic
 import protocol/runtime
 
 /// Unique DOM node identifier.
@@ -31,9 +32,9 @@ pub type BackendNodeId {
 }
 
 /// Backend node with a friendly name.
-pub type BackendNode
-
-// TODO -- codegen for this type definition is not implemented 
+pub type BackendNode {
+  BackendNode(node_type: Int, node_name: String, backend_node_id: BackendNodeId)
+}
 
 /// Pseudo element type.
 pub type PseudoType {
@@ -102,34 +103,78 @@ pub type ScrollOrientation {
 
 /// DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes.
 /// DOMNode is a base node mirror type.
-pub type Node
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Node {
+  Node(
+    node_id: NodeId,
+    parent_id: NodeId,
+    backend_node_id: BackendNodeId,
+    node_type: Int,
+    node_name: String,
+    local_name: String,
+    node_value: String,
+    child_node_count: Int,
+    children: List(Node),
+    attributes: List(String),
+    document_url: String,
+    base_url: String,
+    public_id: String,
+    system_id: String,
+    internal_subset: String,
+    xml_version: String,
+    name: String,
+    value: String,
+    pseudo_type: PseudoType,
+    pseudo_identifier: String,
+    shadow_root_type: ShadowRootType,
+    // frame_id: page.FrameId,
+    content_document: Node,
+    shadow_roots: List(Node),
+    template_content: Node,
+    pseudo_elements: List(Node),
+    distributed_nodes: List(BackendNode),
+    is_svg: Bool,
+    compatibility_mode: CompatibilityMode,
+    assigned_slot: BackendNode,
+  )
+}
 
 /// A structure holding an RGBA color.
-pub type RGBA
-
-// TODO -- codegen for this type definition is not implemented 
+pub type RGBA {
+  RGBA(r: Int, g: Int, b: Int, a: Float)
+}
 
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
-pub type Quad
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Quad {
+  Quad(List(Float))
+}
 
 /// Box model.
-pub type BoxModel
-
-// TODO -- codegen for this type definition is not implemented 
+pub type BoxModel {
+  BoxModel(
+    content: Quad,
+    padding: Quad,
+    border: Quad,
+    margin: Quad,
+    width: Int,
+    height: Int,
+    shape_outside: ShapeOutsideInfo,
+  )
+}
 
 /// CSS Shape Outside details.
-pub type ShapeOutsideInfo
-
-// TODO -- codegen for this type definition is not implemented 
+pub type ShapeOutsideInfo {
+  ShapeOutsideInfo(
+    bounds: Quad,
+    shape: List(dynamic.Dynamic),
+    margin_shape: List(dynamic.Dynamic),
+  )
+}
 
 /// Rectangle.
-pub type Rect
+pub type Rect {
+  Rect(x: Float, y: Float, width: Float, height: Float)
+}
 
-// TODO -- codegen for this type definition is not implemented 
-
-pub type CSSComputedStyleProperty
-// TODO -- codegen for this type definition is not implemented 
+pub type CSSComputedStyleProperty {
+  CSSComputedStyleProperty(name: String, value: String)
+}

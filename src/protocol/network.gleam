@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dict
 import protocol/debugger
 import protocol/runtime
 import protocol/security
@@ -82,9 +83,9 @@ pub type MonotonicTime {
 }
 
 /// Request / response headers as keys / values of JSON object.
-pub type Headers
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Headers {
+  Headers(dict.Dict(String, String))
+}
 
 /// The underlying connection technology that the browser is supposedly using.
 pub type ConnectionType {
@@ -108,9 +109,22 @@ pub type CookieSameSite {
 }
 
 /// Timing information for the request.
-pub type ResourceTiming
-
-// TODO -- codegen for this type definition is not implemented 
+pub type ResourceTiming {
+  ResourceTiming(
+    request_time: Float,
+    proxy_start: Float,
+    proxy_end: Float,
+    dns_start: Float,
+    dns_end: Float,
+    connect_start: Float,
+    connect_end: Float,
+    ssl_start: Float,
+    ssl_end: Float,
+    send_start: Float,
+    send_end: Float,
+    receive_headers_end: Float,
+  )
+}
 
 /// Loading priority of a resource request.
 pub type ResourcePriority {
@@ -122,24 +136,72 @@ pub type ResourcePriority {
 }
 
 /// Post data entry for HTTP request
-pub type PostDataEntry
-
-// TODO -- codegen for this type definition is not implemented 
+pub type PostDataEntry {
+  PostDataEntry(bytes: String)
+}
 
 /// HTTP request data.
-pub type Request
+pub type Request {
+  Request(
+    url: String,
+    url_fragment: String,
+    method: String,
+    headers: Headers,
+    has_post_data: Bool,
+    mixed_content_type: security.MixedContentType,
+    initial_priority: ResourcePriority,
+    referrer_policy: RequestReferrerPolicy,
+    is_link_preload: Bool,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `referrerPolicy` of `Request`
+pub type RequestReferrerPolicy {
+  RequestReferrerPolicyUnsafeUrl
+  RequestReferrerPolicyNoReferrerWhenDowngrade
+  RequestReferrerPolicyNoReferrer
+  RequestReferrerPolicyOrigin
+  RequestReferrerPolicyOriginWhenCrossOrigin
+  RequestReferrerPolicySameOrigin
+  RequestReferrerPolicyStrictOrigin
+  RequestReferrerPolicyStrictOriginWhenCrossOrigin
+}
 
 /// Details of a signed certificate timestamp (SCT).
-pub type SignedCertificateTimestamp
-
-// TODO -- codegen for this type definition is not implemented 
+pub type SignedCertificateTimestamp {
+  SignedCertificateTimestamp(
+    status: String,
+    origin: String,
+    log_description: String,
+    log_id: String,
+    timestamp: Float,
+    hash_algorithm: String,
+    signature_algorithm: String,
+    signature_data: String,
+  )
+}
 
 /// Security details about a request.
-pub type SecurityDetails
-
-// TODO -- codegen for this type definition is not implemented 
+pub type SecurityDetails {
+  SecurityDetails(
+    protocol: String,
+    key_exchange: String,
+    key_exchange_group: String,
+    cipher: String,
+    mac: String,
+    certificate_id: security.CertificateId,
+    subject_name: String,
+    san_list: List(String),
+    issuer: String,
+    valid_from: TimeSinceEpoch,
+    valid_to: TimeSinceEpoch,
+    signed_certificate_timestamp_list: List(SignedCertificateTimestamp),
+    certificate_transparency_compliance: CertificateTransparencyCompliance,
+    server_signature_algorithm: Int,
+    encrypted_client_hello: Bool,
+  )
+}
 
 /// Whether the request complied with Certificate Transparency policy.
 pub type CertificateTransparencyCompliance {
@@ -202,9 +264,9 @@ pub type CorsError {
   CorsErrorPrivateNetworkAccessPermissionDenied
 }
 
-pub type CorsErrorStatus
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CorsErrorStatus {
+  CorsErrorStatus(cors_error: CorsError, failed_parameter: String)
+}
 
 /// Source of serviceworker response.
 pub type ServiceWorkerResponseSource {
@@ -223,40 +285,116 @@ pub type ServiceWorkerRouterSource {
 }
 
 /// HTTP response data.
-pub type Response
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Response {
+  Response(
+    url: String,
+    status: Int,
+    status_text: String,
+    headers: Headers,
+    mime_type: String,
+    charset: String,
+    request_headers: Headers,
+    connection_reused: Bool,
+    connection_id: Float,
+    remote_ip_address: String,
+    remote_port: Int,
+    from_disk_cache: Bool,
+    from_service_worker: Bool,
+    from_prefetch_cache: Bool,
+    from_early_hints: Bool,
+    encoded_data_length: Float,
+    timing: ResourceTiming,
+    service_worker_response_source: ServiceWorkerResponseSource,
+    response_time: TimeSinceEpoch,
+    cache_storage_cache_name: String,
+    protocol: String,
+    security_state: security.SecurityState,
+    security_details: SecurityDetails,
+  )
+}
 
 /// WebSocket request data.
-pub type WebSocketRequest
-
-// TODO -- codegen for this type definition is not implemented 
+pub type WebSocketRequest {
+  WebSocketRequest(headers: Headers)
+}
 
 /// WebSocket response data.
-pub type WebSocketResponse
-
-// TODO -- codegen for this type definition is not implemented 
+pub type WebSocketResponse {
+  WebSocketResponse(
+    status: Int,
+    status_text: String,
+    headers: Headers,
+    headers_text: String,
+    request_headers: Headers,
+    request_headers_text: String,
+  )
+}
 
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
-pub type WebSocketFrame
-
-// TODO -- codegen for this type definition is not implemented 
+pub type WebSocketFrame {
+  WebSocketFrame(opcode: Float, mask: Bool, payload_data: String)
+}
 
 /// Information about the cached resource.
-pub type CachedResource
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CachedResource {
+  CachedResource(
+    url: String,
+    type_: ResourceType,
+    response: Response,
+    body_size: Float,
+  )
+}
 
 /// Information about the request initiator.
-pub type Initiator
+pub type Initiator {
+  Initiator(
+    type_: InitiatorType,
+    stack: runtime.StackTrace,
+    url: String,
+    line_number: Float,
+    column_number: Float,
+    request_id: RequestId,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `Initiator`
+pub type InitiatorType {
+  InitiatorTypeParser
+  InitiatorTypeScript
+  InitiatorTypePreload
+  InitiatorTypeSignedExchange
+  InitiatorTypePreflight
+  InitiatorTypeOther
+}
 
 /// Cookie object
-pub type Cookie
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Cookie {
+  Cookie(
+    name: String,
+    value: String,
+    domain: String,
+    path: String,
+    expires: Float,
+    size: Int,
+    http_only: Bool,
+    secure: Bool,
+    session: Bool,
+    same_site: CookieSameSite,
+  )
+}
 
 /// Cookie parameter object
-pub type CookieParam
-// TODO -- codegen for this type definition is not implemented 
+pub type CookieParam {
+  CookieParam(
+    name: String,
+    value: String,
+    url: String,
+    domain: String,
+    path: String,
+    secure: Bool,
+    http_only: Bool,
+    same_site: CookieSameSite,
+    expires: TimeSinceEpoch,
+  )
+}

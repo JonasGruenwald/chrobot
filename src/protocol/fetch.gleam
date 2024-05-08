@@ -28,20 +28,49 @@ pub type RequestStage {
   RequestStageResponse
 }
 
-pub type RequestPattern
-
-// TODO -- codegen for this type definition is not implemented 
+pub type RequestPattern {
+  RequestPattern(
+    url_pattern: String,
+    resource_type: network.ResourceType,
+    request_stage: RequestStage,
+  )
+}
 
 /// Response HTTP header entry
-pub type HeaderEntry
-
-// TODO -- codegen for this type definition is not implemented 
+pub type HeaderEntry {
+  HeaderEntry(name: String, value: String)
+}
 
 /// Authorization challenge for HTTP status code 401 or 407.
-pub type AuthChallenge
+pub type AuthChallenge {
+  AuthChallenge(
+    source: AuthChallengeSource,
+    origin: String,
+    scheme: String,
+    realm: String,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `source` of `AuthChallenge`
+pub type AuthChallengeSource {
+  AuthChallengeSourceServer
+  AuthChallengeSourceProxy
+}
 
 /// Response to an AuthChallenge.
-pub type AuthChallengeResponse
-// TODO -- codegen for this type definition is not implemented 
+pub type AuthChallengeResponse {
+  AuthChallengeResponse(
+    response: AuthChallengeResponseResponse,
+    username: String,
+    password: String,
+  )
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `response` of `AuthChallengeResponse`
+pub type AuthChallengeResponseResponse {
+  AuthChallengeResponseResponseDefault
+  AuthChallengeResponseResponseCancelAuth
+  AuthChallengeResponseResponseProvideCredentials
+}

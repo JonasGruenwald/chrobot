@@ -15,30 +15,52 @@ import protocol/debugger
 import protocol/runtime
 
 /// Profile node. Holds callsite information, execution statistics and child nodes.
-pub type ProfileNode
-
-// TODO -- codegen for this type definition is not implemented 
+pub type ProfileNode {
+  ProfileNode(
+    id: Int,
+    call_frame: runtime.CallFrame,
+    hit_count: Int,
+    children: List(Int),
+    deopt_reason: String,
+    position_ticks: List(PositionTickInfo),
+  )
+}
 
 /// Profile.
-pub type Profile
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Profile {
+  Profile(
+    nodes: List(ProfileNode),
+    start_time: Float,
+    end_time: Float,
+    samples: List(Int),
+    time_deltas: List(Int),
+  )
+}
 
 /// Specifies a number of samples attributed to a certain source position.
-pub type PositionTickInfo
-
-// TODO -- codegen for this type definition is not implemented 
+pub type PositionTickInfo {
+  PositionTickInfo(line: Int, ticks: Int)
+}
 
 /// Coverage data for a source range.
-pub type CoverageRange
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CoverageRange {
+  CoverageRange(start_offset: Int, end_offset: Int, count: Int)
+}
 
 /// Coverage data for a JavaScript function.
-pub type FunctionCoverage
-
-// TODO -- codegen for this type definition is not implemented 
+pub type FunctionCoverage {
+  FunctionCoverage(
+    function_name: String,
+    ranges: List(CoverageRange),
+    is_block_coverage: Bool,
+  )
+}
 
 /// Coverage data for a JavaScript script.
-pub type ScriptCoverage
-// TODO -- codegen for this type definition is not implemented 
+pub type ScriptCoverage {
+  ScriptCoverage(
+    script_id: runtime.ScriptId,
+    url: String,
+    functions: List(FunctionCoverage),
+  )
+}

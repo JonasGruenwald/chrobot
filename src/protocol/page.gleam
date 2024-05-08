@@ -23,14 +23,22 @@ pub type FrameId {
 }
 
 /// Information about the Frame on the page.
-pub type Frame
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Frame {
+  Frame(
+    id: FrameId,
+    parent_id: FrameId,
+    loader_id: network.LoaderId,
+    name: String,
+    url: String,
+    security_origin: String,
+    mime_type: String,
+  )
+}
 
 /// Information about the Frame hierarchy.
-pub type FrameTree
-
-// TODO -- codegen for this type definition is not implemented 
+pub type FrameTree {
+  FrameTree(frame: Frame, child_frames: List(FrameTree))
+}
 
 /// Unique script identifier.
 pub type ScriptIdentifier {
@@ -55,9 +63,15 @@ pub type TransitionType {
 }
 
 /// Navigation history entry.
-pub type NavigationEntry
-
-// TODO -- codegen for this type definition is not implemented 
+pub type NavigationEntry {
+  NavigationEntry(
+    id: Int,
+    url: String,
+    user_typed_url: String,
+    title: String,
+    transition_type: TransitionType,
+  )
+}
 
 /// Javascript dialog type.
 pub type DialogType {
@@ -68,20 +82,35 @@ pub type DialogType {
 }
 
 /// Error while paring app manifest.
-pub type AppManifestError
-
-// TODO -- codegen for this type definition is not implemented 
+pub type AppManifestError {
+  AppManifestError(message: String, critical: Int, line: Int, column: Int)
+}
 
 /// Layout viewport position and dimensions.
-pub type LayoutViewport
-
-// TODO -- codegen for this type definition is not implemented 
+pub type LayoutViewport {
+  LayoutViewport(
+    page_x: Int,
+    page_y: Int,
+    client_width: Int,
+    client_height: Int,
+  )
+}
 
 /// Visual viewport position, dimensions, and scale.
-pub type VisualViewport
-
-// TODO -- codegen for this type definition is not implemented 
+pub type VisualViewport {
+  VisualViewport(
+    offset_x: Float,
+    offset_y: Float,
+    page_x: Float,
+    page_y: Float,
+    client_width: Float,
+    client_height: Float,
+    scale: Float,
+    zoom: Float,
+  )
+}
 
 /// Viewport for capturing screenshot.
-pub type Viewport
-// TODO -- codegen for this type definition is not implemented 
+pub type Viewport {
+  Viewport(x: Float, y: Float, width: Float, height: Float, scale: Float)
+}

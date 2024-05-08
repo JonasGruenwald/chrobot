@@ -16,17 +16,45 @@ import protocol/page
 import protocol/runtime
 
 /// Screen orientation.
-pub type ScreenOrientation
+pub type ScreenOrientation {
+  ScreenOrientation(type_: ScreenOrientationType, angle: Int)
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `ScreenOrientation`
+pub type ScreenOrientationType {
+  ScreenOrientationTypePortraitPrimary
+  ScreenOrientationTypePortraitSecondary
+  ScreenOrientationTypeLandscapePrimary
+  ScreenOrientationTypeLandscapeSecondary
+}
 
-pub type DisplayFeature
+pub type DisplayFeature {
+  DisplayFeature(
+    orientation: DisplayFeatureOrientation,
+    offset: Int,
+    mask_length: Int,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `orientation` of `DisplayFeature`
+pub type DisplayFeatureOrientation {
+  DisplayFeatureOrientationVertical
+  DisplayFeatureOrientationHorizontal
+}
 
-pub type DevicePosture
+pub type DevicePosture {
+  DevicePosture(type_: DevicePostureType)
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `DevicePosture`
+pub type DevicePostureType {
+  DevicePostureTypeContinuous
+  DevicePostureTypeFolded
+}
 
-pub type MediaFeature
-// TODO -- codegen for this type definition is not implemented 
+pub type MediaFeature {
+  MediaFeature(name: String, value: String)
+}

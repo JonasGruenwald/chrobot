@@ -15,6 +15,8 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dict
+import gleam/dynamic
 
 /// Unique script identifier.
 pub type ScriptId {
@@ -22,14 +24,60 @@ pub type ScriptId {
 }
 
 /// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
-pub type SerializationOptions
+pub type SerializationOptions {
+  SerializationOptions(
+    serialization: SerializationOptionsSerialization,
+    max_depth: Int,
+    additional_parameters: dict.Dict(String, String),
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `serialization` of `SerializationOptions`
+pub type SerializationOptionsSerialization {
+  SerializationOptionsSerializationDeep
+  SerializationOptionsSerializationJson
+  SerializationOptionsSerializationIdOnly
+}
 
 /// Represents deep serialized value.
-pub type DeepSerializedValue
+pub type DeepSerializedValue {
+  DeepSerializedValue(
+    type_: DeepSerializedValueType,
+    value: dynamic.Dynamic,
+    object_id: String,
+    weak_local_object_reference: Int,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `DeepSerializedValue`
+pub type DeepSerializedValueType {
+  DeepSerializedValueTypeUndefined
+  DeepSerializedValueTypeNull
+  DeepSerializedValueTypeString
+  DeepSerializedValueTypeNumber
+  DeepSerializedValueTypeBoolean
+  DeepSerializedValueTypeBigint
+  DeepSerializedValueTypeRegexp
+  DeepSerializedValueTypeDate
+  DeepSerializedValueTypeSymbol
+  DeepSerializedValueTypeArray
+  DeepSerializedValueTypeObject
+  DeepSerializedValueTypeFunction
+  DeepSerializedValueTypeMap
+  DeepSerializedValueTypeSet
+  DeepSerializedValueTypeWeakmap
+  DeepSerializedValueTypeWeakset
+  DeepSerializedValueTypeError
+  DeepSerializedValueTypeProxy
+  DeepSerializedValueTypePromise
+  DeepSerializedValueTypeTypedarray
+  DeepSerializedValueTypeArraybuffer
+  DeepSerializedValueTypeNode
+  DeepSerializedValueTypeWindow
+  DeepSerializedValueTypeGenerator
+}
 
 /// Unique object identifier.
 pub type RemoteObjectId {
@@ -43,25 +91,85 @@ pub type UnserializableValue {
 }
 
 /// Mirror object referencing original JavaScript object.
-pub type RemoteObject
+pub type RemoteObject {
+  RemoteObject(
+    type_: RemoteObjectType,
+    subtype: RemoteObjectSubtype,
+    class_name: String,
+    value: dynamic.Dynamic,
+    unserializable_value: UnserializableValue,
+    description: String,
+    object_id: RemoteObjectId,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `RemoteObject`
+pub type RemoteObjectType {
+  RemoteObjectTypeObject
+  RemoteObjectTypeFunction
+  RemoteObjectTypeUndefined
+  RemoteObjectTypeString
+  RemoteObjectTypeNumber
+  RemoteObjectTypeBoolean
+  RemoteObjectTypeSymbol
+  RemoteObjectTypeBigint
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `subtype` of `RemoteObject`
+pub type RemoteObjectSubtype {
+  RemoteObjectSubtypeArray
+  RemoteObjectSubtypeNull
+  RemoteObjectSubtypeNode
+  RemoteObjectSubtypeRegexp
+  RemoteObjectSubtypeDate
+  RemoteObjectSubtypeMap
+  RemoteObjectSubtypeSet
+  RemoteObjectSubtypeWeakmap
+  RemoteObjectSubtypeWeakset
+  RemoteObjectSubtypeIterator
+  RemoteObjectSubtypeGenerator
+  RemoteObjectSubtypeError
+  RemoteObjectSubtypeProxy
+  RemoteObjectSubtypePromise
+  RemoteObjectSubtypeTypedarray
+  RemoteObjectSubtypeArraybuffer
+  RemoteObjectSubtypeDataview
+  RemoteObjectSubtypeWebassemblymemory
+  RemoteObjectSubtypeWasmvalue
+}
 
 /// Object property descriptor.
-pub type PropertyDescriptor
-
-// TODO -- codegen for this type definition is not implemented 
+pub type PropertyDescriptor {
+  PropertyDescriptor(
+    name: String,
+    value: RemoteObject,
+    writable: Bool,
+    get: RemoteObject,
+    set: RemoteObject,
+    configurable: Bool,
+    enumerable: Bool,
+    was_thrown: Bool,
+    is_own: Bool,
+    symbol: RemoteObject,
+  )
+}
 
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
-pub type InternalPropertyDescriptor
-
-// TODO -- codegen for this type definition is not implemented 
+pub type InternalPropertyDescriptor {
+  InternalPropertyDescriptor(name: String, value: RemoteObject)
+}
 
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
 /// unserializable primitive value or neither of (for undefined) them should be specified.
-pub type CallArgument
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CallArgument {
+  CallArgument(
+    value: dynamic.Dynamic,
+    unserializable_value: UnserializableValue,
+    object_id: RemoteObjectId,
+  )
+}
 
 /// Id of an execution context.
 pub type ExecutionContextId {
@@ -69,15 +177,30 @@ pub type ExecutionContextId {
 }
 
 /// Description of an isolated world.
-pub type ExecutionContextDescription
-
-// TODO -- codegen for this type definition is not implemented 
+pub type ExecutionContextDescription {
+  ExecutionContextDescription(
+    id: ExecutionContextId,
+    origin: String,
+    name: String,
+    aux_data: dict.Dict(String, String),
+  )
+}
 
 /// Detailed information about exception (or error) that was thrown during script compilation or
 /// execution.
-pub type ExceptionDetails
-
-// TODO -- codegen for this type definition is not implemented 
+pub type ExceptionDetails {
+  ExceptionDetails(
+    exception_id: Int,
+    text: String,
+    line_number: Int,
+    column_number: Int,
+    script_id: ScriptId,
+    url: String,
+    stack_trace: StackTrace,
+    exception: RemoteObject,
+    execution_context_id: ExecutionContextId,
+  )
+}
 
 /// Number of milliseconds since epoch.
 pub type Timestamp {
@@ -90,10 +213,21 @@ pub type TimeDelta {
 }
 
 /// Stack entry for runtime errors and assertions.
-pub type CallFrame
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CallFrame {
+  CallFrame(
+    function_name: String,
+    script_id: ScriptId,
+    url: String,
+    line_number: Int,
+    column_number: Int,
+  )
+}
 
 /// Call frames for assertions or error messages.
-pub type StackTrace
-// TODO -- codegen for this type definition is not implemented 
+pub type StackTrace {
+  StackTrace(
+    description: String,
+    call_frames: List(CallFrame),
+    parent: StackTrace,
+  )
+}

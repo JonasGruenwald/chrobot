@@ -13,5 +13,6 @@
 import chrome
 
 /// Run-time execution metric.
-pub type Metric
-// TODO -- codegen for this type definition is not implemented 
+pub type Metric {
+  Metric(name: String, value: Float)
+}

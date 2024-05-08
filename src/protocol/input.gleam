@@ -12,9 +12,19 @@
 
 import chrome
 
-pub type TouchPoint
-
-// TODO -- codegen for this type definition is not implemented 
+pub type TouchPoint {
+  TouchPoint(
+    x: Float,
+    y: Float,
+    radius_x: Float,
+    radius_y: Float,
+    rotation_angle: Float,
+    force: Float,
+    tilt_x: Float,
+    tilt_y: Float,
+    id: Float,
+  )
+}
 
 pub type MouseButton {
   MouseButtonNone

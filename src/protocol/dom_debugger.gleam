@@ -23,5 +23,17 @@ pub type DOMBreakpointType {
 }
 
 /// Object event listener.
-pub type EventListener
-// TODO -- codegen for this type definition is not implemented 
+pub type EventListener {
+  EventListener(
+    type_: String,
+    use_capture: Bool,
+    passive: Bool,
+    once: Bool,
+    script_id: runtime.ScriptId,
+    line_number: Int,
+    column_number: Int,
+    handler: runtime.RemoteObject,
+    original_handler: runtime.RemoteObject,
+    backend_node_id: dom.BackendNodeId,
+  )
+}

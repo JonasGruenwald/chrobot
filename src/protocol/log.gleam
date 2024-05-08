@@ -15,10 +15,68 @@ import protocol/network
 import protocol/runtime
 
 /// Log entry.
-pub type LogEntry
+pub type LogEntry {
+  LogEntry(
+    source: LogEntrySource,
+    level: LogEntryLevel,
+    text: String,
+    category: LogEntryCategory,
+    timestamp: runtime.Timestamp,
+    url: String,
+    line_number: Int,
+    stack_trace: runtime.StackTrace,
+    network_request_id: network.RequestId,
+    worker_id: String,
+    args: List(runtime.RemoteObject),
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `source` of `LogEntry`
+pub type LogEntrySource {
+  LogEntrySourceXml
+  LogEntrySourceJavascript
+  LogEntrySourceNetwork
+  LogEntrySourceStorage
+  LogEntrySourceAppcache
+  LogEntrySourceRendering
+  LogEntrySourceSecurity
+  LogEntrySourceDeprecation
+  LogEntrySourceWorker
+  LogEntrySourceViolation
+  LogEntrySourceIntervention
+  LogEntrySourceRecommendation
+  LogEntrySourceOther
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `level` of `LogEntry`
+pub type LogEntryLevel {
+  LogEntryLevelVerbose
+  LogEntryLevelInfo
+  LogEntryLevelWarning
+  LogEntryLevelError
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `category` of `LogEntry`
+pub type LogEntryCategory {
+  LogEntryCategoryCors
+}
 
 /// Violation configuration setting.
-pub type ViolationSetting
-// TODO -- codegen for this type definition is not implemented 
+pub type ViolationSetting {
+  ViolationSetting(name: ViolationSettingName, threshold: Float)
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `name` of `ViolationSetting`
+pub type ViolationSettingName {
+  ViolationSettingNameLongTask
+  ViolationSettingNameLongLayout
+  ViolationSettingNameBlockedEvent
+  ViolationSettingNameBlockedParser
+  ViolationSettingNameDiscouragedApiUse
+  ViolationSettingNameHandler
+  ViolationSettingNameRecurringHandler
+}

@@ -21,5 +21,13 @@ pub type SessionID {
   SessionID(String)
 }
 
-pub type TargetInfo
-// TODO -- codegen for this type definition is not implemented 
+pub type TargetInfo {
+  TargetInfo(
+    target_id: TargetID,
+    type_: String,
+    title: String,
+    url: String,
+    attached: Bool,
+    opener_id: TargetID,
+  )
+}

@@ -25,28 +25,70 @@ pub type CallFrameId {
 }
 
 /// Location in the source code.
-pub type Location
-
-// TODO -- codegen for this type definition is not implemented 
+pub type Location {
+  Location(script_id: runtime.ScriptId, line_number: Int, column_number: Int)
+}
 
 /// JavaScript call frame. Array of call frames form the call stack.
-pub type CallFrame
-
-// TODO -- codegen for this type definition is not implemented 
+pub type CallFrame {
+  CallFrame(
+    call_frame_id: CallFrameId,
+    function_name: String,
+    function_location: Location,
+    location: Location,
+    scope_chain: List(Scope),
+    this: runtime.RemoteObject,
+    return_value: runtime.RemoteObject,
+  )
+}
 
 /// Scope description.
-pub type Scope
+pub type Scope {
+  Scope(
+    type_: ScopeType,
+    object: runtime.RemoteObject,
+    name: String,
+    start_location: Location,
+    end_location: Location,
+  )
+}
 
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `Scope`
+pub type ScopeType {
+  ScopeTypeGlobal
+  ScopeTypeLocal
+  ScopeTypeWith
+  ScopeTypeClosure
+  ScopeTypeCatch
+  ScopeTypeBlock
+  ScopeTypeScript
+  ScopeTypeEval
+  ScopeTypeModule
+  ScopeTypeWasmExpressionStack
+}
 
 /// Search match for resource.
-pub type SearchMatch
+pub type SearchMatch {
+  SearchMatch(line_number: Float, line_content: String)
+}
 
-// TODO -- codegen for this type definition is not implemented 
+pub type BreakLocation {
+  BreakLocation(
+    script_id: runtime.ScriptId,
+    line_number: Int,
+    column_number: Int,
+    type_: BreakLocationType,
+  )
+}
 
-pub type BreakLocation
-
-// TODO -- codegen for this type definition is not implemented 
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `BreakLocation`
+pub type BreakLocationType {
+  BreakLocationTypeDebuggerStatement
+  BreakLocationTypeCall
+  BreakLocationTypeReturn
+}
 
 /// Enum of possible script languages.
 pub type ScriptLanguage {
@@ -55,5 +97,15 @@ pub type ScriptLanguage {
 }
 
 /// Debug symbols available for a wasm script.
-pub type DebugSymbols
-// TODO -- codegen for this type definition is not implemented 
+pub type DebugSymbols {
+  DebugSymbols(type_: DebugSymbolsType, external_url: String)
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `DebugSymbols`
+pub type DebugSymbolsType {
+  DebugSymbolsTypeNone
+  DebugSymbolsTypeSourceMap
+  DebugSymbolsTypeEmbeddedDwarf
+  DebugSymbolsTypeExternalDwarf
+}

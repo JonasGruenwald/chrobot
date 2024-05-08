@@ -68,6 +68,7 @@ pub type Type {
   RefType(
     // this field is '$ref' in the JSON
     // it contains the domain name and the type name separated by '.'
+    // if the type is in the same domain, the domain name is omitted
     ref_target: String,
   )
 }
@@ -105,7 +106,7 @@ pub type PropertyDefinition {
 
 pub type Command {
   // There is a 'redirect' field here which I'm ignoring
-  // It's for hinting at the command being implemented in another domain
+  // It's for hinting at the command being implemented in another domain (I think?)
   Command(
     name: String,
     description: Option(String),
@@ -138,7 +139,7 @@ pub fn main() {
     <> protocol.version.minor,
   )
   print_protocol_stats(protocol)
-  let stable_protocol = get_stable_protocol(protocol)
+  let stable_protocol = get_stable_protocol(protocol, False, False)
   io.println("Stable protocol (experimental items removed):")
   print_protocol_stats(stable_protocol)
   let target = "src/protocol.gleam"
@@ -181,21 +182,61 @@ fn get_protocol_stats(protocol: Protocol) {
   )
 }
 
-fn get_stable_propdef(
-  propdef: PropertyDefinition,
-) -> Result(PropertyDefinition, Nil) {
-  case propdef.experimental, propdef.deprecated {
-    Some(True), _ -> Error(Nil)
-    _, Some(True) -> Error(Nil)
-    _, _ -> Ok(propdef)
+fn get_stable_inner_type(inner_type: Type, allow_experimental, allow_deprecated) {
+  case inner_type {
+    ObjectType(properties: Some(property_definitions)) -> {
+      ObjectType(properties: {
+        Some(
+          list.filter_map(property_definitions, fn(inner_propdef) {
+            get_stable_propdef(
+              inner_propdef,
+              allow_experimental,
+              allow_deprecated,
+            )
+          }),
+        )
+      })
+    }
+    _ -> inner_type
   }
 }
 
-fn get_stable_event(event: Event) -> Result(Event, Nil) {
-  case event.experimental, event.deprecated {
-    Some(True), _ -> Error(Nil)
-    _, Some(True) -> Error(Nil)
-    _, _ ->
+fn get_stable_propdef(
+  propdef: PropertyDefinition,
+  allow_experimental,
+  allow_deprecated,
+) -> Result(PropertyDefinition, Nil) {
+  case
+    is_allowed(propdef.experimental, allow_experimental)
+    && is_allowed(propdef.deprecated, allow_deprecated)
+  {
+    True ->
+      Ok(PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: get_stable_inner_type(
+          propdef.inner,
+          allow_experimental,
+          allow_deprecated,
+        ),
+      ))
+    False -> Error(Nil)
+  }
+}
+
+fn get_stable_event(
+  event: Event,
+  allow_experimental,
+  allow_deprecated,
+) -> Result(Event, Nil) {
+  case
+    is_allowed(event.experimental, allow_experimental)
+    && is_allowed(event.deprecated, allow_deprecated)
+  {
+    True ->
       Ok(
         Event(
           name: event.name,
@@ -204,20 +245,35 @@ fn get_stable_event(event: Event) -> Result(Event, Nil) {
           deprecated: event.deprecated,
           parameters: {
             case event.parameters {
-              Some(params) -> Some(list.filter_map(params, get_stable_propdef))
+              Some(params) ->
+                Some(
+                  list.filter_map(params, fn(param) {
+                    get_stable_propdef(
+                      param,
+                      allow_experimental,
+                      allow_deprecated,
+                    )
+                  }),
+                )
               None -> None
             }
           },
         ),
       )
+    False -> Error(Nil)
   }
 }
 
-fn get_stable_command(command: Command) -> Result(Command, Nil) {
-  case command.experimental, command.deprecated {
-    Some(True), _ -> Error(Nil)
-    _, Some(True) -> Error(Nil)
-    _, _ ->
+fn get_stable_command(
+  command: Command,
+  allow_experimental,
+  allow_deprecated,
+) -> Result(Command, Nil) {
+  case
+    is_allowed(command.experimental, allow_experimental)
+    && is_allowed(command.deprecated, allow_deprecated)
+  {
+    True ->
       Ok(
         Command(
           name: command.name,
@@ -226,41 +282,80 @@ fn get_stable_command(command: Command) -> Result(Command, Nil) {
           deprecated: command.deprecated,
           parameters: {
             case command.parameters {
-              Some(params) -> Some(list.filter_map(params, get_stable_propdef))
+              Some(params) ->
+                Some(
+                  list.filter_map(params, fn(param) {
+                    get_stable_propdef(
+                      param,
+                      allow_experimental,
+                      allow_deprecated,
+                    )
+                  }),
+                )
               None -> None
             }
           },
           returns: {
             case command.returns {
               Some(returns) ->
-                Some(list.filter_map(returns, get_stable_propdef))
+                Some(
+                  list.filter_map(returns, fn(param) {
+                    get_stable_propdef(
+                      param,
+                      allow_experimental,
+                      allow_deprecated,
+                    )
+                  }),
+                )
               None -> None
             }
           },
         ),
       )
+    False -> Error(Nil)
   }
 }
 
-fn get_stable_type(param_type: TypeDefinition) -> Result(TypeDefinition, Nil) {
-  case param_type.experimental, param_type.deprecated {
-    Some(True), _ -> Error(Nil)
-    _, Some(True) -> Error(Nil)
-    _, _ -> Ok(param_type)
+fn get_stable_type(
+  param_type: TypeDefinition,
+  allow_experimental,
+  allow_deprecated,
+) -> Result(TypeDefinition, Nil) {
+  case
+    is_allowed(param_type.experimental, allow_experimental)
+    && is_allowed(param_type.deprecated, allow_deprecated)
+  {
+    True ->
+      Ok(TypeDefinition(
+        id: param_type.id,
+        description: param_type.description,
+        experimental: param_type.experimental,
+        deprecated: param_type.deprecated,
+        inner: get_stable_inner_type(
+          param_type.inner,
+          allow_experimental,
+          allow_deprecated,
+        ),
+      ))
+    False -> Error(Nil)
   }
 }
 
 /// Return the protocol with experimental and deprecated domains, types, commands, parameters and events removed.  
-/// The check is NOT performed recursively into nested types / property definitions, just at the top level.
 /// Note that this might leave some optional lists as empty if all items are experimental / deprecated.
-pub fn get_stable_protocol(protocol: Protocol) -> Protocol {
+pub fn get_stable_protocol(
+  protocol: Protocol,
+  allow_experimental: Bool,
+  allow_deprecated: Bool,
+) -> Protocol {
   Protocol(
     version: protocol.version,
     domains: list.filter_map(protocol.domains, fn(domain) {
-      case domain.experimental, domain.deprecated {
-        Some(True), _ -> Error(Nil)
-        _, Some(True) -> Error(Nil)
-        _, _ -> {
+      case
+        is_allowed(domain.experimental, allow_experimental)
+        && is_allowed(domain.deprecated, allow_deprecated)
+      {
+        True -> {
           Ok(Domain(
             domain: domain.domain,
             experimental: domain.experimental,
@@ -268,23 +363,53 @@ pub fn get_stable_protocol(protocol: Protocol) -> Protocol {
             dependencies: domain.dependencies,
             types: {
               case domain.types {
-                Some(types) -> Some(list.filter_map(types, get_stable_type))
+                Some(types) ->
+                  Some(
+                    list.filter_map(types, fn(type_item) {
+                      get_stable_type(
+                        type_item,
+                        allow_experimental,
+                        allow_deprecated,
+                      )
+                    }),
+                  )
                 None -> None
               }
             },
-            commands: list.filter_map(domain.commands, get_stable_command),
+            commands: list.filter_map(domain.commands, fn(cmd) {
+              get_stable_command(cmd, allow_experimental, allow_deprecated)
+            }),
             events: {
               case domain.events {
-                Some(events) -> Some(list.filter_map(events, get_stable_event))
+                Some(events) ->
+                  Some(
+                    list.filter_map(events, fn(e) {
+                      get_stable_event(e, allow_experimental, allow_deprecated)
+                    }),
+                  )
                 None -> None
               }
             },
             description: domain.description,
           ))
         }
+        False -> Error(Nil)
       }
     }),
   )
+}
+
+// Return if a prop is allowed to be deprecated / expired
+// given the rule predicate of value "is_allowed_true"
+fn is_allowed(value: Option(Bool), rule: Bool) -> Bool {
+  case value {
+    // Not experimental or deprecated -> always allowed
+    None -> True
+    Some(False) -> True
+    // Experimental / deprecated allowed if rule permits
+    Some(True) if rule -> True
+    Some(True) -> False
+  }
 }
 
 fn merge_protocols(left: Protocol, right: Protocol) -> Protocol {
@@ -470,14 +595,35 @@ fn append_optional(
   }
 }
 
+fn resolve_ref(ref_value) {
+  let parts = string.split(ref_value, ".")
+  case parts {
+    [domain, type_name] -> snake_case(domain) <> "." <> type_name
+    _ -> {
+      ref_value
+    }
+  }
+}
+
+/// Safe snake case conversion that doesn't conflict with reserved words
+fn safe_snake_case(input: String) {
+  let res = snake_case(input)
+  case res {
+    "type" -> "type_"
+    _ -> res
+  }
+}
+
 fn to_gleam_primitive(protocol_primitive: String) {
   case protocol_primitive {
     "number" -> "Float"
     "integer" -> "Int"
     "string" -> "String"
     "boolean" -> "Bool"
+    "any" -> "dynamic.Dynamic"
     _ -> {
-      panic as "can't translate to gleam primitive: " <> protocol_primitive
+      io.debug(protocol_primitive)
+      panic as "can't translate to gleam primitive"
     }
   }
 }
@@ -533,7 +679,13 @@ fn gen_imports(domain: Domain) {
       "import protocol/" <> snake_case(dependency) <> "\n"
     })
 
-  ["import chrome\n", ..domain_imports]
+  [
+    "import chrome\n",
+    "import gleam/dict\n",
+    "import gleam/dynamic\n",
+    "import gleam/option\n",
+    ..domain_imports
+  ]
   |> string.join("")
 }
 
@@ -563,30 +715,111 @@ fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
   |> sb.append("\n\n")
 }
 
-fn gen_type_def_body(t: TypeDefinition) {
-  case t.inner {
+// TODO handle optional attributes
+// Returns the enum definition of the attribute
+// And in case of an enum attribute, the definition of the enum type that 
+// the attribute references
+// otherwise an empty string ("")
+fn gen_attribute(root_name: String, name: String, t: Type) -> #(String, String) {
+  let #(attr_value, enum_def) = case t {
     PrimitiveType(type_name) -> {
-      t.id <> "(" <> to_gleam_primitive(type_name) <> ")\n"
+      #(to_gleam_primitive(type_name) <> ",\n", "")
     }
-
+    ArrayType(items: PrimitiveItem(type_name)) -> {
+      #("List(" <> to_gleam_primitive(type_name) <> "),\n", "")
+    }
+    ArrayType(items: ReferenceItem(ref_target)) -> {
+      #("List(" <> resolve_ref(ref_target) <> "),\n", "")
+    }
+    RefType(ref_target) -> {
+      #(resolve_ref(ref_target) <> ",\n", "")
+    }
     EnumType(enum) -> {
-      enum
-      |> list.map(fn(item) { t.id <> pascal_case(item) <> "\n" })
-      |> string.join("")
+      let enum_type_name = pascal_case(root_name) <> pascal_case(name)
+      let enum_type_def =
+        gen_attached_comment(
+          "This type is not part of the protocol spec, it has been generated dynamically 
+to represent the possible values of the enum property `"
+          <> name
+          <> "` of `"
+          <> root_name
+          <> "`",
+        )
+        <> "\npub type "
+        <> enum_type_name
+        <> "{"
+        <> enum
+        |> list.map(fn(item) { enum_type_name <> pascal_case(item) <> "\n" })
+        |> string.join("")
+        <> "}\n"
+      #(enum_type_name <> ",\n", enum_type_def)
+      // generate enum definition and ref
     }
-    _ -> "// TODO -- codegen for this type definition is not implemented \n"
+    ObjectType(None) -> {
+      #("dict.Dict(String,String)\n", "")
+    }
+    other -> {
+      io.debug(other)
+      panic as "tried to generate an attribute from unsupported type"
+    }
+  }
+
+  #(safe_snake_case(name) <> ": " <> attr_value, enum_def)
+}
+
+// Returns the type definition body and any additional definitions required for
+// this type as the second element in the tuple
+fn gen_type_body(name: String, t: Type) -> #(String, String) {
+  case t {
+    PrimitiveType(type_name) -> {
+      #(name <> "(" <> to_gleam_primitive(type_name) <> ")\n", "")
+    }
+    EnumType(enum) -> {
+      #(
+        enum
+          |> list.map(fn(item) { name <> pascal_case(item) <> "\n" })
+          |> string.join(""),
+        "",
+      )
+    }
+    ArrayType(items: PrimitiveItem(type_name)) -> {
+      #(name <> "(List(" <> to_gleam_primitive(type_name) <> "))\n", "")
+    }
+    ArrayType(items: ReferenceItem(ref_target)) -> {
+      #(name <> "(List(" <> resolve_ref(ref_target) <> "))\n", "")
+    }
+    RefType(ref_target) -> {
+      #(name <> "(" <> resolve_ref(ref_target) <> ")\n", "")
+    }
+    ObjectType(Some(properties)) -> {
+      let attribute_gen_results =
+        properties
+        |> list.map(fn(prop) { gen_attribute(name, prop.name, prop.inner) })
+
+      let #(attributes, enum_defs) = list.unzip(attribute_gen_results)
+
+      #(
+        name <> " (\n" <> string.join(attributes, "") <> ")\n",
+        string.join(enum_defs, ""),
+      )
+    }
+    ObjectType(None) -> {
+      #(name <> "(dict.Dict(String,String))\n", "")
+    }
   }
 }
 
 fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
+  let #(body, appendage) = gen_type_body(t.id, t.inner)
   builder
   |> append_optional(t.description, gen_attached_comment)
   // ID is already PascalCase!
   |> sb.append("pub type ")
   |> sb.append(t.id)
   |> sb.append("{\n")
-  |> sb.append(gen_type_def_body(t))
+  |> sb.append(body)
   |> sb.append("}\n\n")
+  |> sb.append(appendage)
 }
 
 fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
@@ -594,10 +827,51 @@ fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
   |> list.fold(sb.new(), gen_type_def)
 }
 
+fn remove_import_if_unused(
+  builder: sb.StringBuilder,
+  full_string: String,
+  import_name: String,
+  possible_uses: List(String),
+) -> sb.StringBuilder {
+  let assert Ok(import_short_name) =
+    string.split(import_name, "/")
+    |> list.last
+  let has_uses =
+    list.fold(possible_uses, False, fn(flag, current) {
+      case
+        flag,
+        string.contains(full_string, import_short_name <> "." <> current)
+      {
+        True, _ -> True
+        False, True -> True
+        False, False -> False
+      }
+    })
+  case has_uses {
+    False -> sb.replace(builder, "import " <> import_name <> "\n", "")
+    True -> builder
+  }
+}
+
+fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
+  let full_string = sb.to_string(builder)
+  builder
+  |> remove_import_if_unused(full_string, "gleam/dynamic", ["Dynamic"])
+  |> remove_import_if_unused(full_string, "gleam/dict", ["Dict"])
+  |> remove_import_if_unused(full_string, "gleam/option", [
+    "Option", "Some", "None",
+  ])
+}
+
+fn apply_patches(builder: sb.StringBuilder){
+
+}
+
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   sb.new()
   |> sb.append(gen_preamble(protocol))
   |> sb.append_builder(gen_domain_module_header(protocol, domain))
   |> sb.append_builder(gen_type_definitions(domain))
+  |> remove_unused_imports()
   |> sb.to_string()
 }

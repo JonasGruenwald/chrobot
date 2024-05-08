@@ -36,9 +36,17 @@ pub type SecurityState {
 }
 
 /// An explanation of an factor contributing to the security state.
-pub type SecurityStateExplanation
-
-// TODO -- codegen for this type definition is not implemented 
+pub type SecurityStateExplanation {
+  SecurityStateExplanation(
+    security_state: SecurityState,
+    title: String,
+    summary: String,
+    description: String,
+    mixed_content_type: MixedContentType,
+    certificate: List(String),
+    recommendations: List(String),
+  )
+}
 
 /// The action to take when a certificate error occurs. continue will continue processing the
 /// request and cancel will cancel the request.

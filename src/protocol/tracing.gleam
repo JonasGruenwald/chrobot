@@ -13,5 +13,9 @@
 import chrome
 import protocol/io
 
-pub type TraceConfig
-// TODO -- codegen for this type definition is not implemented 
+pub type TraceConfig {
+  TraceConfig(
+    included_categories: List(String),
+    excluded_categories: List(String),
+  )
+}
