@@ -118,10 +118,9 @@ pub fn launch() {
 /// The result typing reflects the success of graceful shutdown.
 pub fn quit(browser: Subject(Message)) {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
-  let _ = process.send_after(browser, default_message_timeout, Kill)
+  let _ = process.send_after(browser, default_message_timeout * 2, Kill)
   // invoke graceful shutdown of the browser
-  actor.call(browser, Call(_, "Browser.close", None), default_message_timeout)
-  |> result.replace(Nil)
+  process.try_call(browser, Shutdown(_), default_message_timeout)
 }
 
 /// Convenience function that lets you defer quitting the browser after you are done with it,
@@ -300,7 +299,7 @@ fn create_init_fn(cfg: BrowserConfig) {
         let instance = BrowserInstance(port)
         log(instance, "Started")
         actor.Ready(
-          BrowserState(instance, 0, []),
+          BrowserState(instance, 0, [], None),
           process.new_selector()
             |> process.selecting_record2(port, map_port_message),
         )
@@ -351,10 +350,12 @@ type BrowserState {
     instance: BrowserInstance,
     next_id: Int,
     unanswered_requests: List(PendingRequest),
+    shutdown_request: Option(Subject(Nil)),
   )
 }
 
 pub type Message {
+  Shutdown(reply_with: Subject(Nil))
   Kill
   Call(
     reply_with: Subject(Result(d.Dynamic, Nil)),
@@ -382,6 +383,8 @@ fn loop(message: Message, state: BrowserState) {
       actor.Stop(process.Normal)
     }
     Call(client, method, params) -> {
+      // Handle call leaves the calling process hanging until a response is received
+      // from the browser, which must be sent back to the client
       handle_call(state, client, method, params)
     }
     Send(method, params) -> {
@@ -390,23 +393,6 @@ fn loop(message: Message, state: BrowserState) {
     PortResponse(data) -> {
       handle_port_response(state, data)
     }
-    PortExit(exit_status) -> {
-      case exit_status {
-        0 -> {
-          log(state.instance, "Browser exited normally, actor is shutting down")
-          actor.Stop(process.Normal)
-        }
-        _ -> {
-          log(
-            state.instance,
-            "Browser exited with status: "
-              <> string.inspect(exit_status)
-              <> " browser actor is shutting down",
-          )
-          actor.Stop(process.Abnormal(reason: "browser exited abnormally"))
-        }
-      }
-    }
     UnexpectedPortMessage(msg) -> {
       log(
         state.instance,
@@ -414,6 +400,44 @@ fn loop(message: Message, state: BrowserState) {
       )
       io.debug(msg)
       actor.continue(state)
+    }
+    Shutdown(client) -> {
+      // Initiate shutdown of the browser
+      // the process is left hanging and should be replied to when the browser
+      // has successfully shut down -> PortExit message below
+      log(
+        state.instance,
+        "Received shutdown request, attempting to quit browser",
+      )
+      handle_send(state, "Browser.close", None)
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: state.next_id,
+        unanswered_requests: state.unanswered_requests,
+        shutdown_request: Some(client),
+      ))
+    }
+    PortExit(exit_status) -> {
+      // The browser has exited
+      case state.shutdown_request {
+        Some(client) -> {
+          log(
+            state.instance,
+            "Browser exited after shtudown request, actor is shutting down",
+          )
+          process.send(client, Nil)
+          actor.Stop(process.Normal)
+        }
+        _ -> {
+          log(
+            state.instance,
+            "Browser exited but there was no shutdown request! Exit Status: "
+              <> string.inspect(exit_status)
+              <> " browser actor is shutting down abnormally",
+          )
+          actor.Stop(process.Abnormal(reason: "browser exited abnormally"))
+        }
+      }
     }
   }
 }
@@ -443,16 +467,16 @@ fn handle_call(
         instance: state.instance,
         next_id: request_id + 1,
         unanswered_requests: state.unanswered_requests,
+        shutdown_request: state.shutdown_request,
       ))
     }
     Ok(_) -> {
-      actor.continue(
-        BrowserState(
-          instance: state.instance,
-          next_id: request_id + 1,
-          unanswered_requests: [request_memo, ..state.unanswered_requests],
-        ),
-      )
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: request_id + 1,
+        unanswered_requests: [request_memo, ..state.unanswered_requests],
+        shutdown_request: state.shutdown_request,
+      ))
     }
   }
 }
@@ -480,6 +504,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
     instance: state.instance,
     next_id: request_id + 1,
     unanswered_requests: state.unanswered_requests,
+    shutdown_request: state.shutdown_request,
   ))
 }
 
@@ -549,6 +574,7 @@ fn handle_port_response(
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: answer_request(state, id, result),
+        shutdown_request: state.shutdown_request,
       ))
     }
     Ok(BrowserResponse(None, None, Some(method), Some(params))) -> {

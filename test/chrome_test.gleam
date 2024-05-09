@@ -1,7 +1,10 @@
 import chrome
 import gleam/erlang/os
+import gleam/erlang/process
+import gleam/io
 import gleam/list
 import gleeunit/should
+import utils
 
 pub fn is_local_chrome_path_test() {
   let valid_mac_path =
@@ -377,4 +380,18 @@ pub fn is_local_chrome_path_haystack_test() {
   |> should.equal([
     "chrome/mac_arm-126.0.6458.0/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
   ])
+}
+
+/// Launch the browser, query the version, quit
+pub fn launch_with_config_test() {
+  let browser_path = utils.get_browser_path()
+  let config =
+    chrome.BrowserConfig(
+      path: browser_path,
+      args: chrome.get_default_chrome_args(),
+      start_timeout: 5000,
+    )
+  let browser_subject = should.be_ok(chrome.launch_with_config(config))
+  should.be_ok(chrome.get_version(browser_subject))
+  should.be_ok(chrome.quit(browser_subject))
 }

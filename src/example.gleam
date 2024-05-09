@@ -10,7 +10,10 @@ pub fn main() {
   //     start_timeout: 5000,
   //   )
   // let assert Ok(browser_subject) = browser.launch_with_config(config)
-  let assert Ok(_browser_subject) = chrome.launch()
+  let assert Ok(browser_subject) = chrome.launch()
   io.print("Browser launched ")
+  process.sleep(5000)
+  io.println("Quit browser")
+  let assert Ok(_) = chrome.quit(browser_subject)
   process.sleep_forever()
 }
