@@ -777,6 +777,7 @@ fn gen_imports(domain: Domain) {
     "import chrome\n",
     "import gleam/dict\n",
     "import gleam/dynamic\n",
+    "import gleam/result\n",
     "import gleam/option\n",
     ..domain_imports
   ]
@@ -870,6 +871,10 @@ to represent the possible values of the enum property `"
   #(safe_snake_case(name) <> ": " <> attr_value <> ",\n", enum_def)
 }
 
+fn gen_type_encoder(type_value: Type, name_prefix: String) {
+  todo
+}
+
 // Returns the type definition body and any additional definitions required for
 // this type as the second element in the tuple
 fn gen_type_body(name: String, t: Type) -> #(String, String) {
@@ -958,15 +963,28 @@ fn remove_import_if_unused(
   }
 }
 
+/// Remove unused imports package imports from the generated code 
+/// We add all possible required imports at the start, then remove them if they are not being accessed
+/// because we know the usages we could have of each import, we just need to check if they are present
+/// in the generated code. Of course imports of protocol domain deps are not handled here.
+/// 
+/// It's a bit silly but it should work.
 fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   let full_string = sb.to_string(builder)
   builder
-  |> remove_import_if_unused(full_string, "gleam/dynamic", ["Dynamic"])
+  |> remove_import_if_unused(full_string, "gleam/dynamic", [
+    "Dynamic", "string", "int", "list", "float", "dict", "field",
+  ])
   |> remove_import_if_unused(full_string, "gleam/dict", ["Dict"])
+  |> remove_import_if_unused(full_string, "gleam/result", [
+    "try", "replace_error",
+  ])
   |> remove_import_if_unused(full_string, "gleam/option", [
     "Option", "Some", "None",
   ])
-  |> remove_import_if_unused(full_string, "chrome", ["call", "send"])
+  |> remove_import_if_unused(full_string, "chrome", [
+    "call", "send", "ProtocolError",
+  ])
 }
 
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {

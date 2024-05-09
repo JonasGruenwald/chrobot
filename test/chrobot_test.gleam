@@ -14,7 +14,7 @@ pub fn main() {
     }
     Error(_) -> {
       io.println(
-        "No test browser path was set! Please set the environment variable `CHROBOT_TEST_BROWSER_PATH` to run the tests.",
+        "\u{1b}[31mNo test browser path was set! Please set the environment variable `CHROBOT_TEST_BROWSER_PATH` to run the tests.\u{1b}[0m",
       )
       let available_browser_path =
         result.lazy_or(
@@ -23,21 +23,22 @@ pub fn main() {
         )
       case available_browser_path {
         Ok(browser_path) -> {
+          io.println("\u{1b}[36m")
           io.println(
-            "---------------------------------------------------------------------\n",
-          )
-          io.println(
-            "Hint: A chrome path was detected on your system, run tests like this:\n",
+            "ℹ️  Hint: A chrome path was detected on your system, you can run tests like this:",
           )
           io.println(
             "CHROBOT_TEST_BROWSER_PATH=\"" <> browser_path <> "\" gleam test\n",
           )
-          io.println(
-            "---------------------------------------------------------------------",
-          )
+          io.println("\u{1b}[0m ")
         }
         Error(_) -> {
-          io.println("No browser path was found.")
+          io.println("\u{1b}[36m")
+          io.println(
+            "ℹ️  Hint: Consider installing Chrome for Testing from puppeteer:",
+          )
+          io.println("npx @puppeteer/browsers install chrome")
+          io.println("\u{1b}[0m ")
         }
       }
       panic as "See output above!"

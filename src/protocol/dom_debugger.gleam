@@ -11,7 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/dom
 import protocol/runtime
 
@@ -32,8 +32,8 @@ pub type EventListener {
     script_id: runtime.ScriptId,
     line_number: Int,
     column_number: Int,
-    handler: runtime.RemoteObject,
-    original_handler: runtime.RemoteObject,
-    backend_node_id: dom.BackendNodeId,
+    handler: option.Option(runtime.RemoteObject),
+    original_handler: option.Option(runtime.RemoteObject),
+    backend_node_id: option.Option(dom.BackendNodeId),
   )
 }

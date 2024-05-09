@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/io
 import protocol/network
 import protocol/page
@@ -30,9 +30,9 @@ pub type RequestStage {
 
 pub type RequestPattern {
   RequestPattern(
-    url_pattern: String,
-    resource_type: network.ResourceType,
-    request_stage: RequestStage,
+    url_pattern: option.Option(String),
+    resource_type: option.Option(network.ResourceType),
+    request_stage: option.Option(RequestStage),
   )
 }
 
@@ -44,7 +44,7 @@ pub type HeaderEntry {
 /// Authorization challenge for HTTP status code 401 or 407.
 pub type AuthChallenge {
   AuthChallenge(
-    source: AuthChallengeSource,
+    source: option.Option(AuthChallengeSource),
     origin: String,
     scheme: String,
     realm: String,
@@ -62,8 +62,8 @@ pub type AuthChallengeSource {
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
     response: AuthChallengeResponseResponse,
-    username: String,
-    password: String,
+    username: option.Option(String),
+    password: option.Option(String),
   )
 }
 

@@ -1,22 +1,37 @@
 import chrome
 import gleam/erlang/process.{type Subject}
+import gleam/io
 import gleam/result
 import protocol
 
 /// Try to find a chrome installation and launch it with default arguments.
 /// 
 /// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
-/// If that fails, it will try to find a system chrome installation in some common places.
+/// If that fails, it will try to find a system chrome installation in some common places.  
+/// Consider using `launch_with_config` with a `BrowserConfig` instead and specifying 
+/// an explicit path to the chrome executable if consistency is a requirement.
 /// 
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
-/// 
-/// For consistency it would be preferrable to not use this function and instead use `launch_with_config` with a `BrowserConfig`
-/// that specifies the path to the chrome executable.
-/// 
-/// 
 pub fn launch() {
-  validate_launch(chrome.launch())
+  let launch_result = validate_launch(chrome.launch())
+
+  // Some helpful logging for when the browser could not be found
+  case launch_result {
+    Error(chrome.CouldNotFindExecutable) -> {
+      io.println(
+        "\u{1b}[31mChrobot could not find a chrome executable to launch!\u{1b}[0m",
+      )
+      io.println("\u{1b}[36m")
+      io.println(
+        "ℹ️  Hint: Consider installing Chrome for Testing from puppeteer:",
+      )
+      io.println("npx @puppeteer/browsers install chrome")
+      io.println("\u{1b}[0m ")
+      launch_result
+    }
+    other -> other
+  }
 }
 
 /// Launch a browser with the given configuration,

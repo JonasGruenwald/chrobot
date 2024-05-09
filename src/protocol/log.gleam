@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/network
 import protocol/runtime
 
@@ -20,14 +20,14 @@ pub type LogEntry {
     source: LogEntrySource,
     level: LogEntryLevel,
     text: String,
-    category: LogEntryCategory,
+    category: option.Option(LogEntryCategory),
     timestamp: runtime.Timestamp,
-    url: String,
-    line_number: Int,
-    stack_trace: runtime.StackTrace,
-    network_request_id: network.RequestId,
-    worker_id: String,
-    args: List(runtime.RemoteObject),
+    url: option.Option(String),
+    line_number: option.Option(Int),
+    stack_trace: option.Option(runtime.StackTrace),
+    network_request_id: option.Option(network.RequestId),
+    worker_id: option.Option(String),
+    args: option.Option(List(runtime.RemoteObject)),
   )
 }
 

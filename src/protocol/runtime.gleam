@@ -14,9 +14,9 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dict
 import gleam/dynamic
+import gleam/option
 
 /// Unique script identifier.
 pub type ScriptId {
@@ -27,8 +27,8 @@ pub type ScriptId {
 pub type SerializationOptions {
   SerializationOptions(
     serialization: SerializationOptionsSerialization,
-    max_depth: Int,
-    additional_parameters: dict.Dict(String, String),
+    max_depth: option.Option(Int),
+    additional_parameters: option.Option(dict.Dict(String, String)),
   )
 }
 
@@ -44,9 +44,9 @@ pub type SerializationOptionsSerialization {
 pub type DeepSerializedValue {
   DeepSerializedValue(
     type_: DeepSerializedValueType,
-    value: dynamic.Dynamic,
-    object_id: String,
-    weak_local_object_reference: Int,
+    value: option.Option(dynamic.Dynamic),
+    object_id: option.Option(String),
+    weak_local_object_reference: option.Option(Int),
   )
 }
 
@@ -94,12 +94,12 @@ pub type UnserializableValue {
 pub type RemoteObject {
   RemoteObject(
     type_: RemoteObjectType,
-    subtype: RemoteObjectSubtype,
-    class_name: String,
-    value: dynamic.Dynamic,
-    unserializable_value: UnserializableValue,
-    description: String,
-    object_id: RemoteObjectId,
+    subtype: option.Option(RemoteObjectSubtype),
+    class_name: option.Option(String),
+    value: option.Option(dynamic.Dynamic),
+    unserializable_value: option.Option(UnserializableValue),
+    description: option.Option(String),
+    object_id: option.Option(RemoteObjectId),
   )
 }
 
@@ -144,30 +144,30 @@ pub type RemoteObjectSubtype {
 pub type PropertyDescriptor {
   PropertyDescriptor(
     name: String,
-    value: RemoteObject,
-    writable: Bool,
-    get: RemoteObject,
-    set: RemoteObject,
+    value: option.Option(RemoteObject),
+    writable: option.Option(Bool),
+    get: option.Option(RemoteObject),
+    set: option.Option(RemoteObject),
     configurable: Bool,
     enumerable: Bool,
-    was_thrown: Bool,
-    is_own: Bool,
-    symbol: RemoteObject,
+    was_thrown: option.Option(Bool),
+    is_own: option.Option(Bool),
+    symbol: option.Option(RemoteObject),
   )
 }
 
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor {
-  InternalPropertyDescriptor(name: String, value: RemoteObject)
+  InternalPropertyDescriptor(name: String, value: option.Option(RemoteObject))
 }
 
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
 /// unserializable primitive value or neither of (for undefined) them should be specified.
 pub type CallArgument {
   CallArgument(
-    value: dynamic.Dynamic,
-    unserializable_value: UnserializableValue,
-    object_id: RemoteObjectId,
+    value: option.Option(dynamic.Dynamic),
+    unserializable_value: option.Option(UnserializableValue),
+    object_id: option.Option(RemoteObjectId),
   )
 }
 
@@ -182,7 +182,7 @@ pub type ExecutionContextDescription {
     id: ExecutionContextId,
     origin: String,
     name: String,
-    aux_data: dict.Dict(String, String),
+    aux_data: option.Option(dict.Dict(String, String)),
   )
 }
 
@@ -194,11 +194,11 @@ pub type ExceptionDetails {
     text: String,
     line_number: Int,
     column_number: Int,
-    script_id: ScriptId,
-    url: String,
-    stack_trace: StackTrace,
-    exception: RemoteObject,
-    execution_context_id: ExecutionContextId,
+    script_id: option.Option(ScriptId),
+    url: option.Option(String),
+    stack_trace: option.Option(StackTrace),
+    exception: option.Option(RemoteObject),
+    execution_context_id: option.Option(ExecutionContextId),
   )
 }
 
@@ -226,8 +226,8 @@ pub type CallFrame {
 /// Call frames for assertions or error messages.
 pub type StackTrace {
   StackTrace(
-    description: String,
+    description: option.Option(String),
     call_frames: List(CallFrame),
-    parent: StackTrace,
+    parent: option.Option(StackTrace),
   )
 }

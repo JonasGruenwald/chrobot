@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/debugger
 import protocol/dom
 import protocol/io
@@ -26,9 +26,9 @@ pub type FrameId {
 pub type Frame {
   Frame(
     id: FrameId,
-    parent_id: FrameId,
+    parent_id: option.Option(FrameId),
     loader_id: network.LoaderId,
-    name: String,
+    name: option.Option(String),
     url: String,
     security_origin: String,
     mime_type: String,
@@ -37,7 +37,7 @@ pub type Frame {
 
 /// Information about the Frame hierarchy.
 pub type FrameTree {
-  FrameTree(frame: Frame, child_frames: List(FrameTree))
+  FrameTree(frame: Frame, child_frames: option.Option(List(FrameTree)))
 }
 
 /// Unique script identifier.
@@ -106,7 +106,7 @@ pub type VisualViewport {
     client_width: Float,
     client_height: Float,
     scale: Float,
-    zoom: Float,
+    zoom: option.Option(Float),
   )
 }
 

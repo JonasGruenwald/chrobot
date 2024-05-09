@@ -10,12 +10,12 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/io
 
 pub type TraceConfig {
   TraceConfig(
-    included_categories: List(String),
-    excluded_categories: List(String),
+    included_categories: option.Option(List(String)),
+    excluded_categories: option.Option(List(String)),
   )
 }

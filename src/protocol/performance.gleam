@@ -10,8 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
-
 /// Run-time execution metric.
 pub type Metric {
   Metric(name: String, value: Float)

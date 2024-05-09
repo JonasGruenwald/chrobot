@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/debugger
 import protocol/runtime
 
@@ -19,10 +19,10 @@ pub type ProfileNode {
   ProfileNode(
     id: Int,
     call_frame: runtime.CallFrame,
-    hit_count: Int,
-    children: List(Int),
-    deopt_reason: String,
-    position_ticks: List(PositionTickInfo),
+    hit_count: option.Option(Int),
+    children: option.Option(List(Int)),
+    deopt_reason: option.Option(String),
+    position_ticks: option.Option(List(PositionTickInfo)),
   )
 }
 
@@ -32,8 +32,8 @@ pub type Profile {
     nodes: List(ProfileNode),
     start_time: Float,
     end_time: Float,
-    samples: List(Int),
-    time_deltas: List(Int),
+    samples: option.Option(List(Int)),
+    time_deltas: option.Option(List(Int)),
   )
 }
 

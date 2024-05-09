@@ -16,8 +16,8 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
+import gleam/option
 import protocol/runtime
 
 /// Unique DOM node identifier.
@@ -106,41 +106,41 @@ pub type ScrollOrientation {
 pub type Node {
   Node(
     node_id: NodeId,
-    parent_id: NodeId,
+    parent_id: option.Option(NodeId),
     backend_node_id: BackendNodeId,
     node_type: Int,
     node_name: String,
     local_name: String,
     node_value: String,
-    child_node_count: Int,
-    children: List(Node),
-    attributes: List(String),
-    document_url: String,
-    base_url: String,
-    public_id: String,
-    system_id: String,
-    internal_subset: String,
-    xml_version: String,
-    name: String,
-    value: String,
-    pseudo_type: PseudoType,
-    pseudo_identifier: String,
-    shadow_root_type: ShadowRootType,
-    frame_id: String,
-    content_document: Node,
-    shadow_roots: List(Node),
-    template_content: Node,
-    pseudo_elements: List(Node),
-    distributed_nodes: List(BackendNode),
-    is_svg: Bool,
-    compatibility_mode: CompatibilityMode,
-    assigned_slot: BackendNode,
+    child_node_count: option.Option(Int),
+    children: option.Option(List(Node)),
+    attributes: option.Option(List(String)),
+    document_url: option.Option(String),
+    base_url: option.Option(String),
+    public_id: option.Option(String),
+    system_id: option.Option(String),
+    internal_subset: option.Option(String),
+    xml_version: option.Option(String),
+    name: option.Option(String),
+    value: option.Option(String),
+    pseudo_type: option.Option(PseudoType),
+    pseudo_identifier: option.Option(String),
+    shadow_root_type: option.Option(ShadowRootType),
+    frame_id: option.Option(String),
+    content_document: option.Option(Node),
+    shadow_roots: option.Option(List(Node)),
+    template_content: option.Option(Node),
+    pseudo_elements: option.Option(List(Node)),
+    distributed_nodes: option.Option(List(BackendNode)),
+    is_svg: option.Option(Bool),
+    compatibility_mode: option.Option(CompatibilityMode),
+    assigned_slot: option.Option(BackendNode),
   )
 }
 
 /// A structure holding an RGBA color.
 pub type RGBA {
-  RGBA(r: Int, g: Int, b: Int, a: Float)
+  RGBA(r: Int, g: Int, b: Int, a: option.Option(Float))
 }
 
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
@@ -157,7 +157,7 @@ pub type BoxModel {
     margin: Quad,
     width: Int,
     height: Int,
-    shape_outside: ShapeOutsideInfo,
+    shape_outside: option.Option(ShapeOutsideInfo),
   )
 }
 

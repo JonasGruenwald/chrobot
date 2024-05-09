@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 
 pub type TargetID {
   TargetID(String)
@@ -28,6 +28,6 @@ pub type TargetInfo {
     title: String,
     url: String,
     attached: Bool,
-    opener_id: TargetID,
+    opener_id: option.Option(TargetID),
   )
 }

@@ -176,7 +176,9 @@ pub fn send(
 
 /// Hardcoded protocol call to get the browser version
 /// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser/#method-getVersion 
-pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, RequestError) {
+pub fn get_version(
+  browser: Subject(Message),
+) -> Result(BrowserVersion, RequestError) {
   use res <- result.try(call(
     browser,
     "Browser.getVersion",

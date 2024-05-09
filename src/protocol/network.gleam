@@ -11,8 +11,8 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dict
+import gleam/option
 import protocol/debugger
 import protocol/runtime
 import protocol/security
@@ -137,21 +137,21 @@ pub type ResourcePriority {
 
 /// Post data entry for HTTP request
 pub type PostDataEntry {
-  PostDataEntry(bytes: String)
+  PostDataEntry(bytes: option.Option(String))
 }
 
 /// HTTP request data.
 pub type Request {
   Request(
     url: String,
-    url_fragment: String,
+    url_fragment: option.Option(String),
     method: String,
     headers: Headers,
-    has_post_data: Bool,
-    mixed_content_type: security.MixedContentType,
+    has_post_data: option.Option(Bool),
+    mixed_content_type: option.Option(security.MixedContentType),
     initial_priority: ResourcePriority,
     referrer_policy: RequestReferrerPolicy,
-    is_link_preload: Bool,
+    is_link_preload: option.Option(Bool),
   )
 }
 
@@ -187,9 +187,9 @@ pub type SecurityDetails {
   SecurityDetails(
     protocol: String,
     key_exchange: String,
-    key_exchange_group: String,
+    key_exchange_group: option.Option(String),
     cipher: String,
-    mac: String,
+    mac: option.Option(String),
     certificate_id: security.CertificateId,
     subject_name: String,
     san_list: List(String),
@@ -198,7 +198,7 @@ pub type SecurityDetails {
     valid_to: TimeSinceEpoch,
     signed_certificate_timestamp_list: List(SignedCertificateTimestamp),
     certificate_transparency_compliance: CertificateTransparencyCompliance,
-    server_signature_algorithm: Int,
+    server_signature_algorithm: option.Option(Int),
     encrypted_client_hello: Bool,
   )
 }
@@ -293,23 +293,23 @@ pub type Response {
     headers: Headers,
     mime_type: String,
     charset: String,
-    request_headers: Headers,
+    request_headers: option.Option(Headers),
     connection_reused: Bool,
     connection_id: Float,
-    remote_ip_address: String,
-    remote_port: Int,
-    from_disk_cache: Bool,
-    from_service_worker: Bool,
-    from_prefetch_cache: Bool,
-    from_early_hints: Bool,
+    remote_ip_address: option.Option(String),
+    remote_port: option.Option(Int),
+    from_disk_cache: option.Option(Bool),
+    from_service_worker: option.Option(Bool),
+    from_prefetch_cache: option.Option(Bool),
+    from_early_hints: option.Option(Bool),
     encoded_data_length: Float,
-    timing: ResourceTiming,
-    service_worker_response_source: ServiceWorkerResponseSource,
-    response_time: TimeSinceEpoch,
-    cache_storage_cache_name: String,
-    protocol: String,
+    timing: option.Option(ResourceTiming),
+    service_worker_response_source: option.Option(ServiceWorkerResponseSource),
+    response_time: option.Option(TimeSinceEpoch),
+    cache_storage_cache_name: option.Option(String),
+    protocol: option.Option(String),
     security_state: security.SecurityState,
-    security_details: SecurityDetails,
+    security_details: option.Option(SecurityDetails),
   )
 }
 
@@ -324,9 +324,9 @@ pub type WebSocketResponse {
     status: Int,
     status_text: String,
     headers: Headers,
-    headers_text: String,
-    request_headers: Headers,
-    request_headers_text: String,
+    headers_text: option.Option(String),
+    request_headers: option.Option(Headers),
+    request_headers_text: option.Option(String),
   )
 }
 
@@ -340,7 +340,7 @@ pub type CachedResource {
   CachedResource(
     url: String,
     type_: ResourceType,
-    response: Response,
+    response: option.Option(Response),
     body_size: Float,
   )
 }
@@ -349,11 +349,11 @@ pub type CachedResource {
 pub type Initiator {
   Initiator(
     type_: InitiatorType,
-    stack: runtime.StackTrace,
-    url: String,
-    line_number: Float,
-    column_number: Float,
-    request_id: RequestId,
+    stack: option.Option(runtime.StackTrace),
+    url: option.Option(String),
+    line_number: option.Option(Float),
+    column_number: option.Option(Float),
+    request_id: option.Option(RequestId),
   )
 }
 
@@ -380,7 +380,7 @@ pub type Cookie {
     http_only: Bool,
     secure: Bool,
     session: Bool,
-    same_site: CookieSameSite,
+    same_site: option.Option(CookieSameSite),
   )
 }
 
@@ -389,12 +389,12 @@ pub type CookieParam {
   CookieParam(
     name: String,
     value: String,
-    url: String,
-    domain: String,
-    path: String,
-    secure: Bool,
-    http_only: Bool,
-    same_site: CookieSameSite,
-    expires: TimeSinceEpoch,
+    url: option.Option(String),
+    domain: option.Option(String),
+    path: option.Option(String),
+    secure: option.Option(Bool),
+    http_only: option.Option(Bool),
+    same_site: option.Option(CookieSameSite),
+    expires: option.Option(TimeSinceEpoch),
   )
 }

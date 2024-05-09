@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import protocol/dom
 import protocol/page
 import protocol/runtime

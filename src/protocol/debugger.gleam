@@ -11,7 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 import protocol/runtime
 
 /// Breakpoint identifier.
@@ -26,7 +26,11 @@ pub type CallFrameId {
 
 /// Location in the source code.
 pub type Location {
-  Location(script_id: runtime.ScriptId, line_number: Int, column_number: Int)
+  Location(
+    script_id: runtime.ScriptId,
+    line_number: Int,
+    column_number: option.Option(Int),
+  )
 }
 
 /// JavaScript call frame. Array of call frames form the call stack.
@@ -34,11 +38,11 @@ pub type CallFrame {
   CallFrame(
     call_frame_id: CallFrameId,
     function_name: String,
-    function_location: Location,
+    function_location: option.Option(Location),
     location: Location,
     scope_chain: List(Scope),
     this: runtime.RemoteObject,
-    return_value: runtime.RemoteObject,
+    return_value: option.Option(runtime.RemoteObject),
   )
 }
 
@@ -47,9 +51,9 @@ pub type Scope {
   Scope(
     type_: ScopeType,
     object: runtime.RemoteObject,
-    name: String,
-    start_location: Location,
-    end_location: Location,
+    name: option.Option(String),
+    start_location: option.Option(Location),
+    end_location: option.Option(Location),
   )
 }
 
@@ -77,8 +81,8 @@ pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
     line_number: Int,
-    column_number: Int,
-    type_: BreakLocationType,
+    column_number: option.Option(Int),
+    type_: option.Option(BreakLocationType),
   )
 }
 
@@ -98,7 +102,7 @@ pub type ScriptLanguage {
 
 /// Debug symbols available for a wasm script.
 pub type DebugSymbols {
-  DebugSymbols(type_: DebugSymbolsType, external_url: String)
+  DebugSymbols(type_: DebugSymbolsType, external_url: option.Option(String))
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 

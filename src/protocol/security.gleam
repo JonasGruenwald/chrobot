@@ -10,7 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 
 /// An internal certificate ID value.
 pub type CertificateId {
@@ -44,7 +44,7 @@ pub type SecurityStateExplanation {
     description: String,
     mixed_content_type: MixedContentType,
     certificate: List(String),
-    recommendations: List(String),
+    recommendations: option.Option(List(String)),
   )
 }
 

@@ -10,19 +10,19 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
+import gleam/option
 
 pub type TouchPoint {
   TouchPoint(
     x: Float,
     y: Float,
-    radius_x: Float,
-    radius_y: Float,
-    rotation_angle: Float,
-    force: Float,
-    tilt_x: Float,
-    tilt_y: Float,
-    id: Float,
+    radius_x: option.Option(Float),
+    radius_y: option.Option(Float),
+    rotation_angle: option.Option(Float),
+    force: option.Option(Float),
+    tilt_x: option.Option(Float),
+    tilt_y: option.Option(Float),
+    id: option.Option(Float),
   )
 }
 
