@@ -1,5 +1,5 @@
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option
 import gleeunit/should
 import scripts/generate_bindings.{parse_protocol}
 
@@ -49,7 +49,7 @@ pub fn parse_js_protocol_test() {
 
   // DeepSerializedValue should have an inner type of "object" with properties
   let assert Ok(target_properties) = case deep_serialized_value_type.inner {
-    generate_bindings.ObjectType(Some(properties)) -> Ok(properties)
+    generate_bindings.ObjectType(option.Some(properties)) -> Ok(properties)
     _ -> Error("Did not find ObjectType with some properties")
   }
 

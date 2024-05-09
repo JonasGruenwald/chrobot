@@ -9,7 +9,11 @@
 //// command parameters and command returns, which all wrap 'Type' with some 
 //// additional attributes on top.
 //// 
-//// 2. Files are generated based on the parsed protocol
+//// 2. The parsed protocol is processed
+////  - A stable version of the protocol is generated with experimental and deprecated items removed (can be toggled)
+////  - Hardcoded patches are applied to the protocol to make it possible to generate bindings (e.g. replacing references with actual types to avoid circular dependencies)
+//// 
+//// 3. Files are generated based on the parsed protocol
 //// 
 //// Codegen Notes:
 //// - A root file `src/protocol.gleam` is generated with general information
@@ -407,13 +411,11 @@ fn apply_propdef_patches(
   domain: Domain,
 ) -> PropertyDefinition {
   case propdef.inner {
-    // The DOM Node type (object) has this property which references a FrameId from
-    // the page domain. However the page domain is not a dependency of the DOM domain,
-    // and adding it as a dependency would create a circular dependency.
-    // So we replace the reference with a string type.
-    // (The actual referenced type from the page domain is a string, so this is fine.)
+    // These patches are all references to other domains, which are not declared as dependencies.
+    // We can't declare them as dependencies because that would create a circular dependency.
+    // So we replace the reference with the actual type from the other domain.
     RefType("Page.FrameId")
-      if domain.domain == "DOM"
+      if domain.domain == "DOM" || domain.domain == "Accessibility"
     ->
       PropertyDefinition(
         name: propdef.name,
@@ -422,6 +424,16 @@ fn apply_propdef_patches(
         deprecated: propdef.deprecated,
         optional: propdef.optional,
         inner: PrimitiveType("string"),
+      )
+    RefType("Network.TimeSinceEpoch") if domain.domain == "Security"
+      || domain.domain == "Accessibility" ->
+      PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: PrimitiveType("number"),
       )
     _ -> propdef
   }
@@ -658,13 +670,6 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
 
 // --- CODEGEN ---
 
-fn append_if(builder: sb.StringBuilder, value: String, predicate: Bool) {
-  case predicate {
-    True -> sb.append(builder, value)
-    False -> builder
-  }
-}
-
 fn append_optional(
   builder: sb.StringBuilder,
   val: Option(a),
@@ -706,6 +711,14 @@ fn to_gleam_primitive(protocol_primitive: String) {
       io.debug(protocol_primitive)
       panic as "can't translate to gleam primitive"
     }
+  }
+}
+
+/// I'm so lost
+fn is(value: Option(Bool)) {
+  case value {
+    Some(True) -> True
+    _ -> False
   }
 }
 
@@ -796,24 +809,28 @@ fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
   |> sb.append("\n\n")
 }
 
-// TODO handle optional attributes
 // Returns the enum definition of the attribute
 // And in case of an enum attribute, the definition of the enum type that 
 // the attribute references
 // otherwise an empty string ("")
-fn gen_attribute(root_name: String, name: String, t: Type) -> #(String, String) {
+fn gen_attribute(
+  root_name: String,
+  name: String,
+  t: Type,
+  optional: Bool,
+) -> #(String, String) {
   let #(attr_value, enum_def) = case t {
     PrimitiveType(type_name) -> {
-      #(to_gleam_primitive(type_name) <> ",\n", "")
+      #(to_gleam_primitive(type_name), "")
     }
     ArrayType(items: PrimitiveItem(type_name)) -> {
-      #("List(" <> to_gleam_primitive(type_name) <> "),\n", "")
+      #("List(" <> to_gleam_primitive(type_name) <> ")", "")
     }
     ArrayType(items: ReferenceItem(ref_target)) -> {
-      #("List(" <> resolve_ref(ref_target) <> "),\n", "")
+      #("List(" <> resolve_ref(ref_target) <> ")", "")
     }
     RefType(ref_target) -> {
-      #(resolve_ref(ref_target) <> ",\n", "")
+      #(resolve_ref(ref_target), "")
     }
     EnumType(enum) -> {
       let enum_type_name = pascal_case(root_name) <> pascal_case(name)
@@ -833,11 +850,11 @@ to represent the possible values of the enum property `"
         |> list.map(fn(item) { enum_type_name <> pascal_case(item) <> "\n" })
         |> string.join("")
         <> "}\n"
-      #(enum_type_name <> ",\n", enum_type_def)
+      #(enum_type_name, enum_type_def)
       // generate enum definition and ref
     }
     ObjectType(None) -> {
-      #("dict.Dict(String,String)\n", "")
+      #("dict.Dict(String,String)", "")
     }
     other -> {
       io.debug(other)
@@ -845,7 +862,12 @@ to represent the possible values of the enum property `"
     }
   }
 
-  #(safe_snake_case(name) <> ": " <> attr_value, enum_def)
+  let attr_value = case optional {
+    True -> "option.Option(" <> attr_value <> ")"
+    False -> attr_value
+  }
+
+  #(safe_snake_case(name) <> ": " <> attr_value <> ",\n", enum_def)
 }
 
 // Returns the type definition body and any additional definitions required for
@@ -875,7 +897,9 @@ fn gen_type_body(name: String, t: Type) -> #(String, String) {
     ObjectType(Some(properties)) -> {
       let attribute_gen_results =
         properties
-        |> list.map(fn(prop) { gen_attribute(name, prop.name, prop.inner) })
+        |> list.map(fn(prop) {
+          gen_attribute(name, prop.name, prop.inner, is(prop.optional))
+        })
 
       let #(attributes, enum_defs) = list.unzip(attribute_gen_results)
 
@@ -942,10 +966,7 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   |> remove_import_if_unused(full_string, "gleam/option", [
     "Option", "Some", "None",
   ])
-}
-
-fn apply_patches(builder: sb.StringBuilder) {
-  todo
+  |> remove_import_if_unused(full_string, "chrome", ["call", "send"])
 }
 
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {

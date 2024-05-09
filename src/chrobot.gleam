@@ -1,6 +1,5 @@
 import chrome
 import gleam/erlang/process.{type Subject}
-import gleam/io
 import gleam/result
 import protocol
 
