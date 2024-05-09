@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/option
 import protocol/network
 import protocol/runtime
@@ -49,6 +50,45 @@ pub type LogEntrySource {
   LogEntrySourceOther
 }
 
+@internal
+pub fn encode__log_entry_source(value: LogEntrySource) {
+  case value {
+    LogEntrySourceXml -> "xml"
+    LogEntrySourceJavascript -> "javascript"
+    LogEntrySourceNetwork -> "network"
+    LogEntrySourceStorage -> "storage"
+    LogEntrySourceAppcache -> "appcache"
+    LogEntrySourceRendering -> "rendering"
+    LogEntrySourceSecurity -> "security"
+    LogEntrySourceDeprecation -> "deprecation"
+    LogEntrySourceWorker -> "worker"
+    LogEntrySourceViolation -> "violation"
+    LogEntrySourceIntervention -> "intervention"
+    LogEntrySourceRecommendation -> "recommendation"
+    LogEntrySourceOther -> "other"
+  }
+}
+
+@internal
+pub fn decode__log_entry_source(value: String) {
+  case value {
+    "xml" -> Ok(LogEntrySourceXml)
+    "javascript" -> Ok(LogEntrySourceJavascript)
+    "network" -> Ok(LogEntrySourceNetwork)
+    "storage" -> Ok(LogEntrySourceStorage)
+    "appcache" -> Ok(LogEntrySourceAppcache)
+    "rendering" -> Ok(LogEntrySourceRendering)
+    "security" -> Ok(LogEntrySourceSecurity)
+    "deprecation" -> Ok(LogEntrySourceDeprecation)
+    "worker" -> Ok(LogEntrySourceWorker)
+    "violation" -> Ok(LogEntrySourceViolation)
+    "intervention" -> Ok(LogEntrySourceIntervention)
+    "recommendation" -> Ok(LogEntrySourceRecommendation)
+    "other" -> Ok(LogEntrySourceOther)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `level` of `LogEntry`
 pub type LogEntryLevel {
@@ -58,10 +98,46 @@ pub type LogEntryLevel {
   LogEntryLevelError
 }
 
+@internal
+pub fn encode__log_entry_level(value: LogEntryLevel) {
+  case value {
+    LogEntryLevelVerbose -> "verbose"
+    LogEntryLevelInfo -> "info"
+    LogEntryLevelWarning -> "warning"
+    LogEntryLevelError -> "error"
+  }
+}
+
+@internal
+pub fn decode__log_entry_level(value: String) {
+  case value {
+    "verbose" -> Ok(LogEntryLevelVerbose)
+    "info" -> Ok(LogEntryLevelInfo)
+    "warning" -> Ok(LogEntryLevelWarning)
+    "error" -> Ok(LogEntryLevelError)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `category` of `LogEntry`
 pub type LogEntryCategory {
   LogEntryCategoryCors
+}
+
+@internal
+pub fn encode__log_entry_category(value: LogEntryCategory) {
+  case value {
+    LogEntryCategoryCors -> "cors"
+  }
+}
+
+@internal
+pub fn decode__log_entry_category(value: String) {
+  case value {
+    "cors" -> Ok(LogEntryCategoryCors)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Violation configuration setting.
@@ -79,4 +155,31 @@ pub type ViolationSettingName {
   ViolationSettingNameDiscouragedApiUse
   ViolationSettingNameHandler
   ViolationSettingNameRecurringHandler
+}
+
+@internal
+pub fn encode__violation_setting_name(value: ViolationSettingName) {
+  case value {
+    ViolationSettingNameLongTask -> "longTask"
+    ViolationSettingNameLongLayout -> "longLayout"
+    ViolationSettingNameBlockedEvent -> "blockedEvent"
+    ViolationSettingNameBlockedParser -> "blockedParser"
+    ViolationSettingNameDiscouragedApiUse -> "discouragedAPIUse"
+    ViolationSettingNameHandler -> "handler"
+    ViolationSettingNameRecurringHandler -> "recurringHandler"
+  }
+}
+
+@internal
+pub fn decode__violation_setting_name(value: String) {
+  case value {
+    "longTask" -> Ok(ViolationSettingNameLongTask)
+    "longLayout" -> Ok(ViolationSettingNameLongLayout)
+    "blockedEvent" -> Ok(ViolationSettingNameBlockedEvent)
+    "blockedParser" -> Ok(ViolationSettingNameBlockedParser)
+    "discouragedAPIUse" -> Ok(ViolationSettingNameDiscouragedApiUse)
+    "handler" -> Ok(ViolationSettingNameHandler)
+    "recurringHandler" -> Ok(ViolationSettingNameRecurringHandler)
+    _ -> Error(chrome.ProtocolError)
+  }
 }

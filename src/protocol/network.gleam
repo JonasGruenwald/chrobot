@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dict
 import gleam/option
 import protocol/debugger
@@ -166,6 +167,38 @@ pub type RequestReferrerPolicy {
   RequestReferrerPolicySameOrigin
   RequestReferrerPolicyStrictOrigin
   RequestReferrerPolicyStrictOriginWhenCrossOrigin
+}
+
+@internal
+pub fn encode__request_referrer_policy(value: RequestReferrerPolicy) {
+  case value {
+    RequestReferrerPolicyUnsafeUrl -> "unsafe-url"
+    RequestReferrerPolicyNoReferrerWhenDowngrade -> "no-referrer-when-downgrade"
+    RequestReferrerPolicyNoReferrer -> "no-referrer"
+    RequestReferrerPolicyOrigin -> "origin"
+    RequestReferrerPolicyOriginWhenCrossOrigin -> "origin-when-cross-origin"
+    RequestReferrerPolicySameOrigin -> "same-origin"
+    RequestReferrerPolicyStrictOrigin -> "strict-origin"
+    RequestReferrerPolicyStrictOriginWhenCrossOrigin ->
+      "strict-origin-when-cross-origin"
+  }
+}
+
+@internal
+pub fn decode__request_referrer_policy(value: String) {
+  case value {
+    "unsafe-url" -> Ok(RequestReferrerPolicyUnsafeUrl)
+    "no-referrer-when-downgrade" ->
+      Ok(RequestReferrerPolicyNoReferrerWhenDowngrade)
+    "no-referrer" -> Ok(RequestReferrerPolicyNoReferrer)
+    "origin" -> Ok(RequestReferrerPolicyOrigin)
+    "origin-when-cross-origin" -> Ok(RequestReferrerPolicyOriginWhenCrossOrigin)
+    "same-origin" -> Ok(RequestReferrerPolicySameOrigin)
+    "strict-origin" -> Ok(RequestReferrerPolicyStrictOrigin)
+    "strict-origin-when-cross-origin" ->
+      Ok(RequestReferrerPolicyStrictOriginWhenCrossOrigin)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Details of a signed certificate timestamp (SCT).
@@ -366,6 +399,31 @@ pub type InitiatorType {
   InitiatorTypeSignedExchange
   InitiatorTypePreflight
   InitiatorTypeOther
+}
+
+@internal
+pub fn encode__initiator_type(value: InitiatorType) {
+  case value {
+    InitiatorTypeParser -> "parser"
+    InitiatorTypeScript -> "script"
+    InitiatorTypePreload -> "preload"
+    InitiatorTypeSignedExchange -> "SignedExchange"
+    InitiatorTypePreflight -> "preflight"
+    InitiatorTypeOther -> "other"
+  }
+}
+
+@internal
+pub fn decode__initiator_type(value: String) {
+  case value {
+    "parser" -> Ok(InitiatorTypeParser)
+    "script" -> Ok(InitiatorTypeScript)
+    "preload" -> Ok(InitiatorTypePreload)
+    "SignedExchange" -> Ok(InitiatorTypeSignedExchange)
+    "preflight" -> Ok(InitiatorTypePreflight)
+    "other" -> Ok(InitiatorTypeOther)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Cookie object

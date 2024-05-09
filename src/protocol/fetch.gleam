@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/option
 import protocol/io
 import protocol/network
@@ -58,6 +59,23 @@ pub type AuthChallengeSource {
   AuthChallengeSourceProxy
 }
 
+@internal
+pub fn encode__auth_challenge_source(value: AuthChallengeSource) {
+  case value {
+    AuthChallengeSourceServer -> "Server"
+    AuthChallengeSourceProxy -> "Proxy"
+  }
+}
+
+@internal
+pub fn decode__auth_challenge_source(value: String) {
+  case value {
+    "Server" -> Ok(AuthChallengeSourceServer)
+    "Proxy" -> Ok(AuthChallengeSourceProxy)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Response to an AuthChallenge.
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
@@ -73,4 +91,23 @@ pub type AuthChallengeResponseResponse {
   AuthChallengeResponseResponseDefault
   AuthChallengeResponseResponseCancelAuth
   AuthChallengeResponseResponseProvideCredentials
+}
+
+@internal
+pub fn encode__auth_challenge_response_response(value: AuthChallengeResponseResponse) {
+  case value {
+    AuthChallengeResponseResponseDefault -> "Default"
+    AuthChallengeResponseResponseCancelAuth -> "CancelAuth"
+    AuthChallengeResponseResponseProvideCredentials -> "ProvideCredentials"
+  }
+}
+
+@internal
+pub fn decode__auth_challenge_response_response(value: String) {
+  case value {
+    "Default" -> Ok(AuthChallengeResponseResponseDefault)
+    "CancelAuth" -> Ok(AuthChallengeResponseResponseCancelAuth)
+    "ProvideCredentials" -> Ok(AuthChallengeResponseResponseProvideCredentials)
+    _ -> Error(chrome.ProtocolError)
+  }
 }

@@ -847,10 +847,16 @@ to represent the possible values of the enum property `"
         <> "\npub type "
         <> enum_type_name
         <> "{"
-        <> enum
-        |> list.map(fn(item) { enum_type_name <> pascal_case(item) <> "\n" })
-        |> string.join("")
+        <> {
+          enum
+          |> list.map(fn(item) { enum_type_name <> pascal_case(item) <> "\n" })
+          |> string.join("")
+        }
         <> "}\n"
+        <> gen_enum_encoder(enum_type_name, enum)
+        <> "\n"
+        <> gen_enum_decoder(enum_type_name, enum)
+        <> "\n"
       #(enum_type_name, enum_type_def)
       // generate enum definition and ref
     }
@@ -869,10 +875,6 @@ to represent the possible values of the enum property `"
   }
 
   #(safe_snake_case(name) <> ": " <> attr_value <> ",\n", enum_def)
-}
-
-fn gen_type_encoder(type_value: Type, name_prefix: String) {
-  todo
 }
 
 // Returns the type definition body and any additional definitions required for
@@ -937,6 +939,58 @@ fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
   |> list.fold(sb.new(), gen_type_def)
 }
 
+fn internal_fn(name: String, params: String, body: String) {
+  "@internal\npub fn " <> name <> "(\n" <> params <> ") {\n" <> body <> "}\n"
+}
+
+fn get_encoder_name(type_name: String) {
+  "encode__" <> snake_case(type_name)
+}
+
+fn get_decoder_name(type_name: String) {
+  "decode__" <> snake_case(type_name)
+}
+
+pub fn gen_enum_encoder(enum_type_name: String, enum: List(String)) {
+  get_encoder_name(enum_type_name)
+  |> internal_fn(
+    "value: " <> enum_type_name <> "\n",
+    "case value{\n"
+      <> list.fold(enum, "", fn(acc, current) {
+      acc
+      <> enum_type_name
+      <> pascal_case(current)
+      <> " -> \""
+      <> current
+      <> "\"\n"
+    })
+      <> "}\n",
+  )
+}
+
+pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
+  get_decoder_name(enum_type_name)
+  |> internal_fn(
+    "value: String\n",
+    "case value{\n"
+      <> list.fold(enum, "", fn(acc, current) {
+      acc
+      <> "\""
+      <> current
+      <> "\" -> Ok("
+      <> enum_type_name
+      <> pascal_case(current)
+      <> ")\n"
+    })
+      <> "_ -> Error(chrome.ProtocolError)\n"
+      <> "}\n",
+  )
+}
+
+fn gen_type_encoder(type_value: Type, name_prefix: String) {
+  todo
+}
+
 fn remove_import_if_unused(
   builder: sb.StringBuilder,
   full_string: String,
@@ -987,6 +1041,7 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   ])
 }
 
+@internal
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   sb.new()
   |> sb.append(gen_preamble(protocol))

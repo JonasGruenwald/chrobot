@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import protocol/dom
 import protocol/page
 import protocol/runtime
@@ -28,6 +29,27 @@ pub type ScreenOrientationType {
   ScreenOrientationTypeLandscapeSecondary
 }
 
+@internal
+pub fn encode__screen_orientation_type(value: ScreenOrientationType) {
+  case value {
+    ScreenOrientationTypePortraitPrimary -> "portraitPrimary"
+    ScreenOrientationTypePortraitSecondary -> "portraitSecondary"
+    ScreenOrientationTypeLandscapePrimary -> "landscapePrimary"
+    ScreenOrientationTypeLandscapeSecondary -> "landscapeSecondary"
+  }
+}
+
+@internal
+pub fn decode__screen_orientation_type(value: String) {
+  case value {
+    "portraitPrimary" -> Ok(ScreenOrientationTypePortraitPrimary)
+    "portraitSecondary" -> Ok(ScreenOrientationTypePortraitSecondary)
+    "landscapePrimary" -> Ok(ScreenOrientationTypeLandscapePrimary)
+    "landscapeSecondary" -> Ok(ScreenOrientationTypeLandscapeSecondary)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
@@ -43,6 +65,23 @@ pub type DisplayFeatureOrientation {
   DisplayFeatureOrientationHorizontal
 }
 
+@internal
+pub fn encode__display_feature_orientation(value: DisplayFeatureOrientation) {
+  case value {
+    DisplayFeatureOrientationVertical -> "vertical"
+    DisplayFeatureOrientationHorizontal -> "horizontal"
+  }
+}
+
+@internal
+pub fn decode__display_feature_orientation(value: String) {
+  case value {
+    "vertical" -> Ok(DisplayFeatureOrientationVertical)
+    "horizontal" -> Ok(DisplayFeatureOrientationHorizontal)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
@@ -52,6 +91,23 @@ pub type DevicePosture {
 pub type DevicePostureType {
   DevicePostureTypeContinuous
   DevicePostureTypeFolded
+}
+
+@internal
+pub fn encode__device_posture_type(value: DevicePostureType) {
+  case value {
+    DevicePostureTypeContinuous -> "continuous"
+    DevicePostureTypeFolded -> "folded"
+  }
+}
+
+@internal
+pub fn decode__device_posture_type(value: String) {
+  case value {
+    "continuous" -> Ok(DevicePostureTypeContinuous)
+    "folded" -> Ok(DevicePostureTypeFolded)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 pub type MediaFeature {

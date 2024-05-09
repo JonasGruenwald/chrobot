@@ -14,6 +14,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dict
 import gleam/dynamic
 import gleam/option
@@ -38,6 +39,25 @@ pub type SerializationOptionsSerialization {
   SerializationOptionsSerializationDeep
   SerializationOptionsSerializationJson
   SerializationOptionsSerializationIdOnly
+}
+
+@internal
+pub fn encode__serialization_options_serialization(value: SerializationOptionsSerialization) {
+  case value {
+    SerializationOptionsSerializationDeep -> "deep"
+    SerializationOptionsSerializationJson -> "json"
+    SerializationOptionsSerializationIdOnly -> "idOnly"
+  }
+}
+
+@internal
+pub fn decode__serialization_options_serialization(value: String) {
+  case value {
+    "deep" -> Ok(SerializationOptionsSerializationDeep)
+    "json" -> Ok(SerializationOptionsSerializationJson)
+    "idOnly" -> Ok(SerializationOptionsSerializationIdOnly)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Represents deep serialized value.
@@ -79,6 +99,67 @@ pub type DeepSerializedValueType {
   DeepSerializedValueTypeGenerator
 }
 
+@internal
+pub fn encode__deep_serialized_value_type(value: DeepSerializedValueType) {
+  case value {
+    DeepSerializedValueTypeUndefined -> "undefined"
+    DeepSerializedValueTypeNull -> "null"
+    DeepSerializedValueTypeString -> "string"
+    DeepSerializedValueTypeNumber -> "number"
+    DeepSerializedValueTypeBoolean -> "boolean"
+    DeepSerializedValueTypeBigint -> "bigint"
+    DeepSerializedValueTypeRegexp -> "regexp"
+    DeepSerializedValueTypeDate -> "date"
+    DeepSerializedValueTypeSymbol -> "symbol"
+    DeepSerializedValueTypeArray -> "array"
+    DeepSerializedValueTypeObject -> "object"
+    DeepSerializedValueTypeFunction -> "function"
+    DeepSerializedValueTypeMap -> "map"
+    DeepSerializedValueTypeSet -> "set"
+    DeepSerializedValueTypeWeakmap -> "weakmap"
+    DeepSerializedValueTypeWeakset -> "weakset"
+    DeepSerializedValueTypeError -> "error"
+    DeepSerializedValueTypeProxy -> "proxy"
+    DeepSerializedValueTypePromise -> "promise"
+    DeepSerializedValueTypeTypedarray -> "typedarray"
+    DeepSerializedValueTypeArraybuffer -> "arraybuffer"
+    DeepSerializedValueTypeNode -> "node"
+    DeepSerializedValueTypeWindow -> "window"
+    DeepSerializedValueTypeGenerator -> "generator"
+  }
+}
+
+@internal
+pub fn decode__deep_serialized_value_type(value: String) {
+  case value {
+    "undefined" -> Ok(DeepSerializedValueTypeUndefined)
+    "null" -> Ok(DeepSerializedValueTypeNull)
+    "string" -> Ok(DeepSerializedValueTypeString)
+    "number" -> Ok(DeepSerializedValueTypeNumber)
+    "boolean" -> Ok(DeepSerializedValueTypeBoolean)
+    "bigint" -> Ok(DeepSerializedValueTypeBigint)
+    "regexp" -> Ok(DeepSerializedValueTypeRegexp)
+    "date" -> Ok(DeepSerializedValueTypeDate)
+    "symbol" -> Ok(DeepSerializedValueTypeSymbol)
+    "array" -> Ok(DeepSerializedValueTypeArray)
+    "object" -> Ok(DeepSerializedValueTypeObject)
+    "function" -> Ok(DeepSerializedValueTypeFunction)
+    "map" -> Ok(DeepSerializedValueTypeMap)
+    "set" -> Ok(DeepSerializedValueTypeSet)
+    "weakmap" -> Ok(DeepSerializedValueTypeWeakmap)
+    "weakset" -> Ok(DeepSerializedValueTypeWeakset)
+    "error" -> Ok(DeepSerializedValueTypeError)
+    "proxy" -> Ok(DeepSerializedValueTypeProxy)
+    "promise" -> Ok(DeepSerializedValueTypePromise)
+    "typedarray" -> Ok(DeepSerializedValueTypeTypedarray)
+    "arraybuffer" -> Ok(DeepSerializedValueTypeArraybuffer)
+    "node" -> Ok(DeepSerializedValueTypeNode)
+    "window" -> Ok(DeepSerializedValueTypeWindow)
+    "generator" -> Ok(DeepSerializedValueTypeGenerator)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Unique object identifier.
 pub type RemoteObjectId {
   RemoteObjectId(String)
@@ -116,6 +197,35 @@ pub type RemoteObjectType {
   RemoteObjectTypeBigint
 }
 
+@internal
+pub fn encode__remote_object_type(value: RemoteObjectType) {
+  case value {
+    RemoteObjectTypeObject -> "object"
+    RemoteObjectTypeFunction -> "function"
+    RemoteObjectTypeUndefined -> "undefined"
+    RemoteObjectTypeString -> "string"
+    RemoteObjectTypeNumber -> "number"
+    RemoteObjectTypeBoolean -> "boolean"
+    RemoteObjectTypeSymbol -> "symbol"
+    RemoteObjectTypeBigint -> "bigint"
+  }
+}
+
+@internal
+pub fn decode__remote_object_type(value: String) {
+  case value {
+    "object" -> Ok(RemoteObjectTypeObject)
+    "function" -> Ok(RemoteObjectTypeFunction)
+    "undefined" -> Ok(RemoteObjectTypeUndefined)
+    "string" -> Ok(RemoteObjectTypeString)
+    "number" -> Ok(RemoteObjectTypeNumber)
+    "boolean" -> Ok(RemoteObjectTypeBoolean)
+    "symbol" -> Ok(RemoteObjectTypeSymbol)
+    "bigint" -> Ok(RemoteObjectTypeBigint)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `subtype` of `RemoteObject`
 pub type RemoteObjectSubtype {
@@ -138,6 +248,57 @@ pub type RemoteObjectSubtype {
   RemoteObjectSubtypeDataview
   RemoteObjectSubtypeWebassemblymemory
   RemoteObjectSubtypeWasmvalue
+}
+
+@internal
+pub fn encode__remote_object_subtype(value: RemoteObjectSubtype) {
+  case value {
+    RemoteObjectSubtypeArray -> "array"
+    RemoteObjectSubtypeNull -> "null"
+    RemoteObjectSubtypeNode -> "node"
+    RemoteObjectSubtypeRegexp -> "regexp"
+    RemoteObjectSubtypeDate -> "date"
+    RemoteObjectSubtypeMap -> "map"
+    RemoteObjectSubtypeSet -> "set"
+    RemoteObjectSubtypeWeakmap -> "weakmap"
+    RemoteObjectSubtypeWeakset -> "weakset"
+    RemoteObjectSubtypeIterator -> "iterator"
+    RemoteObjectSubtypeGenerator -> "generator"
+    RemoteObjectSubtypeError -> "error"
+    RemoteObjectSubtypeProxy -> "proxy"
+    RemoteObjectSubtypePromise -> "promise"
+    RemoteObjectSubtypeTypedarray -> "typedarray"
+    RemoteObjectSubtypeArraybuffer -> "arraybuffer"
+    RemoteObjectSubtypeDataview -> "dataview"
+    RemoteObjectSubtypeWebassemblymemory -> "webassemblymemory"
+    RemoteObjectSubtypeWasmvalue -> "wasmvalue"
+  }
+}
+
+@internal
+pub fn decode__remote_object_subtype(value: String) {
+  case value {
+    "array" -> Ok(RemoteObjectSubtypeArray)
+    "null" -> Ok(RemoteObjectSubtypeNull)
+    "node" -> Ok(RemoteObjectSubtypeNode)
+    "regexp" -> Ok(RemoteObjectSubtypeRegexp)
+    "date" -> Ok(RemoteObjectSubtypeDate)
+    "map" -> Ok(RemoteObjectSubtypeMap)
+    "set" -> Ok(RemoteObjectSubtypeSet)
+    "weakmap" -> Ok(RemoteObjectSubtypeWeakmap)
+    "weakset" -> Ok(RemoteObjectSubtypeWeakset)
+    "iterator" -> Ok(RemoteObjectSubtypeIterator)
+    "generator" -> Ok(RemoteObjectSubtypeGenerator)
+    "error" -> Ok(RemoteObjectSubtypeError)
+    "proxy" -> Ok(RemoteObjectSubtypeProxy)
+    "promise" -> Ok(RemoteObjectSubtypePromise)
+    "typedarray" -> Ok(RemoteObjectSubtypeTypedarray)
+    "arraybuffer" -> Ok(RemoteObjectSubtypeArraybuffer)
+    "dataview" -> Ok(RemoteObjectSubtypeDataview)
+    "webassemblymemory" -> Ok(RemoteObjectSubtypeWebassemblymemory)
+    "wasmvalue" -> Ok(RemoteObjectSubtypeWasmvalue)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Object property descriptor.

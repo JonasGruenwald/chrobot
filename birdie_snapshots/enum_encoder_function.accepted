@@ -1,0 +1,16 @@
+---
+version: 1.1.4
+title: Enum encoder function
+file: ./test/internal/generate_bindings_test.gleam
+test_name: gen_enum_encoder_test
+---
+@internal
+pub fn encode__certificate_transparency_compliance(
+value: CertificateTransparencyCompliance
+) {
+case value{
+CertificateTransparencyComplianceUnknown -> "unknown"
+CertificateTransparencyComplianceNotCompliant -> "not-compliant"
+CertificateTransparencyComplianceCompliant -> "compliant"
+}
+}

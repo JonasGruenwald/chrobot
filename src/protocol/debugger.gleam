@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/option
 import protocol/runtime
 
@@ -72,6 +73,39 @@ pub type ScopeType {
   ScopeTypeWasmExpressionStack
 }
 
+@internal
+pub fn encode__scope_type(value: ScopeType) {
+  case value {
+    ScopeTypeGlobal -> "global"
+    ScopeTypeLocal -> "local"
+    ScopeTypeWith -> "with"
+    ScopeTypeClosure -> "closure"
+    ScopeTypeCatch -> "catch"
+    ScopeTypeBlock -> "block"
+    ScopeTypeScript -> "script"
+    ScopeTypeEval -> "eval"
+    ScopeTypeModule -> "module"
+    ScopeTypeWasmExpressionStack -> "wasm-expression-stack"
+  }
+}
+
+@internal
+pub fn decode__scope_type(value: String) {
+  case value {
+    "global" -> Ok(ScopeTypeGlobal)
+    "local" -> Ok(ScopeTypeLocal)
+    "with" -> Ok(ScopeTypeWith)
+    "closure" -> Ok(ScopeTypeClosure)
+    "catch" -> Ok(ScopeTypeCatch)
+    "block" -> Ok(ScopeTypeBlock)
+    "script" -> Ok(ScopeTypeScript)
+    "eval" -> Ok(ScopeTypeEval)
+    "module" -> Ok(ScopeTypeModule)
+    "wasm-expression-stack" -> Ok(ScopeTypeWasmExpressionStack)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Search match for resource.
 pub type SearchMatch {
   SearchMatch(line_number: Float, line_content: String)
@@ -94,6 +128,25 @@ pub type BreakLocationType {
   BreakLocationTypeReturn
 }
 
+@internal
+pub fn encode__break_location_type(value: BreakLocationType) {
+  case value {
+    BreakLocationTypeDebuggerStatement -> "debuggerStatement"
+    BreakLocationTypeCall -> "call"
+    BreakLocationTypeReturn -> "return"
+  }
+}
+
+@internal
+pub fn decode__break_location_type(value: String) {
+  case value {
+    "debuggerStatement" -> Ok(BreakLocationTypeDebuggerStatement)
+    "call" -> Ok(BreakLocationTypeCall)
+    "return" -> Ok(BreakLocationTypeReturn)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Enum of possible script languages.
 pub type ScriptLanguage {
   ScriptLanguageJavaScript
@@ -112,4 +165,25 @@ pub type DebugSymbolsType {
   DebugSymbolsTypeSourceMap
   DebugSymbolsTypeEmbeddedDwarf
   DebugSymbolsTypeExternalDwarf
+}
+
+@internal
+pub fn encode__debug_symbols_type(value: DebugSymbolsType) {
+  case value {
+    DebugSymbolsTypeNone -> "None"
+    DebugSymbolsTypeSourceMap -> "SourceMap"
+    DebugSymbolsTypeEmbeddedDwarf -> "EmbeddedDWARF"
+    DebugSymbolsTypeExternalDwarf -> "ExternalDWARF"
+  }
+}
+
+@internal
+pub fn decode__debug_symbols_type(value: String) {
+  case value {
+    "None" -> Ok(DebugSymbolsTypeNone)
+    "SourceMap" -> Ok(DebugSymbolsTypeSourceMap)
+    "EmbeddedDWARF" -> Ok(DebugSymbolsTypeEmbeddedDwarf)
+    "ExternalDWARF" -> Ok(DebugSymbolsTypeExternalDwarf)
+    _ -> Error(chrome.ProtocolError)
+  }
 }

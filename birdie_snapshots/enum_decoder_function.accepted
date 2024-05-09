@@ -1,0 +1,17 @@
+---
+version: 1.1.4
+title: Enum decoder function
+file: ./test/internal/generate_bindings_test.gleam
+test_name: gen_enum_encoder_decoder_test
+---
+@internal
+pub fn decode__certificate_transparency_compliance(
+value: String
+) {
+case value{
+"unknown" -> Ok(CertificateTransparencyComplianceUnknown)
+"not-compliant" -> Ok(CertificateTransparencyComplianceNotCompliant)
+"compliant" -> Ok(CertificateTransparencyComplianceCompliant)
+_ -> Error(chrome.ProtocolError)
+}
+}

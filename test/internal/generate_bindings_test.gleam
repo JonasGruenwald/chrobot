@@ -1,7 +1,8 @@
+import birdie
+import chrobot/internal/generate_bindings.{parse_protocol}
 import gleam/list
 import gleam/option
 import gleeunit/should
-import scripts/generate_bindings.{parse_protocol}
 
 pub fn parse_browser_protocol_test() {
   let assert Ok(protocol) = parse_protocol("./assets/browser_protocol.json")
@@ -66,4 +67,13 @@ pub fn parse_js_protocol_test() {
   // One of the enum values should be "window"
   list.any(enum_values, fn(v) { v == "window" })
   |> should.be_true
+}
+
+pub fn gen_enum_encoder_decoder_test() {
+  let enum_type_name = "CertificateTransparencyCompliance"
+  let enum_values = ["unknown", "not-compliant", "compliant"]
+  generate_bindings.gen_enum_encoder(enum_type_name, enum_values)
+  |> birdie.snap(title: "Enum encoder function")
+  generate_bindings.gen_enum_decoder(enum_type_name, enum_values)
+  |> birdie.snap(title: "Enum decoder function")
 }
