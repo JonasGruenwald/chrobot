@@ -34,8 +34,19 @@ pub type LaunchError {
   UnknowOperatingSystem
   CouldNotFindExecutable
   FailedToStart
+  /// This is used by the launch functions of the root `chrobot` module
   UnresponsiveAfterStart
   ProtocolVersionMismatch(supported_version: String, got_version: String)
+}
+
+pub type RequestError {
+  PortError
+  // These errors are for OTP actor failures
+  ChromeAgentTimeout
+  ChromeAgentDown
+  // The ProtocolError variant is used by `/protocol` domains 
+  // to return a homogeneous error type for all requests.
+  ProtocolError
 }
 
 pub type BrowserConfig {
@@ -112,7 +123,7 @@ pub fn launch() {
   ))
 }
 
-/// Quit the browser and shut down the actor
+/// Quit the browser and shut down the actor.  
 /// This function will attempt graceful shutdown, if the browser does not respond in time,
 /// it will also send a kill signal to the actor to force it to shut down.
 /// The result typing reflects the success of graceful shutdown.
@@ -142,8 +153,12 @@ pub fn call(
   method: String,
   params: Option(Json),
   time_out,
-) -> Result(d.Dynamic, Nil) {
-  actor.call(browser, Call(_, method, params), time_out)
+) -> Result(d.Dynamic, RequestError) {
+  case process.try_call(browser, Call(_, method, params), time_out) {
+    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
+    Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
+    Ok(nested_result) -> nested_result
+  }
 }
 
 /// Issue a protocol call to the browser without waiting for a response,
@@ -161,7 +176,7 @@ pub fn send(
 
 /// Hardcoded protocol call to get the browser version
 /// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser/#method-getVersion 
-pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, Nil) {
+pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, RequestError) {
   use res <- result.try(call(
     browser,
     "Browser.getVersion",
@@ -179,7 +194,7 @@ pub fn get_version(browser: Subject(Message)) -> Result(BrowserVersion, Nil) {
     )
   case version_decoder(res) {
     Ok(version) -> Ok(version)
-    Error(_) -> Error(Nil)
+    Error(_) -> Error(ProtocolError)
   }
 }
 
@@ -358,7 +373,7 @@ pub type Message {
   Shutdown(reply_with: Subject(Nil))
   Kill
   Call(
-    reply_with: Subject(Result(d.Dynamic, Nil)),
+    reply_with: Subject(Result(d.Dynamic, RequestError)),
     method: String,
     params: Option(Json),
   )
@@ -369,7 +384,7 @@ pub type Message {
 }
 
 type PendingRequest {
-  PendingRequest(id: Int, reply_with: Subject(Result(d.Dynamic, Nil)))
+  PendingRequest(id: Int, reply_with: Subject(Result(d.Dynamic, RequestError)))
 }
 
 /// The main loop of the actor, handling all messages
@@ -447,7 +462,7 @@ fn loop(message: Message, state: BrowserState) {
 /// The response will be sent back to the client subject when it arrives from the browser
 fn handle_call(
   state: BrowserState,
-  client: Subject(Result(d.Dynamic, Nil)),
+  client: Subject(Result(d.Dynamic, RequestError)),
   method: String,
   params: Option(Json),
 ) {
@@ -462,7 +477,7 @@ fn handle_call(
     Error(_) -> {
       log(state.instance, "Request call to browser was unsuccessful!")
       io.debug(#(client, payload))
-      process.send(client, Error(Nil))
+      process.send(client, Error(PortError))
       actor.continue(BrowserState(
         instance: state.instance,
         next_id: request_id + 1,

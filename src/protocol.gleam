@@ -18,31 +18,3 @@ const version_minor = "3"
 pub fn version() {
   #(version_major, version_minor)
 }
-
-// Shared protocol utils
-
-/// Shared error type for calling protocol functions
-pub type ProtocolError {
-  ProtocolDecoderFailed
-}
-
-import gleam/io
-
-/// Like `result.try` but returns a `ProtocolError` for any error
-/// and logs a warning with the error data.
-/// (Decoder errors mean the bindings are incorrect)
-pub fn try_protocol_decoder(
-  result: Result(a, b),
-  apply fun: fn(a) -> Result(c, ProtocolError),
-) -> Result(c, ProtocolError) {
-  case result {
-    Ok(value) -> fun(value)
-    Error(data) -> {
-      io.debug(#(
-        "Protocol decoder failed, there must be an error in the bindings!",
-        data,
-      ))
-      Error(ProtocolDecoderFailed)
-    }
-  }
-}
