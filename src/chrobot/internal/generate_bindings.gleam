@@ -1022,6 +1022,26 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
     EnumType(enum) -> {
       gen_enum_encoder(type_def.id, enum)
     }
+    ArrayType(items: PrimitiveItem(primitive_type)) -> {
+      get_encoder_name(type_def.id)
+      |> internal_fn(
+        "value: " <> type_def.id <> "\n",
+        "case value{\n"
+          <> type_def.id
+          <> "(inner_value) -> json.array(inner_value, of: json."
+          <> to_gleam_primitive_function(primitive_type)
+          <> ")\n}",
+      )
+    }
+    // Below are not implemented because they currently don't occur
+    ArrayType(items: ReferenceItem(ref_target)) -> {
+      io.debug(type_def)
+      panic as "tried to generate type def encoder for an array of refs"
+    }
+    RefType(_) -> {
+      io.debug(type_def)
+      panic as "tried to generate type def encoder for a type which is a ref!"
+    }
     _ ->
       "// TODO: implement type encoder for "
       <> string.inspect(type_def.inner)

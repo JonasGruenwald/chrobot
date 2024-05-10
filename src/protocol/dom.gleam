@@ -249,7 +249,13 @@ pub type Quad {
   Quad(List(Float))
 }
 
-// TODO: implement type encoder for ArrayType(PrimitiveItem("number"))
+@internal
+pub fn encode__quad(value: Quad) {
+  case value {
+    Quad(inner_value) -> json.array(inner_value, of: json.float)
+  }
+}
+
 /// Box model.
 pub type BoxModel {
   BoxModel(
