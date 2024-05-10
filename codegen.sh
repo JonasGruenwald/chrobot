@@ -1,2 +1,9 @@
 #!/bin/bash
-gleam run -m chrobot/internal/generate_bindings && gleam format && gleam check && echo "Done & Dusted! 🧹"
+
+set -e
+
+rm -r src/protocol 
+gleam run -m chrobot/internal/generate_bindings
+gleam format
+gleam check
+echo "Done & Dusted! 🧹"

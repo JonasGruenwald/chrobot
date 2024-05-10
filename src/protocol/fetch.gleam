@@ -11,6 +11,8 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dynamic
+import gleam/json
 import gleam/option
 import protocol/io
 import protocol/network
@@ -21,6 +23,13 @@ pub type RequestId {
   RequestId(String)
 }
 
+@internal
+pub fn encode__request_id(value: RequestId) {
+  case value {
+    RequestId(inner_value) -> json.string(inner_value)
+  }
+}
+
 /// Stages of the request to handle. Request will intercept before the request is
 /// sent. Response will intercept after the response is received (but before response
 /// body is received).
@@ -29,6 +38,7 @@ pub type RequestStage {
   RequestStageResponse
 }
 
+// TODO: implement type encoder for EnumType(["Request", "Response"])
 pub type RequestPattern {
   RequestPattern(
     url_pattern: option.Option(String),
@@ -37,11 +47,13 @@ pub type RequestPattern {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("urlPattern", Some("Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is\nbackslash. Omitting is equivalent to `\"*\"`."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("resourceType", Some("If set, only requests for matching resource types will be intercepted."), None, None, Some(True), RefType("Network.ResourceType")), PropertyDefinition("requestStage", Some("Stage at which to begin intercepting requests. Default is Request."), None, None, Some(True), RefType("RequestStage"))]))
 /// Response HTTP header entry
 pub type HeaderEntry {
   HeaderEntry(name: String, value: String)
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", None, None, None, None, PrimitiveType("string")), PropertyDefinition("value", None, None, None, None, PrimitiveType("string"))]))
 /// Authorization challenge for HTTP status code 401 or 407.
 pub type AuthChallenge {
   AuthChallenge(
@@ -65,17 +77,19 @@ pub fn encode__auth_challenge_source(value: AuthChallengeSource) {
     AuthChallengeSourceServer -> "Server"
     AuthChallengeSourceProxy -> "Proxy"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__auth_challenge_source(value: String) {
-  case value {
-    "Server" -> Ok(AuthChallengeSourceServer)
-    "Proxy" -> Ok(AuthChallengeSourceProxy)
+pub fn decode__auth_challenge_source(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("Server") -> Ok(AuthChallengeSourceServer)
+    Ok("Proxy") -> Ok(AuthChallengeSourceProxy)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("source", Some("Source of the authentication challenge."), None, None, Some(True), EnumType(["Server", "Proxy"])), PropertyDefinition("origin", Some("Origin of the challenger."), None, None, None, PrimitiveType("string")), PropertyDefinition("scheme", Some("The authentication scheme used, such as basic or digest"), None, None, None, PrimitiveType("string")), PropertyDefinition("realm", Some("The realm of the challenge. May be empty."), None, None, None, PrimitiveType("string"))]))
 /// Response to an AuthChallenge.
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
@@ -100,14 +114,17 @@ pub fn encode__auth_challenge_response_response(value: AuthChallengeResponseResp
     AuthChallengeResponseResponseCancelAuth -> "CancelAuth"
     AuthChallengeResponseResponseProvideCredentials -> "ProvideCredentials"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__auth_challenge_response_response(value: String) {
-  case value {
-    "Default" -> Ok(AuthChallengeResponseResponseDefault)
-    "CancelAuth" -> Ok(AuthChallengeResponseResponseCancelAuth)
-    "ProvideCredentials" -> Ok(AuthChallengeResponseResponseProvideCredentials)
+pub fn decode__auth_challenge_response_response(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("Default") -> Ok(AuthChallengeResponseResponseDefault)
+    Ok("CancelAuth") -> Ok(AuthChallengeResponseResponseCancelAuth)
+    Ok("ProvideCredentials") ->
+      Ok(AuthChallengeResponseResponseProvideCredentials)
     _ -> Error(chrome.ProtocolError)
   }
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("response", Some("The decision on what to do in response to the authorization challenge.  Default means\ndeferring to the default behavior of the net stack, which will likely either the Cancel\nauthentication or display a popup dialog box."), None, None, None, EnumType(["Default", "CancelAuth", "ProvideCredentials"])), PropertyDefinition("username", Some("The username to provide, possibly empty. Should only be set if response is\nProvideCredentials."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("password", Some("The password to provide, possibly empty. Should only be set if response is\nProvideCredentials."), None, None, Some(True), PrimitiveType("string"))]))

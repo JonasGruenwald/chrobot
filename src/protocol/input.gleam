@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 
 pub type TouchPoint {
@@ -26,6 +27,7 @@ pub type TouchPoint {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("x", Some("X coordinate of the event relative to the main frame's viewport in CSS pixels."), None, None, None, PrimitiveType("number")), PropertyDefinition("y", Some("Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to\nthe top of the viewport and Y increases as it proceeds towards the bottom of the viewport."), None, None, None, PrimitiveType("number")), PropertyDefinition("radiusX", Some("X radius of the touch area (default: 1.0)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("radiusY", Some("Y radius of the touch area (default: 1.0)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("rotationAngle", Some("Rotation angle (default: 0.0)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("force", Some("Force (default: 1.0)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("tiltX", Some("The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)"), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("tiltY", Some("The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("id", Some("Identifier used to track touch sources between events, must be unique within an event."), None, None, Some(True), PrimitiveType("number"))]))
 pub type MouseButton {
   MouseButtonNone
   MouseButtonLeft
@@ -35,7 +37,15 @@ pub type MouseButton {
   MouseButtonForward
 }
 
+// TODO: implement type encoder for EnumType(["none", "left", "middle", "right", "back", "forward"])
 /// UTC time in seconds, counted from January 1, 1970.
 pub type TimeSinceEpoch {
   TimeSinceEpoch(Float)
+}
+
+@internal
+pub fn encode__time_since_epoch(value: TimeSinceEpoch) {
+  case value {
+    TimeSinceEpoch(inner_value) -> json.float(inner_value)
+  }
 }

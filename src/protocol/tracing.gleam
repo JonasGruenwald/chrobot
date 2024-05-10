@@ -19,3 +19,4 @@ pub type TraceConfig {
     excluded_categories: option.Option(List(String)),
   )
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("includedCategories", Some("Included category filters."), None, None, Some(True), ArrayType(PrimitiveItem("string"))), PropertyDefinition("excludedCategories", Some("Excluded category filters."), None, None, Some(True), ArrayType(PrimitiveItem("string")))]))

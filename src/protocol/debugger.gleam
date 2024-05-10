@@ -12,6 +12,8 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dynamic
+import gleam/json
 import gleam/option
 import protocol/runtime
 
@@ -20,9 +22,23 @@ pub type BreakpointId {
   BreakpointId(String)
 }
 
+@internal
+pub fn encode__breakpoint_id(value: BreakpointId) {
+  case value {
+    BreakpointId(inner_value) -> json.string(inner_value)
+  }
+}
+
 /// Call frame identifier.
 pub type CallFrameId {
   CallFrameId(String)
+}
+
+@internal
+pub fn encode__call_frame_id(value: CallFrameId) {
+  case value {
+    CallFrameId(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Location in the source code.
@@ -34,6 +50,7 @@ pub type Location {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("scriptId", Some("Script identifier as reported in the `Debugger.scriptParsed`."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, Some(True), PrimitiveType("integer"))]))
 /// JavaScript call frame. Array of call frames form the call stack.
 pub type CallFrame {
   CallFrame(
@@ -47,6 +64,7 @@ pub type CallFrame {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("callFrameId", Some("Call frame identifier. This identifier is only valid while the virtual machine is paused."), None, None, None, RefType("CallFrameId")), PropertyDefinition("functionName", Some("Name of the JavaScript function called on this call frame."), None, None, None, PrimitiveType("string")), PropertyDefinition("functionLocation", Some("Location in the source code."), None, None, Some(True), RefType("Location")), PropertyDefinition("location", Some("Location in the source code."), None, None, None, RefType("Location")), PropertyDefinition("scopeChain", Some("Scope chain for this call frame."), None, None, None, ArrayType(ReferenceItem("Scope"))), PropertyDefinition("this", Some("`this` object for this call frame."), None, None, None, RefType("Runtime.RemoteObject")), PropertyDefinition("returnValue", Some("The value being returned, if the function is at return point."), None, None, Some(True), RefType("Runtime.RemoteObject"))]))
 /// Scope description.
 pub type Scope {
   Scope(
@@ -87,30 +105,33 @@ pub fn encode__scope_type(value: ScopeType) {
     ScopeTypeModule -> "module"
     ScopeTypeWasmExpressionStack -> "wasm-expression-stack"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__scope_type(value: String) {
-  case value {
-    "global" -> Ok(ScopeTypeGlobal)
-    "local" -> Ok(ScopeTypeLocal)
-    "with" -> Ok(ScopeTypeWith)
-    "closure" -> Ok(ScopeTypeClosure)
-    "catch" -> Ok(ScopeTypeCatch)
-    "block" -> Ok(ScopeTypeBlock)
-    "script" -> Ok(ScopeTypeScript)
-    "eval" -> Ok(ScopeTypeEval)
-    "module" -> Ok(ScopeTypeModule)
-    "wasm-expression-stack" -> Ok(ScopeTypeWasmExpressionStack)
+pub fn decode__scope_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("global") -> Ok(ScopeTypeGlobal)
+    Ok("local") -> Ok(ScopeTypeLocal)
+    Ok("with") -> Ok(ScopeTypeWith)
+    Ok("closure") -> Ok(ScopeTypeClosure)
+    Ok("catch") -> Ok(ScopeTypeCatch)
+    Ok("block") -> Ok(ScopeTypeBlock)
+    Ok("script") -> Ok(ScopeTypeScript)
+    Ok("eval") -> Ok(ScopeTypeEval)
+    Ok("module") -> Ok(ScopeTypeModule)
+    Ok("wasm-expression-stack") -> Ok(ScopeTypeWasmExpressionStack)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Scope type."), None, None, None, EnumType(["global", "local", "with", "closure", "catch", "block", "script", "eval", "module", "wasm-expression-stack"])), PropertyDefinition("object", Some("Object representing the scope. For `global` and `with` scopes it represents the actual\nobject; for the rest of the scopes, it is artificial transient object enumerating scope\nvariables as its properties."), None, None, None, RefType("Runtime.RemoteObject")), PropertyDefinition("name", None, None, None, Some(True), PrimitiveType("string")), PropertyDefinition("startLocation", Some("Location in the source code where scope starts"), None, None, Some(True), RefType("Location")), PropertyDefinition("endLocation", Some("Location in the source code where scope ends"), None, None, Some(True), RefType("Location"))]))
 /// Search match for resource.
 pub type SearchMatch {
   SearchMatch(line_number: Float, line_content: String)
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("lineNumber", Some("Line number in resource content."), None, None, None, PrimitiveType("number")), PropertyDefinition("lineContent", Some("Line with match content."), None, None, None, PrimitiveType("string"))]))
 pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
@@ -135,24 +156,27 @@ pub fn encode__break_location_type(value: BreakLocationType) {
     BreakLocationTypeCall -> "call"
     BreakLocationTypeReturn -> "return"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__break_location_type(value: String) {
-  case value {
-    "debuggerStatement" -> Ok(BreakLocationTypeDebuggerStatement)
-    "call" -> Ok(BreakLocationTypeCall)
-    "return" -> Ok(BreakLocationTypeReturn)
+pub fn decode__break_location_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("debuggerStatement") -> Ok(BreakLocationTypeDebuggerStatement)
+    Ok("call") -> Ok(BreakLocationTypeCall)
+    Ok("return") -> Ok(BreakLocationTypeReturn)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("scriptId", Some("Script identifier as reported in the `Debugger.scriptParsed`."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("type", None, None, None, Some(True), EnumType(["debuggerStatement", "call", "return"]))]))
 /// Enum of possible script languages.
 pub type ScriptLanguage {
   ScriptLanguageJavaScript
   ScriptLanguageWebAssembly
 }
 
+// TODO: implement type encoder for EnumType(["JavaScript", "WebAssembly"])
 /// Debug symbols available for a wasm script.
 pub type DebugSymbols {
   DebugSymbols(type_: DebugSymbolsType, external_url: option.Option(String))
@@ -175,15 +199,17 @@ pub fn encode__debug_symbols_type(value: DebugSymbolsType) {
     DebugSymbolsTypeEmbeddedDwarf -> "EmbeddedDWARF"
     DebugSymbolsTypeExternalDwarf -> "ExternalDWARF"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__debug_symbols_type(value: String) {
-  case value {
-    "None" -> Ok(DebugSymbolsTypeNone)
-    "SourceMap" -> Ok(DebugSymbolsTypeSourceMap)
-    "EmbeddedDWARF" -> Ok(DebugSymbolsTypeEmbeddedDwarf)
-    "ExternalDWARF" -> Ok(DebugSymbolsTypeExternalDwarf)
+pub fn decode__debug_symbols_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("None") -> Ok(DebugSymbolsTypeNone)
+    Ok("SourceMap") -> Ok(DebugSymbolsTypeSourceMap)
+    Ok("EmbeddedDWARF") -> Ok(DebugSymbolsTypeEmbeddedDwarf)
+    Ok("ExternalDWARF") -> Ok(DebugSymbolsTypeExternalDwarf)
     _ -> Error(chrome.ProtocolError)
   }
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Type of the debug symbols."), None, None, None, EnumType(["None", "SourceMap", "EmbeddedDWARF", "ExternalDWARF"])), PropertyDefinition("externalURL", Some("URL of the external symbol source."), None, None, Some(True), PrimitiveType("string"))]))

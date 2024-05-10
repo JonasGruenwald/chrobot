@@ -10,8 +10,17 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
+
 /// This is either obtained from another method or specified as `blob:<uuid>` where
 /// `<uuid>` is an UUID of a Blob.
 pub type StreamHandle {
   StreamHandle(String)
+}
+
+@internal
+pub fn encode__stream_handle(value: StreamHandle) {
+  case value {
+    StreamHandle(inner_value) -> json.string(inner_value)
+  }
 }

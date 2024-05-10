@@ -6,12 +6,12 @@ test_name: gen_enum_encoder_decoder_test
 ---
 @internal
 pub fn decode__certificate_transparency_compliance(
-value: String
+raw_value: dynamic.Dynamic
 ) {
-case value{
-"unknown" -> Ok(CertificateTransparencyComplianceUnknown)
-"not-compliant" -> Ok(CertificateTransparencyComplianceNotCompliant)
-"compliant" -> Ok(CertificateTransparencyComplianceCompliant)
+case dynamic.string(value){
+Ok("unknown") -> Ok(CertificateTransparencyComplianceUnknown)
+Ok("not-compliant") -> Ok(CertificateTransparencyComplianceNotCompliant)
+Ok("compliant") -> Ok(CertificateTransparencyComplianceCompliant)
 _ -> Error(chrome.ProtocolError)
 }
 }

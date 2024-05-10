@@ -11,6 +11,8 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dynamic
+import gleam/json
 import gleam/option
 import protocol/network
 import protocol/runtime
@@ -67,24 +69,25 @@ pub fn encode__log_entry_source(value: LogEntrySource) {
     LogEntrySourceRecommendation -> "recommendation"
     LogEntrySourceOther -> "other"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__log_entry_source(value: String) {
-  case value {
-    "xml" -> Ok(LogEntrySourceXml)
-    "javascript" -> Ok(LogEntrySourceJavascript)
-    "network" -> Ok(LogEntrySourceNetwork)
-    "storage" -> Ok(LogEntrySourceStorage)
-    "appcache" -> Ok(LogEntrySourceAppcache)
-    "rendering" -> Ok(LogEntrySourceRendering)
-    "security" -> Ok(LogEntrySourceSecurity)
-    "deprecation" -> Ok(LogEntrySourceDeprecation)
-    "worker" -> Ok(LogEntrySourceWorker)
-    "violation" -> Ok(LogEntrySourceViolation)
-    "intervention" -> Ok(LogEntrySourceIntervention)
-    "recommendation" -> Ok(LogEntrySourceRecommendation)
-    "other" -> Ok(LogEntrySourceOther)
+pub fn decode__log_entry_source(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("xml") -> Ok(LogEntrySourceXml)
+    Ok("javascript") -> Ok(LogEntrySourceJavascript)
+    Ok("network") -> Ok(LogEntrySourceNetwork)
+    Ok("storage") -> Ok(LogEntrySourceStorage)
+    Ok("appcache") -> Ok(LogEntrySourceAppcache)
+    Ok("rendering") -> Ok(LogEntrySourceRendering)
+    Ok("security") -> Ok(LogEntrySourceSecurity)
+    Ok("deprecation") -> Ok(LogEntrySourceDeprecation)
+    Ok("worker") -> Ok(LogEntrySourceWorker)
+    Ok("violation") -> Ok(LogEntrySourceViolation)
+    Ok("intervention") -> Ok(LogEntrySourceIntervention)
+    Ok("recommendation") -> Ok(LogEntrySourceRecommendation)
+    Ok("other") -> Ok(LogEntrySourceOther)
     _ -> Error(chrome.ProtocolError)
   }
 }
@@ -106,15 +109,16 @@ pub fn encode__log_entry_level(value: LogEntryLevel) {
     LogEntryLevelWarning -> "warning"
     LogEntryLevelError -> "error"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__log_entry_level(value: String) {
-  case value {
-    "verbose" -> Ok(LogEntryLevelVerbose)
-    "info" -> Ok(LogEntryLevelInfo)
-    "warning" -> Ok(LogEntryLevelWarning)
-    "error" -> Ok(LogEntryLevelError)
+pub fn decode__log_entry_level(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("verbose") -> Ok(LogEntryLevelVerbose)
+    Ok("info") -> Ok(LogEntryLevelInfo)
+    Ok("warning") -> Ok(LogEntryLevelWarning)
+    Ok("error") -> Ok(LogEntryLevelError)
     _ -> Error(chrome.ProtocolError)
   }
 }
@@ -130,16 +134,18 @@ pub fn encode__log_entry_category(value: LogEntryCategory) {
   case value {
     LogEntryCategoryCors -> "cors"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__log_entry_category(value: String) {
-  case value {
-    "cors" -> Ok(LogEntryCategoryCors)
+pub fn decode__log_entry_category(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("cors") -> Ok(LogEntryCategoryCors)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("source", Some("Log entry source."), None, None, None, EnumType(["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "violation", "intervention", "recommendation", "other"])), PropertyDefinition("level", Some("Log entry severity."), None, None, None, EnumType(["verbose", "info", "warning", "error"])), PropertyDefinition("text", Some("Logged text."), None, None, None, PrimitiveType("string")), PropertyDefinition("category", None, None, None, Some(True), EnumType(["cors"])), PropertyDefinition("timestamp", Some("Timestamp when this entry was added."), None, None, None, RefType("Runtime.Timestamp")), PropertyDefinition("url", Some("URL of the resource if known."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("lineNumber", Some("Line number in the resource."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("stackTrace", Some("JavaScript stack trace."), None, None, Some(True), RefType("Runtime.StackTrace")), PropertyDefinition("networkRequestId", Some("Identifier of the network request associated with this entry."), None, None, Some(True), RefType("Network.RequestId")), PropertyDefinition("workerId", Some("Identifier of the worker associated with this entry."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("args", Some("Call arguments."), None, None, Some(True), ArrayType(ReferenceItem("Runtime.RemoteObject")))]))
 /// Violation configuration setting.
 pub type ViolationSetting {
   ViolationSetting(name: ViolationSettingName, threshold: Float)
@@ -168,18 +174,20 @@ pub fn encode__violation_setting_name(value: ViolationSettingName) {
     ViolationSettingNameHandler -> "handler"
     ViolationSettingNameRecurringHandler -> "recurringHandler"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__violation_setting_name(value: String) {
-  case value {
-    "longTask" -> Ok(ViolationSettingNameLongTask)
-    "longLayout" -> Ok(ViolationSettingNameLongLayout)
-    "blockedEvent" -> Ok(ViolationSettingNameBlockedEvent)
-    "blockedParser" -> Ok(ViolationSettingNameBlockedParser)
-    "discouragedAPIUse" -> Ok(ViolationSettingNameDiscouragedApiUse)
-    "handler" -> Ok(ViolationSettingNameHandler)
-    "recurringHandler" -> Ok(ViolationSettingNameRecurringHandler)
+pub fn decode__violation_setting_name(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("longTask") -> Ok(ViolationSettingNameLongTask)
+    Ok("longLayout") -> Ok(ViolationSettingNameLongLayout)
+    Ok("blockedEvent") -> Ok(ViolationSettingNameBlockedEvent)
+    Ok("blockedParser") -> Ok(ViolationSettingNameBlockedParser)
+    Ok("discouragedAPIUse") -> Ok(ViolationSettingNameDiscouragedApiUse)
+    Ok("handler") -> Ok(ViolationSettingNameHandler)
+    Ok("recurringHandler") -> Ok(ViolationSettingNameRecurringHandler)
     _ -> Error(chrome.ProtocolError)
   }
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Violation type."), None, None, None, EnumType(["longTask", "longLayout", "blockedEvent", "blockedParser", "discouragedAPIUse", "handler", "recurringHandler"])), PropertyDefinition("threshold", Some("Time threshold to trigger upon."), None, None, None, PrimitiveType("number"))]))

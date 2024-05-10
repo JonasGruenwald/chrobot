@@ -10,11 +10,19 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 
 /// An internal certificate ID value.
 pub type CertificateId {
   CertificateId(Int)
+}
+
+@internal
+pub fn encode__certificate_id(value: CertificateId) {
+  case value {
+    CertificateId(inner_value) -> json.int(inner_value)
+  }
 }
 
 /// A description of mixed content (HTTP resources on HTTPS pages), as defined by
@@ -25,6 +33,7 @@ pub type MixedContentType {
   MixedContentTypeNone
 }
 
+// TODO: implement type encoder for EnumType(["blockable", "optionally-blockable", "none"])
 /// The security level of a page or resource.
 pub type SecurityState {
   SecurityStateUnknown
@@ -35,6 +44,7 @@ pub type SecurityState {
   SecurityStateInsecureBroken
 }
 
+// TODO: implement type encoder for EnumType(["unknown", "neutral", "insecure", "secure", "info", "insecure-broken"])
 /// An explanation of an factor contributing to the security state.
 pub type SecurityStateExplanation {
   SecurityStateExplanation(
@@ -48,9 +58,11 @@ pub type SecurityStateExplanation {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("securityState", Some("Security state representing the severity of the factor being explained."), None, None, None, RefType("SecurityState")), PropertyDefinition("title", Some("Title describing the type of factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("summary", Some("Short phrase describing the type of factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("description", Some("Full text explanation of the factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("mixedContentType", Some("The type of mixed content described by the explanation."), None, None, None, RefType("MixedContentType")), PropertyDefinition("certificate", Some("Page certificate."), None, None, None, ArrayType(PrimitiveItem("string"))), PropertyDefinition("recommendations", Some("Recommendations to fix any issues."), None, None, Some(True), ArrayType(PrimitiveItem("string")))]))
 /// The action to take when a certificate error occurs. continue will continue processing the
 /// request and cancel will cancel the request.
 pub type CertificateErrorAction {
   CertificateErrorActionContinue
   CertificateErrorActionCancel
 }
+// TODO: implement type encoder for EnumType(["continue", "cancel"])

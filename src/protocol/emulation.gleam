@@ -11,6 +11,8 @@
 // ---------------------------------------------------------------------------
 
 import chrome
+import gleam/dynamic
+import gleam/json
 import protocol/dom
 import protocol/page
 import protocol/runtime
@@ -37,19 +39,21 @@ pub fn encode__screen_orientation_type(value: ScreenOrientationType) {
     ScreenOrientationTypeLandscapePrimary -> "landscapePrimary"
     ScreenOrientationTypeLandscapeSecondary -> "landscapeSecondary"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__screen_orientation_type(value: String) {
-  case value {
-    "portraitPrimary" -> Ok(ScreenOrientationTypePortraitPrimary)
-    "portraitSecondary" -> Ok(ScreenOrientationTypePortraitSecondary)
-    "landscapePrimary" -> Ok(ScreenOrientationTypeLandscapePrimary)
-    "landscapeSecondary" -> Ok(ScreenOrientationTypeLandscapeSecondary)
+pub fn decode__screen_orientation_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("portraitPrimary") -> Ok(ScreenOrientationTypePortraitPrimary)
+    Ok("portraitSecondary") -> Ok(ScreenOrientationTypePortraitSecondary)
+    Ok("landscapePrimary") -> Ok(ScreenOrientationTypeLandscapePrimary)
+    Ok("landscapeSecondary") -> Ok(ScreenOrientationTypeLandscapeSecondary)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Orientation type."), None, None, None, EnumType(["portraitPrimary", "portraitSecondary", "landscapePrimary", "landscapeSecondary"])), PropertyDefinition("angle", Some("Orientation angle."), None, None, None, PrimitiveType("integer"))]))
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
@@ -71,17 +75,19 @@ pub fn encode__display_feature_orientation(value: DisplayFeatureOrientation) {
     DisplayFeatureOrientationVertical -> "vertical"
     DisplayFeatureOrientationHorizontal -> "horizontal"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__display_feature_orientation(value: String) {
-  case value {
-    "vertical" -> Ok(DisplayFeatureOrientationVertical)
-    "horizontal" -> Ok(DisplayFeatureOrientationHorizontal)
+pub fn decode__display_feature_orientation(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("vertical") -> Ok(DisplayFeatureOrientationVertical)
+    Ok("horizontal") -> Ok(DisplayFeatureOrientationHorizontal)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("orientation", Some("Orientation of a display feature in relation to screen"), None, None, None, EnumType(["vertical", "horizontal"])), PropertyDefinition("offset", Some("The offset from the screen origin in either the x (for vertical\norientation) or y (for horizontal orientation) direction."), None, None, None, PrimitiveType("integer")), PropertyDefinition("maskLength", Some("A display feature may mask content such that it is not physically\ndisplayed - this length along with the offset describes this area.\nA display feature that only splits content will have a 0 mask_length."), None, None, None, PrimitiveType("integer"))]))
 pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
@@ -99,17 +105,20 @@ pub fn encode__device_posture_type(value: DevicePostureType) {
     DevicePostureTypeContinuous -> "continuous"
     DevicePostureTypeFolded -> "folded"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__device_posture_type(value: String) {
-  case value {
-    "continuous" -> Ok(DevicePostureTypeContinuous)
-    "folded" -> Ok(DevicePostureTypeFolded)
+pub fn decode__device_posture_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("continuous") -> Ok(DevicePostureTypeContinuous)
+    Ok("folded") -> Ok(DevicePostureTypeFolded)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Current posture of the device"), None, None, None, EnumType(["continuous", "folded"]))]))
 pub type MediaFeature {
   MediaFeature(name: String, value: String)
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", None, None, None, None, PrimitiveType("string")), PropertyDefinition("value", None, None, None, None, PrimitiveType("string"))]))

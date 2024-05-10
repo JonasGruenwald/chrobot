@@ -10,6 +10,9 @@
 //// 
 //// To start a browser, it's preferrable to use the launch functions from the root chrobot module,
 //// which perform additional checks and validations.
+//// 
+
+// TODO: would be nice to trap exits and shut down the browser gracefully
 
 import filepath as path
 import gleam/dynamic as d
@@ -618,6 +621,10 @@ fn handle_port_response(
       actor.continue(state)
     }
   }
+}
+
+fn handle_trapped_exit(msg: process.ExitMessage) {
+  todo
 }
 
 // --- HELPERS ---

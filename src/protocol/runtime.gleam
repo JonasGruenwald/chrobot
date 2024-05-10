@@ -17,11 +17,19 @@
 import chrome
 import gleam/dict
 import gleam/dynamic
+import gleam/json
 import gleam/option
 
 /// Unique script identifier.
 pub type ScriptId {
   ScriptId(String)
+}
+
+@internal
+pub fn encode__script_id(value: ScriptId) {
+  case value {
+    ScriptId(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
@@ -48,18 +56,20 @@ pub fn encode__serialization_options_serialization(value: SerializationOptionsSe
     SerializationOptionsSerializationJson -> "json"
     SerializationOptionsSerializationIdOnly -> "idOnly"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__serialization_options_serialization(value: String) {
-  case value {
-    "deep" -> Ok(SerializationOptionsSerializationDeep)
-    "json" -> Ok(SerializationOptionsSerializationJson)
-    "idOnly" -> Ok(SerializationOptionsSerializationIdOnly)
+pub fn decode__serialization_options_serialization(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("deep") -> Ok(SerializationOptionsSerializationDeep)
+    Ok("json") -> Ok(SerializationOptionsSerializationJson)
+    Ok("idOnly") -> Ok(SerializationOptionsSerializationIdOnly)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("serialization", None, None, None, None, EnumType(["deep", "json", "idOnly"])), PropertyDefinition("maxDepth", Some("Deep serialization depth. Default is full depth. Respected only in `deep` serialization mode."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("additionalParameters", Some("Embedder-specific parameters. For example if connected to V8 in Chrome these control DOM\nserialization via `maxNodeDepth: integer` and `includeShadowTree: \"none\" | \"open\" | \"all\"`.\nValues can be only of type string or integer."), None, None, Some(True), ObjectType(None))]))
 /// Represents deep serialized value.
 pub type DeepSerializedValue {
   DeepSerializedValue(
@@ -127,48 +137,64 @@ pub fn encode__deep_serialized_value_type(value: DeepSerializedValueType) {
     DeepSerializedValueTypeWindow -> "window"
     DeepSerializedValueTypeGenerator -> "generator"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__deep_serialized_value_type(value: String) {
-  case value {
-    "undefined" -> Ok(DeepSerializedValueTypeUndefined)
-    "null" -> Ok(DeepSerializedValueTypeNull)
-    "string" -> Ok(DeepSerializedValueTypeString)
-    "number" -> Ok(DeepSerializedValueTypeNumber)
-    "boolean" -> Ok(DeepSerializedValueTypeBoolean)
-    "bigint" -> Ok(DeepSerializedValueTypeBigint)
-    "regexp" -> Ok(DeepSerializedValueTypeRegexp)
-    "date" -> Ok(DeepSerializedValueTypeDate)
-    "symbol" -> Ok(DeepSerializedValueTypeSymbol)
-    "array" -> Ok(DeepSerializedValueTypeArray)
-    "object" -> Ok(DeepSerializedValueTypeObject)
-    "function" -> Ok(DeepSerializedValueTypeFunction)
-    "map" -> Ok(DeepSerializedValueTypeMap)
-    "set" -> Ok(DeepSerializedValueTypeSet)
-    "weakmap" -> Ok(DeepSerializedValueTypeWeakmap)
-    "weakset" -> Ok(DeepSerializedValueTypeWeakset)
-    "error" -> Ok(DeepSerializedValueTypeError)
-    "proxy" -> Ok(DeepSerializedValueTypeProxy)
-    "promise" -> Ok(DeepSerializedValueTypePromise)
-    "typedarray" -> Ok(DeepSerializedValueTypeTypedarray)
-    "arraybuffer" -> Ok(DeepSerializedValueTypeArraybuffer)
-    "node" -> Ok(DeepSerializedValueTypeNode)
-    "window" -> Ok(DeepSerializedValueTypeWindow)
-    "generator" -> Ok(DeepSerializedValueTypeGenerator)
+pub fn decode__deep_serialized_value_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("undefined") -> Ok(DeepSerializedValueTypeUndefined)
+    Ok("null") -> Ok(DeepSerializedValueTypeNull)
+    Ok("string") -> Ok(DeepSerializedValueTypeString)
+    Ok("number") -> Ok(DeepSerializedValueTypeNumber)
+    Ok("boolean") -> Ok(DeepSerializedValueTypeBoolean)
+    Ok("bigint") -> Ok(DeepSerializedValueTypeBigint)
+    Ok("regexp") -> Ok(DeepSerializedValueTypeRegexp)
+    Ok("date") -> Ok(DeepSerializedValueTypeDate)
+    Ok("symbol") -> Ok(DeepSerializedValueTypeSymbol)
+    Ok("array") -> Ok(DeepSerializedValueTypeArray)
+    Ok("object") -> Ok(DeepSerializedValueTypeObject)
+    Ok("function") -> Ok(DeepSerializedValueTypeFunction)
+    Ok("map") -> Ok(DeepSerializedValueTypeMap)
+    Ok("set") -> Ok(DeepSerializedValueTypeSet)
+    Ok("weakmap") -> Ok(DeepSerializedValueTypeWeakmap)
+    Ok("weakset") -> Ok(DeepSerializedValueTypeWeakset)
+    Ok("error") -> Ok(DeepSerializedValueTypeError)
+    Ok("proxy") -> Ok(DeepSerializedValueTypeProxy)
+    Ok("promise") -> Ok(DeepSerializedValueTypePromise)
+    Ok("typedarray") -> Ok(DeepSerializedValueTypeTypedarray)
+    Ok("arraybuffer") -> Ok(DeepSerializedValueTypeArraybuffer)
+    Ok("node") -> Ok(DeepSerializedValueTypeNode)
+    Ok("window") -> Ok(DeepSerializedValueTypeWindow)
+    Ok("generator") -> Ok(DeepSerializedValueTypeGenerator)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", None, None, None, None, EnumType(["undefined", "null", "string", "number", "boolean", "bigint", "regexp", "date", "symbol", "array", "object", "function", "map", "set", "weakmap", "weakset", "error", "proxy", "promise", "typedarray", "arraybuffer", "node", "window", "generator"])), PropertyDefinition("value", None, None, None, Some(True), PrimitiveType("any")), PropertyDefinition("objectId", None, None, None, Some(True), PrimitiveType("string")), PropertyDefinition("weakLocalObjectReference", Some("Set if value reference met more then once during serialization. In such\ncase, value is provided only to one of the serialized values. Unique\nper value in the scope of one CDP call."), None, None, Some(True), PrimitiveType("integer"))]))
 /// Unique object identifier.
 pub type RemoteObjectId {
   RemoteObjectId(String)
+}
+
+@internal
+pub fn encode__remote_object_id(value: RemoteObjectId) {
+  case value {
+    RemoteObjectId(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
 /// `-Infinity`, and bigint literals.
 pub type UnserializableValue {
   UnserializableValue(String)
+}
+
+@internal
+pub fn encode__unserializable_value(value: UnserializableValue) {
+  case value {
+    UnserializableValue(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Mirror object referencing original JavaScript object.
@@ -209,19 +235,20 @@ pub fn encode__remote_object_type(value: RemoteObjectType) {
     RemoteObjectTypeSymbol -> "symbol"
     RemoteObjectTypeBigint -> "bigint"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__remote_object_type(value: String) {
-  case value {
-    "object" -> Ok(RemoteObjectTypeObject)
-    "function" -> Ok(RemoteObjectTypeFunction)
-    "undefined" -> Ok(RemoteObjectTypeUndefined)
-    "string" -> Ok(RemoteObjectTypeString)
-    "number" -> Ok(RemoteObjectTypeNumber)
-    "boolean" -> Ok(RemoteObjectTypeBoolean)
-    "symbol" -> Ok(RemoteObjectTypeSymbol)
-    "bigint" -> Ok(RemoteObjectTypeBigint)
+pub fn decode__remote_object_type(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("object") -> Ok(RemoteObjectTypeObject)
+    Ok("function") -> Ok(RemoteObjectTypeFunction)
+    Ok("undefined") -> Ok(RemoteObjectTypeUndefined)
+    Ok("string") -> Ok(RemoteObjectTypeString)
+    Ok("number") -> Ok(RemoteObjectTypeNumber)
+    Ok("boolean") -> Ok(RemoteObjectTypeBoolean)
+    Ok("symbol") -> Ok(RemoteObjectTypeSymbol)
+    Ok("bigint") -> Ok(RemoteObjectTypeBigint)
     _ -> Error(chrome.ProtocolError)
   }
 }
@@ -273,34 +300,36 @@ pub fn encode__remote_object_subtype(value: RemoteObjectSubtype) {
     RemoteObjectSubtypeWebassemblymemory -> "webassemblymemory"
     RemoteObjectSubtypeWasmvalue -> "wasmvalue"
   }
+  |> json.string()
 }
 
 @internal
-pub fn decode__remote_object_subtype(value: String) {
-  case value {
-    "array" -> Ok(RemoteObjectSubtypeArray)
-    "null" -> Ok(RemoteObjectSubtypeNull)
-    "node" -> Ok(RemoteObjectSubtypeNode)
-    "regexp" -> Ok(RemoteObjectSubtypeRegexp)
-    "date" -> Ok(RemoteObjectSubtypeDate)
-    "map" -> Ok(RemoteObjectSubtypeMap)
-    "set" -> Ok(RemoteObjectSubtypeSet)
-    "weakmap" -> Ok(RemoteObjectSubtypeWeakmap)
-    "weakset" -> Ok(RemoteObjectSubtypeWeakset)
-    "iterator" -> Ok(RemoteObjectSubtypeIterator)
-    "generator" -> Ok(RemoteObjectSubtypeGenerator)
-    "error" -> Ok(RemoteObjectSubtypeError)
-    "proxy" -> Ok(RemoteObjectSubtypeProxy)
-    "promise" -> Ok(RemoteObjectSubtypePromise)
-    "typedarray" -> Ok(RemoteObjectSubtypeTypedarray)
-    "arraybuffer" -> Ok(RemoteObjectSubtypeArraybuffer)
-    "dataview" -> Ok(RemoteObjectSubtypeDataview)
-    "webassemblymemory" -> Ok(RemoteObjectSubtypeWebassemblymemory)
-    "wasmvalue" -> Ok(RemoteObjectSubtypeWasmvalue)
+pub fn decode__remote_object_subtype(value: dynamic.Dynamic) {
+  case dynamic.string(value) {
+    Ok("array") -> Ok(RemoteObjectSubtypeArray)
+    Ok("null") -> Ok(RemoteObjectSubtypeNull)
+    Ok("node") -> Ok(RemoteObjectSubtypeNode)
+    Ok("regexp") -> Ok(RemoteObjectSubtypeRegexp)
+    Ok("date") -> Ok(RemoteObjectSubtypeDate)
+    Ok("map") -> Ok(RemoteObjectSubtypeMap)
+    Ok("set") -> Ok(RemoteObjectSubtypeSet)
+    Ok("weakmap") -> Ok(RemoteObjectSubtypeWeakmap)
+    Ok("weakset") -> Ok(RemoteObjectSubtypeWeakset)
+    Ok("iterator") -> Ok(RemoteObjectSubtypeIterator)
+    Ok("generator") -> Ok(RemoteObjectSubtypeGenerator)
+    Ok("error") -> Ok(RemoteObjectSubtypeError)
+    Ok("proxy") -> Ok(RemoteObjectSubtypeProxy)
+    Ok("promise") -> Ok(RemoteObjectSubtypePromise)
+    Ok("typedarray") -> Ok(RemoteObjectSubtypeTypedarray)
+    Ok("arraybuffer") -> Ok(RemoteObjectSubtypeArraybuffer)
+    Ok("dataview") -> Ok(RemoteObjectSubtypeDataview)
+    Ok("webassemblymemory") -> Ok(RemoteObjectSubtypeWebassemblymemory)
+    Ok("wasmvalue") -> Ok(RemoteObjectSubtypeWasmvalue)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Object type."), None, None, None, EnumType(["object", "function", "undefined", "string", "number", "boolean", "symbol", "bigint"])), PropertyDefinition("subtype", Some("Object subtype hint. Specified for `object` type values only.\nNOTE: If you change anything here, make sure to also update\n`subtype` in `ObjectPreview` and `PropertyPreview` below."), None, None, Some(True), EnumType(["array", "null", "node", "regexp", "date", "map", "set", "weakmap", "weakset", "iterator", "generator", "error", "proxy", "promise", "typedarray", "arraybuffer", "dataview", "webassemblymemory", "wasmvalue"])), PropertyDefinition("className", Some("Object class (constructor) name. Specified for `object` type values only."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("value", Some("Remote object value in case of primitive values or JSON values (if it was requested)."), None, None, Some(True), PrimitiveType("any")), PropertyDefinition("unserializableValue", Some("Primitive value which can not be JSON-stringified does not have `value`, but gets this\nproperty."), None, None, Some(True), RefType("UnserializableValue")), PropertyDefinition("description", Some("String representation of the object."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("objectId", Some("Unique object identifier (for non-primitive values)."), None, None, Some(True), RefType("RemoteObjectId"))]))
 /// Object property descriptor.
 pub type PropertyDescriptor {
   PropertyDescriptor(
@@ -317,11 +346,13 @@ pub type PropertyDescriptor {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Property name or symbol description."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("The value associated with the property."), None, None, Some(True), RefType("RemoteObject")), PropertyDefinition("writable", Some("True if the value associated with the property may be changed (data descriptors only)."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("get", Some("A function which serves as a getter for the property, or `undefined` if there is no getter\n(accessor descriptors only)."), None, None, Some(True), RefType("RemoteObject")), PropertyDefinition("set", Some("A function which serves as a setter for the property, or `undefined` if there is no setter\n(accessor descriptors only)."), None, None, Some(True), RefType("RemoteObject")), PropertyDefinition("configurable", Some("True if the type of this property descriptor may be changed and if the property may be\ndeleted from the corresponding object."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("enumerable", Some("True if this property shows up during enumeration of the properties on the corresponding\nobject."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("wasThrown", Some("True if the result was thrown during the evaluation."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("isOwn", Some("True if the property is owned for the object."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("symbol", Some("Property symbol object, if the property is of the `symbol` type."), None, None, Some(True), RefType("RemoteObject"))]))
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor {
   InternalPropertyDescriptor(name: String, value: option.Option(RemoteObject))
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Conventional property name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("The value associated with the property."), None, None, Some(True), RefType("RemoteObject"))]))
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
 /// unserializable primitive value or neither of (for undefined) them should be specified.
 pub type CallArgument {
@@ -332,9 +363,17 @@ pub type CallArgument {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("value", Some("Primitive value or serializable javascript object."), None, None, Some(True), PrimitiveType("any")), PropertyDefinition("unserializableValue", Some("Primitive value which can not be JSON-stringified."), None, None, Some(True), RefType("UnserializableValue")), PropertyDefinition("objectId", Some("Remote object handle."), None, None, Some(True), RefType("RemoteObjectId"))]))
 /// Id of an execution context.
 pub type ExecutionContextId {
   ExecutionContextId(Int)
+}
+
+@internal
+pub fn encode__execution_context_id(value: ExecutionContextId) {
+  case value {
+    ExecutionContextId(inner_value) -> json.int(inner_value)
+  }
 }
 
 /// Description of an isolated world.
@@ -347,6 +386,7 @@ pub type ExecutionContextDescription {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Unique id of the execution context. It can be used to specify in which execution context\nscript evaluation should be performed."), None, None, None, RefType("ExecutionContextId")), PropertyDefinition("origin", Some("Execution context origin."), None, None, None, PrimitiveType("string")), PropertyDefinition("name", Some("Human readable name describing given context."), None, None, None, PrimitiveType("string")), PropertyDefinition("auxData", Some("Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}"), None, None, Some(True), ObjectType(None))]))
 /// Detailed information about exception (or error) that was thrown during script compilation or
 /// execution.
 pub type ExceptionDetails {
@@ -363,14 +403,29 @@ pub type ExceptionDetails {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("exceptionId", Some("Exception id."), None, None, None, PrimitiveType("integer")), PropertyDefinition("text", Some("Exception text, which should be used together with exception object when available."), None, None, None, PrimitiveType("string")), PropertyDefinition("lineNumber", Some("Line number of the exception location (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number of the exception location (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("scriptId", Some("Script ID of the exception location."), None, None, Some(True), RefType("ScriptId")), PropertyDefinition("url", Some("URL of the exception location, to be used when the script was not reported."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("stackTrace", Some("JavaScript stack trace if available."), None, None, Some(True), RefType("StackTrace")), PropertyDefinition("exception", Some("Exception object if available."), None, None, Some(True), RefType("RemoteObject")), PropertyDefinition("executionContextId", Some("Identifier of the context where exception happened."), None, None, Some(True), RefType("ExecutionContextId"))]))
 /// Number of milliseconds since epoch.
 pub type Timestamp {
   Timestamp(Float)
 }
 
+@internal
+pub fn encode__timestamp(value: Timestamp) {
+  case value {
+    Timestamp(inner_value) -> json.float(inner_value)
+  }
+}
+
 /// Number of milliseconds.
 pub type TimeDelta {
   TimeDelta(Float)
+}
+
+@internal
+pub fn encode__time_delta(value: TimeDelta) {
+  case value {
+    TimeDelta(inner_value) -> json.float(inner_value)
+  }
 }
 
 /// Stack entry for runtime errors and assertions.
@@ -384,6 +439,7 @@ pub type CallFrame {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("functionName", Some("JavaScript function name."), None, None, None, PrimitiveType("string")), PropertyDefinition("scriptId", Some("JavaScript script id."), None, None, None, RefType("ScriptId")), PropertyDefinition("url", Some("JavaScript script name or url."), None, None, None, PrimitiveType("string")), PropertyDefinition("lineNumber", Some("JavaScript script line number (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("JavaScript script column number (0-based)."), None, None, None, PrimitiveType("integer"))]))
 /// Call frames for assertions or error messages.
 pub type StackTrace {
   StackTrace(
@@ -392,3 +448,4 @@ pub type StackTrace {
     parent: option.Option(StackTrace),
   )
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("description", Some("String label of this stack trace. For async traces this may be a name of the function that\ninitiated the async call."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("callFrames", Some("JavaScript function name."), None, None, None, ArrayType(ReferenceItem("CallFrame"))), PropertyDefinition("parent", Some("Asynchronous JavaScript stack trace that preceded this stack, if available."), None, None, Some(True), RefType("StackTrace"))]))

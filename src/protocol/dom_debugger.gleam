@@ -22,6 +22,7 @@ pub type DOMBreakpointType {
   DOMBreakpointTypeNodeRemoved
 }
 
+// TODO: implement type encoder for EnumType(["subtree-modified", "attribute-modified", "node-removed"])
 /// Object event listener.
 pub type EventListener {
   EventListener(
@@ -37,3 +38,4 @@ pub type EventListener {
     backend_node_id: option.Option(dom.BackendNodeId),
   )
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("`EventListener`'s type."), None, None, None, PrimitiveType("string")), PropertyDefinition("useCapture", Some("`EventListener`'s useCapture."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("passive", Some("`EventListener`'s passive flag."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("once", Some("`EventListener`'s once flag."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("scriptId", Some("Script id of the handler code."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("handler", Some("Event handler function value."), None, None, Some(True), RefType("Runtime.RemoteObject")), PropertyDefinition("originalHandler", Some("Event original handler function value."), None, None, Some(True), RefType("Runtime.RemoteObject")), PropertyDefinition("backendNodeId", Some("Node the listener is added to (if any)."), None, None, Some(True), RefType("DOM.BackendNodeId"))]))

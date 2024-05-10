@@ -670,6 +670,8 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
 
 // --- CODEGEN ---
 
+// Huge spaghetti mess downstairs, don't look please
+
 fn append_optional(
   builder: sb.StringBuilder,
   val: Option(a),
@@ -710,6 +712,20 @@ fn to_gleam_primitive(protocol_primitive: String) {
     _ -> {
       io.debug(protocol_primitive)
       panic as "can't translate to gleam primitive"
+    }
+  }
+}
+
+fn to_gleam_primitive_function(protocol_primitive: String) {
+  case protocol_primitive {
+    "number" -> "float"
+    "integer" -> "int"
+    "string" -> "string"
+    "boolean" -> "bool"
+    "any" -> "string"
+    _ -> {
+      io.debug(protocol_primitive)
+      panic as "can't translate to gleam primitive function"
     }
   }
 }
@@ -779,6 +795,7 @@ fn gen_imports(domain: Domain) {
     "import gleam/dynamic\n",
     "import gleam/result\n",
     "import gleam/option\n",
+    "import gleam/json\n",
     ..domain_imports
   ]
   |> string.join("")
@@ -863,9 +880,9 @@ to represent the possible values of the enum property `"
     ObjectType(None) -> {
       #("dict.Dict(String,String)", "")
     }
-    other -> {
-      io.debug(other)
-      panic as "tried to generate an attribute from unsupported type"
+    ObjectType(Some(_)) -> {
+      io.debug(#(root_name, name, t, optional))
+      panic as "Tried to generate an attribute from unsupported type (Object with properties)"
     }
   }
 
@@ -932,6 +949,8 @@ fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
   |> sb.append(body)
   |> sb.append("}\n\n")
   |> sb.append(appendage)
+  |> sb.append("\n")
+  |> sb.append(gen_type_def_encoder(t))
 }
 
 fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
@@ -964,20 +983,20 @@ pub fn gen_enum_encoder(enum_type_name: String, enum: List(String)) {
       <> current
       <> "\"\n"
     })
-      <> "}\n",
+      <> "}\n|> json.string()\n",
   )
 }
 
 pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
   get_decoder_name(enum_type_name)
   |> internal_fn(
-    "value: String\n",
-    "case value{\n"
+    "value: dynamic.Dynamic\n",
+    "case dynamic.string(value){\n"
       <> list.fold(enum, "", fn(acc, current) {
       acc
-      <> "\""
+      <> "Ok(\""
       <> current
-      <> "\" -> Ok("
+      <> "\") -> Ok("
       <> enum_type_name
       <> pascal_case(current)
       <> ")\n"
@@ -987,8 +1006,24 @@ pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
   )
 }
 
-fn gen_type_encoder(type_value: Type, name_prefix: String) {
-  todo
+fn gen_type_def_encoder(type_def: TypeDefinition) {
+  case type_def.inner {
+    PrimitiveType(primitive_type) -> {
+      get_encoder_name(type_def.id)
+      |> internal_fn(
+        "value: " <> type_def.id <> "\n",
+        "case value{\n"
+          <> type_def.id
+          <> "(inner_value) -> json."
+          <> to_gleam_primitive_function(primitive_type)
+          <> "(inner_value)\n}",
+      )
+    }
+    _ ->
+      "// TODO: implement type encoder for "
+      <> string.inspect(type_def.inner)
+      <> "\n"
+  }
 }
 
 fn remove_import_if_unused(
@@ -1038,6 +1073,9 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   ])
   |> remove_import_if_unused(full_string, "chrome", [
     "call", "send", "ProtocolError",
+  ])
+  |> remove_import_if_unused(full_string, "gleam/json", [
+    "object", "string", "array", "int", "null", "bool", "float",
   ])
 }
 

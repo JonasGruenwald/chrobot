@@ -14,3 +14,4 @@
 pub type Metric {
   Metric(name: String, value: Float)
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Metric name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("Metric value."), None, None, None, PrimitiveType("number"))]))

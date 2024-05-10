@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 import protocol/debugger
 import protocol/dom
@@ -20,6 +21,13 @@ import protocol/runtime
 /// Unique frame identifier.
 pub type FrameId {
   FrameId(String)
+}
+
+@internal
+pub fn encode__frame_id(value: FrameId) {
+  case value {
+    FrameId(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Information about the Frame on the page.
@@ -35,14 +43,23 @@ pub type Frame {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Frame unique identifier."), None, None, None, RefType("FrameId")), PropertyDefinition("parentId", Some("Parent frame identifier."), None, None, Some(True), RefType("FrameId")), PropertyDefinition("loaderId", Some("Identifier of the loader associated with this frame."), None, None, None, RefType("Network.LoaderId")), PropertyDefinition("name", Some("Frame's name as specified in the tag."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("url", Some("Frame document's URL without fragment."), None, None, None, PrimitiveType("string")), PropertyDefinition("securityOrigin", Some("Frame document's security origin."), None, None, None, PrimitiveType("string")), PropertyDefinition("mimeType", Some("Frame document's mimeType as determined by the browser."), None, None, None, PrimitiveType("string"))]))
 /// Information about the Frame hierarchy.
 pub type FrameTree {
   FrameTree(frame: Frame, child_frames: option.Option(List(FrameTree)))
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("frame", Some("Frame information for this tree item."), None, None, None, RefType("Frame")), PropertyDefinition("childFrames", Some("Child frames."), None, None, Some(True), ArrayType(ReferenceItem("FrameTree")))]))
 /// Unique script identifier.
 pub type ScriptIdentifier {
   ScriptIdentifier(String)
+}
+
+@internal
+pub fn encode__script_identifier(value: ScriptIdentifier) {
+  case value {
+    ScriptIdentifier(inner_value) -> json.string(inner_value)
+  }
 }
 
 /// Transition type.
@@ -62,6 +79,7 @@ pub type TransitionType {
   TransitionTypeOther
 }
 
+// TODO: implement type encoder for EnumType(["link", "typed", "address_bar", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "auto_toplevel", "form_submit", "reload", "keyword", "keyword_generated", "other"])
 /// Navigation history entry.
 pub type NavigationEntry {
   NavigationEntry(
@@ -73,6 +91,7 @@ pub type NavigationEntry {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Unique id of the navigation history entry."), None, None, None, PrimitiveType("integer")), PropertyDefinition("url", Some("URL of the navigation history entry."), None, None, None, PrimitiveType("string")), PropertyDefinition("userTypedURL", Some("URL that the user typed in the url bar."), None, None, None, PrimitiveType("string")), PropertyDefinition("title", Some("Title of the navigation history entry."), None, None, None, PrimitiveType("string")), PropertyDefinition("transitionType", Some("Transition type."), None, None, None, RefType("TransitionType"))]))
 /// Javascript dialog type.
 pub type DialogType {
   DialogTypeAlert
@@ -81,11 +100,13 @@ pub type DialogType {
   DialogTypeBeforeunload
 }
 
+// TODO: implement type encoder for EnumType(["alert", "confirm", "prompt", "beforeunload"])
 /// Error while paring app manifest.
 pub type AppManifestError {
   AppManifestError(message: String, critical: Int, line: Int, column: Int)
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("message", Some("Error message."), None, None, None, PrimitiveType("string")), PropertyDefinition("critical", Some("If critical, this is a non-recoverable parse error."), None, None, None, PrimitiveType("integer")), PropertyDefinition("line", Some("Error line."), None, None, None, PrimitiveType("integer")), PropertyDefinition("column", Some("Error column."), None, None, None, PrimitiveType("integer"))]))
 /// Layout viewport position and dimensions.
 pub type LayoutViewport {
   LayoutViewport(
@@ -96,6 +117,7 @@ pub type LayoutViewport {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("pageX", Some("Horizontal offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("pageY", Some("Vertical offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("clientWidth", Some("Width (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("integer")), PropertyDefinition("clientHeight", Some("Height (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("integer"))]))
 /// Visual viewport position, dimensions, and scale.
 pub type VisualViewport {
   VisualViewport(
@@ -110,7 +132,9 @@ pub type VisualViewport {
   )
 }
 
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("offsetX", Some("Horizontal offset relative to the layout viewport (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("offsetY", Some("Vertical offset relative to the layout viewport (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("pageX", Some("Horizontal offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("pageY", Some("Vertical offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("clientWidth", Some("Width (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("number")), PropertyDefinition("clientHeight", Some("Height (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("number")), PropertyDefinition("scale", Some("Scale relative to the ideal viewport (size at width=device-width)."), None, None, None, PrimitiveType("number")), PropertyDefinition("zoom", Some("Page zoom factor (CSS to device independent pixels ratio)."), None, None, Some(True), PrimitiveType("number"))]))
 /// Viewport for capturing screenshot.
 pub type Viewport {
   Viewport(x: Float, y: Float, width: Float, height: Float, scale: Float)
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("x", Some("X offset in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("y", Some("Y offset in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("width", Some("Rectangle width in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("height", Some("Rectangle height in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("scale", Some("Page scale factor."), None, None, None, PrimitiveType("number"))]))

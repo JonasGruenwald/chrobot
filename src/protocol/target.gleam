@@ -10,15 +10,30 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 
 pub type TargetID {
   TargetID(String)
 }
 
+@internal
+pub fn encode__target_id(value: TargetID) {
+  case value {
+    TargetID(inner_value) -> json.string(inner_value)
+  }
+}
+
 /// Unique identifier of attached debugging session.
 pub type SessionID {
   SessionID(String)
+}
+
+@internal
+pub fn encode__session_id(value: SessionID) {
+  case value {
+    SessionID(inner_value) -> json.string(inner_value)
+  }
 }
 
 pub type TargetInfo {
@@ -31,3 +46,4 @@ pub type TargetInfo {
     opener_id: option.Option(TargetID),
   )
 }
+// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("targetId", None, None, None, None, RefType("TargetID")), PropertyDefinition("type", Some("List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22"), None, None, None, PrimitiveType("string")), PropertyDefinition("title", None, None, None, None, PrimitiveType("string")), PropertyDefinition("url", None, None, None, None, PrimitiveType("string")), PropertyDefinition("attached", Some("Whether the target has an attached client."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("openerId", Some("Opener target Id"), None, None, Some(True), RefType("TargetID"))]))
