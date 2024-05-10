@@ -10,8 +10,17 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
+
 /// Run-time execution metric.
 pub type Metric {
   Metric(name: String, value: Float)
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Metric name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("Metric value."), None, None, None, PrimitiveType("number"))]))
+
+@internal
+pub fn encode__metric(value__: Metric) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.float(value__.value)),
+  ])
+}

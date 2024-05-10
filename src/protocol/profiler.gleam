@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 import protocol/debugger
 import protocol/runtime
@@ -26,7 +27,39 @@ pub type ProfileNode {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Unique id of the node."), None, None, None, PrimitiveType("integer")), PropertyDefinition("callFrame", Some("Function location."), None, None, None, RefType("Runtime.CallFrame")), PropertyDefinition("hitCount", Some("Number of samples where this node was on top of the call stack."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("children", Some("Child node ids."), None, None, Some(True), ArrayType(PrimitiveItem("integer"))), PropertyDefinition("deoptReason", Some("The reason of being not optimized. The function may be deoptimized or marked as don't\noptimize."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("positionTicks", Some("An array of source position ticks."), None, None, Some(True), ArrayType(ReferenceItem("PositionTickInfo")))]))
+@internal
+pub fn encode__profile_node(value__: ProfileNode) {
+  json.object([
+    #("id", json.int(value__.id)),
+    #("callFrame", runtime.encode__call_frame(value__.call_frame)),
+    #("hitCount", {
+      case value__.hit_count {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("children", {
+      case value__.children {
+        option.Some(value__) -> json.array(value__, of: json.int)
+        option.None -> json.null()
+      }
+    }),
+    #("deoptReason", {
+      case value__.deopt_reason {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("positionTicks", {
+      case value__.position_ticks {
+        option.Some(value__) ->
+          json.array(value__, of: encode__position_tick_info)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Profile.
 pub type Profile {
   Profile(
@@ -38,19 +71,54 @@ pub type Profile {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("nodes", Some("The list of profile nodes. First item is the root node."), None, None, None, ArrayType(ReferenceItem("ProfileNode"))), PropertyDefinition("startTime", Some("Profiling start timestamp in microseconds."), None, None, None, PrimitiveType("number")), PropertyDefinition("endTime", Some("Profiling end timestamp in microseconds."), None, None, None, PrimitiveType("number")), PropertyDefinition("samples", Some("Ids of samples top nodes."), None, None, Some(True), ArrayType(PrimitiveItem("integer"))), PropertyDefinition("timeDeltas", Some("Time intervals between adjacent samples in microseconds. The first delta is relative to the\nprofile startTime."), None, None, Some(True), ArrayType(PrimitiveItem("integer")))]))
+@internal
+pub fn encode__profile(value__: Profile) {
+  json.object([
+    #("nodes", json.array(value__.nodes, of: encode__profile_node)),
+    #("startTime", json.float(value__.start_time)),
+    #("endTime", json.float(value__.end_time)),
+    #("samples", {
+      case value__.samples {
+        option.Some(value__) -> json.array(value__, of: json.int)
+        option.None -> json.null()
+      }
+    }),
+    #("timeDeltas", {
+      case value__.time_deltas {
+        option.Some(value__) -> json.array(value__, of: json.int)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Specifies a number of samples attributed to a certain source position.
 pub type PositionTickInfo {
   PositionTickInfo(line: Int, ticks: Int)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("line", Some("Source line number (1-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("ticks", Some("Number of samples attributed to the source line."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__position_tick_info(value__: PositionTickInfo) {
+  json.object([
+    #("line", json.int(value__.line)),
+    #("ticks", json.int(value__.ticks)),
+  ])
+}
+
 /// Coverage data for a source range.
 pub type CoverageRange {
   CoverageRange(start_offset: Int, end_offset: Int, count: Int)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("startOffset", Some("JavaScript script source offset for the range start."), None, None, None, PrimitiveType("integer")), PropertyDefinition("endOffset", Some("JavaScript script source offset for the range end."), None, None, None, PrimitiveType("integer")), PropertyDefinition("count", Some("Collected execution count of the source range."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__coverage_range(value__: CoverageRange) {
+  json.object([
+    #("startOffset", json.int(value__.start_offset)),
+    #("endOffset", json.int(value__.end_offset)),
+    #("count", json.int(value__.count)),
+  ])
+}
+
 /// Coverage data for a JavaScript function.
 pub type FunctionCoverage {
   FunctionCoverage(
@@ -60,7 +128,15 @@ pub type FunctionCoverage {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("functionName", Some("JavaScript function name."), None, None, None, PrimitiveType("string")), PropertyDefinition("ranges", Some("Source ranges inside the function with coverage data."), None, None, None, ArrayType(ReferenceItem("CoverageRange"))), PropertyDefinition("isBlockCoverage", Some("Whether coverage data for this function has block granularity."), None, None, None, PrimitiveType("boolean"))]))
+@internal
+pub fn encode__function_coverage(value__: FunctionCoverage) {
+  json.object([
+    #("functionName", json.string(value__.function_name)),
+    #("ranges", json.array(value__.ranges, of: encode__coverage_range)),
+    #("isBlockCoverage", json.bool(value__.is_block_coverage)),
+  ])
+}
+
 /// Coverage data for a JavaScript script.
 pub type ScriptCoverage {
   ScriptCoverage(
@@ -69,4 +145,12 @@ pub type ScriptCoverage {
     functions: List(FunctionCoverage),
   )
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("scriptId", Some("JavaScript script id."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("url", Some("JavaScript script name or url."), None, None, None, PrimitiveType("string")), PropertyDefinition("functions", Some("Functions contained in the script that has coverage data."), None, None, None, ArrayType(ReferenceItem("FunctionCoverage")))]))
+
+@internal
+pub fn encode__script_coverage(value__: ScriptCoverage) {
+  json.object([
+    #("scriptId", runtime.encode__script_id(value__.script_id)),
+    #("url", json.string(value__.url)),
+    #("functions", json.array(value__.functions, of: encode__function_coverage)),
+  ])
+}

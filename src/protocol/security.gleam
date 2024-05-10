@@ -19,9 +19,9 @@ pub type CertificateId {
 }
 
 @internal
-pub fn encode__certificate_id(value: CertificateId) {
-  case value {
-    CertificateId(inner_value) -> json.int(inner_value)
+pub fn encode__certificate_id(value__: CertificateId) {
+  case value__ {
+    CertificateId(inner_value__) -> json.int(inner_value__)
   }
 }
 
@@ -34,8 +34,8 @@ pub type MixedContentType {
 }
 
 @internal
-pub fn encode__mixed_content_type(value: MixedContentType) {
-  case value {
+pub fn encode__mixed_content_type(value__: MixedContentType) {
+  case value__ {
     MixedContentTypeBlockable -> "blockable"
     MixedContentTypeOptionallyBlockable -> "optionally-blockable"
     MixedContentTypeNone -> "none"
@@ -54,8 +54,8 @@ pub type SecurityState {
 }
 
 @internal
-pub fn encode__security_state(value: SecurityState) {
-  case value {
+pub fn encode__security_state(value__: SecurityState) {
+  case value__ {
     SecurityStateUnknown -> "unknown"
     SecurityStateNeutral -> "neutral"
     SecurityStateInsecure -> "insecure"
@@ -79,7 +79,27 @@ pub type SecurityStateExplanation {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("securityState", Some("Security state representing the severity of the factor being explained."), None, None, None, RefType("SecurityState")), PropertyDefinition("title", Some("Title describing the type of factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("summary", Some("Short phrase describing the type of factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("description", Some("Full text explanation of the factor."), None, None, None, PrimitiveType("string")), PropertyDefinition("mixedContentType", Some("The type of mixed content described by the explanation."), None, None, None, RefType("MixedContentType")), PropertyDefinition("certificate", Some("Page certificate."), None, None, None, ArrayType(PrimitiveItem("string"))), PropertyDefinition("recommendations", Some("Recommendations to fix any issues."), None, None, Some(True), ArrayType(PrimitiveItem("string")))]))
+@internal
+pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
+  json.object([
+    #("securityState", encode__security_state(value__.security_state)),
+    #("title", json.string(value__.title)),
+    #("summary", json.string(value__.summary)),
+    #("description", json.string(value__.description)),
+    #(
+      "mixedContentType",
+      encode__mixed_content_type(value__.mixed_content_type),
+    ),
+    #("certificate", json.array(value__.certificate, of: json.string)),
+    #("recommendations", {
+      case value__.recommendations {
+        option.Some(value__) -> json.array(value__, of: json.string)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// The action to take when a certificate error occurs. continue will continue processing the
 /// request and cancel will cancel the request.
 pub type CertificateErrorAction {
@@ -88,8 +108,8 @@ pub type CertificateErrorAction {
 }
 
 @internal
-pub fn encode__certificate_error_action(value: CertificateErrorAction) {
-  case value {
+pub fn encode__certificate_error_action(value__: CertificateErrorAction) {
+  case value__ {
     CertificateErrorActionContinue -> "continue"
     CertificateErrorActionCancel -> "cancel"
   }

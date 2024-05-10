@@ -623,10 +623,6 @@ fn handle_port_response(
   }
 }
 
-fn handle_trapped_exit(msg: process.ExitMessage) {
-  todo
-}
-
 // --- HELPERS ---
 
 /// Send a JSON encoded string to the browser instance,

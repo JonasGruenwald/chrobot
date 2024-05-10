@@ -23,9 +23,9 @@ pub type BreakpointId {
 }
 
 @internal
-pub fn encode__breakpoint_id(value: BreakpointId) {
-  case value {
-    BreakpointId(inner_value) -> json.string(inner_value)
+pub fn encode__breakpoint_id(value__: BreakpointId) {
+  case value__ {
+    BreakpointId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -35,9 +35,9 @@ pub type CallFrameId {
 }
 
 @internal
-pub fn encode__call_frame_id(value: CallFrameId) {
-  case value {
-    CallFrameId(inner_value) -> json.string(inner_value)
+pub fn encode__call_frame_id(value__: CallFrameId) {
+  case value__ {
+    CallFrameId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -50,7 +50,20 @@ pub type Location {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("scriptId", Some("Script identifier as reported in the `Debugger.scriptParsed`."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, Some(True), PrimitiveType("integer"))]))
+@internal
+pub fn encode__location(value__: Location) {
+  json.object([
+    #("scriptId", runtime.encode__script_id(value__.script_id)),
+    #("lineNumber", json.int(value__.line_number)),
+    #("columnNumber", {
+      case value__.column_number {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// JavaScript call frame. Array of call frames form the call stack.
 pub type CallFrame {
   CallFrame(
@@ -64,7 +77,29 @@ pub type CallFrame {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("callFrameId", Some("Call frame identifier. This identifier is only valid while the virtual machine is paused."), None, None, None, RefType("CallFrameId")), PropertyDefinition("functionName", Some("Name of the JavaScript function called on this call frame."), None, None, None, PrimitiveType("string")), PropertyDefinition("functionLocation", Some("Location in the source code."), None, None, Some(True), RefType("Location")), PropertyDefinition("location", Some("Location in the source code."), None, None, None, RefType("Location")), PropertyDefinition("scopeChain", Some("Scope chain for this call frame."), None, None, None, ArrayType(ReferenceItem("Scope"))), PropertyDefinition("this", Some("`this` object for this call frame."), None, None, None, RefType("Runtime.RemoteObject")), PropertyDefinition("returnValue", Some("The value being returned, if the function is at return point."), None, None, Some(True), RefType("Runtime.RemoteObject"))]))
+@internal
+pub fn encode__call_frame(value__: CallFrame) {
+  json.object([
+    #("callFrameId", encode__call_frame_id(value__.call_frame_id)),
+    #("functionName", json.string(value__.function_name)),
+    #("functionLocation", {
+      case value__.function_location {
+        option.Some(value__) -> encode__location(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("location", encode__location(value__.location)),
+    #("scopeChain", json.array(value__.scope_chain, of: encode__scope)),
+    #("this", runtime.encode__remote_object(value__.this)),
+    #("returnValue", {
+      case value__.return_value {
+        option.Some(value__) -> runtime.encode__remote_object(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Scope description.
 pub type Scope {
   Scope(
@@ -92,8 +127,8 @@ pub type ScopeType {
 }
 
 @internal
-pub fn encode__scope_type(value: ScopeType) {
-  case value {
+pub fn encode__scope_type(value__: ScopeType) {
+  case value__ {
     ScopeTypeGlobal -> "global"
     ScopeTypeLocal -> "local"
     ScopeTypeWith -> "with"
@@ -109,8 +144,8 @@ pub fn encode__scope_type(value: ScopeType) {
 }
 
 @internal
-pub fn decode__scope_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__scope_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("global") -> Ok(ScopeTypeGlobal)
     Ok("local") -> Ok(ScopeTypeLocal)
     Ok("with") -> Ok(ScopeTypeWith)
@@ -125,13 +160,45 @@ pub fn decode__scope_type(value: dynamic.Dynamic) {
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Scope type."), None, None, None, EnumType(["global", "local", "with", "closure", "catch", "block", "script", "eval", "module", "wasm-expression-stack"])), PropertyDefinition("object", Some("Object representing the scope. For `global` and `with` scopes it represents the actual\nobject; for the rest of the scopes, it is artificial transient object enumerating scope\nvariables as its properties."), None, None, None, RefType("Runtime.RemoteObject")), PropertyDefinition("name", None, None, None, Some(True), PrimitiveType("string")), PropertyDefinition("startLocation", Some("Location in the source code where scope starts"), None, None, Some(True), RefType("Location")), PropertyDefinition("endLocation", Some("Location in the source code where scope ends"), None, None, Some(True), RefType("Location"))]))
+@internal
+pub fn encode__scope(value__: Scope) {
+  json.object([
+    #("type", encode__scope_type(value__.type_)),
+    #("object", runtime.encode__remote_object(value__.object)),
+    #("name", {
+      case value__.name {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("startLocation", {
+      case value__.start_location {
+        option.Some(value__) -> encode__location(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("endLocation", {
+      case value__.end_location {
+        option.Some(value__) -> encode__location(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Search match for resource.
 pub type SearchMatch {
   SearchMatch(line_number: Float, line_content: String)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("lineNumber", Some("Line number in resource content."), None, None, None, PrimitiveType("number")), PropertyDefinition("lineContent", Some("Line with match content."), None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__search_match(value__: SearchMatch) {
+  json.object([
+    #("lineNumber", json.float(value__.line_number)),
+    #("lineContent", json.string(value__.line_content)),
+  ])
+}
+
 pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
@@ -150,8 +217,8 @@ pub type BreakLocationType {
 }
 
 @internal
-pub fn encode__break_location_type(value: BreakLocationType) {
-  case value {
+pub fn encode__break_location_type(value__: BreakLocationType) {
+  case value__ {
     BreakLocationTypeDebuggerStatement -> "debuggerStatement"
     BreakLocationTypeCall -> "call"
     BreakLocationTypeReturn -> "return"
@@ -160,8 +227,8 @@ pub fn encode__break_location_type(value: BreakLocationType) {
 }
 
 @internal
-pub fn decode__break_location_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__break_location_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("debuggerStatement") -> Ok(BreakLocationTypeDebuggerStatement)
     Ok("call") -> Ok(BreakLocationTypeCall)
     Ok("return") -> Ok(BreakLocationTypeReturn)
@@ -169,7 +236,26 @@ pub fn decode__break_location_type(value: dynamic.Dynamic) {
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("scriptId", Some("Script identifier as reported in the `Debugger.scriptParsed`."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("type", None, None, None, Some(True), EnumType(["debuggerStatement", "call", "return"]))]))
+@internal
+pub fn encode__break_location(value__: BreakLocation) {
+  json.object([
+    #("scriptId", runtime.encode__script_id(value__.script_id)),
+    #("lineNumber", json.int(value__.line_number)),
+    #("columnNumber", {
+      case value__.column_number {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("type", {
+      case value__.type_ {
+        option.Some(value__) -> encode__break_location_type(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Enum of possible script languages.
 pub type ScriptLanguage {
   ScriptLanguageJavaScript
@@ -177,8 +263,8 @@ pub type ScriptLanguage {
 }
 
 @internal
-pub fn encode__script_language(value: ScriptLanguage) {
-  case value {
+pub fn encode__script_language(value__: ScriptLanguage) {
+  case value__ {
     ScriptLanguageJavaScript -> "JavaScript"
     ScriptLanguageWebAssembly -> "WebAssembly"
   }
@@ -200,8 +286,8 @@ pub type DebugSymbolsType {
 }
 
 @internal
-pub fn encode__debug_symbols_type(value: DebugSymbolsType) {
-  case value {
+pub fn encode__debug_symbols_type(value__: DebugSymbolsType) {
+  case value__ {
     DebugSymbolsTypeNone -> "None"
     DebugSymbolsTypeSourceMap -> "SourceMap"
     DebugSymbolsTypeEmbeddedDwarf -> "EmbeddedDWARF"
@@ -211,8 +297,8 @@ pub fn encode__debug_symbols_type(value: DebugSymbolsType) {
 }
 
 @internal
-pub fn decode__debug_symbols_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__debug_symbols_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("None") -> Ok(DebugSymbolsTypeNone)
     Ok("SourceMap") -> Ok(DebugSymbolsTypeSourceMap)
     Ok("EmbeddedDWARF") -> Ok(DebugSymbolsTypeEmbeddedDwarf)
@@ -220,4 +306,16 @@ pub fn decode__debug_symbols_type(value: dynamic.Dynamic) {
     _ -> Error(chrome.ProtocolError)
   }
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Type of the debug symbols."), None, None, None, EnumType(["None", "SourceMap", "EmbeddedDWARF", "ExternalDWARF"])), PropertyDefinition("externalURL", Some("URL of the external symbol source."), None, None, Some(True), PrimitiveType("string"))]))
+
+@internal
+pub fn encode__debug_symbols(value__: DebugSymbols) {
+  json.object([
+    #("type", encode__debug_symbols_type(value__.type_)),
+    #("externalURL", {
+      case value__.external_url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}

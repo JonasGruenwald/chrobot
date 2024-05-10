@@ -24,9 +24,9 @@ pub type FrameId {
 }
 
 @internal
-pub fn encode__frame_id(value: FrameId) {
-  case value {
-    FrameId(inner_value) -> json.string(inner_value)
+pub fn encode__frame_id(value__: FrameId) {
+  case value__ {
+    FrameId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -43,22 +43,56 @@ pub type Frame {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Frame unique identifier."), None, None, None, RefType("FrameId")), PropertyDefinition("parentId", Some("Parent frame identifier."), None, None, Some(True), RefType("FrameId")), PropertyDefinition("loaderId", Some("Identifier of the loader associated with this frame."), None, None, None, RefType("Network.LoaderId")), PropertyDefinition("name", Some("Frame's name as specified in the tag."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("url", Some("Frame document's URL without fragment."), None, None, None, PrimitiveType("string")), PropertyDefinition("securityOrigin", Some("Frame document's security origin."), None, None, None, PrimitiveType("string")), PropertyDefinition("mimeType", Some("Frame document's mimeType as determined by the browser."), None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__frame(value__: Frame) {
+  json.object([
+    #("id", encode__frame_id(value__.id)),
+    #("parentId", {
+      case value__.parent_id {
+        option.Some(value__) -> encode__frame_id(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("loaderId", network.encode__loader_id(value__.loader_id)),
+    #("name", {
+      case value__.name {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("url", json.string(value__.url)),
+    #("securityOrigin", json.string(value__.security_origin)),
+    #("mimeType", json.string(value__.mime_type)),
+  ])
+}
+
 /// Information about the Frame hierarchy.
 pub type FrameTree {
   FrameTree(frame: Frame, child_frames: option.Option(List(FrameTree)))
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("frame", Some("Frame information for this tree item."), None, None, None, RefType("Frame")), PropertyDefinition("childFrames", Some("Child frames."), None, None, Some(True), ArrayType(ReferenceItem("FrameTree")))]))
+@internal
+pub fn encode__frame_tree(value__: FrameTree) {
+  json.object([
+    #("frame", encode__frame(value__.frame)),
+    #("childFrames", {
+      case value__.child_frames {
+        option.Some(value__) -> json.array(value__, of: encode__frame_tree)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Unique script identifier.
 pub type ScriptIdentifier {
   ScriptIdentifier(String)
 }
 
 @internal
-pub fn encode__script_identifier(value: ScriptIdentifier) {
-  case value {
-    ScriptIdentifier(inner_value) -> json.string(inner_value)
+pub fn encode__script_identifier(value__: ScriptIdentifier) {
+  case value__ {
+    ScriptIdentifier(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -80,8 +114,8 @@ pub type TransitionType {
 }
 
 @internal
-pub fn encode__transition_type(value: TransitionType) {
-  case value {
+pub fn encode__transition_type(value__: TransitionType) {
+  case value__ {
     TransitionTypeLink -> "link"
     TransitionTypeTyped -> "typed"
     TransitionTypeAddressBar -> "address_bar"
@@ -110,7 +144,17 @@ pub type NavigationEntry {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("id", Some("Unique id of the navigation history entry."), None, None, None, PrimitiveType("integer")), PropertyDefinition("url", Some("URL of the navigation history entry."), None, None, None, PrimitiveType("string")), PropertyDefinition("userTypedURL", Some("URL that the user typed in the url bar."), None, None, None, PrimitiveType("string")), PropertyDefinition("title", Some("Title of the navigation history entry."), None, None, None, PrimitiveType("string")), PropertyDefinition("transitionType", Some("Transition type."), None, None, None, RefType("TransitionType"))]))
+@internal
+pub fn encode__navigation_entry(value__: NavigationEntry) {
+  json.object([
+    #("id", json.int(value__.id)),
+    #("url", json.string(value__.url)),
+    #("userTypedURL", json.string(value__.user_typed_url)),
+    #("title", json.string(value__.title)),
+    #("transitionType", encode__transition_type(value__.transition_type)),
+  ])
+}
+
 /// Javascript dialog type.
 pub type DialogType {
   DialogTypeAlert
@@ -120,8 +164,8 @@ pub type DialogType {
 }
 
 @internal
-pub fn encode__dialog_type(value: DialogType) {
-  case value {
+pub fn encode__dialog_type(value__: DialogType) {
+  case value__ {
     DialogTypeAlert -> "alert"
     DialogTypeConfirm -> "confirm"
     DialogTypePrompt -> "prompt"
@@ -135,7 +179,16 @@ pub type AppManifestError {
   AppManifestError(message: String, critical: Int, line: Int, column: Int)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("message", Some("Error message."), None, None, None, PrimitiveType("string")), PropertyDefinition("critical", Some("If critical, this is a non-recoverable parse error."), None, None, None, PrimitiveType("integer")), PropertyDefinition("line", Some("Error line."), None, None, None, PrimitiveType("integer")), PropertyDefinition("column", Some("Error column."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__app_manifest_error(value__: AppManifestError) {
+  json.object([
+    #("message", json.string(value__.message)),
+    #("critical", json.int(value__.critical)),
+    #("line", json.int(value__.line)),
+    #("column", json.int(value__.column)),
+  ])
+}
+
 /// Layout viewport position and dimensions.
 pub type LayoutViewport {
   LayoutViewport(
@@ -146,7 +199,16 @@ pub type LayoutViewport {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("pageX", Some("Horizontal offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("pageY", Some("Vertical offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("clientWidth", Some("Width (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("integer")), PropertyDefinition("clientHeight", Some("Height (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__layout_viewport(value__: LayoutViewport) {
+  json.object([
+    #("pageX", json.int(value__.page_x)),
+    #("pageY", json.int(value__.page_y)),
+    #("clientWidth", json.int(value__.client_width)),
+    #("clientHeight", json.int(value__.client_height)),
+  ])
+}
+
 /// Visual viewport position, dimensions, and scale.
 pub type VisualViewport {
   VisualViewport(
@@ -161,9 +223,37 @@ pub type VisualViewport {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("offsetX", Some("Horizontal offset relative to the layout viewport (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("offsetY", Some("Vertical offset relative to the layout viewport (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("pageX", Some("Horizontal offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("pageY", Some("Vertical offset relative to the document (CSS pixels)."), None, None, None, PrimitiveType("number")), PropertyDefinition("clientWidth", Some("Width (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("number")), PropertyDefinition("clientHeight", Some("Height (CSS pixels), excludes scrollbar if present."), None, None, None, PrimitiveType("number")), PropertyDefinition("scale", Some("Scale relative to the ideal viewport (size at width=device-width)."), None, None, None, PrimitiveType("number")), PropertyDefinition("zoom", Some("Page zoom factor (CSS to device independent pixels ratio)."), None, None, Some(True), PrimitiveType("number"))]))
+@internal
+pub fn encode__visual_viewport(value__: VisualViewport) {
+  json.object([
+    #("offsetX", json.float(value__.offset_x)),
+    #("offsetY", json.float(value__.offset_y)),
+    #("pageX", json.float(value__.page_x)),
+    #("pageY", json.float(value__.page_y)),
+    #("clientWidth", json.float(value__.client_width)),
+    #("clientHeight", json.float(value__.client_height)),
+    #("scale", json.float(value__.scale)),
+    #("zoom", {
+      case value__.zoom {
+        option.Some(value__) -> json.float(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Viewport for capturing screenshot.
 pub type Viewport {
   Viewport(x: Float, y: Float, width: Float, height: Float, scale: Float)
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("x", Some("X offset in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("y", Some("Y offset in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("width", Some("Rectangle width in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("height", Some("Rectangle height in device independent pixels (dip)."), None, None, None, PrimitiveType("number")), PropertyDefinition("scale", Some("Page scale factor."), None, None, None, PrimitiveType("number"))]))
+
+@internal
+pub fn encode__viewport(value__: Viewport) {
+  json.object([
+    #("x", json.float(value__.x)),
+    #("y", json.float(value__.y)),
+    #("width", json.float(value__.width)),
+    #("height", json.float(value__.height)),
+    #("scale", json.float(value__.scale)),
+  ])
+}

@@ -27,9 +27,9 @@ pub type NodeId {
 }
 
 @internal
-pub fn encode__node_id(value: NodeId) {
-  case value {
-    NodeId(inner_value) -> json.int(inner_value)
+pub fn encode__node_id(value__: NodeId) {
+  case value__ {
+    NodeId(inner_value__) -> json.int(inner_value__)
   }
 }
 
@@ -40,9 +40,9 @@ pub type BackendNodeId {
 }
 
 @internal
-pub fn encode__backend_node_id(value: BackendNodeId) {
-  case value {
-    BackendNodeId(inner_value) -> json.int(inner_value)
+pub fn encode__backend_node_id(value__: BackendNodeId) {
+  case value__ {
+    BackendNodeId(inner_value__) -> json.int(inner_value__)
   }
 }
 
@@ -51,7 +51,15 @@ pub type BackendNode {
   BackendNode(node_type: Int, node_name: String, backend_node_id: BackendNodeId)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("nodeType", Some("`Node`'s nodeType."), None, None, None, PrimitiveType("integer")), PropertyDefinition("nodeName", Some("`Node`'s nodeName."), None, None, None, PrimitiveType("string")), PropertyDefinition("backendNodeId", None, None, None, None, RefType("BackendNodeId"))]))
+@internal
+pub fn encode__backend_node(value__: BackendNode) {
+  json.object([
+    #("nodeType", json.int(value__.node_type)),
+    #("nodeName", json.string(value__.node_name)),
+    #("backendNodeId", encode__backend_node_id(value__.backend_node_id)),
+  ])
+}
+
 /// Pseudo element type.
 pub type PseudoType {
   PseudoTypeFirstLine
@@ -84,8 +92,8 @@ pub type PseudoType {
 }
 
 @internal
-pub fn encode__pseudo_type(value: PseudoType) {
-  case value {
+pub fn encode__pseudo_type(value__: PseudoType) {
+  case value__ {
     PseudoTypeFirstLine -> "first-line"
     PseudoTypeFirstLetter -> "first-letter"
     PseudoTypeBefore -> "before"
@@ -125,8 +133,8 @@ pub type ShadowRootType {
 }
 
 @internal
-pub fn encode__shadow_root_type(value: ShadowRootType) {
-  case value {
+pub fn encode__shadow_root_type(value__: ShadowRootType) {
+  case value__ {
     ShadowRootTypeUserAgent -> "user-agent"
     ShadowRootTypeOpen -> "open"
     ShadowRootTypeClosed -> "closed"
@@ -142,8 +150,8 @@ pub type CompatibilityMode {
 }
 
 @internal
-pub fn encode__compatibility_mode(value: CompatibilityMode) {
-  case value {
+pub fn encode__compatibility_mode(value__: CompatibilityMode) {
+  case value__ {
     CompatibilityModeQuirksMode -> "QuirksMode"
     CompatibilityModeLimitedQuirksMode -> "LimitedQuirksMode"
     CompatibilityModeNoQuirksMode -> "NoQuirksMode"
@@ -159,8 +167,8 @@ pub type PhysicalAxes {
 }
 
 @internal
-pub fn encode__physical_axes(value: PhysicalAxes) {
-  case value {
+pub fn encode__physical_axes(value__: PhysicalAxes) {
+  case value__ {
     PhysicalAxesHorizontal -> "Horizontal"
     PhysicalAxesVertical -> "Vertical"
     PhysicalAxesBoth -> "Both"
@@ -176,8 +184,8 @@ pub type LogicalAxes {
 }
 
 @internal
-pub fn encode__logical_axes(value: LogicalAxes) {
-  case value {
+pub fn encode__logical_axes(value__: LogicalAxes) {
+  case value__ {
     LogicalAxesInline -> "Inline"
     LogicalAxesBlock -> "Block"
     LogicalAxesBoth -> "Both"
@@ -192,8 +200,8 @@ pub type ScrollOrientation {
 }
 
 @internal
-pub fn encode__scroll_orientation(value: ScrollOrientation) {
-  case value {
+pub fn encode__scroll_orientation(value__: ScrollOrientation) {
+  case value__ {
     ScrollOrientationHorizontal -> "horizontal"
     ScrollOrientationVertical -> "vertical"
   }
@@ -237,22 +245,191 @@ pub type Node {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("nodeId", Some("Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend\nwill only push node with given `id` once. It is aware of all requested nodes and will only\nfire DOM events for nodes known to the client."), None, None, None, RefType("NodeId")), PropertyDefinition("parentId", Some("The id of the parent node if any."), None, None, Some(True), RefType("NodeId")), PropertyDefinition("backendNodeId", Some("The BackendNodeId for this node."), None, None, None, RefType("BackendNodeId")), PropertyDefinition("nodeType", Some("`Node`'s nodeType."), None, None, None, PrimitiveType("integer")), PropertyDefinition("nodeName", Some("`Node`'s nodeName."), None, None, None, PrimitiveType("string")), PropertyDefinition("localName", Some("`Node`'s localName."), None, None, None, PrimitiveType("string")), PropertyDefinition("nodeValue", Some("`Node`'s nodeValue."), None, None, None, PrimitiveType("string")), PropertyDefinition("childNodeCount", Some("Child count for `Container` nodes."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("children", Some("Child nodes of this node when requested with children."), None, None, Some(True), ArrayType(ReferenceItem("Node"))), PropertyDefinition("attributes", Some("Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`."), None, None, Some(True), ArrayType(PrimitiveItem("string"))), PropertyDefinition("documentURL", Some("Document URL that `Document` or `FrameOwner` node points to."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("baseURL", Some("Base URL that `Document` or `FrameOwner` node uses for URL completion."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("publicId", Some("`DocumentType`'s publicId."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("systemId", Some("`DocumentType`'s systemId."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("internalSubset", Some("`DocumentType`'s internalSubset."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("xmlVersion", Some("`Document`'s XML version in case of XML documents."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("name", Some("`Attr`'s name."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("value", Some("`Attr`'s value."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("pseudoType", Some("Pseudo element type for this node."), None, None, Some(True), RefType("PseudoType")), PropertyDefinition("pseudoIdentifier", Some("Pseudo element identifier for this node. Only present if there is a\nvalid pseudoType."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("shadowRootType", Some("Shadow root type."), None, None, Some(True), RefType("ShadowRootType")), PropertyDefinition("frameId", Some("Frame ID for frame owner elements."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("contentDocument", Some("Content document for frame owner elements."), None, None, Some(True), RefType("Node")), PropertyDefinition("shadowRoots", Some("Shadow root list for given element host."), None, None, Some(True), ArrayType(ReferenceItem("Node"))), PropertyDefinition("templateContent", Some("Content document fragment for template elements."), None, None, Some(True), RefType("Node")), PropertyDefinition("pseudoElements", Some("Pseudo elements associated with this node."), None, None, Some(True), ArrayType(ReferenceItem("Node"))), PropertyDefinition("distributedNodes", Some("Distributed nodes for given insertion point."), None, None, Some(True), ArrayType(ReferenceItem("BackendNode"))), PropertyDefinition("isSVG", Some("Whether the node is SVG."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("compatibilityMode", None, None, None, Some(True), RefType("CompatibilityMode")), PropertyDefinition("assignedSlot", None, None, None, Some(True), RefType("BackendNode"))]))
+@internal
+pub fn encode__node(value__: Node) {
+  json.object([
+    #("nodeId", encode__node_id(value__.node_id)),
+    #("parentId", {
+      case value__.parent_id {
+        option.Some(value__) -> encode__node_id(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("backendNodeId", encode__backend_node_id(value__.backend_node_id)),
+    #("nodeType", json.int(value__.node_type)),
+    #("nodeName", json.string(value__.node_name)),
+    #("localName", json.string(value__.local_name)),
+    #("nodeValue", json.string(value__.node_value)),
+    #("childNodeCount", {
+      case value__.child_node_count {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("children", {
+      case value__.children {
+        option.Some(value__) -> json.array(value__, of: encode__node)
+        option.None -> json.null()
+      }
+    }),
+    #("attributes", {
+      case value__.attributes {
+        option.Some(value__) -> json.array(value__, of: json.string)
+        option.None -> json.null()
+      }
+    }),
+    #("documentURL", {
+      case value__.document_url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("baseURL", {
+      case value__.base_url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("publicId", {
+      case value__.public_id {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("systemId", {
+      case value__.system_id {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("internalSubset", {
+      case value__.internal_subset {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("xmlVersion", {
+      case value__.xml_version {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("name", {
+      case value__.name {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("value", {
+      case value__.value {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("pseudoType", {
+      case value__.pseudo_type {
+        option.Some(value__) -> encode__pseudo_type(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("pseudoIdentifier", {
+      case value__.pseudo_identifier {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("shadowRootType", {
+      case value__.shadow_root_type {
+        option.Some(value__) -> encode__shadow_root_type(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("frameId", {
+      case value__.frame_id {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("contentDocument", {
+      case value__.content_document {
+        option.Some(value__) -> encode__node(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("shadowRoots", {
+      case value__.shadow_roots {
+        option.Some(value__) -> json.array(value__, of: encode__node)
+        option.None -> json.null()
+      }
+    }),
+    #("templateContent", {
+      case value__.template_content {
+        option.Some(value__) -> encode__node(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("pseudoElements", {
+      case value__.pseudo_elements {
+        option.Some(value__) -> json.array(value__, of: encode__node)
+        option.None -> json.null()
+      }
+    }),
+    #("distributedNodes", {
+      case value__.distributed_nodes {
+        option.Some(value__) -> json.array(value__, of: encode__backend_node)
+        option.None -> json.null()
+      }
+    }),
+    #("isSVG", {
+      case value__.is_svg {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("compatibilityMode", {
+      case value__.compatibility_mode {
+        option.Some(value__) -> encode__compatibility_mode(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("assignedSlot", {
+      case value__.assigned_slot {
+        option.Some(value__) -> encode__backend_node(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// A structure holding an RGBA color.
 pub type RGBA {
   RGBA(r: Int, g: Int, b: Int, a: option.Option(Float))
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("r", Some("The red component, in the [0-255] range."), None, None, None, PrimitiveType("integer")), PropertyDefinition("g", Some("The green component, in the [0-255] range."), None, None, None, PrimitiveType("integer")), PropertyDefinition("b", Some("The blue component, in the [0-255] range."), None, None, None, PrimitiveType("integer")), PropertyDefinition("a", Some("The alpha component, in the [0-1] range (default: 1)."), None, None, Some(True), PrimitiveType("number"))]))
+@internal
+pub fn encode__rgba(value__: RGBA) {
+  json.object([
+    #("r", json.int(value__.r)),
+    #("g", json.int(value__.g)),
+    #("b", json.int(value__.b)),
+    #("a", {
+      case value__.a {
+        option.Some(value__) -> json.float(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
 pub type Quad {
   Quad(List(Float))
 }
 
 @internal
-pub fn encode__quad(value: Quad) {
-  case value {
-    Quad(inner_value) -> json.array(inner_value, of: json.float)
+pub fn encode__quad(value__: Quad) {
+  case value__ {
+    Quad(inner_value__) -> json.array(inner_value__, of: json.float)
   }
 }
 
@@ -269,7 +446,24 @@ pub type BoxModel {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("content", Some("Content box"), None, None, None, RefType("Quad")), PropertyDefinition("padding", Some("Padding box"), None, None, None, RefType("Quad")), PropertyDefinition("border", Some("Border box"), None, None, None, RefType("Quad")), PropertyDefinition("margin", Some("Margin box"), None, None, None, RefType("Quad")), PropertyDefinition("width", Some("Node width"), None, None, None, PrimitiveType("integer")), PropertyDefinition("height", Some("Node height"), None, None, None, PrimitiveType("integer")), PropertyDefinition("shapeOutside", Some("Shape outside coordinates"), None, None, Some(True), RefType("ShapeOutsideInfo"))]))
+@internal
+pub fn encode__box_model(value__: BoxModel) {
+  json.object([
+    #("content", encode__quad(value__.content)),
+    #("padding", encode__quad(value__.padding)),
+    #("border", encode__quad(value__.border)),
+    #("margin", encode__quad(value__.margin)),
+    #("width", json.int(value__.width)),
+    #("height", json.int(value__.height)),
+    #("shapeOutside", {
+      case value__.shape_outside {
+        option.Some(value__) -> encode__shape_outside_info(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// CSS Shape Outside details.
 pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
@@ -279,14 +473,46 @@ pub type ShapeOutsideInfo {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("bounds", Some("Shape bounds"), None, None, None, RefType("Quad")), PropertyDefinition("shape", Some("Shape coordinate details"), None, None, None, ArrayType(PrimitiveItem("any"))), PropertyDefinition("marginShape", Some("Margin shape bounds"), None, None, None, ArrayType(PrimitiveItem("any")))]))
+@internal
+pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
+  json.object([
+    #("bounds", encode__quad(value__.bounds)),
+    #(
+      "shape",
+      json.null(),
+      // dynamic values cannot be encoded!
+    ),
+    #(
+      "marginShape",
+      json.null(),
+      // dynamic values cannot be encoded!
+    ),
+  ])
+}
+
 /// Rectangle.
 pub type Rect {
   Rect(x: Float, y: Float, width: Float, height: Float)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("x", Some("X coordinate"), None, None, None, PrimitiveType("number")), PropertyDefinition("y", Some("Y coordinate"), None, None, None, PrimitiveType("number")), PropertyDefinition("width", Some("Rectangle width"), None, None, None, PrimitiveType("number")), PropertyDefinition("height", Some("Rectangle height"), None, None, None, PrimitiveType("number"))]))
+@internal
+pub fn encode__rect(value__: Rect) {
+  json.object([
+    #("x", json.float(value__.x)),
+    #("y", json.float(value__.y)),
+    #("width", json.float(value__.width)),
+    #("height", json.float(value__.height)),
+  ])
+}
+
 pub type CSSComputedStyleProperty {
   CSSComputedStyleProperty(name: String, value: String)
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Computed style property name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("Computed style property value."), None, None, None, PrimitiveType("string"))]))
+
+@internal
+pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.string(value__.value)),
+  ])
+}

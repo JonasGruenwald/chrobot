@@ -792,6 +792,7 @@ fn gen_imports(domain: Domain) {
   [
     "import chrome\n",
     "import gleam/dict\n",
+    "import gleam/list\n",
     "import gleam/dynamic\n",
     "import gleam/result\n",
     "import gleam/option\n",
@@ -962,19 +963,35 @@ fn internal_fn(name: String, params: String, body: String) {
   "@internal\npub fn " <> name <> "(\n" <> params <> ") {\n" <> body <> "}\n"
 }
 
+fn get_internal_function_name(internal_descriptor: String, type_name: String) {
+  case string.split(type_name, ".") {
+    [val] -> internal_descriptor <> "__" <> snake_case(val)
+    [domain, val] ->
+      snake_case(domain)
+      <> "."
+      <> internal_descriptor
+      <> "__"
+      <> snake_case(val)
+    _ -> {
+      io.debug(#(internal_descriptor, type_name))
+      panic as "Can't get internal name from passed type_name"
+    }
+  }
+}
+
 fn get_encoder_name(type_name: String) {
-  "encode__" <> snake_case(type_name)
+  get_internal_function_name("encode", type_name)
 }
 
 fn get_decoder_name(type_name: String) {
-  "decode__" <> snake_case(type_name)
+  get_internal_function_name("decode", type_name)
 }
 
 pub fn gen_enum_encoder(enum_type_name: String, enum: List(String)) {
   get_encoder_name(enum_type_name)
   |> internal_fn(
-    "value: " <> enum_type_name <> "\n",
-    "case value{\n"
+    "value__: " <> enum_type_name <> "\n",
+    "case value__{\n"
       <> list.fold(enum, "", fn(acc, current) {
       acc
       <> enum_type_name
@@ -990,8 +1007,8 @@ pub fn gen_enum_encoder(enum_type_name: String, enum: List(String)) {
 pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
   get_decoder_name(enum_type_name)
   |> internal_fn(
-    "value: dynamic.Dynamic\n",
-    "case dynamic.string(value){\n"
+    "value__: dynamic.Dynamic\n",
+    "case dynamic.string(value__){\n"
       <> list.fold(enum, "", fn(acc, current) {
       acc
       <> "Ok(\""
@@ -1006,17 +1023,108 @@ pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
   )
 }
 
+/// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
+/// Given the vallue_name "value.lives" 
+/// and its corresponding type PrimitiveType("int")
+/// it should output: `json.int(value.lives))`
+/// The root name and attribute name are just there to construct the function name of Enum encoders
+fn gen_property_encoder(
+  root_name: String,
+  attribute_name: String,
+  value_name: String,
+  value_type: Type,
+) {
+  case value_type {
+    PrimitiveType("any") -> {
+      "json.null() // dynamic values cannot be encoded!\n"
+    }
+    PrimitiveType(type_name) -> {
+      "json."
+      <> to_gleam_primitive_function(type_name)
+      <> "("
+      <> value_name
+      <> ")"
+    }
+    ArrayType(PrimitiveItem("any")) -> {
+      "json.null() // dynamic values cannot be encoded!\n"
+    }
+    ArrayType(PrimitiveItem(type_name)) -> {
+      "json.array("
+      <> value_name
+      <> ", of: json."
+      <> to_gleam_primitive_function(type_name)
+      <> ")"
+    }
+    ArrayType(ReferenceItem(ref_target)) -> {
+      "json.array("
+      <> value_name
+      <> ", of: "
+      <> get_encoder_name(ref_target)
+      <> ")"
+    }
+    EnumType(_enum) -> {
+      get_encoder_name(pascal_case(root_name) <> pascal_case(attribute_name))
+      <> "("
+      <> value_name
+      <> ")"
+    }
+    RefType(ref_target) -> {
+      get_encoder_name(ref_target) <> "(" <> value_name <> ")"
+    }
+    ObjectType(Some(_properties)) -> {
+      io.debug(#(root_name, attribute_name, value_type))
+      panic as "Attempting nested object encoder generation"
+    }
+    ObjectType(None) -> {
+      "dict.to_list(" <> value_name <> ")
+        |> list.map(fn(i) { #(i.0, json.string(i.1)) })
+        |> json.object"
+    }
+  }
+}
+
+/// Generate an object property encoder like:
+/// #("name", string(cat.name)),
+/// or
+/// #("lives", int(cat.lives)),
+/// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
+/// The root name is just there to construct the function name of Enum encoders
+fn gen_object_property_encoder(root_name: String, prop_def: PropertyDefinition) {
+  let attribute_name = safe_snake_case(prop_def.name)
+  let encoder = case prop_def.optional {
+    option.Some(True) ->
+      "{case value__."
+      <> attribute_name
+      <> " {\n option.Some(value__) -> "
+      <> gen_property_encoder(
+        root_name,
+        attribute_name,
+        "value__",
+        prop_def.inner,
+      )
+      <> "\n option.None -> json.null()\n}}"
+    _ ->
+      gen_property_encoder(
+        root_name,
+        attribute_name,
+        "value__." <> attribute_name,
+        prop_def.inner,
+      )
+  }
+  "#(\"" <> prop_def.name <> "\", " <> encoder <> "),\n"
+}
+
 fn gen_type_def_encoder(type_def: TypeDefinition) {
   case type_def.inner {
     PrimitiveType(primitive_type) -> {
       get_encoder_name(type_def.id)
       |> internal_fn(
-        "value: " <> type_def.id <> "\n",
-        "case value{\n"
+        "value__: " <> type_def.id <> "\n",
+        "case value__{\n"
           <> type_def.id
-          <> "(inner_value) -> json."
+          <> "(inner_value__) -> json."
           <> to_gleam_primitive_function(primitive_type)
-          <> "(inner_value)\n}",
+          <> "(inner_value__)\n}",
       )
     }
     EnumType(enum) -> {
@@ -1025,12 +1133,36 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
     ArrayType(items: PrimitiveItem(primitive_type)) -> {
       get_encoder_name(type_def.id)
       |> internal_fn(
-        "value: " <> type_def.id <> "\n",
-        "case value{\n"
+        "value__: " <> type_def.id <> "\n",
+        "case value__{\n"
           <> type_def.id
-          <> "(inner_value) -> json.array(inner_value, of: json."
+          <> "(inner_value__) -> json.array(inner_value__, of: json."
           <> to_gleam_primitive_function(primitive_type)
           <> ")\n}",
+      )
+    }
+    ObjectType(Some(properties)) -> {
+      let property_encoders =
+        list.map(properties, fn(p) {
+          gen_object_property_encoder(type_def.id, p)
+        })
+        |> string.join("")
+
+      get_encoder_name(type_def.id)
+      |> internal_fn(
+        "value__: " <> type_def.id <> "\n",
+        "json.object([\n" <> property_encoders <> "])",
+      )
+    }
+    ObjectType(None) -> {
+      get_encoder_name(type_def.id)
+      |> internal_fn(
+        "value__: " <> type_def.id <> "\n",
+        "case value__{\n" <> type_def.id <> "(inner_value__) -> 
+      dict.to_list(inner_value__)
+      |> list.map(fn(i) { #(i.0, json.string(i.1)) })
+      |> json.object
+ }         ",
       )
     }
     // Below are not implemented because they currently don't occur
@@ -1042,10 +1174,6 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
       io.debug(type_def)
       panic as "tried to generate type def encoder for a type which is a ref!"
     }
-    _ ->
-      "// TODO: implement type encoder for "
-      <> string.inspect(type_def.inner)
-      <> "\n"
   }
 }
 
@@ -1094,6 +1222,7 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   |> remove_import_if_unused(full_string, "gleam/option", [
     "Option", "Some", "None",
   ])
+  |> remove_import_if_unused(full_string, "gleam/list", ["map"])
   |> remove_import_if_unused(full_string, "chrome", [
     "call", "send", "ProtocolError",
   ])

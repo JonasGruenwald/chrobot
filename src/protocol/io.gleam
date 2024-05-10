@@ -19,8 +19,8 @@ pub type StreamHandle {
 }
 
 @internal
-pub fn encode__stream_handle(value: StreamHandle) {
-  case value {
-    StreamHandle(inner_value) -> json.string(inner_value)
+pub fn encode__stream_handle(value__: StreamHandle) {
+  case value__ {
+    StreamHandle(inner_value__) -> json.string(inner_value__)
   }
 }

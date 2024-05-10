@@ -32,8 +32,8 @@ pub type ScreenOrientationType {
 }
 
 @internal
-pub fn encode__screen_orientation_type(value: ScreenOrientationType) {
-  case value {
+pub fn encode__screen_orientation_type(value__: ScreenOrientationType) {
+  case value__ {
     ScreenOrientationTypePortraitPrimary -> "portraitPrimary"
     ScreenOrientationTypePortraitSecondary -> "portraitSecondary"
     ScreenOrientationTypeLandscapePrimary -> "landscapePrimary"
@@ -43,8 +43,8 @@ pub fn encode__screen_orientation_type(value: ScreenOrientationType) {
 }
 
 @internal
-pub fn decode__screen_orientation_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__screen_orientation_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("portraitPrimary") -> Ok(ScreenOrientationTypePortraitPrimary)
     Ok("portraitSecondary") -> Ok(ScreenOrientationTypePortraitSecondary)
     Ok("landscapePrimary") -> Ok(ScreenOrientationTypeLandscapePrimary)
@@ -53,7 +53,14 @@ pub fn decode__screen_orientation_type(value: dynamic.Dynamic) {
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Orientation type."), None, None, None, EnumType(["portraitPrimary", "portraitSecondary", "landscapePrimary", "landscapeSecondary"])), PropertyDefinition("angle", Some("Orientation angle."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__screen_orientation(value__: ScreenOrientation) {
+  json.object([
+    #("type", encode__screen_orientation_type(value__.type_)),
+    #("angle", json.int(value__.angle)),
+  ])
+}
+
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
@@ -70,8 +77,8 @@ pub type DisplayFeatureOrientation {
 }
 
 @internal
-pub fn encode__display_feature_orientation(value: DisplayFeatureOrientation) {
-  case value {
+pub fn encode__display_feature_orientation(value__: DisplayFeatureOrientation) {
+  case value__ {
     DisplayFeatureOrientationVertical -> "vertical"
     DisplayFeatureOrientationHorizontal -> "horizontal"
   }
@@ -79,15 +86,23 @@ pub fn encode__display_feature_orientation(value: DisplayFeatureOrientation) {
 }
 
 @internal
-pub fn decode__display_feature_orientation(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__display_feature_orientation(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("vertical") -> Ok(DisplayFeatureOrientationVertical)
     Ok("horizontal") -> Ok(DisplayFeatureOrientationHorizontal)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("orientation", Some("Orientation of a display feature in relation to screen"), None, None, None, EnumType(["vertical", "horizontal"])), PropertyDefinition("offset", Some("The offset from the screen origin in either the x (for vertical\norientation) or y (for horizontal orientation) direction."), None, None, None, PrimitiveType("integer")), PropertyDefinition("maskLength", Some("A display feature may mask content such that it is not physically\ndisplayed - this length along with the offset describes this area.\nA display feature that only splits content will have a 0 mask_length."), None, None, None, PrimitiveType("integer"))]))
+@internal
+pub fn encode__display_feature(value__: DisplayFeature) {
+  json.object([
+    #("orientation", encode__display_feature_orientation(value__.orientation)),
+    #("offset", json.int(value__.offset)),
+    #("maskLength", json.int(value__.mask_length)),
+  ])
+}
+
 pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
@@ -100,8 +115,8 @@ pub type DevicePostureType {
 }
 
 @internal
-pub fn encode__device_posture_type(value: DevicePostureType) {
-  case value {
+pub fn encode__device_posture_type(value__: DevicePostureType) {
+  case value__ {
     DevicePostureTypeContinuous -> "continuous"
     DevicePostureTypeFolded -> "folded"
   }
@@ -109,16 +124,27 @@ pub fn encode__device_posture_type(value: DevicePostureType) {
 }
 
 @internal
-pub fn decode__device_posture_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__device_posture_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("continuous") -> Ok(DevicePostureTypeContinuous)
     Ok("folded") -> Ok(DevicePostureTypeFolded)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Current posture of the device"), None, None, None, EnumType(["continuous", "folded"]))]))
+@internal
+pub fn encode__device_posture(value__: DevicePosture) {
+  json.object([#("type", encode__device_posture_type(value__.type_))])
+}
+
 pub type MediaFeature {
   MediaFeature(name: String, value: String)
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", None, None, None, None, PrimitiveType("string")), PropertyDefinition("value", None, None, None, None, PrimitiveType("string"))]))
+
+@internal
+pub fn encode__media_feature(value__: MediaFeature) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.string(value__.value)),
+  ])
+}

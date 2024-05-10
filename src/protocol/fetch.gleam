@@ -24,9 +24,9 @@ pub type RequestId {
 }
 
 @internal
-pub fn encode__request_id(value: RequestId) {
-  case value {
-    RequestId(inner_value) -> json.string(inner_value)
+pub fn encode__request_id(value__: RequestId) {
+  case value__ {
+    RequestId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -39,8 +39,8 @@ pub type RequestStage {
 }
 
 @internal
-pub fn encode__request_stage(value: RequestStage) {
-  case value {
+pub fn encode__request_stage(value__: RequestStage) {
+  case value__ {
     RequestStageRequest -> "Request"
     RequestStageResponse -> "Response"
   }
@@ -55,13 +55,43 @@ pub type RequestPattern {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("urlPattern", Some("Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is\nbackslash. Omitting is equivalent to `\"*\"`."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("resourceType", Some("If set, only requests for matching resource types will be intercepted."), None, None, Some(True), RefType("Network.ResourceType")), PropertyDefinition("requestStage", Some("Stage at which to begin intercepting requests. Default is Request."), None, None, Some(True), RefType("RequestStage"))]))
+@internal
+pub fn encode__request_pattern(value__: RequestPattern) {
+  json.object([
+    #("urlPattern", {
+      case value__.url_pattern {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("resourceType", {
+      case value__.resource_type {
+        option.Some(value__) -> network.encode__resource_type(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("requestStage", {
+      case value__.request_stage {
+        option.Some(value__) -> encode__request_stage(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Response HTTP header entry
 pub type HeaderEntry {
   HeaderEntry(name: String, value: String)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", None, None, None, None, PrimitiveType("string")), PropertyDefinition("value", None, None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__header_entry(value__: HeaderEntry) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.string(value__.value)),
+  ])
+}
+
 /// Authorization challenge for HTTP status code 401 or 407.
 pub type AuthChallenge {
   AuthChallenge(
@@ -80,8 +110,8 @@ pub type AuthChallengeSource {
 }
 
 @internal
-pub fn encode__auth_challenge_source(value: AuthChallengeSource) {
-  case value {
+pub fn encode__auth_challenge_source(value__: AuthChallengeSource) {
+  case value__ {
     AuthChallengeSourceServer -> "Server"
     AuthChallengeSourceProxy -> "Proxy"
   }
@@ -89,15 +119,29 @@ pub fn encode__auth_challenge_source(value: AuthChallengeSource) {
 }
 
 @internal
-pub fn decode__auth_challenge_source(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__auth_challenge_source(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("Server") -> Ok(AuthChallengeSourceServer)
     Ok("Proxy") -> Ok(AuthChallengeSourceProxy)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("source", Some("Source of the authentication challenge."), None, None, Some(True), EnumType(["Server", "Proxy"])), PropertyDefinition("origin", Some("Origin of the challenger."), None, None, None, PrimitiveType("string")), PropertyDefinition("scheme", Some("The authentication scheme used, such as basic or digest"), None, None, None, PrimitiveType("string")), PropertyDefinition("realm", Some("The realm of the challenge. May be empty."), None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__auth_challenge(value__: AuthChallenge) {
+  json.object([
+    #("source", {
+      case value__.source {
+        option.Some(value__) -> encode__auth_challenge_source(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("origin", json.string(value__.origin)),
+    #("scheme", json.string(value__.scheme)),
+    #("realm", json.string(value__.realm)),
+  ])
+}
+
 /// Response to an AuthChallenge.
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
@@ -116,8 +160,8 @@ pub type AuthChallengeResponseResponse {
 }
 
 @internal
-pub fn encode__auth_challenge_response_response(value: AuthChallengeResponseResponse) {
-  case value {
+pub fn encode__auth_challenge_response_response(value__: AuthChallengeResponseResponse) {
+  case value__ {
     AuthChallengeResponseResponseDefault -> "Default"
     AuthChallengeResponseResponseCancelAuth -> "CancelAuth"
     AuthChallengeResponseResponseProvideCredentials -> "ProvideCredentials"
@@ -126,8 +170,8 @@ pub fn encode__auth_challenge_response_response(value: AuthChallengeResponseResp
 }
 
 @internal
-pub fn decode__auth_challenge_response_response(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__auth_challenge_response_response(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("Default") -> Ok(AuthChallengeResponseResponseDefault)
     Ok("CancelAuth") -> Ok(AuthChallengeResponseResponseCancelAuth)
     Ok("ProvideCredentials") ->
@@ -135,4 +179,22 @@ pub fn decode__auth_challenge_response_response(value: dynamic.Dynamic) {
     _ -> Error(chrome.ProtocolError)
   }
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("response", Some("The decision on what to do in response to the authorization challenge.  Default means\ndeferring to the default behavior of the net stack, which will likely either the Cancel\nauthentication or display a popup dialog box."), None, None, None, EnumType(["Default", "CancelAuth", "ProvideCredentials"])), PropertyDefinition("username", Some("The username to provide, possibly empty. Should only be set if response is\nProvideCredentials."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("password", Some("The password to provide, possibly empty. Should only be set if response is\nProvideCredentials."), None, None, Some(True), PrimitiveType("string"))]))
+
+@internal
+pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
+  json.object([
+    #("response", encode__auth_challenge_response_response(value__.response)),
+    #("username", {
+      case value__.username {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("password", {
+      case value__.password {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}

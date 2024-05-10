@@ -18,9 +18,9 @@ pub type TargetID {
 }
 
 @internal
-pub fn encode__target_id(value: TargetID) {
-  case value {
-    TargetID(inner_value) -> json.string(inner_value)
+pub fn encode__target_id(value__: TargetID) {
+  case value__ {
+    TargetID(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -30,9 +30,9 @@ pub type SessionID {
 }
 
 @internal
-pub fn encode__session_id(value: SessionID) {
-  case value {
-    SessionID(inner_value) -> json.string(inner_value)
+pub fn encode__session_id(value__: SessionID) {
+  case value__ {
+    SessionID(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -46,4 +46,20 @@ pub type TargetInfo {
     opener_id: option.Option(TargetID),
   )
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("targetId", None, None, None, None, RefType("TargetID")), PropertyDefinition("type", Some("List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22"), None, None, None, PrimitiveType("string")), PropertyDefinition("title", None, None, None, None, PrimitiveType("string")), PropertyDefinition("url", None, None, None, None, PrimitiveType("string")), PropertyDefinition("attached", Some("Whether the target has an attached client."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("openerId", Some("Opener target Id"), None, None, Some(True), RefType("TargetID"))]))
+
+@internal
+pub fn encode__target_info(value__: TargetInfo) {
+  json.object([
+    #("targetId", encode__target_id(value__.target_id)),
+    #("type", json.string(value__.type_)),
+    #("title", json.string(value__.title)),
+    #("url", json.string(value__.url)),
+    #("attached", json.bool(value__.attached)),
+    #("openerId", {
+      case value__.opener_id {
+        option.Some(value__) -> encode__target_id(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}

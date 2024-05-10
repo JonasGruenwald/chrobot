@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 import protocol/io
 
@@ -19,4 +20,21 @@ pub type TraceConfig {
     excluded_categories: option.Option(List(String)),
   )
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("includedCategories", Some("Included category filters."), None, None, Some(True), ArrayType(PrimitiveItem("string"))), PropertyDefinition("excludedCategories", Some("Excluded category filters."), None, None, Some(True), ArrayType(PrimitiveItem("string")))]))
+
+@internal
+pub fn encode__trace_config(value__: TraceConfig) {
+  json.object([
+    #("includedCategories", {
+      case value__.included_categories {
+        option.Some(value__) -> json.array(value__, of: json.string)
+        option.None -> json.null()
+      }
+    }),
+    #("excludedCategories", {
+      case value__.excluded_categories {
+        option.Some(value__) -> json.array(value__, of: json.string)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}

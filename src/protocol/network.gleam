@@ -15,6 +15,7 @@ import chrome
 import gleam/dict
 import gleam/dynamic
 import gleam/json
+import gleam/list
 import gleam/option
 import protocol/debugger
 import protocol/runtime
@@ -43,8 +44,8 @@ pub type ResourceType {
 }
 
 @internal
-pub fn encode__resource_type(value: ResourceType) {
-  case value {
+pub fn encode__resource_type(value__: ResourceType) {
+  case value__ {
     ResourceTypeDocument -> "Document"
     ResourceTypeStylesheet -> "Stylesheet"
     ResourceTypeImage -> "Image"
@@ -73,9 +74,9 @@ pub type LoaderId {
 }
 
 @internal
-pub fn encode__loader_id(value: LoaderId) {
-  case value {
-    LoaderId(inner_value) -> json.string(inner_value)
+pub fn encode__loader_id(value__: LoaderId) {
+  case value__ {
+    LoaderId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -85,9 +86,9 @@ pub type RequestId {
 }
 
 @internal
-pub fn encode__request_id(value: RequestId) {
-  case value {
-    RequestId(inner_value) -> json.string(inner_value)
+pub fn encode__request_id(value__: RequestId) {
+  case value__ {
+    RequestId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -97,9 +98,9 @@ pub type InterceptionId {
 }
 
 @internal
-pub fn encode__interception_id(value: InterceptionId) {
-  case value {
-    InterceptionId(inner_value) -> json.string(inner_value)
+pub fn encode__interception_id(value__: InterceptionId) {
+  case value__ {
+    InterceptionId(inner_value__) -> json.string(inner_value__)
   }
 }
 
@@ -122,8 +123,8 @@ pub type ErrorReason {
 }
 
 @internal
-pub fn encode__error_reason(value: ErrorReason) {
-  case value {
+pub fn encode__error_reason(value__: ErrorReason) {
+  case value__ {
     ErrorReasonFailed -> "Failed"
     ErrorReasonAborted -> "Aborted"
     ErrorReasonTimedOut -> "TimedOut"
@@ -148,9 +149,9 @@ pub type TimeSinceEpoch {
 }
 
 @internal
-pub fn encode__time_since_epoch(value: TimeSinceEpoch) {
-  case value {
-    TimeSinceEpoch(inner_value) -> json.float(inner_value)
+pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
+  case value__ {
+    TimeSinceEpoch(inner_value__) -> json.float(inner_value__)
   }
 }
 
@@ -160,9 +161,9 @@ pub type MonotonicTime {
 }
 
 @internal
-pub fn encode__monotonic_time(value: MonotonicTime) {
-  case value {
-    MonotonicTime(inner_value) -> json.float(inner_value)
+pub fn encode__monotonic_time(value__: MonotonicTime) {
+  case value__ {
+    MonotonicTime(inner_value__) -> json.float(inner_value__)
   }
 }
 
@@ -171,7 +172,16 @@ pub type Headers {
   Headers(dict.Dict(String, String))
 }
 
-// TODO: implement type encoder for ObjectType(None)
+@internal
+pub fn encode__headers(value__: Headers) {
+  case value__ {
+    Headers(inner_value__) ->
+      dict.to_list(inner_value__)
+      |> list.map(fn(i) { #(i.0, json.string(i.1)) })
+      |> json.object
+  }
+}
+
 /// The underlying connection technology that the browser is supposedly using.
 pub type ConnectionType {
   ConnectionTypeNone
@@ -186,8 +196,8 @@ pub type ConnectionType {
 }
 
 @internal
-pub fn encode__connection_type(value: ConnectionType) {
-  case value {
+pub fn encode__connection_type(value__: ConnectionType) {
+  case value__ {
     ConnectionTypeNone -> "none"
     ConnectionTypeCellular2g -> "cellular2g"
     ConnectionTypeCellular3g -> "cellular3g"
@@ -210,8 +220,8 @@ pub type CookieSameSite {
 }
 
 @internal
-pub fn encode__cookie_same_site(value: CookieSameSite) {
-  case value {
+pub fn encode__cookie_same_site(value__: CookieSameSite) {
+  case value__ {
     CookieSameSiteStrict -> "Strict"
     CookieSameSiteLax -> "Lax"
     CookieSameSiteNone -> "None"
@@ -237,7 +247,24 @@ pub type ResourceTiming {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("requestTime", Some("Timing's requestTime is a baseline in seconds, while the other numbers are ticks in\nmilliseconds relatively to this requestTime."), None, None, None, PrimitiveType("number")), PropertyDefinition("proxyStart", Some("Started resolving proxy."), None, None, None, PrimitiveType("number")), PropertyDefinition("proxyEnd", Some("Finished resolving proxy."), None, None, None, PrimitiveType("number")), PropertyDefinition("dnsStart", Some("Started DNS address resolve."), None, None, None, PrimitiveType("number")), PropertyDefinition("dnsEnd", Some("Finished DNS address resolve."), None, None, None, PrimitiveType("number")), PropertyDefinition("connectStart", Some("Started connecting to the remote host."), None, None, None, PrimitiveType("number")), PropertyDefinition("connectEnd", Some("Connected to the remote host."), None, None, None, PrimitiveType("number")), PropertyDefinition("sslStart", Some("Started SSL handshake."), None, None, None, PrimitiveType("number")), PropertyDefinition("sslEnd", Some("Finished SSL handshake."), None, None, None, PrimitiveType("number")), PropertyDefinition("sendStart", Some("Started sending request."), None, None, None, PrimitiveType("number")), PropertyDefinition("sendEnd", Some("Finished sending request."), None, None, None, PrimitiveType("number")), PropertyDefinition("receiveHeadersEnd", Some("Finished receiving response headers."), None, None, None, PrimitiveType("number"))]))
+@internal
+pub fn encode__resource_timing(value__: ResourceTiming) {
+  json.object([
+    #("requestTime", json.float(value__.request_time)),
+    #("proxyStart", json.float(value__.proxy_start)),
+    #("proxyEnd", json.float(value__.proxy_end)),
+    #("dnsStart", json.float(value__.dns_start)),
+    #("dnsEnd", json.float(value__.dns_end)),
+    #("connectStart", json.float(value__.connect_start)),
+    #("connectEnd", json.float(value__.connect_end)),
+    #("sslStart", json.float(value__.ssl_start)),
+    #("sslEnd", json.float(value__.ssl_end)),
+    #("sendStart", json.float(value__.send_start)),
+    #("sendEnd", json.float(value__.send_end)),
+    #("receiveHeadersEnd", json.float(value__.receive_headers_end)),
+  ])
+}
+
 /// Loading priority of a resource request.
 pub type ResourcePriority {
   ResourcePriorityVeryLow
@@ -248,8 +275,8 @@ pub type ResourcePriority {
 }
 
 @internal
-pub fn encode__resource_priority(value: ResourcePriority) {
-  case value {
+pub fn encode__resource_priority(value__: ResourcePriority) {
+  case value__ {
     ResourcePriorityVeryLow -> "VeryLow"
     ResourcePriorityLow -> "Low"
     ResourcePriorityMedium -> "Medium"
@@ -264,7 +291,18 @@ pub type PostDataEntry {
   PostDataEntry(bytes: option.Option(String))
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("bytes", None, None, None, Some(True), PrimitiveType("string"))]))
+@internal
+pub fn encode__post_data_entry(value__: PostDataEntry) {
+  json.object([
+    #("bytes", {
+      case value__.bytes {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// HTTP request data.
 pub type Request {
   Request(
@@ -294,8 +332,8 @@ pub type RequestReferrerPolicy {
 }
 
 @internal
-pub fn encode__request_referrer_policy(value: RequestReferrerPolicy) {
-  case value {
+pub fn encode__request_referrer_policy(value__: RequestReferrerPolicy) {
+  case value__ {
     RequestReferrerPolicyUnsafeUrl -> "unsafe-url"
     RequestReferrerPolicyNoReferrerWhenDowngrade -> "no-referrer-when-downgrade"
     RequestReferrerPolicyNoReferrer -> "no-referrer"
@@ -310,8 +348,8 @@ pub fn encode__request_referrer_policy(value: RequestReferrerPolicy) {
 }
 
 @internal
-pub fn decode__request_referrer_policy(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__request_referrer_policy(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("unsafe-url") -> Ok(RequestReferrerPolicyUnsafeUrl)
     Ok("no-referrer-when-downgrade") ->
       Ok(RequestReferrerPolicyNoReferrerWhenDowngrade)
@@ -327,7 +365,44 @@ pub fn decode__request_referrer_policy(value: dynamic.Dynamic) {
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("url", Some("Request URL (without fragment)."), None, None, None, PrimitiveType("string")), PropertyDefinition("urlFragment", Some("Fragment of the requested URL starting with hash, if present."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("method", Some("HTTP request method."), None, None, None, PrimitiveType("string")), PropertyDefinition("headers", Some("HTTP request headers."), None, None, None, RefType("Headers")), PropertyDefinition("hasPostData", Some("True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("mixedContentType", Some("The mixed content type of the request."), None, None, Some(True), RefType("Security.MixedContentType")), PropertyDefinition("initialPriority", Some("Priority of the resource request at the time request is sent."), None, None, None, RefType("ResourcePriority")), PropertyDefinition("referrerPolicy", Some("The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/"), None, None, None, EnumType(["unsafe-url", "no-referrer-when-downgrade", "no-referrer", "origin", "origin-when-cross-origin", "same-origin", "strict-origin", "strict-origin-when-cross-origin"])), PropertyDefinition("isLinkPreload", Some("Whether is loaded via link preload."), None, None, Some(True), PrimitiveType("boolean"))]))
+@internal
+pub fn encode__request(value__: Request) {
+  json.object([
+    #("url", json.string(value__.url)),
+    #("urlFragment", {
+      case value__.url_fragment {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("method", json.string(value__.method)),
+    #("headers", encode__headers(value__.headers)),
+    #("hasPostData", {
+      case value__.has_post_data {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("mixedContentType", {
+      case value__.mixed_content_type {
+        option.Some(value__) -> security.encode__mixed_content_type(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("initialPriority", encode__resource_priority(value__.initial_priority)),
+    #(
+      "referrerPolicy",
+      encode__request_referrer_policy(value__.referrer_policy),
+    ),
+    #("isLinkPreload", {
+      case value__.is_link_preload {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Details of a signed certificate timestamp (SCT).
 pub type SignedCertificateTimestamp {
   SignedCertificateTimestamp(
@@ -342,7 +417,20 @@ pub type SignedCertificateTimestamp {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("status", Some("Validation status."), None, None, None, PrimitiveType("string")), PropertyDefinition("origin", Some("Origin."), None, None, None, PrimitiveType("string")), PropertyDefinition("logDescription", Some("Log name / description."), None, None, None, PrimitiveType("string")), PropertyDefinition("logId", Some("Log ID."), None, None, None, PrimitiveType("string")), PropertyDefinition("timestamp", Some("Issuance date. Unlike TimeSinceEpoch, this contains the number of\nmilliseconds since January 1, 1970, UTC, not the number of seconds."), None, None, None, PrimitiveType("number")), PropertyDefinition("hashAlgorithm", Some("Hash algorithm."), None, None, None, PrimitiveType("string")), PropertyDefinition("signatureAlgorithm", Some("Signature algorithm."), None, None, None, PrimitiveType("string")), PropertyDefinition("signatureData", Some("Signature data."), None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp) {
+  json.object([
+    #("status", json.string(value__.status)),
+    #("origin", json.string(value__.origin)),
+    #("logDescription", json.string(value__.log_description)),
+    #("logId", json.string(value__.log_id)),
+    #("timestamp", json.float(value__.timestamp)),
+    #("hashAlgorithm", json.string(value__.hash_algorithm)),
+    #("signatureAlgorithm", json.string(value__.signature_algorithm)),
+    #("signatureData", json.string(value__.signature_data)),
+  ])
+}
+
 /// Security details about a request.
 pub type SecurityDetails {
   SecurityDetails(
@@ -364,7 +452,53 @@ pub type SecurityDetails {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("protocol", Some("Protocol name (e.g. \"TLS 1.2\" or \"QUIC\")."), None, None, None, PrimitiveType("string")), PropertyDefinition("keyExchange", Some("Key Exchange used by the connection, or the empty string if not applicable."), None, None, None, PrimitiveType("string")), PropertyDefinition("keyExchangeGroup", Some("(EC)DH group used by the connection, if applicable."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("cipher", Some("Cipher name."), None, None, None, PrimitiveType("string")), PropertyDefinition("mac", Some("TLS MAC. Note that AEAD ciphers do not have separate MACs."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("certificateId", Some("Certificate ID value."), None, None, None, RefType("Security.CertificateId")), PropertyDefinition("subjectName", Some("Certificate subject name."), None, None, None, PrimitiveType("string")), PropertyDefinition("sanList", Some("Subject Alternative Name (SAN) DNS names and IP addresses."), None, None, None, ArrayType(PrimitiveItem("string"))), PropertyDefinition("issuer", Some("Name of the issuing CA."), None, None, None, PrimitiveType("string")), PropertyDefinition("validFrom", Some("Certificate valid from date."), None, None, None, RefType("TimeSinceEpoch")), PropertyDefinition("validTo", Some("Certificate valid to (expiration) date"), None, None, None, RefType("TimeSinceEpoch")), PropertyDefinition("signedCertificateTimestampList", Some("List of signed certificate timestamps (SCTs)."), None, None, None, ArrayType(ReferenceItem("SignedCertificateTimestamp"))), PropertyDefinition("certificateTransparencyCompliance", Some("Whether the request complied with Certificate Transparency policy"), None, None, None, RefType("CertificateTransparencyCompliance")), PropertyDefinition("serverSignatureAlgorithm", Some("The signature algorithm used by the server in the TLS server signature,\nrepresented as a TLS SignatureScheme code point. Omitted if not\napplicable or not known."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("encryptedClientHello", Some("Whether the connection used Encrypted ClientHello"), None, None, None, PrimitiveType("boolean"))]))
+@internal
+pub fn encode__security_details(value__: SecurityDetails) {
+  json.object([
+    #("protocol", json.string(value__.protocol)),
+    #("keyExchange", json.string(value__.key_exchange)),
+    #("keyExchangeGroup", {
+      case value__.key_exchange_group {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("cipher", json.string(value__.cipher)),
+    #("mac", {
+      case value__.mac {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("certificateId", security.encode__certificate_id(value__.certificate_id)),
+    #("subjectName", json.string(value__.subject_name)),
+    #("sanList", json.array(value__.san_list, of: json.string)),
+    #("issuer", json.string(value__.issuer)),
+    #("validFrom", encode__time_since_epoch(value__.valid_from)),
+    #("validTo", encode__time_since_epoch(value__.valid_to)),
+    #(
+      "signedCertificateTimestampList",
+      json.array(
+        value__.signed_certificate_timestamp_list,
+        of: encode__signed_certificate_timestamp,
+      ),
+    ),
+    #(
+      "certificateTransparencyCompliance",
+      encode__certificate_transparency_compliance(
+        value__.certificate_transparency_compliance,
+      ),
+    ),
+    #("serverSignatureAlgorithm", {
+      case value__.server_signature_algorithm {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("encryptedClientHello", json.bool(value__.encrypted_client_hello)),
+  ])
+}
+
 /// Whether the request complied with Certificate Transparency policy.
 pub type CertificateTransparencyCompliance {
   CertificateTransparencyComplianceUnknown
@@ -373,8 +507,8 @@ pub type CertificateTransparencyCompliance {
 }
 
 @internal
-pub fn encode__certificate_transparency_compliance(value: CertificateTransparencyCompliance) {
-  case value {
+pub fn encode__certificate_transparency_compliance(value__: CertificateTransparencyCompliance) {
+  case value__ {
     CertificateTransparencyComplianceUnknown -> "unknown"
     CertificateTransparencyComplianceNotCompliant -> "not-compliant"
     CertificateTransparencyComplianceCompliant -> "compliant"
@@ -399,8 +533,8 @@ pub type BlockedReason {
 }
 
 @internal
-pub fn encode__blocked_reason(value: BlockedReason) {
-  case value {
+pub fn encode__blocked_reason(value__: BlockedReason) {
+  case value__ {
     BlockedReasonOther -> "other"
     BlockedReasonCsp -> "csp"
     BlockedReasonMixedContent -> "mixed-content"
@@ -459,8 +593,8 @@ pub type CorsError {
 }
 
 @internal
-pub fn encode__cors_error(value: CorsError) {
-  case value {
+pub fn encode__cors_error(value__: CorsError) {
+  case value__ {
     CorsErrorDisallowedByMode -> "DisallowedByMode"
     CorsErrorInvalidResponse -> "InvalidResponse"
     CorsErrorWildcardOriginNotAllowed -> "WildcardOriginNotAllowed"
@@ -518,7 +652,14 @@ pub type CorsErrorStatus {
   CorsErrorStatus(cors_error: CorsError, failed_parameter: String)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("corsError", None, None, None, None, RefType("CorsError")), PropertyDefinition("failedParameter", None, None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__cors_error_status(value__: CorsErrorStatus) {
+  json.object([
+    #("corsError", encode__cors_error(value__.cors_error)),
+    #("failedParameter", json.string(value__.failed_parameter)),
+  ])
+}
+
 /// Source of serviceworker response.
 pub type ServiceWorkerResponseSource {
   ServiceWorkerResponseSourceCacheStorage
@@ -528,8 +669,8 @@ pub type ServiceWorkerResponseSource {
 }
 
 @internal
-pub fn encode__service_worker_response_source(value: ServiceWorkerResponseSource) {
-  case value {
+pub fn encode__service_worker_response_source(value__: ServiceWorkerResponseSource) {
+  case value__ {
     ServiceWorkerResponseSourceCacheStorage -> "cache-storage"
     ServiceWorkerResponseSourceHttpCache -> "http-cache"
     ServiceWorkerResponseSourceFallbackCode -> "fallback-code"
@@ -547,8 +688,8 @@ pub type ServiceWorkerRouterSource {
 }
 
 @internal
-pub fn encode__service_worker_router_source(value: ServiceWorkerRouterSource) {
-  case value {
+pub fn encode__service_worker_router_source(value__: ServiceWorkerRouterSource) {
+  case value__ {
     ServiceWorkerRouterSourceNetwork -> "network"
     ServiceWorkerRouterSourceCache -> "cache"
     ServiceWorkerRouterSourceFetchEvent -> "fetch-event"
@@ -587,13 +728,110 @@ pub type Response {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("url", Some("Response URL. This URL can be different from CachedResource.url in case of redirect."), None, None, None, PrimitiveType("string")), PropertyDefinition("status", Some("HTTP response status code."), None, None, None, PrimitiveType("integer")), PropertyDefinition("statusText", Some("HTTP response status text."), None, None, None, PrimitiveType("string")), PropertyDefinition("headers", Some("HTTP response headers."), None, None, None, RefType("Headers")), PropertyDefinition("mimeType", Some("Resource mimeType as determined by the browser."), None, None, None, PrimitiveType("string")), PropertyDefinition("charset", Some("Resource charset as determined by the browser (if applicable)."), None, None, None, PrimitiveType("string")), PropertyDefinition("requestHeaders", Some("Refined HTTP request headers that were actually transmitted over the network."), None, None, Some(True), RefType("Headers")), PropertyDefinition("connectionReused", Some("Specifies whether physical connection was actually reused for this request."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("connectionId", Some("Physical connection id that was actually used for this request."), None, None, None, PrimitiveType("number")), PropertyDefinition("remoteIPAddress", Some("Remote IP address."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("remotePort", Some("Remote port."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("fromDiskCache", Some("Specifies that the request was served from the disk cache."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("fromServiceWorker", Some("Specifies that the request was served from the ServiceWorker."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("fromPrefetchCache", Some("Specifies that the request was served from the prefetch cache."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("fromEarlyHints", Some("Specifies that the request was served from the prefetch cache."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("encodedDataLength", Some("Total number of bytes received for this request so far."), None, None, None, PrimitiveType("number")), PropertyDefinition("timing", Some("Timing information for the given request."), None, None, Some(True), RefType("ResourceTiming")), PropertyDefinition("serviceWorkerResponseSource", Some("Response source of response from ServiceWorker."), None, None, Some(True), RefType("ServiceWorkerResponseSource")), PropertyDefinition("responseTime", Some("The time at which the returned response was generated."), None, None, Some(True), RefType("TimeSinceEpoch")), PropertyDefinition("cacheStorageCacheName", Some("Cache Storage Cache Name."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("protocol", Some("Protocol used to fetch this request."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("securityState", Some("Security state of the request resource."), None, None, None, RefType("Security.SecurityState")), PropertyDefinition("securityDetails", Some("Security details for the request."), None, None, Some(True), RefType("SecurityDetails"))]))
+@internal
+pub fn encode__response(value__: Response) {
+  json.object([
+    #("url", json.string(value__.url)),
+    #("status", json.int(value__.status)),
+    #("statusText", json.string(value__.status_text)),
+    #("headers", encode__headers(value__.headers)),
+    #("mimeType", json.string(value__.mime_type)),
+    #("charset", json.string(value__.charset)),
+    #("requestHeaders", {
+      case value__.request_headers {
+        option.Some(value__) -> encode__headers(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("connectionReused", json.bool(value__.connection_reused)),
+    #("connectionId", json.float(value__.connection_id)),
+    #("remoteIPAddress", {
+      case value__.remote_ip_address {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("remotePort", {
+      case value__.remote_port {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("fromDiskCache", {
+      case value__.from_disk_cache {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("fromServiceWorker", {
+      case value__.from_service_worker {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("fromPrefetchCache", {
+      case value__.from_prefetch_cache {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("fromEarlyHints", {
+      case value__.from_early_hints {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("encodedDataLength", json.float(value__.encoded_data_length)),
+    #("timing", {
+      case value__.timing {
+        option.Some(value__) -> encode__resource_timing(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("serviceWorkerResponseSource", {
+      case value__.service_worker_response_source {
+        option.Some(value__) -> encode__service_worker_response_source(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("responseTime", {
+      case value__.response_time {
+        option.Some(value__) -> encode__time_since_epoch(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("cacheStorageCacheName", {
+      case value__.cache_storage_cache_name {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("protocol", {
+      case value__.protocol {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("securityState", security.encode__security_state(value__.security_state)),
+    #("securityDetails", {
+      case value__.security_details {
+        option.Some(value__) -> encode__security_details(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// WebSocket request data.
 pub type WebSocketRequest {
   WebSocketRequest(headers: Headers)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("headers", Some("HTTP request headers."), None, None, None, RefType("Headers"))]))
+@internal
+pub fn encode__web_socket_request(value__: WebSocketRequest) {
+  json.object([#("headers", encode__headers(value__.headers))])
+}
+
 /// WebSocket response data.
 pub type WebSocketResponse {
   WebSocketResponse(
@@ -606,13 +844,47 @@ pub type WebSocketResponse {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("status", Some("HTTP response status code."), None, None, None, PrimitiveType("integer")), PropertyDefinition("statusText", Some("HTTP response status text."), None, None, None, PrimitiveType("string")), PropertyDefinition("headers", Some("HTTP response headers."), None, None, None, RefType("Headers")), PropertyDefinition("headersText", Some("HTTP response headers text."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("requestHeaders", Some("HTTP request headers."), None, None, Some(True), RefType("Headers")), PropertyDefinition("requestHeadersText", Some("HTTP request headers text."), None, None, Some(True), PrimitiveType("string"))]))
+@internal
+pub fn encode__web_socket_response(value__: WebSocketResponse) {
+  json.object([
+    #("status", json.int(value__.status)),
+    #("statusText", json.string(value__.status_text)),
+    #("headers", encode__headers(value__.headers)),
+    #("headersText", {
+      case value__.headers_text {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("requestHeaders", {
+      case value__.request_headers {
+        option.Some(value__) -> encode__headers(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("requestHeadersText", {
+      case value__.request_headers_text {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
 pub type WebSocketFrame {
   WebSocketFrame(opcode: Float, mask: Bool, payload_data: String)
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("opcode", Some("WebSocket message opcode."), None, None, None, PrimitiveType("number")), PropertyDefinition("mask", Some("WebSocket message mask."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("payloadData", Some("WebSocket message payload data.\nIf the opcode is 1, this is a text message and payloadData is a UTF-8 string.\nIf the opcode isn't 1, then payloadData is a base64 encoded string representing binary data."), None, None, None, PrimitiveType("string"))]))
+@internal
+pub fn encode__web_socket_frame(value__: WebSocketFrame) {
+  json.object([
+    #("opcode", json.float(value__.opcode)),
+    #("mask", json.bool(value__.mask)),
+    #("payloadData", json.string(value__.payload_data)),
+  ])
+}
+
 /// Information about the cached resource.
 pub type CachedResource {
   CachedResource(
@@ -623,7 +895,21 @@ pub type CachedResource {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("url", Some("Resource URL. This is the url of the original network request."), None, None, None, PrimitiveType("string")), PropertyDefinition("type", Some("Type of this resource."), None, None, None, RefType("ResourceType")), PropertyDefinition("response", Some("Cached response data."), None, None, Some(True), RefType("Response")), PropertyDefinition("bodySize", Some("Cached response body size."), None, None, None, PrimitiveType("number"))]))
+@internal
+pub fn encode__cached_resource(value__: CachedResource) {
+  json.object([
+    #("url", json.string(value__.url)),
+    #("type", encode__resource_type(value__.type_)),
+    #("response", {
+      case value__.response {
+        option.Some(value__) -> encode__response(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("bodySize", json.float(value__.body_size)),
+  ])
+}
+
 /// Information about the request initiator.
 pub type Initiator {
   Initiator(
@@ -648,8 +934,8 @@ pub type InitiatorType {
 }
 
 @internal
-pub fn encode__initiator_type(value: InitiatorType) {
-  case value {
+pub fn encode__initiator_type(value__: InitiatorType) {
+  case value__ {
     InitiatorTypeParser -> "parser"
     InitiatorTypeScript -> "script"
     InitiatorTypePreload -> "preload"
@@ -661,8 +947,8 @@ pub fn encode__initiator_type(value: InitiatorType) {
 }
 
 @internal
-pub fn decode__initiator_type(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__initiator_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("parser") -> Ok(InitiatorTypeParser)
     Ok("script") -> Ok(InitiatorTypeScript)
     Ok("preload") -> Ok(InitiatorTypePreload)
@@ -673,7 +959,43 @@ pub fn decode__initiator_type(value: dynamic.Dynamic) {
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("Type of this initiator."), None, None, None, EnumType(["parser", "script", "preload", "SignedExchange", "preflight", "other"])), PropertyDefinition("stack", Some("Initiator JavaScript stack trace, set for Script only."), None, None, Some(True), RefType("Runtime.StackTrace")), PropertyDefinition("url", Some("Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("lineNumber", Some("Initiator line number, set for Parser type or for Script type (when script is importing\nmodule) (0-based)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("columnNumber", Some("Initiator column number, set for Parser type or for Script type (when script is importing\nmodule) (0-based)."), None, None, Some(True), PrimitiveType("number")), PropertyDefinition("requestId", Some("Set if another request triggered this request (e.g. preflight)."), None, None, Some(True), RefType("RequestId"))]))
+@internal
+pub fn encode__initiator(value__: Initiator) {
+  json.object([
+    #("type", encode__initiator_type(value__.type_)),
+    #("stack", {
+      case value__.stack {
+        option.Some(value__) -> runtime.encode__stack_trace(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("url", {
+      case value__.url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("lineNumber", {
+      case value__.line_number {
+        option.Some(value__) -> json.float(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("columnNumber", {
+      case value__.column_number {
+        option.Some(value__) -> json.float(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("requestId", {
+      case value__.request_id {
+        option.Some(value__) -> encode__request_id(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Cookie object
 pub type Cookie {
   Cookie(
@@ -690,7 +1012,27 @@ pub type Cookie {
   )
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Cookie name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("Cookie value."), None, None, None, PrimitiveType("string")), PropertyDefinition("domain", Some("Cookie domain."), None, None, None, PrimitiveType("string")), PropertyDefinition("path", Some("Cookie path."), None, None, None, PrimitiveType("string")), PropertyDefinition("expires", Some("Cookie expiration date as the number of seconds since the UNIX epoch."), None, None, None, PrimitiveType("number")), PropertyDefinition("size", Some("Cookie size."), None, None, None, PrimitiveType("integer")), PropertyDefinition("httpOnly", Some("True if cookie is http-only."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("secure", Some("True if cookie is secure."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("session", Some("True in case of session cookie."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("sameSite", Some("Cookie SameSite type."), None, None, Some(True), RefType("CookieSameSite"))]))
+@internal
+pub fn encode__cookie(value__: Cookie) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.string(value__.value)),
+    #("domain", json.string(value__.domain)),
+    #("path", json.string(value__.path)),
+    #("expires", json.float(value__.expires)),
+    #("size", json.int(value__.size)),
+    #("httpOnly", json.bool(value__.http_only)),
+    #("secure", json.bool(value__.secure)),
+    #("session", json.bool(value__.session)),
+    #("sameSite", {
+      case value__.same_site {
+        option.Some(value__) -> encode__cookie_same_site(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Cookie parameter object
 pub type CookieParam {
   CookieParam(
@@ -705,4 +1047,53 @@ pub type CookieParam {
     expires: option.Option(TimeSinceEpoch),
   )
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Cookie name."), None, None, None, PrimitiveType("string")), PropertyDefinition("value", Some("Cookie value."), None, None, None, PrimitiveType("string")), PropertyDefinition("url", Some("The request-URI to associate with the setting of the cookie. This value can affect the\ndefault domain, path, source port, and source scheme values of the created cookie."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("domain", Some("Cookie domain."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("path", Some("Cookie path."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("secure", Some("True if cookie is secure."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("httpOnly", Some("True if cookie is http-only."), None, None, Some(True), PrimitiveType("boolean")), PropertyDefinition("sameSite", Some("Cookie SameSite type."), None, None, Some(True), RefType("CookieSameSite")), PropertyDefinition("expires", Some("Cookie expiration date, session cookie if not set"), None, None, Some(True), RefType("TimeSinceEpoch"))]))
+
+@internal
+pub fn encode__cookie_param(value__: CookieParam) {
+  json.object([
+    #("name", json.string(value__.name)),
+    #("value", json.string(value__.value)),
+    #("url", {
+      case value__.url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("domain", {
+      case value__.domain {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("path", {
+      case value__.path {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("secure", {
+      case value__.secure {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("httpOnly", {
+      case value__.http_only {
+        option.Some(value__) -> json.bool(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("sameSite", {
+      case value__.same_site {
+        option.Some(value__) -> encode__cookie_same_site(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("expires", {
+      case value__.expires {
+        option.Some(value__) -> encode__time_since_epoch(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}

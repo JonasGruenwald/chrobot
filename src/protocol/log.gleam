@@ -53,8 +53,8 @@ pub type LogEntrySource {
 }
 
 @internal
-pub fn encode__log_entry_source(value: LogEntrySource) {
-  case value {
+pub fn encode__log_entry_source(value__: LogEntrySource) {
+  case value__ {
     LogEntrySourceXml -> "xml"
     LogEntrySourceJavascript -> "javascript"
     LogEntrySourceNetwork -> "network"
@@ -73,8 +73,8 @@ pub fn encode__log_entry_source(value: LogEntrySource) {
 }
 
 @internal
-pub fn decode__log_entry_source(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__log_entry_source(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("xml") -> Ok(LogEntrySourceXml)
     Ok("javascript") -> Ok(LogEntrySourceJavascript)
     Ok("network") -> Ok(LogEntrySourceNetwork)
@@ -102,8 +102,8 @@ pub type LogEntryLevel {
 }
 
 @internal
-pub fn encode__log_entry_level(value: LogEntryLevel) {
-  case value {
+pub fn encode__log_entry_level(value__: LogEntryLevel) {
+  case value__ {
     LogEntryLevelVerbose -> "verbose"
     LogEntryLevelInfo -> "info"
     LogEntryLevelWarning -> "warning"
@@ -113,8 +113,8 @@ pub fn encode__log_entry_level(value: LogEntryLevel) {
 }
 
 @internal
-pub fn decode__log_entry_level(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__log_entry_level(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("verbose") -> Ok(LogEntryLevelVerbose)
     Ok("info") -> Ok(LogEntryLevelInfo)
     Ok("warning") -> Ok(LogEntryLevelWarning)
@@ -130,22 +130,74 @@ pub type LogEntryCategory {
 }
 
 @internal
-pub fn encode__log_entry_category(value: LogEntryCategory) {
-  case value {
+pub fn encode__log_entry_category(value__: LogEntryCategory) {
+  case value__ {
     LogEntryCategoryCors -> "cors"
   }
   |> json.string()
 }
 
 @internal
-pub fn decode__log_entry_category(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__log_entry_category(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("cors") -> Ok(LogEntryCategoryCors)
     _ -> Error(chrome.ProtocolError)
   }
 }
 
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("source", Some("Log entry source."), None, None, None, EnumType(["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "violation", "intervention", "recommendation", "other"])), PropertyDefinition("level", Some("Log entry severity."), None, None, None, EnumType(["verbose", "info", "warning", "error"])), PropertyDefinition("text", Some("Logged text."), None, None, None, PrimitiveType("string")), PropertyDefinition("category", None, None, None, Some(True), EnumType(["cors"])), PropertyDefinition("timestamp", Some("Timestamp when this entry was added."), None, None, None, RefType("Runtime.Timestamp")), PropertyDefinition("url", Some("URL of the resource if known."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("lineNumber", Some("Line number in the resource."), None, None, Some(True), PrimitiveType("integer")), PropertyDefinition("stackTrace", Some("JavaScript stack trace."), None, None, Some(True), RefType("Runtime.StackTrace")), PropertyDefinition("networkRequestId", Some("Identifier of the network request associated with this entry."), None, None, Some(True), RefType("Network.RequestId")), PropertyDefinition("workerId", Some("Identifier of the worker associated with this entry."), None, None, Some(True), PrimitiveType("string")), PropertyDefinition("args", Some("Call arguments."), None, None, Some(True), ArrayType(ReferenceItem("Runtime.RemoteObject")))]))
+@internal
+pub fn encode__log_entry(value__: LogEntry) {
+  json.object([
+    #("source", encode__log_entry_source(value__.source)),
+    #("level", encode__log_entry_level(value__.level)),
+    #("text", json.string(value__.text)),
+    #("category", {
+      case value__.category {
+        option.Some(value__) -> encode__log_entry_category(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("timestamp", runtime.encode__timestamp(value__.timestamp)),
+    #("url", {
+      case value__.url {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("lineNumber", {
+      case value__.line_number {
+        option.Some(value__) -> json.int(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("stackTrace", {
+      case value__.stack_trace {
+        option.Some(value__) -> runtime.encode__stack_trace(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("networkRequestId", {
+      case value__.network_request_id {
+        option.Some(value__) -> network.encode__request_id(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("workerId", {
+      case value__.worker_id {
+        option.Some(value__) -> json.string(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("args", {
+      case value__.args {
+        option.Some(value__) ->
+          json.array(value__, of: runtime.encode__remote_object)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
+
 /// Violation configuration setting.
 pub type ViolationSetting {
   ViolationSetting(name: ViolationSettingName, threshold: Float)
@@ -164,8 +216,8 @@ pub type ViolationSettingName {
 }
 
 @internal
-pub fn encode__violation_setting_name(value: ViolationSettingName) {
-  case value {
+pub fn encode__violation_setting_name(value__: ViolationSettingName) {
+  case value__ {
     ViolationSettingNameLongTask -> "longTask"
     ViolationSettingNameLongLayout -> "longLayout"
     ViolationSettingNameBlockedEvent -> "blockedEvent"
@@ -178,8 +230,8 @@ pub fn encode__violation_setting_name(value: ViolationSettingName) {
 }
 
 @internal
-pub fn decode__violation_setting_name(value: dynamic.Dynamic) {
-  case dynamic.string(value) {
+pub fn decode__violation_setting_name(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
     Ok("longTask") -> Ok(ViolationSettingNameLongTask)
     Ok("longLayout") -> Ok(ViolationSettingNameLongLayout)
     Ok("blockedEvent") -> Ok(ViolationSettingNameBlockedEvent)
@@ -190,4 +242,11 @@ pub fn decode__violation_setting_name(value: dynamic.Dynamic) {
     _ -> Error(chrome.ProtocolError)
   }
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("name", Some("Violation type."), None, None, None, EnumType(["longTask", "longLayout", "blockedEvent", "blockedParser", "discouragedAPIUse", "handler", "recurringHandler"])), PropertyDefinition("threshold", Some("Time threshold to trigger upon."), None, None, None, PrimitiveType("number"))]))
+
+@internal
+pub fn encode__violation_setting(value__: ViolationSetting) {
+  json.object([
+    #("name", encode__violation_setting_name(value__.name)),
+    #("threshold", json.float(value__.threshold)),
+  ])
+}

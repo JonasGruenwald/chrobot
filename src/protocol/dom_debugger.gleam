@@ -24,8 +24,8 @@ pub type DOMBreakpointType {
 }
 
 @internal
-pub fn encode__dom_breakpoint_type(value: DOMBreakpointType) {
-  case value {
+pub fn encode__dom_breakpoint_type(value__: DOMBreakpointType) {
+  case value__ {
     DOMBreakpointTypeSubtreeModified -> "subtree-modified"
     DOMBreakpointTypeAttributeModified -> "attribute-modified"
     DOMBreakpointTypeNodeRemoved -> "node-removed"
@@ -48,4 +48,34 @@ pub type EventListener {
     backend_node_id: option.Option(dom.BackendNodeId),
   )
 }
-// TODO: implement type encoder for ObjectType(Some([PropertyDefinition("type", Some("`EventListener`'s type."), None, None, None, PrimitiveType("string")), PropertyDefinition("useCapture", Some("`EventListener`'s useCapture."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("passive", Some("`EventListener`'s passive flag."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("once", Some("`EventListener`'s once flag."), None, None, None, PrimitiveType("boolean")), PropertyDefinition("scriptId", Some("Script id of the handler code."), None, None, None, RefType("Runtime.ScriptId")), PropertyDefinition("lineNumber", Some("Line number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("columnNumber", Some("Column number in the script (0-based)."), None, None, None, PrimitiveType("integer")), PropertyDefinition("handler", Some("Event handler function value."), None, None, Some(True), RefType("Runtime.RemoteObject")), PropertyDefinition("originalHandler", Some("Event original handler function value."), None, None, Some(True), RefType("Runtime.RemoteObject")), PropertyDefinition("backendNodeId", Some("Node the listener is added to (if any)."), None, None, Some(True), RefType("DOM.BackendNodeId"))]))
+
+@internal
+pub fn encode__event_listener(value__: EventListener) {
+  json.object([
+    #("type", json.string(value__.type_)),
+    #("useCapture", json.bool(value__.use_capture)),
+    #("passive", json.bool(value__.passive)),
+    #("once", json.bool(value__.once)),
+    #("scriptId", runtime.encode__script_id(value__.script_id)),
+    #("lineNumber", json.int(value__.line_number)),
+    #("columnNumber", json.int(value__.column_number)),
+    #("handler", {
+      case value__.handler {
+        option.Some(value__) -> runtime.encode__remote_object(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("originalHandler", {
+      case value__.original_handler {
+        option.Some(value__) -> runtime.encode__remote_object(value__)
+        option.None -> json.null()
+      }
+    }),
+    #("backendNodeId", {
+      case value__.backend_node_id {
+        option.Some(value__) -> dom.encode__backend_node_id(value__)
+        option.None -> json.null()
+      }
+    }),
+  ])
+}
