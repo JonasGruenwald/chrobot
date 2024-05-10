@@ -42,7 +42,31 @@ pub type ResourceType {
   ResourceTypeOther
 }
 
-// TODO: implement type encoder for EnumType(["Document", "Stylesheet", "Image", "Media", "Font", "Script", "TextTrack", "XHR", "Fetch", "Prefetch", "EventSource", "WebSocket", "Manifest", "SignedExchange", "Ping", "CSPViolationReport", "Preflight", "Other"])
+@internal
+pub fn encode__resource_type(value: ResourceType) {
+  case value {
+    ResourceTypeDocument -> "Document"
+    ResourceTypeStylesheet -> "Stylesheet"
+    ResourceTypeImage -> "Image"
+    ResourceTypeMedia -> "Media"
+    ResourceTypeFont -> "Font"
+    ResourceTypeScript -> "Script"
+    ResourceTypeTextTrack -> "TextTrack"
+    ResourceTypeXhr -> "XHR"
+    ResourceTypeFetch -> "Fetch"
+    ResourceTypePrefetch -> "Prefetch"
+    ResourceTypeEventSource -> "EventSource"
+    ResourceTypeWebSocket -> "WebSocket"
+    ResourceTypeManifest -> "Manifest"
+    ResourceTypeSignedExchange -> "SignedExchange"
+    ResourceTypePing -> "Ping"
+    ResourceTypeCspViolationReport -> "CSPViolationReport"
+    ResourceTypePreflight -> "Preflight"
+    ResourceTypeOther -> "Other"
+  }
+  |> json.string()
+}
+
 /// Unique loader identifier.
 pub type LoaderId {
   LoaderId(String)
@@ -97,7 +121,27 @@ pub type ErrorReason {
   ErrorReasonBlockedByResponse
 }
 
-// TODO: implement type encoder for EnumType(["Failed", "Aborted", "TimedOut", "AccessDenied", "ConnectionClosed", "ConnectionReset", "ConnectionRefused", "ConnectionAborted", "ConnectionFailed", "NameNotResolved", "InternetDisconnected", "AddressUnreachable", "BlockedByClient", "BlockedByResponse"])
+@internal
+pub fn encode__error_reason(value: ErrorReason) {
+  case value {
+    ErrorReasonFailed -> "Failed"
+    ErrorReasonAborted -> "Aborted"
+    ErrorReasonTimedOut -> "TimedOut"
+    ErrorReasonAccessDenied -> "AccessDenied"
+    ErrorReasonConnectionClosed -> "ConnectionClosed"
+    ErrorReasonConnectionReset -> "ConnectionReset"
+    ErrorReasonConnectionRefused -> "ConnectionRefused"
+    ErrorReasonConnectionAborted -> "ConnectionAborted"
+    ErrorReasonConnectionFailed -> "ConnectionFailed"
+    ErrorReasonNameNotResolved -> "NameNotResolved"
+    ErrorReasonInternetDisconnected -> "InternetDisconnected"
+    ErrorReasonAddressUnreachable -> "AddressUnreachable"
+    ErrorReasonBlockedByClient -> "BlockedByClient"
+    ErrorReasonBlockedByResponse -> "BlockedByResponse"
+  }
+  |> json.string()
+}
+
 /// UTC time in seconds, counted from January 1, 1970.
 pub type TimeSinceEpoch {
   TimeSinceEpoch(Float)
@@ -141,7 +185,22 @@ pub type ConnectionType {
   ConnectionTypeOther
 }
 
-// TODO: implement type encoder for EnumType(["none", "cellular2g", "cellular3g", "cellular4g", "bluetooth", "ethernet", "wifi", "wimax", "other"])
+@internal
+pub fn encode__connection_type(value: ConnectionType) {
+  case value {
+    ConnectionTypeNone -> "none"
+    ConnectionTypeCellular2g -> "cellular2g"
+    ConnectionTypeCellular3g -> "cellular3g"
+    ConnectionTypeCellular4g -> "cellular4g"
+    ConnectionTypeBluetooth -> "bluetooth"
+    ConnectionTypeEthernet -> "ethernet"
+    ConnectionTypeWifi -> "wifi"
+    ConnectionTypeWimax -> "wimax"
+    ConnectionTypeOther -> "other"
+  }
+  |> json.string()
+}
+
 /// Represents the cookie's 'SameSite' status:
 /// https://tools.ietf.org/html/draft-west-first-party-cookies
 pub type CookieSameSite {
@@ -150,7 +209,16 @@ pub type CookieSameSite {
   CookieSameSiteNone
 }
 
-// TODO: implement type encoder for EnumType(["Strict", "Lax", "None"])
+@internal
+pub fn encode__cookie_same_site(value: CookieSameSite) {
+  case value {
+    CookieSameSiteStrict -> "Strict"
+    CookieSameSiteLax -> "Lax"
+    CookieSameSiteNone -> "None"
+  }
+  |> json.string()
+}
+
 /// Timing information for the request.
 pub type ResourceTiming {
   ResourceTiming(
@@ -179,7 +247,18 @@ pub type ResourcePriority {
   ResourcePriorityVeryHigh
 }
 
-// TODO: implement type encoder for EnumType(["VeryLow", "Low", "Medium", "High", "VeryHigh"])
+@internal
+pub fn encode__resource_priority(value: ResourcePriority) {
+  case value {
+    ResourcePriorityVeryLow -> "VeryLow"
+    ResourcePriorityLow -> "Low"
+    ResourcePriorityMedium -> "Medium"
+    ResourcePriorityHigh -> "High"
+    ResourcePriorityVeryHigh -> "VeryHigh"
+  }
+  |> json.string()
+}
+
 /// Post data entry for HTTP request
 pub type PostDataEntry {
   PostDataEntry(bytes: option.Option(String))
@@ -293,7 +372,16 @@ pub type CertificateTransparencyCompliance {
   CertificateTransparencyComplianceCompliant
 }
 
-// TODO: implement type encoder for EnumType(["unknown", "not-compliant", "compliant"])
+@internal
+pub fn encode__certificate_transparency_compliance(value: CertificateTransparencyCompliance) {
+  case value {
+    CertificateTransparencyComplianceUnknown -> "unknown"
+    CertificateTransparencyComplianceNotCompliant -> "not-compliant"
+    CertificateTransparencyComplianceCompliant -> "compliant"
+  }
+  |> json.string()
+}
+
 /// The reason why request was blocked.
 pub type BlockedReason {
   BlockedReasonOther
@@ -310,7 +398,28 @@ pub type BlockedReason {
   BlockedReasonCorpNotSameSite
 }
 
-// TODO: implement type encoder for EnumType(["other", "csp", "mixed-content", "origin", "inspector", "subresource-filter", "content-type", "coep-frame-resource-needs-coep-header", "coop-sandboxed-iframe-cannot-navigate-to-coop-page", "corp-not-same-origin", "corp-not-same-origin-after-defaulted-to-same-origin-by-coep", "corp-not-same-site"])
+@internal
+pub fn encode__blocked_reason(value: BlockedReason) {
+  case value {
+    BlockedReasonOther -> "other"
+    BlockedReasonCsp -> "csp"
+    BlockedReasonMixedContent -> "mixed-content"
+    BlockedReasonOrigin -> "origin"
+    BlockedReasonInspector -> "inspector"
+    BlockedReasonSubresourceFilter -> "subresource-filter"
+    BlockedReasonContentType -> "content-type"
+    BlockedReasonCoepFrameResourceNeedsCoepHeader ->
+      "coep-frame-resource-needs-coep-header"
+    BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage ->
+      "coop-sandboxed-iframe-cannot-navigate-to-coop-page"
+    BlockedReasonCorpNotSameOrigin -> "corp-not-same-origin"
+    BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep ->
+      "corp-not-same-origin-after-defaulted-to-same-origin-by-coep"
+    BlockedReasonCorpNotSameSite -> "corp-not-same-site"
+  }
+  |> json.string()
+}
+
 /// The reason why request was blocked.
 pub type CorsError {
   CorsErrorDisallowedByMode
@@ -349,7 +458,62 @@ pub type CorsError {
   CorsErrorPrivateNetworkAccessPermissionDenied
 }
 
-// TODO: implement type encoder for EnumType(["DisallowedByMode", "InvalidResponse", "WildcardOriginNotAllowed", "MissingAllowOriginHeader", "MultipleAllowOriginValues", "InvalidAllowOriginValue", "AllowOriginMismatch", "InvalidAllowCredentials", "CorsDisabledScheme", "PreflightInvalidStatus", "PreflightDisallowedRedirect", "PreflightWildcardOriginNotAllowed", "PreflightMissingAllowOriginHeader", "PreflightMultipleAllowOriginValues", "PreflightInvalidAllowOriginValue", "PreflightAllowOriginMismatch", "PreflightInvalidAllowCredentials", "PreflightMissingAllowExternal", "PreflightInvalidAllowExternal", "PreflightMissingAllowPrivateNetwork", "PreflightInvalidAllowPrivateNetwork", "InvalidAllowMethodsPreflightResponse", "InvalidAllowHeadersPreflightResponse", "MethodDisallowedByPreflightResponse", "HeaderDisallowedByPreflightResponse", "RedirectContainsCredentials", "InsecurePrivateNetwork", "InvalidPrivateNetworkAccess", "UnexpectedPrivateNetworkAccess", "NoCorsRedirectModeNotFollow", "PreflightMissingPrivateNetworkAccessId", "PreflightMissingPrivateNetworkAccessName", "PrivateNetworkAccessPermissionUnavailable", "PrivateNetworkAccessPermissionDenied"])
+@internal
+pub fn encode__cors_error(value: CorsError) {
+  case value {
+    CorsErrorDisallowedByMode -> "DisallowedByMode"
+    CorsErrorInvalidResponse -> "InvalidResponse"
+    CorsErrorWildcardOriginNotAllowed -> "WildcardOriginNotAllowed"
+    CorsErrorMissingAllowOriginHeader -> "MissingAllowOriginHeader"
+    CorsErrorMultipleAllowOriginValues -> "MultipleAllowOriginValues"
+    CorsErrorInvalidAllowOriginValue -> "InvalidAllowOriginValue"
+    CorsErrorAllowOriginMismatch -> "AllowOriginMismatch"
+    CorsErrorInvalidAllowCredentials -> "InvalidAllowCredentials"
+    CorsErrorCorsDisabledScheme -> "CorsDisabledScheme"
+    CorsErrorPreflightInvalidStatus -> "PreflightInvalidStatus"
+    CorsErrorPreflightDisallowedRedirect -> "PreflightDisallowedRedirect"
+    CorsErrorPreflightWildcardOriginNotAllowed ->
+      "PreflightWildcardOriginNotAllowed"
+    CorsErrorPreflightMissingAllowOriginHeader ->
+      "PreflightMissingAllowOriginHeader"
+    CorsErrorPreflightMultipleAllowOriginValues ->
+      "PreflightMultipleAllowOriginValues"
+    CorsErrorPreflightInvalidAllowOriginValue ->
+      "PreflightInvalidAllowOriginValue"
+    CorsErrorPreflightAllowOriginMismatch -> "PreflightAllowOriginMismatch"
+    CorsErrorPreflightInvalidAllowCredentials ->
+      "PreflightInvalidAllowCredentials"
+    CorsErrorPreflightMissingAllowExternal -> "PreflightMissingAllowExternal"
+    CorsErrorPreflightInvalidAllowExternal -> "PreflightInvalidAllowExternal"
+    CorsErrorPreflightMissingAllowPrivateNetwork ->
+      "PreflightMissingAllowPrivateNetwork"
+    CorsErrorPreflightInvalidAllowPrivateNetwork ->
+      "PreflightInvalidAllowPrivateNetwork"
+    CorsErrorInvalidAllowMethodsPreflightResponse ->
+      "InvalidAllowMethodsPreflightResponse"
+    CorsErrorInvalidAllowHeadersPreflightResponse ->
+      "InvalidAllowHeadersPreflightResponse"
+    CorsErrorMethodDisallowedByPreflightResponse ->
+      "MethodDisallowedByPreflightResponse"
+    CorsErrorHeaderDisallowedByPreflightResponse ->
+      "HeaderDisallowedByPreflightResponse"
+    CorsErrorRedirectContainsCredentials -> "RedirectContainsCredentials"
+    CorsErrorInsecurePrivateNetwork -> "InsecurePrivateNetwork"
+    CorsErrorInvalidPrivateNetworkAccess -> "InvalidPrivateNetworkAccess"
+    CorsErrorUnexpectedPrivateNetworkAccess -> "UnexpectedPrivateNetworkAccess"
+    CorsErrorNoCorsRedirectModeNotFollow -> "NoCorsRedirectModeNotFollow"
+    CorsErrorPreflightMissingPrivateNetworkAccessId ->
+      "PreflightMissingPrivateNetworkAccessId"
+    CorsErrorPreflightMissingPrivateNetworkAccessName ->
+      "PreflightMissingPrivateNetworkAccessName"
+    CorsErrorPrivateNetworkAccessPermissionUnavailable ->
+      "PrivateNetworkAccessPermissionUnavailable"
+    CorsErrorPrivateNetworkAccessPermissionDenied ->
+      "PrivateNetworkAccessPermissionDenied"
+  }
+  |> json.string()
+}
+
 pub type CorsErrorStatus {
   CorsErrorStatus(cors_error: CorsError, failed_parameter: String)
 }
@@ -363,7 +527,17 @@ pub type ServiceWorkerResponseSource {
   ServiceWorkerResponseSourceNetwork
 }
 
-// TODO: implement type encoder for EnumType(["cache-storage", "http-cache", "fallback-code", "network"])
+@internal
+pub fn encode__service_worker_response_source(value: ServiceWorkerResponseSource) {
+  case value {
+    ServiceWorkerResponseSourceCacheStorage -> "cache-storage"
+    ServiceWorkerResponseSourceHttpCache -> "http-cache"
+    ServiceWorkerResponseSourceFallbackCode -> "fallback-code"
+    ServiceWorkerResponseSourceNetwork -> "network"
+  }
+  |> json.string()
+}
+
 /// Source of service worker router.
 pub type ServiceWorkerRouterSource {
   ServiceWorkerRouterSourceNetwork
@@ -372,7 +546,18 @@ pub type ServiceWorkerRouterSource {
   ServiceWorkerRouterSourceRaceNetworkAndFetchHandler
 }
 
-// TODO: implement type encoder for EnumType(["network", "cache", "fetch-event", "race-network-and-fetch-handler"])
+@internal
+pub fn encode__service_worker_router_source(value: ServiceWorkerRouterSource) {
+  case value {
+    ServiceWorkerRouterSourceNetwork -> "network"
+    ServiceWorkerRouterSourceCache -> "cache"
+    ServiceWorkerRouterSourceFetchEvent -> "fetch-event"
+    ServiceWorkerRouterSourceRaceNetworkAndFetchHandler ->
+      "race-network-and-fetch-handler"
+  }
+  |> json.string()
+}
+
 /// HTTP response data.
 pub type Response {
   Response(

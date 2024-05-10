@@ -38,7 +38,15 @@ pub type RequestStage {
   RequestStageResponse
 }
 
-// TODO: implement type encoder for EnumType(["Request", "Response"])
+@internal
+pub fn encode__request_stage(value: RequestStage) {
+  case value {
+    RequestStageRequest -> "Request"
+    RequestStageResponse -> "Response"
+  }
+  |> json.string()
+}
+
 pub type RequestPattern {
   RequestPattern(
     url_pattern: option.Option(String),

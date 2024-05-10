@@ -83,7 +83,40 @@ pub type PseudoType {
   PseudoTypeViewTransitionNew
 }
 
-// TODO: implement type encoder for EnumType(["first-line", "first-letter", "before", "after", "marker", "backdrop", "selection", "target-text", "spelling-error", "grammar-error", "highlight", "first-line-inherited", "scroll-marker", "scroll-markers", "scrollbar", "scrollbar-thumb", "scrollbar-button", "scrollbar-track", "scrollbar-track-piece", "scrollbar-corner", "resizer", "input-list-button", "view-transition", "view-transition-group", "view-transition-image-pair", "view-transition-old", "view-transition-new"])
+@internal
+pub fn encode__pseudo_type(value: PseudoType) {
+  case value {
+    PseudoTypeFirstLine -> "first-line"
+    PseudoTypeFirstLetter -> "first-letter"
+    PseudoTypeBefore -> "before"
+    PseudoTypeAfter -> "after"
+    PseudoTypeMarker -> "marker"
+    PseudoTypeBackdrop -> "backdrop"
+    PseudoTypeSelection -> "selection"
+    PseudoTypeTargetText -> "target-text"
+    PseudoTypeSpellingError -> "spelling-error"
+    PseudoTypeGrammarError -> "grammar-error"
+    PseudoTypeHighlight -> "highlight"
+    PseudoTypeFirstLineInherited -> "first-line-inherited"
+    PseudoTypeScrollMarker -> "scroll-marker"
+    PseudoTypeScrollMarkers -> "scroll-markers"
+    PseudoTypeScrollbar -> "scrollbar"
+    PseudoTypeScrollbarThumb -> "scrollbar-thumb"
+    PseudoTypeScrollbarButton -> "scrollbar-button"
+    PseudoTypeScrollbarTrack -> "scrollbar-track"
+    PseudoTypeScrollbarTrackPiece -> "scrollbar-track-piece"
+    PseudoTypeScrollbarCorner -> "scrollbar-corner"
+    PseudoTypeResizer -> "resizer"
+    PseudoTypeInputListButton -> "input-list-button"
+    PseudoTypeViewTransition -> "view-transition"
+    PseudoTypeViewTransitionGroup -> "view-transition-group"
+    PseudoTypeViewTransitionImagePair -> "view-transition-image-pair"
+    PseudoTypeViewTransitionOld -> "view-transition-old"
+    PseudoTypeViewTransitionNew -> "view-transition-new"
+  }
+  |> json.string()
+}
+
 /// Shadow root type.
 pub type ShadowRootType {
   ShadowRootTypeUserAgent
@@ -91,7 +124,16 @@ pub type ShadowRootType {
   ShadowRootTypeClosed
 }
 
-// TODO: implement type encoder for EnumType(["user-agent", "open", "closed"])
+@internal
+pub fn encode__shadow_root_type(value: ShadowRootType) {
+  case value {
+    ShadowRootTypeUserAgent -> "user-agent"
+    ShadowRootTypeOpen -> "open"
+    ShadowRootTypeClosed -> "closed"
+  }
+  |> json.string()
+}
+
 /// Document compatibility mode.
 pub type CompatibilityMode {
   CompatibilityModeQuirksMode
@@ -99,7 +141,16 @@ pub type CompatibilityMode {
   CompatibilityModeNoQuirksMode
 }
 
-// TODO: implement type encoder for EnumType(["QuirksMode", "LimitedQuirksMode", "NoQuirksMode"])
+@internal
+pub fn encode__compatibility_mode(value: CompatibilityMode) {
+  case value {
+    CompatibilityModeQuirksMode -> "QuirksMode"
+    CompatibilityModeLimitedQuirksMode -> "LimitedQuirksMode"
+    CompatibilityModeNoQuirksMode -> "NoQuirksMode"
+  }
+  |> json.string()
+}
+
 /// ContainerSelector physical axes
 pub type PhysicalAxes {
   PhysicalAxesHorizontal
@@ -107,7 +158,16 @@ pub type PhysicalAxes {
   PhysicalAxesBoth
 }
 
-// TODO: implement type encoder for EnumType(["Horizontal", "Vertical", "Both"])
+@internal
+pub fn encode__physical_axes(value: PhysicalAxes) {
+  case value {
+    PhysicalAxesHorizontal -> "Horizontal"
+    PhysicalAxesVertical -> "Vertical"
+    PhysicalAxesBoth -> "Both"
+  }
+  |> json.string()
+}
+
 /// ContainerSelector logical axes
 pub type LogicalAxes {
   LogicalAxesInline
@@ -115,14 +175,31 @@ pub type LogicalAxes {
   LogicalAxesBoth
 }
 
-// TODO: implement type encoder for EnumType(["Inline", "Block", "Both"])
+@internal
+pub fn encode__logical_axes(value: LogicalAxes) {
+  case value {
+    LogicalAxesInline -> "Inline"
+    LogicalAxesBlock -> "Block"
+    LogicalAxesBoth -> "Both"
+  }
+  |> json.string()
+}
+
 /// Physical scroll orientation
 pub type ScrollOrientation {
   ScrollOrientationHorizontal
   ScrollOrientationVertical
 }
 
-// TODO: implement type encoder for EnumType(["horizontal", "vertical"])
+@internal
+pub fn encode__scroll_orientation(value: ScrollOrientation) {
+  case value {
+    ScrollOrientationHorizontal -> "horizontal"
+    ScrollOrientationVertical -> "vertical"
+  }
+  |> json.string()
+}
+
 /// DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes.
 /// DOMNode is a base node mirror type.
 pub type Node {

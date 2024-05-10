@@ -33,7 +33,16 @@ pub type MixedContentType {
   MixedContentTypeNone
 }
 
-// TODO: implement type encoder for EnumType(["blockable", "optionally-blockable", "none"])
+@internal
+pub fn encode__mixed_content_type(value: MixedContentType) {
+  case value {
+    MixedContentTypeBlockable -> "blockable"
+    MixedContentTypeOptionallyBlockable -> "optionally-blockable"
+    MixedContentTypeNone -> "none"
+  }
+  |> json.string()
+}
+
 /// The security level of a page or resource.
 pub type SecurityState {
   SecurityStateUnknown
@@ -44,7 +53,19 @@ pub type SecurityState {
   SecurityStateInsecureBroken
 }
 
-// TODO: implement type encoder for EnumType(["unknown", "neutral", "insecure", "secure", "info", "insecure-broken"])
+@internal
+pub fn encode__security_state(value: SecurityState) {
+  case value {
+    SecurityStateUnknown -> "unknown"
+    SecurityStateNeutral -> "neutral"
+    SecurityStateInsecure -> "insecure"
+    SecurityStateSecure -> "secure"
+    SecurityStateInfo -> "info"
+    SecurityStateInsecureBroken -> "insecure-broken"
+  }
+  |> json.string()
+}
+
 /// An explanation of an factor contributing to the security state.
 pub type SecurityStateExplanation {
   SecurityStateExplanation(
@@ -65,4 +86,12 @@ pub type CertificateErrorAction {
   CertificateErrorActionContinue
   CertificateErrorActionCancel
 }
-// TODO: implement type encoder for EnumType(["continue", "cancel"])
+
+@internal
+pub fn encode__certificate_error_action(value: CertificateErrorAction) {
+  case value {
+    CertificateErrorActionContinue -> "continue"
+    CertificateErrorActionCancel -> "cancel"
+  }
+  |> json.string()
+}

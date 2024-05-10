@@ -176,7 +176,15 @@ pub type ScriptLanguage {
   ScriptLanguageWebAssembly
 }
 
-// TODO: implement type encoder for EnumType(["JavaScript", "WebAssembly"])
+@internal
+pub fn encode__script_language(value: ScriptLanguage) {
+  case value {
+    ScriptLanguageJavaScript -> "JavaScript"
+    ScriptLanguageWebAssembly -> "WebAssembly"
+  }
+  |> json.string()
+}
+
 /// Debug symbols available for a wasm script.
 pub type DebugSymbols {
   DebugSymbols(type_: DebugSymbolsType, external_url: option.Option(String))

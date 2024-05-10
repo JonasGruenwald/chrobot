@@ -79,7 +79,26 @@ pub type TransitionType {
   TransitionTypeOther
 }
 
-// TODO: implement type encoder for EnumType(["link", "typed", "address_bar", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "auto_toplevel", "form_submit", "reload", "keyword", "keyword_generated", "other"])
+@internal
+pub fn encode__transition_type(value: TransitionType) {
+  case value {
+    TransitionTypeLink -> "link"
+    TransitionTypeTyped -> "typed"
+    TransitionTypeAddressBar -> "address_bar"
+    TransitionTypeAutoBookmark -> "auto_bookmark"
+    TransitionTypeAutoSubframe -> "auto_subframe"
+    TransitionTypeManualSubframe -> "manual_subframe"
+    TransitionTypeGenerated -> "generated"
+    TransitionTypeAutoToplevel -> "auto_toplevel"
+    TransitionTypeFormSubmit -> "form_submit"
+    TransitionTypeReload -> "reload"
+    TransitionTypeKeyword -> "keyword"
+    TransitionTypeKeywordGenerated -> "keyword_generated"
+    TransitionTypeOther -> "other"
+  }
+  |> json.string()
+}
+
 /// Navigation history entry.
 pub type NavigationEntry {
   NavigationEntry(
@@ -100,7 +119,17 @@ pub type DialogType {
   DialogTypeBeforeunload
 }
 
-// TODO: implement type encoder for EnumType(["alert", "confirm", "prompt", "beforeunload"])
+@internal
+pub fn encode__dialog_type(value: DialogType) {
+  case value {
+    DialogTypeAlert -> "alert"
+    DialogTypeConfirm -> "confirm"
+    DialogTypePrompt -> "prompt"
+    DialogTypeBeforeunload -> "beforeunload"
+  }
+  |> json.string()
+}
+
 /// Error while paring app manifest.
 pub type AppManifestError {
   AppManifestError(message: String, critical: Int, line: Int, column: Int)

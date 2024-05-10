@@ -1019,6 +1019,9 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
           <> "(inner_value)\n}",
       )
     }
+    EnumType(enum) -> {
+      gen_enum_encoder(type_def.id, enum)
+    }
     _ ->
       "// TODO: implement type encoder for "
       <> string.inspect(type_def.inner)

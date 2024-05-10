@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import gleam/json
 import gleam/option
 import protocol/dom
 import protocol/runtime
@@ -22,7 +23,16 @@ pub type DOMBreakpointType {
   DOMBreakpointTypeNodeRemoved
 }
 
-// TODO: implement type encoder for EnumType(["subtree-modified", "attribute-modified", "node-removed"])
+@internal
+pub fn encode__dom_breakpoint_type(value: DOMBreakpointType) {
+  case value {
+    DOMBreakpointTypeSubtreeModified -> "subtree-modified"
+    DOMBreakpointTypeAttributeModified -> "attribute-modified"
+    DOMBreakpointTypeNodeRemoved -> "node-removed"
+  }
+  |> json.string()
+}
+
 /// Object event listener.
 pub type EventListener {
   EventListener(

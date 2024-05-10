@@ -37,7 +37,19 @@ pub type MouseButton {
   MouseButtonForward
 }
 
-// TODO: implement type encoder for EnumType(["none", "left", "middle", "right", "back", "forward"])
+@internal
+pub fn encode__mouse_button(value: MouseButton) {
+  case value {
+    MouseButtonNone -> "none"
+    MouseButtonLeft -> "left"
+    MouseButtonMiddle -> "middle"
+    MouseButtonRight -> "right"
+    MouseButtonBack -> "back"
+    MouseButtonForward -> "forward"
+  }
+  |> json.string()
+}
+
 /// UTC time in seconds, counted from January 1, 1970.
 pub type TimeSinceEpoch {
   TimeSinceEpoch(Float)
