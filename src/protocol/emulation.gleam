@@ -12,6 +12,7 @@
 
 import gleam/dynamic
 import gleam/json
+import gleam/option
 import gleam/result
 import protocol/dom
 import protocol/page
@@ -216,4 +217,142 @@ pub fn decode__media_feature(value__: dynamic.Dynamic) {
   use value <- result.try(dynamic.field("value", dynamic.string)(value__))
 
   Ok(MediaFeature(name: name, value: value))
+}
+
+pub fn clear_device_metrics_override() {
+  todo
+  // TODO generate command body
+}
+
+pub fn clear_geolocation_override() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_cpu_throttling_rate(rate: Float) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_default_background_color_override(color: option.Option(dom.RGBA)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_device_metrics_override(
+  width: Int,
+  height: Int,
+  device_scale_factor: Float,
+  mobile: Bool,
+  screen_orientation: option.Option(ScreenOrientation),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_emulated_media(
+  media: option.Option(String),
+  features: option.Option(List(MediaFeature)),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_emulated_vision_deficiency(type_: SetEmulatedVisionDeficiencyType) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `type` of `setEmulatedVisionDeficiency`
+pub type SetEmulatedVisionDeficiencyType {
+  SetEmulatedVisionDeficiencyTypeNone
+  SetEmulatedVisionDeficiencyTypeBlurredVision
+  SetEmulatedVisionDeficiencyTypeReducedContrast
+  SetEmulatedVisionDeficiencyTypeAchromatopsia
+  SetEmulatedVisionDeficiencyTypeDeuteranopia
+  SetEmulatedVisionDeficiencyTypeProtanopia
+  SetEmulatedVisionDeficiencyTypeTritanopia
+}
+
+@internal
+pub fn encode__set_emulated_vision_deficiency_type(value__: SetEmulatedVisionDeficiencyType) {
+  case value__ {
+    SetEmulatedVisionDeficiencyTypeNone -> "none"
+    SetEmulatedVisionDeficiencyTypeBlurredVision -> "blurredVision"
+    SetEmulatedVisionDeficiencyTypeReducedContrast -> "reducedContrast"
+    SetEmulatedVisionDeficiencyTypeAchromatopsia -> "achromatopsia"
+    SetEmulatedVisionDeficiencyTypeDeuteranopia -> "deuteranopia"
+    SetEmulatedVisionDeficiencyTypeProtanopia -> "protanopia"
+    SetEmulatedVisionDeficiencyTypeTritanopia -> "tritanopia"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__set_emulated_vision_deficiency_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("none") -> Ok(SetEmulatedVisionDeficiencyTypeNone)
+    Ok("blurredVision") -> Ok(SetEmulatedVisionDeficiencyTypeBlurredVision)
+    Ok("reducedContrast") -> Ok(SetEmulatedVisionDeficiencyTypeReducedContrast)
+    Ok("achromatopsia") -> Ok(SetEmulatedVisionDeficiencyTypeAchromatopsia)
+    Ok("deuteranopia") -> Ok(SetEmulatedVisionDeficiencyTypeDeuteranopia)
+    Ok("protanopia") -> Ok(SetEmulatedVisionDeficiencyTypeProtanopia)
+    Ok("tritanopia") -> Ok(SetEmulatedVisionDeficiencyTypeTritanopia)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn set_geolocation_override(
+  latitude: option.Option(Float),
+  longitude: option.Option(Float),
+  accuracy: option.Option(Float),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_idle_override(is_user_active: Bool, is_screen_unlocked: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn clear_idle_override() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_script_execution_disabled(value: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_touch_emulation_enabled(
+  enabled: Bool,
+  max_touch_points: option.Option(Int),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_timezone_override(timezone_id: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_user_agent_override(
+  user_agent: String,
+  accept_language: option.Option(String),
+  platform: option.Option(String),
+) {
+  todo
+  // TODO generate command body
 }

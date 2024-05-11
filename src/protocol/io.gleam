@@ -12,6 +12,8 @@
 
 import gleam/dynamic
 import gleam/json
+import gleam/option
+import gleam/result
 
 /// This is either obtained from another method or specified as `blob:<uuid>` where
 /// `<uuid>` is an UUID of a Blob.
@@ -30,4 +32,54 @@ pub fn encode__stream_handle(value__: StreamHandle) {
 pub fn decode__stream_handle(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(StreamHandle, dynamic.string)
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `read`
+pub type ReadResponse {
+  ReadResponse(base64_encoded: option.Option(Bool), data: String, eof: Bool)
+}
+
+@internal
+pub fn decode__read_response(value__: dynamic.Dynamic) {
+  use base64_encoded <- result.try(dynamic.optional_field(
+    "base64Encoded",
+    dynamic.bool,
+  )(value__))
+  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
+  use eof <- result.try(dynamic.field("eof", dynamic.bool)(value__))
+
+  Ok(ReadResponse(base64_encoded: base64_encoded, data: data, eof: eof))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `resolve_blob`
+pub type ResolveBlobResponse {
+  ResolveBlobResponse(uuid: String)
+}
+
+@internal
+pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
+  use uuid <- result.try(dynamic.field("uuid", dynamic.string)(value__))
+
+  Ok(ResolveBlobResponse(uuid: uuid))
+}
+
+pub fn close(handle: StreamHandle) {
+  todo
+  // TODO generate command body
+}
+
+pub fn read(
+  handle: StreamHandle,
+  offset: option.Option(Int),
+  size: option.Option(Int),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn resolve_blob(object_id: String) {
+  todo
+  // TODO generate command body
 }

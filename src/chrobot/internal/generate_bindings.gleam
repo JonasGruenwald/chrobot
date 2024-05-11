@@ -405,11 +405,12 @@ pub fn get_stable_protocol(
   )
 }
 
-/// See `apply_propdef_patches` for more info
+/// See `apply_protocol_patches` for more info
 fn apply_propdef_patches(
   propdef: PropertyDefinition,
   domain: Domain,
 ) -> PropertyDefinition {
+  io.debug(propdef.inner)
   case propdef.inner {
     // These patches are all references to other domains, which are not declared as dependencies.
     // We can't declare them as dependencies because that would create a circular dependency.
@@ -434,6 +435,53 @@ fn apply_propdef_patches(
         deprecated: propdef.deprecated,
         optional: propdef.optional,
         inner: PrimitiveType("number"),
+      )
+    // This reference occurs in the stable protocol here:
+    // https://chromedevtools.github.io/devtools-protocol/1-3/Target/#method-createBrowserContext
+    // But the referenced type is an experimental one
+    RefType("Browser.BrowserContextID") if domain.domain == "Target" ->
+      PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: PrimitiveType("string"),
+      )
+    ArrayType(ReferenceItem("Browser.BrowserContextID")) if domain.domain
+      == "Target" ->
+      PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: ArrayType(PrimitiveItem("string")),
+      )
+    RefType("BrowserContextID") if domain.domain == "Browser" ->
+      PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: PrimitiveType("string"),
+      )
+    // Object recursion
+    ObjectType(Some(object_props)) ->
+      PropertyDefinition(
+        name: propdef.name,
+        description: propdef.description,
+        experimental: propdef.experimental,
+        deprecated: propdef.deprecated,
+        optional: propdef.optional,
+        inner: ObjectType(
+          properties: Some(
+            list.map(object_props, fn(prop) {
+              apply_propdef_patches(prop, domain)
+            }),
+          ),
+        ),
       )
     _ -> propdef
   }
@@ -484,7 +532,36 @@ fn apply_protocol_patches(protocol: Protocol) -> Protocol {
             None -> None
           }
         },
-        commands: domain.commands,
+        commands: list.map(domain.commands, fn(command) {
+          Command(
+            name: command.name,
+            description: command.description,
+            deprecated: command.deprecated,
+            experimental: command.experimental,
+            parameters: {
+              case command.parameters {
+                Some(properties) ->
+                  Some(
+                    list.map(properties, fn(p) {
+                      apply_propdef_patches(p, domain)
+                    }),
+                  )
+                None -> None
+              }
+            },
+            returns: {
+              case command.returns {
+                Some(properties) ->
+                  Some(
+                    list.map(properties, fn(p) {
+                      apply_propdef_patches(p, domain)
+                    }),
+                  )
+                None -> None
+              }
+            },
+          )
+        }),
         events: domain.events,
         description: domain.description,
       )
@@ -939,7 +1016,7 @@ fn gen_type_body(name: String, t: Type) -> #(String, String) {
   }
 }
 
-fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
+fn gen_type_def_body(builder: sb.StringBuilder, t: TypeDefinition) {
   let #(body, appendage) = gen_type_body(t.id, t.inner)
   builder
   |> append_optional(t.description, gen_attached_comment)
@@ -951,6 +1028,10 @@ fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
   |> sb.append("}\n\n")
   |> sb.append(appendage)
   |> sb.append("\n")
+}
+
+fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
+  gen_type_def_body(builder, t)
   |> sb.append(gen_type_def_encoder(t))
   |> sb.append(gen_type_def_decoder(t))
 }
@@ -1305,6 +1386,76 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
   }
 }
 
+fn gen_command_return_type(command: Command) {
+  let builder = sb.new()
+  case command.returns {
+    Some([]) -> builder
+    Some(return_properties) -> {
+      let return_type_def =
+        TypeDefinition(
+          id: pascal_case(command.name) <> "Response",
+          description: Some(
+            "This type is not part of the protocol spec, it has been generated dynamically
+to represent the response to the command `"
+            <> snake_case(command.name)
+            <> "`",
+          ),
+          experimental: None,
+          deprecated: None,
+          inner: ObjectType(properties: Some(return_properties)),
+        )
+
+      gen_type_def_body(builder, return_type_def)
+      |> sb.append(gen_type_def_decoder(return_type_def))
+    }
+    None -> builder
+  }
+}
+
+fn gen_command_parameters(command: Command) {
+  case command.parameters {
+    Some(params) -> {
+      let param_gen_results =
+        list.map(params, fn(param) {
+          gen_attribute(
+            command.name,
+            param.name,
+            param.inner,
+            is(param.optional),
+          )
+        })
+      let #(param_definitions, extra_definitions) =
+        list.unzip(param_gen_results)
+      #(string.join(param_definitions, ""), string.join(extra_definitions, ""))
+    }
+    None -> #("", "")
+  }
+}
+
+fn gen_command_body(command: Command) {
+  "todo\n// TODO generate command body"
+}
+
+fn gen_command_function(command: Command) {
+  let #(param_definition, appendage) = gen_command_parameters(command)
+  sb.new()
+  |> sb.append("pub fn ")
+  |> sb.append(safe_snake_case(command.name))
+  |> sb.append("(\n")
+  |> sb.append(param_definition)
+  |> sb.append("){\n")
+  |> sb.append(gen_command_body(command))
+  |> sb.append("\n}\n")
+  |> sb.append(appendage)
+  |> sb.append("\n")
+}
+
+fn gen_commands(commands: List(Command)) {
+  sb.new()
+  |> sb.append_builder(sb.concat(list.map(commands, gen_command_return_type)))
+  |> sb.append_builder(sb.concat(list.map(commands, gen_command_function)))
+}
+
 fn remove_import_if_unused(
   builder: sb.StringBuilder,
   full_string: String,
@@ -1337,6 +1488,7 @@ fn remove_import_if_unused(
 /// in the generated code. Of course imports of protocol domain deps are not handled here.
 /// 
 /// It's a bit silly but it should work.
+/// would be nice to have this be a little more automated
 fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   let full_string = sb.to_string(builder)
   builder
@@ -1365,6 +1517,7 @@ pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   |> sb.append(gen_preamble(protocol))
   |> sb.append_builder(gen_domain_module_header(protocol, domain))
   |> sb.append_builder(gen_type_definitions(domain))
+  |> sb.append_builder(gen_commands(domain.commands))
   |> remove_unused_imports()
   |> sb.to_string()
 }

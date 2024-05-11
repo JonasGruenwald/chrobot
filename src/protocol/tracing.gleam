@@ -57,3 +57,50 @@ pub fn decode__trace_config(value__: dynamic.Dynamic) {
     excluded_categories: excluded_categories,
   ))
 }
+
+pub fn end() {
+  todo
+  // TODO generate command body
+}
+
+pub fn start(
+  transfer_mode: option.Option(StartTransferMode),
+  stream_format: option.Option(StreamFormat),
+  trace_config: option.Option(TraceConfig),
+) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `transferMode` of `start`
+pub type StartTransferMode {
+  StartTransferModeReportEvents
+  StartTransferModeReturnAsStream
+}
+
+@internal
+pub fn encode__start_transfer_mode(value__: StartTransferMode) {
+  case value__ {
+    StartTransferModeReportEvents -> "ReportEvents"
+    StartTransferModeReturnAsStream -> "ReturnAsStream"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__start_transfer_mode(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("ReportEvents") -> Ok(StartTransferModeReportEvents)
+    Ok("ReturnAsStream") -> Ok(StartTransferModeReturnAsStream)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}

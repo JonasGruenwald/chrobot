@@ -509,3 +509,429 @@ pub fn decode__debug_symbols(value__: dynamic.Dynamic) {
 
   Ok(DebugSymbols(type_: type_, external_url: external_url))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `evaluate_on_call_frame`
+pub type EvaluateOnCallFrameResponse {
+  EvaluateOnCallFrameResponse(
+    result: runtime.RemoteObject,
+    exception_details: option.Option(runtime.ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__evaluate_on_call_frame_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field(
+    "result",
+    runtime.decode__remote_object,
+  )(value__))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    runtime.decode__exception_details,
+  )(value__))
+
+  Ok(EvaluateOnCallFrameResponse(
+    result: result,
+    exception_details: exception_details,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_possible_breakpoints`
+pub type GetPossibleBreakpointsResponse {
+  GetPossibleBreakpointsResponse(locations: List(BreakLocation))
+}
+
+@internal
+pub fn decode__get_possible_breakpoints_response(value__: dynamic.Dynamic) {
+  use locations <- result.try(dynamic.field(
+    "locations",
+    dynamic.list(decode__break_location),
+  )(value__))
+
+  Ok(GetPossibleBreakpointsResponse(locations: locations))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_script_source`
+pub type GetScriptSourceResponse {
+  GetScriptSourceResponse(
+    script_source: String,
+    bytecode: option.Option(String),
+  )
+}
+
+@internal
+pub fn decode__get_script_source_response(value__: dynamic.Dynamic) {
+  use script_source <- result.try(dynamic.field("scriptSource", dynamic.string)(
+    value__,
+  ))
+  use bytecode <- result.try(dynamic.optional_field("bytecode", dynamic.string)(
+    value__,
+  ))
+
+  Ok(GetScriptSourceResponse(script_source: script_source, bytecode: bytecode))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `search_in_content`
+pub type SearchInContentResponse {
+  SearchInContentResponse(result: List(SearchMatch))
+}
+
+@internal
+pub fn decode__search_in_content_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field(
+    "result",
+    dynamic.list(decode__search_match),
+  )(value__))
+
+  Ok(SearchInContentResponse(result: result))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `set_breakpoint`
+pub type SetBreakpointResponse {
+  SetBreakpointResponse(breakpoint_id: BreakpointId, actual_location: Location)
+}
+
+@internal
+pub fn decode__set_breakpoint_response(value__: dynamic.Dynamic) {
+  use breakpoint_id <- result.try(dynamic.field(
+    "breakpointId",
+    decode__breakpoint_id,
+  )(value__))
+  use actual_location <- result.try(dynamic.field(
+    "actualLocation",
+    decode__location,
+  )(value__))
+
+  Ok(SetBreakpointResponse(
+    breakpoint_id: breakpoint_id,
+    actual_location: actual_location,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `set_instrumentation_breakpoint`
+pub type SetInstrumentationBreakpointResponse {
+  SetInstrumentationBreakpointResponse(breakpoint_id: BreakpointId)
+}
+
+@internal
+pub fn decode__set_instrumentation_breakpoint_response(value__: dynamic.Dynamic) {
+  use breakpoint_id <- result.try(dynamic.field(
+    "breakpointId",
+    decode__breakpoint_id,
+  )(value__))
+
+  Ok(SetInstrumentationBreakpointResponse(breakpoint_id: breakpoint_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `set_breakpoint_by_url`
+pub type SetBreakpointByUrlResponse {
+  SetBreakpointByUrlResponse(
+    breakpoint_id: BreakpointId,
+    locations: List(Location),
+  )
+}
+
+@internal
+pub fn decode__set_breakpoint_by_url_response(value__: dynamic.Dynamic) {
+  use breakpoint_id <- result.try(dynamic.field(
+    "breakpointId",
+    decode__breakpoint_id,
+  )(value__))
+  use locations <- result.try(dynamic.field(
+    "locations",
+    dynamic.list(decode__location),
+  )(value__))
+
+  Ok(SetBreakpointByUrlResponse(
+    breakpoint_id: breakpoint_id,
+    locations: locations,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `set_script_source`
+pub type SetScriptSourceResponse {
+  SetScriptSourceResponse(
+    exception_details: option.Option(runtime.ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    runtime.decode__exception_details,
+  )(value__))
+
+  Ok(SetScriptSourceResponse(exception_details: exception_details))
+}
+
+pub fn continue_to_location(
+  location: Location,
+  target_call_frames: option.Option(ContinueToLocationTargetCallFrames),
+) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `targetCallFrames` of `continueToLocation`
+pub type ContinueToLocationTargetCallFrames {
+  ContinueToLocationTargetCallFramesAny
+  ContinueToLocationTargetCallFramesCurrent
+}
+
+@internal
+pub fn encode__continue_to_location_target_call_frames(value__: ContinueToLocationTargetCallFrames) {
+  case value__ {
+    ContinueToLocationTargetCallFramesAny -> "any"
+    ContinueToLocationTargetCallFramesCurrent -> "current"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("any") -> Ok(ContinueToLocationTargetCallFramesAny)
+    Ok("current") -> Ok(ContinueToLocationTargetCallFramesCurrent)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn evaluate_on_call_frame(
+  call_frame_id: CallFrameId,
+  expression: String,
+  object_group: option.Option(String),
+  include_command_line_api: option.Option(Bool),
+  silent: option.Option(Bool),
+  return_by_value: option.Option(Bool),
+  throw_on_side_effect: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_possible_breakpoints(
+  start: Location,
+  end: option.Option(Location),
+  restrict_to_function: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_script_source(script_id: runtime.ScriptId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn pause() {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_breakpoint(breakpoint_id: BreakpointId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn restart_frame(call_frame_id: CallFrameId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn resume(terminate_on_resume: option.Option(Bool)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn search_in_content(
+  script_id: runtime.ScriptId,
+  query: String,
+  case_sensitive: option.Option(Bool),
+  is_regex: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_async_call_stack_depth(max_depth: Int) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_breakpoint(location: Location, condition: option.Option(String)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_instrumentation_breakpoint(
+  instrumentation: SetInstrumentationBreakpointInstrumentation,
+) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `instrumentation` of `setInstrumentationBreakpoint`
+pub type SetInstrumentationBreakpointInstrumentation {
+  SetInstrumentationBreakpointInstrumentationBeforeScriptExecution
+  SetInstrumentationBreakpointInstrumentationBeforeScriptWithSourceMapExecution
+}
+
+@internal
+pub fn encode__set_instrumentation_breakpoint_instrumentation(value__: SetInstrumentationBreakpointInstrumentation) {
+  case value__ {
+    SetInstrumentationBreakpointInstrumentationBeforeScriptExecution ->
+      "beforeScriptExecution"
+    SetInstrumentationBreakpointInstrumentationBeforeScriptWithSourceMapExecution ->
+      "beforeScriptWithSourceMapExecution"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("beforeScriptExecution") ->
+      Ok(SetInstrumentationBreakpointInstrumentationBeforeScriptExecution)
+    Ok("beforeScriptWithSourceMapExecution") ->
+      Ok(
+        SetInstrumentationBreakpointInstrumentationBeforeScriptWithSourceMapExecution,
+      )
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn set_breakpoint_by_url(
+  line_number: Int,
+  url: option.Option(String),
+  url_regex: option.Option(String),
+  script_hash: option.Option(String),
+  column_number: option.Option(Int),
+  condition: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_breakpoints_active(active: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_pause_on_exceptions(state: SetPauseOnExceptionsState) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `state` of `setPauseOnExceptions`
+pub type SetPauseOnExceptionsState {
+  SetPauseOnExceptionsStateNone
+  SetPauseOnExceptionsStateCaught
+  SetPauseOnExceptionsStateUncaught
+  SetPauseOnExceptionsStateAll
+}
+
+@internal
+pub fn encode__set_pause_on_exceptions_state(value__: SetPauseOnExceptionsState) {
+  case value__ {
+    SetPauseOnExceptionsStateNone -> "none"
+    SetPauseOnExceptionsStateCaught -> "caught"
+    SetPauseOnExceptionsStateUncaught -> "uncaught"
+    SetPauseOnExceptionsStateAll -> "all"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("none") -> Ok(SetPauseOnExceptionsStateNone)
+    Ok("caught") -> Ok(SetPauseOnExceptionsStateCaught)
+    Ok("uncaught") -> Ok(SetPauseOnExceptionsStateUncaught)
+    Ok("all") -> Ok(SetPauseOnExceptionsStateAll)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn set_script_source(
+  script_id: runtime.ScriptId,
+  script_source: String,
+  dry_run: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_skip_all_pauses(skip: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_variable_value(
+  scope_number: Int,
+  variable_name: String,
+  new_value: runtime.CallArgument,
+  call_frame_id: CallFrameId,
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn step_into() {
+  todo
+  // TODO generate command body
+}
+
+pub fn step_out() {
+  todo
+  // TODO generate command body
+}
+
+pub fn step_over() {
+  todo
+  // TODO generate command body
+}

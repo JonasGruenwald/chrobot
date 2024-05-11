@@ -101,3 +101,142 @@ pub fn decode__target_info(value__: dynamic.Dynamic) {
     opener_id: opener_id,
   ))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `attach_to_target`
+pub type AttachToTargetResponse {
+  AttachToTargetResponse(session_id: SessionID)
+}
+
+@internal
+pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
+  use session_id <- result.try(dynamic.field("sessionId", decode__session_id)(
+    value__,
+  ))
+
+  Ok(AttachToTargetResponse(session_id: session_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `create_browser_context`
+pub type CreateBrowserContextResponse {
+  CreateBrowserContextResponse(browser_context_id: String)
+}
+
+@internal
+pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
+  use browser_context_id <- result.try(dynamic.field(
+    "browserContextId",
+    dynamic.string,
+  )(value__))
+
+  Ok(CreateBrowserContextResponse(browser_context_id: browser_context_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_browser_contexts`
+pub type GetBrowserContextsResponse {
+  GetBrowserContextsResponse(browser_context_ids: List(String))
+}
+
+@internal
+pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
+  use browser_context_ids <- result.try(dynamic.field(
+    "browserContextIds",
+    dynamic.list(dynamic.string),
+  )(value__))
+
+  Ok(GetBrowserContextsResponse(browser_context_ids: browser_context_ids))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `create_target`
+pub type CreateTargetResponse {
+  CreateTargetResponse(target_id: TargetID)
+}
+
+@internal
+pub fn decode__create_target_response(value__: dynamic.Dynamic) {
+  use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
+    value__,
+  ))
+
+  Ok(CreateTargetResponse(target_id: target_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_targets`
+pub type GetTargetsResponse {
+  GetTargetsResponse(target_infos: List(TargetInfo))
+}
+
+@internal
+pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
+  use target_infos <- result.try(dynamic.field(
+    "targetInfos",
+    dynamic.list(decode__target_info),
+  )(value__))
+
+  Ok(GetTargetsResponse(target_infos: target_infos))
+}
+
+pub fn activate_target(target_id: TargetID) {
+  todo
+  // TODO generate command body
+}
+
+pub fn attach_to_target(target_id: TargetID, flatten: option.Option(Bool)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn close_target(target_id: TargetID) {
+  todo
+  // TODO generate command body
+}
+
+pub fn create_browser_context() {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_browser_contexts() {
+  todo
+  // TODO generate command body
+}
+
+pub fn create_target(
+  url: String,
+  width: option.Option(Int),
+  height: option.Option(Int),
+  new_window: option.Option(Bool),
+  background: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn detach_from_target(session_id: option.Option(SessionID)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn dispose_browser_context(browser_context_id: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_targets() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_auto_attach(auto_attach: Bool, wait_for_debugger_on_start: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_discover_targets(discover: Bool) {
+  todo
+  // TODO generate command body
+}

@@ -300,3 +300,93 @@ pub fn decode__auth_challenge_response(value__: dynamic.Dynamic) {
     password: password,
   ))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_response_body`
+pub type GetResponseBodyResponse {
+  GetResponseBodyResponse(body: String, base64_encoded: Bool)
+}
+
+@internal
+pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
+  use body <- result.try(dynamic.field("body", dynamic.string)(value__))
+  use base64_encoded <- result.try(dynamic.field("base64Encoded", dynamic.bool)(
+    value__,
+  ))
+
+  Ok(GetResponseBodyResponse(body: body, base64_encoded: base64_encoded))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `take_response_body_as_stream`
+pub type TakeResponseBodyAsStreamResponse {
+  TakeResponseBodyAsStreamResponse(stream: io.StreamHandle)
+}
+
+@internal
+pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
+  use stream <- result.try(dynamic.field("stream", io.decode__stream_handle)(
+    value__,
+  ))
+
+  Ok(TakeResponseBodyAsStreamResponse(stream: stream))
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable(
+  patterns: option.Option(List(RequestPattern)),
+  handle_auth_requests: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn fail_request(request_id: RequestId, error_reason: network.ErrorReason) {
+  todo
+  // TODO generate command body
+}
+
+pub fn fulfill_request(
+  request_id: RequestId,
+  response_code: Int,
+  response_headers: option.Option(List(HeaderEntry)),
+  binary_response_headers: option.Option(String),
+  body: option.Option(String),
+  response_phrase: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn continue_request(
+  request_id: RequestId,
+  url: option.Option(String),
+  method: option.Option(String),
+  post_data: option.Option(String),
+  headers: option.Option(List(HeaderEntry)),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn continue_with_auth(
+  request_id: RequestId,
+  auth_challenge_response: AuthChallengeResponse,
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_response_body(request_id: RequestId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn take_response_body_as_stream(request_id: RequestId) {
+  todo
+  // TODO generate command body
+}

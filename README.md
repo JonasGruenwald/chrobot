@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="./docs/header_1.png" alt="" style="max-width: 450px">
+<img src="https://raw.githubusercontent.com/JonasGruenwald/chrobot/main/docs/header_1.png" alt="" style="max-width: 450px">
 </p>
 
 <h1 align="center">Chrobot</h1>
@@ -18,11 +18,16 @@
 
 ## About
 
-Chrobot provides a full set of strongly typed bindings to the [Chrome Devtools Protocol](https://chromedevtools.github.io/devtools-protocol/) based on the published JSON specification.
+Chrobot provides a set of strongly typed bindings to the stable version of the [Chrome Devtools Protocol](https://chromedevtools.github.io/devtools-protocol/), based on its published JSON specification.
 
-The package also handles starting an instance of chromium/chrome and communicating with it via pipes.
+It also exposes some handy high level abstractions for browser automation, and handles starting a browser instance and communicating with it for you.
 
-The `chrobot` module expeses some handy high level abstractions for browser automation, while also enabling you to make raw protocol calls if required.
+You could use it for 
+
+* Generating PDFs from HTML
+* Web scraping
+* Web archiving
+* Browser integration tests
 
 ## Setup
 
@@ -30,7 +35,7 @@ The `chrobot` module expeses some handy high level abstractions for browser auto
 
 Chrobot can use an existing system installation of Google Chrome or Chromium, if you already have one.
 
-If you would like a hermetic installation of a specific version of a chrome build optimized for automation, I recommend using the [installation script from puppeteer](https://pptr.dev/browsers-api) to achieve achieve this
+If you would like a hermetic installation of a specific version of a chrome build optimized for automation, I recommend using the [installation script from puppeteer](https://pptr.dev/browsers-api) to achieve this
 
 ```sh
 # (you will need node.js to run this of course)

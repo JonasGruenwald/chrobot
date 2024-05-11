@@ -1058,3 +1058,312 @@ pub fn decode__stack_trace(value__: dynamic.Dynamic) {
     parent: parent,
   ))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `await_promise`
+pub type AwaitPromiseResponse {
+  AwaitPromiseResponse(
+    result: RemoteObject,
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__await_promise_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field("result", decode__remote_object)(
+    value__,
+  ))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(AwaitPromiseResponse(result: result, exception_details: exception_details))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `call_function_on`
+pub type CallFunctionOnResponse {
+  CallFunctionOnResponse(
+    result: RemoteObject,
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__call_function_on_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field("result", decode__remote_object)(
+    value__,
+  ))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(CallFunctionOnResponse(
+    result: result,
+    exception_details: exception_details,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `compile_script`
+pub type CompileScriptResponse {
+  CompileScriptResponse(
+    script_id: option.Option(ScriptId),
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__compile_script_response(value__: dynamic.Dynamic) {
+  use script_id <- result.try(dynamic.optional_field(
+    "scriptId",
+    decode__script_id,
+  )(value__))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(CompileScriptResponse(
+    script_id: script_id,
+    exception_details: exception_details,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `evaluate`
+pub type EvaluateResponse {
+  EvaluateResponse(
+    result: RemoteObject,
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__evaluate_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field("result", decode__remote_object)(
+    value__,
+  ))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(EvaluateResponse(result: result, exception_details: exception_details))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_properties`
+pub type GetPropertiesResponse {
+  GetPropertiesResponse(
+    result: List(PropertyDescriptor),
+    internal_properties: option.Option(List(InternalPropertyDescriptor)),
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__get_properties_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field(
+    "result",
+    dynamic.list(decode__property_descriptor),
+  )(value__))
+  use internal_properties <- result.try(dynamic.optional_field(
+    "internalProperties",
+    dynamic.list(decode__internal_property_descriptor),
+  )(value__))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(GetPropertiesResponse(
+    result: result,
+    internal_properties: internal_properties,
+    exception_details: exception_details,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `global_lexical_scope_names`
+pub type GlobalLexicalScopeNamesResponse {
+  GlobalLexicalScopeNamesResponse(names: List(String))
+}
+
+@internal
+pub fn decode__global_lexical_scope_names_response(value__: dynamic.Dynamic) {
+  use names <- result.try(dynamic.field("names", dynamic.list(dynamic.string))(
+    value__,
+  ))
+
+  Ok(GlobalLexicalScopeNamesResponse(names: names))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `query_objects`
+pub type QueryObjectsResponse {
+  QueryObjectsResponse(objects: RemoteObject)
+}
+
+@internal
+pub fn decode__query_objects_response(value__: dynamic.Dynamic) {
+  use objects <- result.try(dynamic.field("objects", decode__remote_object)(
+    value__,
+  ))
+
+  Ok(QueryObjectsResponse(objects: objects))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `run_script`
+pub type RunScriptResponse {
+  RunScriptResponse(
+    result: RemoteObject,
+    exception_details: option.Option(ExceptionDetails),
+  )
+}
+
+@internal
+pub fn decode__run_script_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field("result", decode__remote_object)(
+    value__,
+  ))
+  use exception_details <- result.try(dynamic.optional_field(
+    "exceptionDetails",
+    decode__exception_details,
+  )(value__))
+
+  Ok(RunScriptResponse(result: result, exception_details: exception_details))
+}
+
+pub fn await_promise(
+  promise_object_id: RemoteObjectId,
+  return_by_value: option.Option(Bool),
+  generate_preview: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn call_function_on(
+  function_declaration: String,
+  object_id: option.Option(RemoteObjectId),
+  arguments: option.Option(List(CallArgument)),
+  silent: option.Option(Bool),
+  return_by_value: option.Option(Bool),
+  user_gesture: option.Option(Bool),
+  await_promise: option.Option(Bool),
+  execution_context_id: option.Option(ExecutionContextId),
+  object_group: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn compile_script(
+  expression: String,
+  source_url: String,
+  persist_script: Bool,
+  execution_context_id: option.Option(ExecutionContextId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn discard_console_entries() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn evaluate(
+  expression: String,
+  object_group: option.Option(String),
+  include_command_line_api: option.Option(Bool),
+  silent: option.Option(Bool),
+  context_id: option.Option(ExecutionContextId),
+  return_by_value: option.Option(Bool),
+  user_gesture: option.Option(Bool),
+  await_promise: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_properties(
+  object_id: RemoteObjectId,
+  own_properties: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn global_lexical_scope_names(
+  execution_context_id: option.Option(ExecutionContextId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn query_objects(
+  prototype_object_id: RemoteObjectId,
+  object_group: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn release_object(object_id: RemoteObjectId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn release_object_group(object_group: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn run_if_waiting_for_debugger() {
+  todo
+  // TODO generate command body
+}
+
+pub fn run_script(
+  script_id: ScriptId,
+  execution_context_id: option.Option(ExecutionContextId),
+  object_group: option.Option(String),
+  silent: option.Option(Bool),
+  include_command_line_api: option.Option(Bool),
+  return_by_value: option.Option(Bool),
+  generate_preview: option.Option(Bool),
+  await_promise: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_async_call_stack_depth(max_depth: Int) {
+  todo
+  // TODO generate command body
+}
+
+pub fn add_binding(name: String, execution_context_name: option.Option(String)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_binding(name: String) {
+  todo
+  // TODO generate command body
+}

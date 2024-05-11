@@ -144,3 +144,58 @@ pub fn decode__event_listener(value__: dynamic.Dynamic) {
     backend_node_id: backend_node_id,
   ))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_event_listeners`
+pub type GetEventListenersResponse {
+  GetEventListenersResponse(listeners: List(EventListener))
+}
+
+@internal
+pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
+  use listeners <- result.try(dynamic.field(
+    "listeners",
+    dynamic.list(decode__event_listener),
+  )(value__))
+
+  Ok(GetEventListenersResponse(listeners: listeners))
+}
+
+pub fn get_event_listeners(
+  object_id: runtime.RemoteObjectId,
+  depth: option.Option(Int),
+  pierce: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_dom_breakpoint(node_id: dom.NodeId, type_: DOMBreakpointType) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_event_listener_breakpoint(event_name: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_xhr_breakpoint(url: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_dom_breakpoint(node_id: dom.NodeId, type_: DOMBreakpointType) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_event_listener_breakpoint(event_name: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_xhr_breakpoint(url: String) {
+  todo
+  // TODO generate command body
+}

@@ -214,3 +214,18 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
       ])
   }
 }
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_ignore_certificate_errors(ignore: Bool) {
+  todo
+  // TODO generate command body
+}

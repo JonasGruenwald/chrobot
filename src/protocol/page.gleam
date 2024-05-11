@@ -453,3 +453,369 @@ pub fn decode__viewport(value__: dynamic.Dynamic) {
 
   Ok(Viewport(x: x, y: y, width: width, height: height, scale: scale))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `add_script_to_evaluate_on_new_document`
+pub type AddScriptToEvaluateOnNewDocumentResponse {
+  AddScriptToEvaluateOnNewDocumentResponse(identifier: ScriptIdentifier)
+}
+
+@internal
+pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.Dynamic) {
+  use identifier <- result.try(dynamic.field(
+    "identifier",
+    decode__script_identifier,
+  )(value__))
+
+  Ok(AddScriptToEvaluateOnNewDocumentResponse(identifier: identifier))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `capture_screenshot`
+pub type CaptureScreenshotResponse {
+  CaptureScreenshotResponse(data: String)
+}
+
+@internal
+pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
+  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
+
+  Ok(CaptureScreenshotResponse(data: data))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `create_isolated_world`
+pub type CreateIsolatedWorldResponse {
+  CreateIsolatedWorldResponse(execution_context_id: runtime.ExecutionContextId)
+}
+
+@internal
+pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
+  use execution_context_id <- result.try(dynamic.field(
+    "executionContextId",
+    runtime.decode__execution_context_id,
+  )(value__))
+
+  Ok(CreateIsolatedWorldResponse(execution_context_id: execution_context_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_app_manifest`
+pub type GetAppManifestResponse {
+  GetAppManifestResponse(
+    url: String,
+    errors: List(AppManifestError),
+    data: option.Option(String),
+  )
+}
+
+@internal
+pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
+  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
+  use errors <- result.try(dynamic.field(
+    "errors",
+    dynamic.list(decode__app_manifest_error),
+  )(value__))
+  use data <- result.try(dynamic.optional_field("data", dynamic.string)(value__))
+
+  Ok(GetAppManifestResponse(url: url, errors: errors, data: data))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_frame_tree`
+pub type GetFrameTreeResponse {
+  GetFrameTreeResponse(frame_tree: FrameTree)
+}
+
+@internal
+pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
+  use frame_tree <- result.try(dynamic.field("frameTree", decode__frame_tree)(
+    value__,
+  ))
+
+  Ok(GetFrameTreeResponse(frame_tree: frame_tree))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_layout_metrics`
+pub type GetLayoutMetricsResponse {
+  GetLayoutMetricsResponse(
+    css_layout_viewport: LayoutViewport,
+    css_visual_viewport: VisualViewport,
+    css_content_size: dom.Rect,
+  )
+}
+
+@internal
+pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
+  use css_layout_viewport <- result.try(dynamic.field(
+    "cssLayoutViewport",
+    decode__layout_viewport,
+  )(value__))
+  use css_visual_viewport <- result.try(dynamic.field(
+    "cssVisualViewport",
+    decode__visual_viewport,
+  )(value__))
+  use css_content_size <- result.try(dynamic.field(
+    "cssContentSize",
+    dom.decode__rect,
+  )(value__))
+
+  Ok(GetLayoutMetricsResponse(
+    css_layout_viewport: css_layout_viewport,
+    css_visual_viewport: css_visual_viewport,
+    css_content_size: css_content_size,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_navigation_history`
+pub type GetNavigationHistoryResponse {
+  GetNavigationHistoryResponse(
+    current_index: Int,
+    entries: List(NavigationEntry),
+  )
+}
+
+@internal
+pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
+  use current_index <- result.try(dynamic.field("currentIndex", dynamic.int)(
+    value__,
+  ))
+  use entries <- result.try(dynamic.field(
+    "entries",
+    dynamic.list(decode__navigation_entry),
+  )(value__))
+
+  Ok(GetNavigationHistoryResponse(
+    current_index: current_index,
+    entries: entries,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `navigate`
+pub type NavigateResponse {
+  NavigateResponse(
+    frame_id: FrameId,
+    loader_id: option.Option(network.LoaderId),
+    error_text: option.Option(String),
+  )
+}
+
+@internal
+pub fn decode__navigate_response(value__: dynamic.Dynamic) {
+  use frame_id <- result.try(dynamic.field("frameId", decode__frame_id)(value__))
+  use loader_id <- result.try(dynamic.optional_field(
+    "loaderId",
+    network.decode__loader_id,
+  )(value__))
+  use error_text <- result.try(dynamic.optional_field(
+    "errorText",
+    dynamic.string,
+  )(value__))
+
+  Ok(NavigateResponse(
+    frame_id: frame_id,
+    loader_id: loader_id,
+    error_text: error_text,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `print_to_pdf`
+pub type PrintToPdfResponse {
+  PrintToPdfResponse(data: String)
+}
+
+@internal
+pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
+  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
+
+  Ok(PrintToPdfResponse(data: data))
+}
+
+pub fn add_script_to_evaluate_on_new_document(source: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn bring_to_front() {
+  todo
+  // TODO generate command body
+}
+
+pub fn capture_screenshot(
+  format: option.Option(CaptureScreenshotFormat),
+  quality: option.Option(Int),
+  clip: option.Option(Viewport),
+) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `format` of `captureScreenshot`
+pub type CaptureScreenshotFormat {
+  CaptureScreenshotFormatJpeg
+  CaptureScreenshotFormatPng
+  CaptureScreenshotFormatWebp
+}
+
+@internal
+pub fn encode__capture_screenshot_format(value__: CaptureScreenshotFormat) {
+  case value__ {
+    CaptureScreenshotFormatJpeg -> "jpeg"
+    CaptureScreenshotFormatPng -> "png"
+    CaptureScreenshotFormatWebp -> "webp"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("jpeg") -> Ok(CaptureScreenshotFormatJpeg)
+    Ok("png") -> Ok(CaptureScreenshotFormatPng)
+    Ok("webp") -> Ok(CaptureScreenshotFormatWebp)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn create_isolated_world(
+  frame_id: FrameId,
+  world_name: option.Option(String),
+  grant_univeral_access: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_app_manifest(manifest_id: option.Option(String)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_frame_tree() {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_layout_metrics() {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_navigation_history() {
+  todo
+  // TODO generate command body
+}
+
+pub fn reset_navigation_history() {
+  todo
+  // TODO generate command body
+}
+
+pub fn handle_java_script_dialog(
+  accept: Bool,
+  prompt_text: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn navigate(
+  url: String,
+  referrer: option.Option(String),
+  transition_type: option.Option(TransitionType),
+  frame_id: option.Option(FrameId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn navigate_to_history_entry(entry_id: Int) {
+  todo
+  // TODO generate command body
+}
+
+pub fn print_to_pdf(
+  landscape: option.Option(Bool),
+  display_header_footer: option.Option(Bool),
+  print_background: option.Option(Bool),
+  scale: option.Option(Float),
+  paper_width: option.Option(Float),
+  paper_height: option.Option(Float),
+  margin_top: option.Option(Float),
+  margin_bottom: option.Option(Float),
+  margin_left: option.Option(Float),
+  margin_right: option.Option(Float),
+  page_ranges: option.Option(String),
+  header_template: option.Option(String),
+  footer_template: option.Option(String),
+  prefer_css_page_size: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn reload(
+  ignore_cache: option.Option(Bool),
+  script_to_evaluate_on_load: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_script_to_evaluate_on_new_document(identifier: ScriptIdentifier) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_bypass_csp(enabled: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_document_content(frame_id: FrameId, html: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_lifecycle_events_enabled(enabled: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn stop_loading() {
+  todo
+  // TODO generate command body
+}
+
+pub fn close() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_intercept_file_chooser_dialog(enabled: Bool) {
+  todo
+  // TODO generate command body
+}

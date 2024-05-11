@@ -12,6 +12,7 @@
 
 import gleam/dynamic
 import gleam/json
+import gleam/option
 import gleam/result
 
 /// Run-time execution metric.
@@ -33,4 +34,68 @@ pub fn decode__metric(value__: dynamic.Dynamic) {
   use value <- result.try(dynamic.field("value", dynamic.float)(value__))
 
   Ok(Metric(name: name, value: value))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_metrics`
+pub type GetMetricsResponse {
+  GetMetricsResponse(metrics: List(Metric))
+}
+
+@internal
+pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
+  use metrics <- result.try(dynamic.field(
+    "metrics",
+    dynamic.list(decode__metric),
+  )(value__))
+
+  Ok(GetMetricsResponse(metrics: metrics))
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable(time_domain: option.Option(EnableTimeDomain)) {
+  todo
+  // TODO generate command body
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically 
+/// to represent the possible values of the enum property `timeDomain` of `enable`
+pub type EnableTimeDomain {
+  EnableTimeDomainTimeTicks
+  EnableTimeDomainThreadTicks
+}
+
+@internal
+pub fn encode__enable_time_domain(value__: EnableTimeDomain) {
+  case value__ {
+    EnableTimeDomainTimeTicks -> "timeTicks"
+    EnableTimeDomainThreadTicks -> "threadTicks"
+  }
+  |> json.string()
+}
+
+@internal
+pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("timeTicks") -> Ok(EnableTimeDomainTimeTicks)
+    Ok("threadTicks") -> Ok(EnableTimeDomainThreadTicks)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
+  }
+}
+
+pub fn get_metrics() {
+  todo
+  // TODO generate command body
 }

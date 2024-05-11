@@ -885,3 +885,370 @@ pub fn decode__css_computed_style_property(value__: dynamic.Dynamic) {
 
   Ok(CSSComputedStyleProperty(name: name, value: value))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `describe_node`
+pub type DescribeNodeResponse {
+  DescribeNodeResponse(node: Node)
+}
+
+@internal
+pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
+  use node <- result.try(dynamic.field("node", decode__node)(value__))
+
+  Ok(DescribeNodeResponse(node: node))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_attributes`
+pub type GetAttributesResponse {
+  GetAttributesResponse(attributes: List(String))
+}
+
+@internal
+pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
+  use attributes <- result.try(dynamic.field(
+    "attributes",
+    dynamic.list(dynamic.string),
+  )(value__))
+
+  Ok(GetAttributesResponse(attributes: attributes))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_box_model`
+pub type GetBoxModelResponse {
+  GetBoxModelResponse(model: BoxModel)
+}
+
+@internal
+pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
+  use model <- result.try(dynamic.field("model", decode__box_model)(value__))
+
+  Ok(GetBoxModelResponse(model: model))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_document`
+pub type GetDocumentResponse {
+  GetDocumentResponse(root: Node)
+}
+
+@internal
+pub fn decode__get_document_response(value__: dynamic.Dynamic) {
+  use root <- result.try(dynamic.field("root", decode__node)(value__))
+
+  Ok(GetDocumentResponse(root: root))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_node_for_location`
+pub type GetNodeForLocationResponse {
+  GetNodeForLocationResponse(
+    backend_node_id: BackendNodeId,
+    frame_id: String,
+    node_id: option.Option(NodeId),
+  )
+}
+
+@internal
+pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
+  use backend_node_id <- result.try(dynamic.field(
+    "backendNodeId",
+    decode__backend_node_id,
+  )(value__))
+  use frame_id <- result.try(dynamic.field("frameId", dynamic.string)(value__))
+  use node_id <- result.try(dynamic.optional_field("nodeId", decode__node_id)(
+    value__,
+  ))
+
+  Ok(GetNodeForLocationResponse(
+    backend_node_id: backend_node_id,
+    frame_id: frame_id,
+    node_id: node_id,
+  ))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_outer_html`
+pub type GetOuterHtmlResponse {
+  GetOuterHtmlResponse(outer_html: String)
+}
+
+@internal
+pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
+  use outer_html <- result.try(dynamic.field("outerHTML", dynamic.string)(
+    value__,
+  ))
+
+  Ok(GetOuterHtmlResponse(outer_html: outer_html))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `move_to`
+pub type MoveToResponse {
+  MoveToResponse(node_id: NodeId)
+}
+
+@internal
+pub fn decode__move_to_response(value__: dynamic.Dynamic) {
+  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+
+  Ok(MoveToResponse(node_id: node_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `query_selector`
+pub type QuerySelectorResponse {
+  QuerySelectorResponse(node_id: NodeId)
+}
+
+@internal
+pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
+  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+
+  Ok(QuerySelectorResponse(node_id: node_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `query_selector_all`
+pub type QuerySelectorAllResponse {
+  QuerySelectorAllResponse(node_ids: List(NodeId))
+}
+
+@internal
+pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
+  use node_ids <- result.try(dynamic.field(
+    "nodeIds",
+    dynamic.list(decode__node_id),
+  )(value__))
+
+  Ok(QuerySelectorAllResponse(node_ids: node_ids))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `request_node`
+pub type RequestNodeResponse {
+  RequestNodeResponse(node_id: NodeId)
+}
+
+@internal
+pub fn decode__request_node_response(value__: dynamic.Dynamic) {
+  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+
+  Ok(RequestNodeResponse(node_id: node_id))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `resolve_node`
+pub type ResolveNodeResponse {
+  ResolveNodeResponse(object: runtime.RemoteObject)
+}
+
+@internal
+pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
+  use object <- result.try(dynamic.field(
+    "object",
+    runtime.decode__remote_object,
+  )(value__))
+
+  Ok(ResolveNodeResponse(object: object))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `set_node_name`
+pub type SetNodeNameResponse {
+  SetNodeNameResponse(node_id: NodeId)
+}
+
+@internal
+pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
+  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+
+  Ok(SetNodeNameResponse(node_id: node_id))
+}
+
+pub fn describe_node(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+  depth: option.Option(Int),
+  pierce: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn scroll_into_view_if_needed(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+  rect: option.Option(Rect),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn focus(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_attributes(node_id: NodeId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_box_model(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_document(depth: option.Option(Int), pierce: option.Option(Bool)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_node_for_location(
+  x: Int,
+  y: Int,
+  include_user_agent_shadow_dom: option.Option(Bool),
+  ignore_pointer_events_none: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_outer_html(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn hide_highlight() {
+  todo
+  // TODO generate command body
+}
+
+pub fn highlight_node() {
+  todo
+  // TODO generate command body
+}
+
+pub fn highlight_rect() {
+  todo
+  // TODO generate command body
+}
+
+pub fn move_to(
+  node_id: NodeId,
+  target_node_id: NodeId,
+  insert_before_node_id: option.Option(NodeId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn query_selector(node_id: NodeId, selector: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn query_selector_all(node_id: NodeId, selector: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_attribute(node_id: NodeId, name: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn remove_node(node_id: NodeId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn request_child_nodes(
+  node_id: NodeId,
+  depth: option.Option(Int),
+  pierce: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn request_node(object_id: runtime.RemoteObjectId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn resolve_node(
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_group: option.Option(String),
+  execution_context_id: option.Option(runtime.ExecutionContextId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_attribute_value(node_id: NodeId, name: String, value: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_attributes_as_text(
+  node_id: NodeId,
+  text: String,
+  name: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_file_input_files(
+  files: List(String),
+  node_id: option.Option(NodeId),
+  backend_node_id: option.Option(BackendNodeId),
+  object_id: option.Option(runtime.RemoteObjectId),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_node_name(node_id: NodeId, name: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_node_value(node_id: NodeId, value: String) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_outer_html(node_id: NodeId, outer_html: String) {
+  todo
+  // TODO generate command body
+}

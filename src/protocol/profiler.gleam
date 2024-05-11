@@ -276,3 +276,111 @@ pub fn decode__script_coverage(value__: dynamic.Dynamic) {
 
   Ok(ScriptCoverage(script_id: script_id, url: url, functions: functions))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_best_effort_coverage`
+pub type GetBestEffortCoverageResponse {
+  GetBestEffortCoverageResponse(result: List(ScriptCoverage))
+}
+
+@internal
+pub fn decode__get_best_effort_coverage_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field(
+    "result",
+    dynamic.list(decode__script_coverage),
+  )(value__))
+
+  Ok(GetBestEffortCoverageResponse(result: result))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `start_precise_coverage`
+pub type StartPreciseCoverageResponse {
+  StartPreciseCoverageResponse(timestamp: Float)
+}
+
+@internal
+pub fn decode__start_precise_coverage_response(value__: dynamic.Dynamic) {
+  use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
+
+  Ok(StartPreciseCoverageResponse(timestamp: timestamp))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `stop`
+pub type StopResponse {
+  StopResponse(profile: Profile)
+}
+
+@internal
+pub fn decode__stop_response(value__: dynamic.Dynamic) {
+  use profile <- result.try(dynamic.field("profile", decode__profile)(value__))
+
+  Ok(StopResponse(profile: profile))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `take_precise_coverage`
+pub type TakePreciseCoverageResponse {
+  TakePreciseCoverageResponse(result: List(ScriptCoverage), timestamp: Float)
+}
+
+@internal
+pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
+  use result <- result.try(dynamic.field(
+    "result",
+    dynamic.list(decode__script_coverage),
+  )(value__))
+  use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
+
+  Ok(TakePreciseCoverageResponse(result: result, timestamp: timestamp))
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_best_effort_coverage() {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_sampling_interval(interval: Int) {
+  todo
+  // TODO generate command body
+}
+
+pub fn start() {
+  todo
+  // TODO generate command body
+}
+
+pub fn start_precise_coverage(
+  call_count: option.Option(Bool),
+  detailed: option.Option(Bool),
+  allow_triggered_updates: option.Option(Bool),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn stop() {
+  todo
+  // TODO generate command body
+}
+
+pub fn stop_precise_coverage() {
+  todo
+  // TODO generate command body
+}
+
+pub fn take_precise_coverage() {
+  todo
+  // TODO generate command body
+}

@@ -345,3 +345,28 @@ pub fn decode__violation_setting(value__: dynamic.Dynamic) {
 
   Ok(ViolationSetting(name: name, threshold: threshold))
 }
+
+pub fn clear() {
+  todo
+  // TODO generate command body
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn start_violations_report(config: List(ViolationSetting)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn stop_violations_report() {
+  todo
+  // TODO generate command body
+}

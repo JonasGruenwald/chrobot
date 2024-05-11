@@ -1911,3 +1911,149 @@ pub fn decode__cookie_param(value__: dynamic.Dynamic) {
     expires: expires,
   ))
 }
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_cookies`
+pub type GetCookiesResponse {
+  GetCookiesResponse(cookies: List(Cookie))
+}
+
+@internal
+pub fn decode__get_cookies_response(value__: dynamic.Dynamic) {
+  use cookies <- result.try(dynamic.field(
+    "cookies",
+    dynamic.list(decode__cookie),
+  )(value__))
+
+  Ok(GetCookiesResponse(cookies: cookies))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_response_body`
+pub type GetResponseBodyResponse {
+  GetResponseBodyResponse(body: String, base64_encoded: Bool)
+}
+
+@internal
+pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
+  use body <- result.try(dynamic.field("body", dynamic.string)(value__))
+  use base64_encoded <- result.try(dynamic.field("base64Encoded", dynamic.bool)(
+    value__,
+  ))
+
+  Ok(GetResponseBodyResponse(body: body, base64_encoded: base64_encoded))
+}
+
+/// This type is not part of the protocol spec, it has been generated dynamically
+/// to represent the response to the command `get_request_post_data`
+pub type GetRequestPostDataResponse {
+  GetRequestPostDataResponse(post_data: String)
+}
+
+@internal
+pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
+  use post_data <- result.try(dynamic.field("postData", dynamic.string)(value__))
+
+  Ok(GetRequestPostDataResponse(post_data: post_data))
+}
+
+pub fn clear_browser_cache() {
+  todo
+  // TODO generate command body
+}
+
+pub fn clear_browser_cookies() {
+  todo
+  // TODO generate command body
+}
+
+pub fn delete_cookies(
+  name: String,
+  url: option.Option(String),
+  domain: option.Option(String),
+  path: option.Option(String),
+  partition_key: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn disable() {
+  todo
+  // TODO generate command body
+}
+
+pub fn emulate_network_conditions(
+  offline: Bool,
+  latency: Float,
+  download_throughput: Float,
+  upload_throughput: Float,
+  connection_type: option.Option(ConnectionType),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn enable(max_post_data_size: option.Option(Int)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_cookies(urls: option.Option(List(String))) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_response_body(request_id: RequestId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn get_request_post_data(request_id: RequestId) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_bypass_service_worker(bypass: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_cache_disabled(cache_disabled: Bool) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_cookie(
+  name: String,
+  value: String,
+  url: option.Option(String),
+  domain: option.Option(String),
+  path: option.Option(String),
+  secure: option.Option(Bool),
+  http_only: option.Option(Bool),
+  same_site: option.Option(CookieSameSite),
+  expires: option.Option(TimeSinceEpoch),
+) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_cookies(cookies: List(CookieParam)) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_extra_http_headers(headers: Headers) {
+  todo
+  // TODO generate command body
+}
+
+pub fn set_user_agent_override(
+  user_agent: String,
+  accept_language: option.Option(String),
+  platform: option.Option(String),
+) {
+  todo
+  // TODO generate command body
+}
