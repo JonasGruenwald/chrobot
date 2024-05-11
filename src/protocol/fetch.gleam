@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -35,7 +34,6 @@ pub fn encode__request_id(value__: RequestId) {
 pub fn decode__request_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(RequestId, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Stages of the request to handle. Request will intercept before the request is
@@ -60,7 +58,15 @@ pub fn decode__request_stage(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("Request") -> Ok(RequestStageRequest)
     Ok("Response") -> Ok(RequestStageResponse)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -98,26 +104,24 @@ pub fn encode__request_pattern(value__: RequestPattern) {
 
 @internal
 pub fn decode__request_pattern(value__: dynamic.Dynamic) {
-  use url_pattern <- result.try(
-    dynamic.optional_field("urlPattern", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use resource_type <- result.try(
-    dynamic.optional_field("resourceType", network.decode__resource_type)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use request_stage <- result.try(
-    dynamic.optional_field("requestStage", decode__request_stage)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use url_pattern <- result.try(dynamic.optional_field(
+    "urlPattern",
+    dynamic.string,
+  )(value__))
+  use resource_type <- result.try(dynamic.optional_field(
+    "resourceType",
+    network.decode__resource_type,
+  )(value__))
+  use request_stage <- result.try(dynamic.optional_field(
+    "requestStage",
+    decode__request_stage,
+  )(value__))
 
-  RequestPattern(
+  Ok(RequestPattern(
     url_pattern: url_pattern,
     resource_type: resource_type,
     request_stage: request_stage,
-  )
+  ))
 }
 
 /// Response HTTP header entry
@@ -135,16 +139,10 @@ pub fn encode__header_entry(value__: HeaderEntry) {
 
 @internal
 pub fn decode__header_entry(value__: dynamic.Dynamic) {
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.field("value", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
 
-  HeaderEntry(name: name, value: value)
+  Ok(HeaderEntry(name: name, value: value))
 }
 
 /// Authorization challenge for HTTP status code 401 or 407.
@@ -178,7 +176,15 @@ pub fn decode__auth_challenge_source(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("Server") -> Ok(AuthChallengeSourceServer)
     Ok("Proxy") -> Ok(AuthChallengeSourceProxy)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -199,24 +205,15 @@ pub fn encode__auth_challenge(value__: AuthChallenge) {
 
 @internal
 pub fn decode__auth_challenge(value__: dynamic.Dynamic) {
-  use source <- result.try(
-    dynamic.optional_field("source", decode__auth_challenge_source)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use origin <- result.try(
-    dynamic.field("origin", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use scheme <- result.try(
-    dynamic.field("scheme", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use realm <- result.try(
-    dynamic.field("realm", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use source <- result.try(dynamic.optional_field(
+    "source",
+    decode__auth_challenge_source,
+  )(value__))
+  use origin <- result.try(dynamic.field("origin", dynamic.string)(value__))
+  use scheme <- result.try(dynamic.field("scheme", dynamic.string)(value__))
+  use realm <- result.try(dynamic.field("realm", dynamic.string)(value__))
 
-  AuthChallenge(source: source, origin: origin, scheme: scheme, realm: realm)
+  Ok(AuthChallenge(source: source, origin: origin, scheme: scheme, realm: realm))
 }
 
 /// Response to an AuthChallenge.
@@ -253,7 +250,15 @@ pub fn decode__auth_challenge_response_response(value__: dynamic.Dynamic) {
     Ok("CancelAuth") -> Ok(AuthChallengeResponseResponseCancelAuth)
     Ok("ProvideCredentials") ->
       Ok(AuthChallengeResponseResponseProvideCredentials)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -278,22 +283,20 @@ pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
 
 @internal
 pub fn decode__auth_challenge_response(value__: dynamic.Dynamic) {
-  use response <- result.try(
-    dynamic.field("response", decode__auth_challenge_response_response)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use username <- result.try(
-    dynamic.optional_field("username", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use password <- result.try(
-    dynamic.optional_field("password", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use response <- result.try(dynamic.field(
+    "response",
+    decode__auth_challenge_response_response,
+  )(value__))
+  use username <- result.try(dynamic.optional_field("username", dynamic.string)(
+    value__,
+  ))
+  use password <- result.try(dynamic.optional_field("password", dynamic.string)(
+    value__,
+  ))
 
-  AuthChallengeResponse(
+  Ok(AuthChallengeResponse(
     response: response,
     username: username,
     password: password,
-  )
+  ))
 }

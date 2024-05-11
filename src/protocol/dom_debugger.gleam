@@ -11,7 +11,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -42,7 +41,15 @@ pub fn decode__dom_breakpoint_type(value__: dynamic.Dynamic) {
     Ok("subtree-modified") -> Ok(DOMBreakpointTypeSubtreeModified)
     Ok("attribute-modified") -> Ok(DOMBreakpointTypeAttributeModified)
     Ok("node-removed") -> Ok(DOMBreakpointTypeNodeRemoved)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -95,52 +102,36 @@ pub fn encode__event_listener(value__: EventListener) {
 
 @internal
 pub fn decode__event_listener(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use use_capture <- result.try(
-    dynamic.field("useCapture", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use passive <- result.try(
-    dynamic.field("passive", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use once <- result.try(
-    dynamic.field("once", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use script_id <- result.try(
-    dynamic.field("scriptId", runtime.decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use column_number <- result.try(
-    dynamic.field("columnNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use handler <- result.try(
-    dynamic.optional_field("handler", runtime.decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use original_handler <- result.try(
-    dynamic.optional_field("originalHandler", runtime.decode__remote_object)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use backend_node_id <- result.try(
-    dynamic.optional_field("backendNodeId", dom.decode__backend_node_id)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", dynamic.string)(value__))
+  use use_capture <- result.try(dynamic.field("useCapture", dynamic.bool)(
+    value__,
+  ))
+  use passive <- result.try(dynamic.field("passive", dynamic.bool)(value__))
+  use once <- result.try(dynamic.field("once", dynamic.bool)(value__))
+  use script_id <- result.try(dynamic.field(
+    "scriptId",
+    runtime.decode__script_id,
+  )(value__))
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
+    value__,
+  ))
+  use column_number <- result.try(dynamic.field("columnNumber", dynamic.int)(
+    value__,
+  ))
+  use handler <- result.try(dynamic.optional_field(
+    "handler",
+    runtime.decode__remote_object,
+  )(value__))
+  use original_handler <- result.try(dynamic.optional_field(
+    "originalHandler",
+    runtime.decode__remote_object,
+  )(value__))
+  use backend_node_id <- result.try(dynamic.optional_field(
+    "backendNodeId",
+    dom.decode__backend_node_id,
+  )(value__))
 
-  EventListener(
+  Ok(EventListener(
     type_: type_,
     use_capture: use_capture,
     passive: passive,
@@ -151,5 +142,5 @@ pub fn decode__event_listener(value__: dynamic.Dynamic) {
     handler: handler,
     original_handler: original_handler,
     backend_node_id: backend_node_id,
-  )
+  ))
 }

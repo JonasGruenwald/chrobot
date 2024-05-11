@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -31,7 +30,6 @@ pub fn encode__target_id(value__: TargetID) {
 pub fn decode__target_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(TargetID, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Unique identifier of attached debugging session.
@@ -50,7 +48,6 @@ pub fn encode__session_id(value__: SessionID) {
 pub fn decode__session_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(SessionID, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 pub type TargetInfo {
@@ -83,37 +80,24 @@ pub fn encode__target_info(value__: TargetInfo) {
 
 @internal
 pub fn decode__target_info(value__: dynamic.Dynamic) {
-  use target_id <- result.try(
-    dynamic.field("targetId", decode__target_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use type_ <- result.try(
-    dynamic.field("type", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use title <- result.try(
-    dynamic.field("title", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use url <- result.try(
-    dynamic.field("url", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use attached <- result.try(
-    dynamic.field("attached", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use opener_id <- result.try(
-    dynamic.optional_field("openerId", decode__target_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
+    value__,
+  ))
+  use type_ <- result.try(dynamic.field("type", dynamic.string)(value__))
+  use title <- result.try(dynamic.field("title", dynamic.string)(value__))
+  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
+  use attached <- result.try(dynamic.field("attached", dynamic.bool)(value__))
+  use opener_id <- result.try(dynamic.optional_field(
+    "openerId",
+    decode__target_id,
+  )(value__))
 
-  TargetInfo(
+  Ok(TargetInfo(
     target_id: target_id,
     type_: type_,
     title: title,
     url: url,
     attached: attached,
     opener_id: opener_id,
-  )
+  ))
 }

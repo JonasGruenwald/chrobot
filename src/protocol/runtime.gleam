@@ -14,7 +14,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dict
 import gleam/dynamic
 import gleam/json
@@ -38,7 +37,6 @@ pub fn encode__script_id(value__: ScriptId) {
 pub fn decode__script_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(ScriptId, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
@@ -74,7 +72,15 @@ pub fn decode__serialization_options_serialization(value__: dynamic.Dynamic) {
     Ok("deep") -> Ok(SerializationOptionsSerializationDeep)
     Ok("json") -> Ok(SerializationOptionsSerializationJson)
     Ok("idOnly") -> Ok(SerializationOptionsSerializationIdOnly)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -105,29 +111,23 @@ pub fn encode__serialization_options(value__: SerializationOptions) {
 
 @internal
 pub fn decode__serialization_options(value__: dynamic.Dynamic) {
-  use serialization <- result.try(
-    dynamic.field("serialization", decode__serialization_options_serialization)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use max_depth <- result.try(
-    dynamic.optional_field("maxDepth", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use additional_parameters <- result.try(
-    dynamic.optional_field(
-      "additionalParameters",
-      dynamic.dict(dynamic.string, dynamic.string),
-    )(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use serialization <- result.try(dynamic.field(
+    "serialization",
+    decode__serialization_options_serialization,
+  )(value__))
+  use max_depth <- result.try(dynamic.optional_field("maxDepth", dynamic.int)(
+    value__,
+  ))
+  use additional_parameters <- result.try(dynamic.optional_field(
+    "additionalParameters",
+    dynamic.dict(dynamic.string, dynamic.string),
+  )(value__))
 
-  SerializationOptions(
+  Ok(SerializationOptions(
     serialization: serialization,
     max_depth: max_depth,
     additional_parameters: additional_parameters,
-  )
+  ))
 }
 
 /// Represents deep serialized value.
@@ -227,7 +227,15 @@ pub fn decode__deep_serialized_value_type(value__: dynamic.Dynamic) {
     Ok("node") -> Ok(DeepSerializedValueTypeNode)
     Ok("window") -> Ok(DeepSerializedValueTypeWindow)
     Ok("generator") -> Ok(DeepSerializedValueTypeGenerator)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -261,29 +269,27 @@ pub fn encode__deep_serialized_value(value__: DeepSerializedValue) {
 
 @internal
 pub fn decode__deep_serialized_value(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__deep_serialized_value_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.optional_field("value", dynamic.dynamic)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use object_id <- result.try(
-    dynamic.optional_field("objectId", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use weak_local_object_reference <- result.try(
-    dynamic.optional_field("weakLocalObjectReference", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field(
+    "type",
+    decode__deep_serialized_value_type,
+  )(value__))
+  use value <- result.try(dynamic.optional_field("value", dynamic.dynamic)(
+    value__,
+  ))
+  use object_id <- result.try(dynamic.optional_field("objectId", dynamic.string)(
+    value__,
+  ))
+  use weak_local_object_reference <- result.try(dynamic.optional_field(
+    "weakLocalObjectReference",
+    dynamic.int,
+  )(value__))
 
-  DeepSerializedValue(
+  Ok(DeepSerializedValue(
     type_: type_,
     value: value,
     object_id: object_id,
     weak_local_object_reference: weak_local_object_reference,
-  )
+  ))
 }
 
 /// Unique object identifier.
@@ -302,7 +308,6 @@ pub fn encode__remote_object_id(value__: RemoteObjectId) {
 pub fn decode__remote_object_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(RemoteObjectId, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
@@ -322,7 +327,6 @@ pub fn encode__unserializable_value(value__: UnserializableValue) {
 pub fn decode__unserializable_value(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(UnserializableValue, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Mirror object referencing original JavaScript object.
@@ -377,7 +381,15 @@ pub fn decode__remote_object_type(value__: dynamic.Dynamic) {
     Ok("boolean") -> Ok(RemoteObjectTypeBoolean)
     Ok("symbol") -> Ok(RemoteObjectTypeSymbol)
     Ok("bigint") -> Ok(RemoteObjectTypeBigint)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -453,7 +465,15 @@ pub fn decode__remote_object_subtype(value__: dynamic.Dynamic) {
     Ok("dataview") -> Ok(RemoteObjectSubtypeDataview)
     Ok("webassemblymemory") -> Ok(RemoteObjectSubtypeWebassemblymemory)
     Ok("wasmvalue") -> Ok(RemoteObjectSubtypeWasmvalue)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -505,38 +525,34 @@ pub fn encode__remote_object(value__: RemoteObject) {
 
 @internal
 pub fn decode__remote_object(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__remote_object_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use subtype <- result.try(
-    dynamic.optional_field("subtype", decode__remote_object_subtype)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use class_name <- result.try(
-    dynamic.optional_field("className", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.optional_field("value", dynamic.dynamic)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use unserializable_value <- result.try(
-    dynamic.optional_field("unserializableValue", decode__unserializable_value)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use description <- result.try(
-    dynamic.optional_field("description", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use object_id <- result.try(
-    dynamic.optional_field("objectId", decode__remote_object_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", decode__remote_object_type)(
+    value__,
+  ))
+  use subtype <- result.try(dynamic.optional_field(
+    "subtype",
+    decode__remote_object_subtype,
+  )(value__))
+  use class_name <- result.try(dynamic.optional_field(
+    "className",
+    dynamic.string,
+  )(value__))
+  use value <- result.try(dynamic.optional_field("value", dynamic.dynamic)(
+    value__,
+  ))
+  use unserializable_value <- result.try(dynamic.optional_field(
+    "unserializableValue",
+    decode__unserializable_value,
+  )(value__))
+  use description <- result.try(dynamic.optional_field(
+    "description",
+    dynamic.string,
+  )(value__))
+  use object_id <- result.try(dynamic.optional_field(
+    "objectId",
+    decode__remote_object_id,
+  )(value__))
 
-  RemoteObject(
+  Ok(RemoteObject(
     type_: type_,
     subtype: subtype,
     class_name: class_name,
@@ -544,7 +560,7 @@ pub fn decode__remote_object(value__: dynamic.Dynamic) {
     unserializable_value: unserializable_value,
     description: description,
     object_id: object_id,
-  )
+  ))
 }
 
 /// Object property descriptor.
@@ -616,48 +632,37 @@ pub fn encode__property_descriptor(value__: PropertyDescriptor) {
 
 @internal
 pub fn decode__property_descriptor(value__: dynamic.Dynamic) {
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.optional_field("value", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use writable <- result.try(
-    dynamic.optional_field("writable", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use get <- result.try(
-    dynamic.optional_field("get", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use set <- result.try(
-    dynamic.optional_field("set", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use configurable <- result.try(
-    dynamic.field("configurable", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use enumerable <- result.try(
-    dynamic.field("enumerable", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use was_thrown <- result.try(
-    dynamic.optional_field("wasThrown", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use is_own <- result.try(
-    dynamic.optional_field("isOwn", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use symbol <- result.try(
-    dynamic.optional_field("symbol", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.optional_field("value", decode__remote_object)(
+    value__,
+  ))
+  use writable <- result.try(dynamic.optional_field("writable", dynamic.bool)(
+    value__,
+  ))
+  use get <- result.try(dynamic.optional_field("get", decode__remote_object)(
+    value__,
+  ))
+  use set <- result.try(dynamic.optional_field("set", decode__remote_object)(
+    value__,
+  ))
+  use configurable <- result.try(dynamic.field("configurable", dynamic.bool)(
+    value__,
+  ))
+  use enumerable <- result.try(dynamic.field("enumerable", dynamic.bool)(
+    value__,
+  ))
+  use was_thrown <- result.try(dynamic.optional_field("wasThrown", dynamic.bool)(
+    value__,
+  ))
+  use is_own <- result.try(dynamic.optional_field("isOwn", dynamic.bool)(
+    value__,
+  ))
+  use symbol <- result.try(dynamic.optional_field(
+    "symbol",
+    decode__remote_object,
+  )(value__))
 
-  PropertyDescriptor(
+  Ok(PropertyDescriptor(
     name: name,
     value: value,
     writable: writable,
@@ -668,7 +673,7 @@ pub fn decode__property_descriptor(value__: dynamic.Dynamic) {
     was_thrown: was_thrown,
     is_own: is_own,
     symbol: symbol,
-  )
+  ))
 }
 
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
@@ -691,16 +696,12 @@ pub fn encode__internal_property_descriptor(value__: InternalPropertyDescriptor)
 
 @internal
 pub fn decode__internal_property_descriptor(value__: dynamic.Dynamic) {
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.optional_field("value", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.optional_field("value", decode__remote_object)(
+    value__,
+  ))
 
-  InternalPropertyDescriptor(name: name, value: value)
+  Ok(InternalPropertyDescriptor(name: name, value: value))
 }
 
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
@@ -742,26 +743,23 @@ pub fn encode__call_argument(value__: CallArgument) {
 
 @internal
 pub fn decode__call_argument(value__: dynamic.Dynamic) {
-  use value <- result.try(
-    dynamic.optional_field("value", dynamic.dynamic)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use unserializable_value <- result.try(
-    dynamic.optional_field("unserializableValue", decode__unserializable_value)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use object_id <- result.try(
-    dynamic.optional_field("objectId", decode__remote_object_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use value <- result.try(dynamic.optional_field("value", dynamic.dynamic)(
+    value__,
+  ))
+  use unserializable_value <- result.try(dynamic.optional_field(
+    "unserializableValue",
+    decode__unserializable_value,
+  )(value__))
+  use object_id <- result.try(dynamic.optional_field(
+    "objectId",
+    decode__remote_object_id,
+  )(value__))
 
-  CallArgument(
+  Ok(CallArgument(
     value: value,
     unserializable_value: unserializable_value,
     object_id: object_id,
-  )
+  ))
 }
 
 /// Id of an execution context.
@@ -780,7 +778,6 @@ pub fn encode__execution_context_id(value__: ExecutionContextId) {
 pub fn decode__execution_context_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(ExecutionContextId, dynamic.int)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Description of an isolated world.
@@ -813,32 +810,22 @@ pub fn encode__execution_context_description(value__: ExecutionContextDescriptio
 
 @internal
 pub fn decode__execution_context_description(value__: dynamic.Dynamic) {
-  use id <- result.try(
-    dynamic.field("id", decode__execution_context_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use origin <- result.try(
-    dynamic.field("origin", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use aux_data <- result.try(
-    dynamic.optional_field(
-      "auxData",
-      dynamic.dict(dynamic.string, dynamic.string),
-    )(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use id <- result.try(dynamic.field("id", decode__execution_context_id)(
+    value__,
+  ))
+  use origin <- result.try(dynamic.field("origin", dynamic.string)(value__))
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use aux_data <- result.try(dynamic.optional_field(
+    "auxData",
+    dynamic.dict(dynamic.string, dynamic.string),
+  )(value__))
 
-  ExecutionContextDescription(
+  Ok(ExecutionContextDescription(
     id: id,
     origin: origin,
     name: name,
     aux_data: aux_data,
-  )
+  ))
 }
 
 /// Detailed information about exception (or error) that was thrown during script compilation or
@@ -899,46 +886,35 @@ pub fn encode__exception_details(value__: ExceptionDetails) {
 
 @internal
 pub fn decode__exception_details(value__: dynamic.Dynamic) {
-  use exception_id <- result.try(
-    dynamic.field("exceptionId", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use text <- result.try(
-    dynamic.field("text", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use column_number <- result.try(
-    dynamic.field("columnNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use script_id <- result.try(
-    dynamic.optional_field("scriptId", decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use url <- result.try(
-    dynamic.optional_field("url", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use stack_trace <- result.try(
-    dynamic.optional_field("stackTrace", decode__stack_trace)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use exception <- result.try(
-    dynamic.optional_field("exception", decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use execution_context_id <- result.try(
-    dynamic.optional_field("executionContextId", decode__execution_context_id)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use exception_id <- result.try(dynamic.field("exceptionId", dynamic.int)(
+    value__,
+  ))
+  use text <- result.try(dynamic.field("text", dynamic.string)(value__))
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
+    value__,
+  ))
+  use column_number <- result.try(dynamic.field("columnNumber", dynamic.int)(
+    value__,
+  ))
+  use script_id <- result.try(dynamic.optional_field(
+    "scriptId",
+    decode__script_id,
+  )(value__))
+  use url <- result.try(dynamic.optional_field("url", dynamic.string)(value__))
+  use stack_trace <- result.try(dynamic.optional_field(
+    "stackTrace",
+    decode__stack_trace,
+  )(value__))
+  use exception <- result.try(dynamic.optional_field(
+    "exception",
+    decode__remote_object,
+  )(value__))
+  use execution_context_id <- result.try(dynamic.optional_field(
+    "executionContextId",
+    decode__execution_context_id,
+  )(value__))
 
-  ExceptionDetails(
+  Ok(ExceptionDetails(
     exception_id: exception_id,
     text: text,
     line_number: line_number,
@@ -948,7 +924,7 @@ pub fn decode__exception_details(value__: dynamic.Dynamic) {
     stack_trace: stack_trace,
     exception: exception,
     execution_context_id: execution_context_id,
-  )
+  ))
 }
 
 /// Number of milliseconds since epoch.
@@ -967,7 +943,6 @@ pub fn encode__timestamp(value__: Timestamp) {
 pub fn decode__timestamp(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(Timestamp, dynamic.float)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Number of milliseconds.
@@ -986,7 +961,6 @@ pub fn encode__time_delta(value__: TimeDelta) {
 pub fn decode__time_delta(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(TimeDelta, dynamic.float)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Stack entry for runtime errors and assertions.
@@ -1013,34 +987,27 @@ pub fn encode__call_frame(value__: CallFrame) {
 
 @internal
 pub fn decode__call_frame(value__: dynamic.Dynamic) {
-  use function_name <- result.try(
-    dynamic.field("functionName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use script_id <- result.try(
-    dynamic.field("scriptId", decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use url <- result.try(
-    dynamic.field("url", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use column_number <- result.try(
-    dynamic.field("columnNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use function_name <- result.try(dynamic.field("functionName", dynamic.string)(
+    value__,
+  ))
+  use script_id <- result.try(dynamic.field("scriptId", decode__script_id)(
+    value__,
+  ))
+  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
+    value__,
+  ))
+  use column_number <- result.try(dynamic.field("columnNumber", dynamic.int)(
+    value__,
+  ))
 
-  CallFrame(
+  Ok(CallFrame(
     function_name: function_name,
     script_id: script_id,
     url: url,
     line_number: line_number,
     column_number: column_number,
-  )
+  ))
 }
 
 /// Call frames for assertions or error messages.
@@ -1073,18 +1040,21 @@ pub fn encode__stack_trace(value__: StackTrace) {
 
 @internal
 pub fn decode__stack_trace(value__: dynamic.Dynamic) {
-  use description <- result.try(
-    dynamic.optional_field("description", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use call_frames <- result.try(
-    dynamic.field("callFrames", dynamic.list(decode__call_frame))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use parent <- result.try(
-    dynamic.optional_field("parent", decode__stack_trace)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use description <- result.try(dynamic.optional_field(
+    "description",
+    dynamic.string,
+  )(value__))
+  use call_frames <- result.try(dynamic.field(
+    "callFrames",
+    dynamic.list(decode__call_frame),
+  )(value__))
+  use parent <- result.try(dynamic.optional_field("parent", decode__stack_trace)(
+    value__,
+  ))
 
-  StackTrace(description: description, call_frames: call_frames, parent: parent)
+  Ok(StackTrace(
+    description: description,
+    call_frames: call_frames,
+    parent: parent,
+  ))
 }

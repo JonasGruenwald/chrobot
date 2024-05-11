@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -32,7 +31,6 @@ pub fn encode__certificate_id(value__: CertificateId) {
 pub fn decode__certificate_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(CertificateId, dynamic.int)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// A description of mixed content (HTTP resources on HTTPS pages), as defined by
@@ -59,7 +57,15 @@ pub fn decode__mixed_content_type(value__: dynamic.Dynamic) {
     Ok("blockable") -> Ok(MixedContentTypeBlockable)
     Ok("optionally-blockable") -> Ok(MixedContentTypeOptionallyBlockable)
     Ok("none") -> Ok(MixedContentTypeNone)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -95,7 +101,15 @@ pub fn decode__security_state(value__: dynamic.Dynamic) {
     Ok("secure") -> Ok(SecurityStateSecure)
     Ok("info") -> Ok(SecurityStateInfo)
     Ok("insecure-broken") -> Ok(SecurityStateInsecureBroken)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -135,36 +149,29 @@ pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
 
 @internal
 pub fn decode__security_state_explanation(value__: dynamic.Dynamic) {
-  use security_state <- result.try(
-    dynamic.field("securityState", decode__security_state)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use title <- result.try(
-    dynamic.field("title", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use summary <- result.try(
-    dynamic.field("summary", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use description <- result.try(
-    dynamic.field("description", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use mixed_content_type <- result.try(
-    dynamic.field("mixedContentType", decode__mixed_content_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use certificate <- result.try(
-    dynamic.field("certificate", dynamic.list(string))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use recommendations <- result.try(
-    dynamic.optional_field("recommendations", dynamic.list(string))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use security_state <- result.try(dynamic.field(
+    "securityState",
+    decode__security_state,
+  )(value__))
+  use title <- result.try(dynamic.field("title", dynamic.string)(value__))
+  use summary <- result.try(dynamic.field("summary", dynamic.string)(value__))
+  use description <- result.try(dynamic.field("description", dynamic.string)(
+    value__,
+  ))
+  use mixed_content_type <- result.try(dynamic.field(
+    "mixedContentType",
+    decode__mixed_content_type,
+  )(value__))
+  use certificate <- result.try(dynamic.field(
+    "certificate",
+    dynamic.list(dynamic.string),
+  )(value__))
+  use recommendations <- result.try(dynamic.optional_field(
+    "recommendations",
+    dynamic.list(dynamic.string),
+  )(value__))
 
-  SecurityStateExplanation(
+  Ok(SecurityStateExplanation(
     security_state: security_state,
     title: title,
     summary: summary,
@@ -172,7 +179,7 @@ pub fn decode__security_state_explanation(value__: dynamic.Dynamic) {
     mixed_content_type: mixed_content_type,
     certificate: certificate,
     recommendations: recommendations,
-  )
+  ))
 }
 
 /// The action to take when a certificate error occurs. continue will continue processing the
@@ -196,6 +203,14 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("continue") -> Ok(CertificateErrorActionContinue)
     Ok("cancel") -> Ok(CertificateErrorActionCancel)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }

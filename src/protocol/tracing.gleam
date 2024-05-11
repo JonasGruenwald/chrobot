@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -44,17 +43,17 @@ pub fn encode__trace_config(value__: TraceConfig) {
 
 @internal
 pub fn decode__trace_config(value__: dynamic.Dynamic) {
-  use included_categories <- result.try(
-    dynamic.optional_field("includedCategories", dynamic.list(string))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use excluded_categories <- result.try(
-    dynamic.optional_field("excludedCategories", dynamic.list(string))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use included_categories <- result.try(dynamic.optional_field(
+    "includedCategories",
+    dynamic.list(dynamic.string),
+  )(value__))
+  use excluded_categories <- result.try(dynamic.optional_field(
+    "excludedCategories",
+    dynamic.list(dynamic.string),
+  )(value__))
 
-  TraceConfig(
+  Ok(TraceConfig(
     included_categories: included_categories,
     excluded_categories: excluded_categories,
-  )
+  ))
 }

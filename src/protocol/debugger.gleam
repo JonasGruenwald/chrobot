@@ -11,7 +11,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -34,7 +33,6 @@ pub fn encode__breakpoint_id(value__: BreakpointId) {
 pub fn decode__breakpoint_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(BreakpointId, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Call frame identifier.
@@ -53,7 +51,6 @@ pub fn encode__call_frame_id(value__: CallFrameId) {
 pub fn decode__call_frame_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(CallFrameId, dynamic.string)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Location in the source code.
@@ -81,24 +78,23 @@ pub fn encode__location(value__: Location) {
 
 @internal
 pub fn decode__location(value__: dynamic.Dynamic) {
-  use script_id <- result.try(
-    dynamic.field("scriptId", runtime.decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use column_number <- result.try(
-    dynamic.optional_field("columnNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use script_id <- result.try(dynamic.field(
+    "scriptId",
+    runtime.decode__script_id,
+  )(value__))
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
+    value__,
+  ))
+  use column_number <- result.try(dynamic.optional_field(
+    "columnNumber",
+    dynamic.int,
+  )(value__))
 
-  Location(
+  Ok(Location(
     script_id: script_id,
     line_number: line_number,
     column_number: column_number,
-  )
+  ))
 }
 
 /// JavaScript call frame. Array of call frames form the call stack.
@@ -139,38 +135,33 @@ pub fn encode__call_frame(value__: CallFrame) {
 
 @internal
 pub fn decode__call_frame(value__: dynamic.Dynamic) {
-  use call_frame_id <- result.try(
-    dynamic.field("callFrameId", decode__call_frame_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use function_name <- result.try(
-    dynamic.field("functionName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use function_location <- result.try(
-    dynamic.optional_field("functionLocation", decode__location)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use location <- result.try(
-    dynamic.field("location", decode__location)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use scope_chain <- result.try(
-    dynamic.field("scopeChain", dynamic.list(decode__scope))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use this <- result.try(
-    dynamic.field("this", runtime.decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use return_value <- result.try(
-    dynamic.optional_field("returnValue", runtime.decode__remote_object)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use call_frame_id <- result.try(dynamic.field(
+    "callFrameId",
+    decode__call_frame_id,
+  )(value__))
+  use function_name <- result.try(dynamic.field("functionName", dynamic.string)(
+    value__,
+  ))
+  use function_location <- result.try(dynamic.optional_field(
+    "functionLocation",
+    decode__location,
+  )(value__))
+  use location <- result.try(dynamic.field("location", decode__location)(
+    value__,
+  ))
+  use scope_chain <- result.try(dynamic.field(
+    "scopeChain",
+    dynamic.list(decode__scope),
+  )(value__))
+  use this <- result.try(dynamic.field("this", runtime.decode__remote_object)(
+    value__,
+  ))
+  use return_value <- result.try(dynamic.optional_field(
+    "returnValue",
+    runtime.decode__remote_object,
+  )(value__))
 
-  CallFrame(
+  Ok(CallFrame(
     call_frame_id: call_frame_id,
     function_name: function_name,
     function_location: function_location,
@@ -178,7 +169,7 @@ pub fn decode__call_frame(value__: dynamic.Dynamic) {
     scope_chain: scope_chain,
     this: this,
     return_value: return_value,
-  )
+  ))
 }
 
 /// Scope description.
@@ -237,7 +228,15 @@ pub fn decode__scope_type(value__: dynamic.Dynamic) {
     Ok("eval") -> Ok(ScopeTypeEval)
     Ok("module") -> Ok(ScopeTypeModule)
     Ok("wasm-expression-stack") -> Ok(ScopeTypeWasmExpressionStack)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -269,34 +268,28 @@ pub fn encode__scope(value__: Scope) {
 
 @internal
 pub fn decode__scope(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__scope_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use object <- result.try(
-    dynamic.field("object", runtime.decode__remote_object)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use name <- result.try(
-    dynamic.optional_field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use start_location <- result.try(
-    dynamic.optional_field("startLocation", decode__location)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use end_location <- result.try(
-    dynamic.optional_field("endLocation", decode__location)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", decode__scope_type)(value__))
+  use object <- result.try(dynamic.field(
+    "object",
+    runtime.decode__remote_object,
+  )(value__))
+  use name <- result.try(dynamic.optional_field("name", dynamic.string)(value__))
+  use start_location <- result.try(dynamic.optional_field(
+    "startLocation",
+    decode__location,
+  )(value__))
+  use end_location <- result.try(dynamic.optional_field(
+    "endLocation",
+    decode__location,
+  )(value__))
 
-  Scope(
+  Ok(Scope(
     type_: type_,
     object: object,
     name: name,
     start_location: start_location,
     end_location: end_location,
-  )
+  ))
 }
 
 /// Search match for resource.
@@ -314,16 +307,14 @@ pub fn encode__search_match(value__: SearchMatch) {
 
 @internal
 pub fn decode__search_match(value__: dynamic.Dynamic) {
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_content <- result.try(
-    dynamic.field("lineContent", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.float)(
+    value__,
+  ))
+  use line_content <- result.try(dynamic.field("lineContent", dynamic.string)(
+    value__,
+  ))
 
-  SearchMatch(line_number: line_number, line_content: line_content)
+  Ok(SearchMatch(line_number: line_number, line_content: line_content))
 }
 
 pub type BreakLocation {
@@ -359,7 +350,15 @@ pub fn decode__break_location_type(value__: dynamic.Dynamic) {
     Ok("debuggerStatement") -> Ok(BreakLocationTypeDebuggerStatement)
     Ok("call") -> Ok(BreakLocationTypeCall)
     Ok("return") -> Ok(BreakLocationTypeReturn)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -385,29 +384,28 @@ pub fn encode__break_location(value__: BreakLocation) {
 
 @internal
 pub fn decode__break_location(value__: dynamic.Dynamic) {
-  use script_id <- result.try(
-    dynamic.field("scriptId", runtime.decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use line_number <- result.try(
-    dynamic.field("lineNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use column_number <- result.try(
-    dynamic.optional_field("columnNumber", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use type_ <- result.try(
-    dynamic.optional_field("type", decode__break_location_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use script_id <- result.try(dynamic.field(
+    "scriptId",
+    runtime.decode__script_id,
+  )(value__))
+  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
+    value__,
+  ))
+  use column_number <- result.try(dynamic.optional_field(
+    "columnNumber",
+    dynamic.int,
+  )(value__))
+  use type_ <- result.try(dynamic.optional_field(
+    "type",
+    decode__break_location_type,
+  )(value__))
 
-  BreakLocation(
+  Ok(BreakLocation(
     script_id: script_id,
     line_number: line_number,
     column_number: column_number,
     type_: type_,
-  )
+  ))
 }
 
 /// Enum of possible script languages.
@@ -430,7 +428,15 @@ pub fn decode__script_language(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("JavaScript") -> Ok(ScriptLanguageJavaScript)
     Ok("WebAssembly") -> Ok(ScriptLanguageWebAssembly)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -466,7 +472,15 @@ pub fn decode__debug_symbols_type(value__: dynamic.Dynamic) {
     Ok("SourceMap") -> Ok(DebugSymbolsTypeSourceMap)
     Ok("EmbeddedDWARF") -> Ok(DebugSymbolsTypeEmbeddedDwarf)
     Ok("ExternalDWARF") -> Ok(DebugSymbolsTypeExternalDwarf)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -485,14 +499,13 @@ pub fn encode__debug_symbols(value__: DebugSymbols) {
 
 @internal
 pub fn decode__debug_symbols(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__debug_symbols_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use external_url <- result.try(
-    dynamic.optional_field("externalURL", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", decode__debug_symbols_type)(
+    value__,
+  ))
+  use external_url <- result.try(dynamic.optional_field(
+    "externalURL",
+    dynamic.string,
+  )(value__))
 
-  DebugSymbols(type_: type_, external_url: external_url)
+  Ok(DebugSymbols(type_: type_, external_url: external_url))
 }

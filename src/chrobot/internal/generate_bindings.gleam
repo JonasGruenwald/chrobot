@@ -964,14 +964,6 @@ fn internal_fn(name: String, params: String, body: String) {
   "@internal\npub fn " <> name <> "(\n" <> params <> ") {\n" <> body <> "}\n"
 }
 
-fn decoder_fn(name: String, params: String, body: String) {
-  internal_fn(
-    name,
-    params,
-    body <> "|> result.replace_error(chrome.ProtocolError)\n",
-  )
-}
-
 fn get_internal_function_name(internal_descriptor: String, type_name: String) {
   case string.split(type_name, ".") {
     [val] -> internal_descriptor <> "__" <> snake_case(val)
@@ -1027,7 +1019,7 @@ pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
       <> pascal_case(current)
       <> ")\n"
     })
-      <> "_ -> Error(chrome.ProtocolError)\n"
+      <> "Error(error) -> Error(error)\nOk(other) -> Error([dynamic.DecodeError(expected: \"valid enum property\", found:other, path: [\"enum decoder\"])])"
       <> "}\n",
   )
 }
@@ -1198,7 +1190,7 @@ fn gen_property_decoder(
       "dynamic." <> to_gleam_primitive_function(type_name)
     }
     ArrayType(PrimitiveItem(type_name)) -> {
-      "dynamic.list(" <> to_gleam_primitive_function(type_name) <> ")"
+      "dynamic.list(dynamic." <> to_gleam_primitive_function(type_name) <> ")"
     }
     ArrayType(ReferenceItem(ref_target)) -> {
       "dynamic.list(" <> get_decoder_name(ref_target) <> ")"
@@ -1221,7 +1213,6 @@ fn gen_property_decoder(
 /// gleam```
 ///   use width <- result.try(
 ///    dynamic.field("field", dynamic.int)(value__)
-///    |> result.replace_error(chrome.ProtocolError)
 ///  )
 /// ```
 /// This is to be inserted into the function body of an object decoder function
@@ -1238,14 +1229,14 @@ fn gen_object_property_decoder(root_name: String, prop_def: PropertyDefinition) 
   <> prop_def.name
   <> "\","
   <> gen_property_decoder(root_name, prop_def.name, prop_def.inner)
-  <> ")(value__)|> result.replace_error(chrome.ProtocolError))\n"
+  <> ")(value__))\n"
 }
 
 fn gen_type_def_decoder(type_def: TypeDefinition) {
   case type_def.inner {
     PrimitiveType(primitive_type) -> {
       get_decoder_name(type_def.id)
-      |> decoder_fn(
+      |> internal_fn(
         "value__: dynamic.Dynamic",
         "value__ |> dynamic.decode1("
           <> type_def.id
@@ -1259,7 +1250,7 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
     }
     ArrayType(items: PrimitiveItem(primitive_type)) -> {
       get_decoder_name(type_def.id)
-      |> decoder_fn(
+      |> internal_fn(
         "value__: dynamic.Dynamic",
         "value__ |> dynamic.decode1("
           <> type_def.id
@@ -1276,7 +1267,8 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
         |> string.join("")
 
       let return_statement =
-        type_def.id
+        "Ok("
+        <> type_def.id
         <> "(\n"
         <> {
           list.map(properties, fn(p) {
@@ -1284,7 +1276,7 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
           })
           |> string.join("")
         }
-        <> ")"
+        <> "))"
 
       get_decoder_name(type_def.id)
       |> internal_fn(
@@ -1294,7 +1286,7 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
     }
     ObjectType(None) -> {
       get_decoder_name(type_def.id)
-      |> decoder_fn(
+      |> internal_fn(
         "value__: dynamic.Dynamic",
         "value__ |> dynamic.decode1("
           <> type_def.id

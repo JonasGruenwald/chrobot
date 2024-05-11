@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/result
@@ -50,7 +49,15 @@ pub fn decode__screen_orientation_type(value__: dynamic.Dynamic) {
     Ok("portraitSecondary") -> Ok(ScreenOrientationTypePortraitSecondary)
     Ok("landscapePrimary") -> Ok(ScreenOrientationTypeLandscapePrimary)
     Ok("landscapeSecondary") -> Ok(ScreenOrientationTypeLandscapeSecondary)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -64,16 +71,12 @@ pub fn encode__screen_orientation(value__: ScreenOrientation) {
 
 @internal
 pub fn decode__screen_orientation(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__screen_orientation_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use angle <- result.try(
-    dynamic.field("angle", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", decode__screen_orientation_type)(
+    value__,
+  ))
+  use angle <- result.try(dynamic.field("angle", dynamic.int)(value__))
 
-  ScreenOrientation(type_: type_, angle: angle)
+  Ok(ScreenOrientation(type_: type_, angle: angle))
 }
 
 pub type DisplayFeature {
@@ -105,7 +108,15 @@ pub fn decode__display_feature_orientation(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("vertical") -> Ok(DisplayFeatureOrientationVertical)
     Ok("horizontal") -> Ok(DisplayFeatureOrientationHorizontal)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -120,24 +131,20 @@ pub fn encode__display_feature(value__: DisplayFeature) {
 
 @internal
 pub fn decode__display_feature(value__: dynamic.Dynamic) {
-  use orientation <- result.try(
-    dynamic.field("orientation", decode__display_feature_orientation)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use offset <- result.try(
-    dynamic.field("offset", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use mask_length <- result.try(
-    dynamic.field("maskLength", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use orientation <- result.try(dynamic.field(
+    "orientation",
+    decode__display_feature_orientation,
+  )(value__))
+  use offset <- result.try(dynamic.field("offset", dynamic.int)(value__))
+  use mask_length <- result.try(dynamic.field("maskLength", dynamic.int)(
+    value__,
+  ))
 
-  DisplayFeature(
+  Ok(DisplayFeature(
     orientation: orientation,
     offset: offset,
     mask_length: mask_length,
-  )
+  ))
 }
 
 pub type DevicePosture {
@@ -165,7 +172,15 @@ pub fn decode__device_posture_type(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("continuous") -> Ok(DevicePostureTypeContinuous)
     Ok("folded") -> Ok(DevicePostureTypeFolded)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -176,12 +191,11 @@ pub fn encode__device_posture(value__: DevicePosture) {
 
 @internal
 pub fn decode__device_posture(value__: dynamic.Dynamic) {
-  use type_ <- result.try(
-    dynamic.field("type", decode__device_posture_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use type_ <- result.try(dynamic.field("type", decode__device_posture_type)(
+    value__,
+  ))
 
-  DevicePosture(type_: type_)
+  Ok(DevicePosture(type_: type_))
 }
 
 pub type MediaFeature {
@@ -198,14 +212,8 @@ pub fn encode__media_feature(value__: MediaFeature) {
 
 @internal
 pub fn decode__media_feature(value__: dynamic.Dynamic) {
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.field("value", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
 
-  MediaFeature(name: name, value: value)
+  Ok(MediaFeature(name: name, value: value))
 }

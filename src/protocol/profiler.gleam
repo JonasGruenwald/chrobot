@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -65,42 +64,35 @@ pub fn encode__profile_node(value__: ProfileNode) {
 
 @internal
 pub fn decode__profile_node(value__: dynamic.Dynamic) {
-  use id <- result.try(
-    dynamic.field("id", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use call_frame <- result.try(
-    dynamic.field("callFrame", runtime.decode__call_frame)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use hit_count <- result.try(
-    dynamic.optional_field("hitCount", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use children <- result.try(
-    dynamic.optional_field("children", dynamic.list(int))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use deopt_reason <- result.try(
-    dynamic.optional_field("deoptReason", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use position_ticks <- result.try(
-    dynamic.optional_field(
-      "positionTicks",
-      dynamic.list(decode__position_tick_info),
-    )(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use id <- result.try(dynamic.field("id", dynamic.int)(value__))
+  use call_frame <- result.try(dynamic.field(
+    "callFrame",
+    runtime.decode__call_frame,
+  )(value__))
+  use hit_count <- result.try(dynamic.optional_field("hitCount", dynamic.int)(
+    value__,
+  ))
+  use children <- result.try(dynamic.optional_field(
+    "children",
+    dynamic.list(dynamic.int),
+  )(value__))
+  use deopt_reason <- result.try(dynamic.optional_field(
+    "deoptReason",
+    dynamic.string,
+  )(value__))
+  use position_ticks <- result.try(dynamic.optional_field(
+    "positionTicks",
+    dynamic.list(decode__position_tick_info),
+  )(value__))
 
-  ProfileNode(
+  Ok(ProfileNode(
     id: id,
     call_frame: call_frame,
     hit_count: hit_count,
     children: children,
     deopt_reason: deopt_reason,
     position_ticks: position_ticks,
-  )
+  ))
 }
 
 /// Profile.
@@ -137,34 +129,30 @@ pub fn encode__profile(value__: Profile) {
 
 @internal
 pub fn decode__profile(value__: dynamic.Dynamic) {
-  use nodes <- result.try(
-    dynamic.field("nodes", dynamic.list(decode__profile_node))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use start_time <- result.try(
-    dynamic.field("startTime", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use end_time <- result.try(
-    dynamic.field("endTime", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use samples <- result.try(
-    dynamic.optional_field("samples", dynamic.list(int))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use time_deltas <- result.try(
-    dynamic.optional_field("timeDeltas", dynamic.list(int))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use nodes <- result.try(dynamic.field(
+    "nodes",
+    dynamic.list(decode__profile_node),
+  )(value__))
+  use start_time <- result.try(dynamic.field("startTime", dynamic.float)(
+    value__,
+  ))
+  use end_time <- result.try(dynamic.field("endTime", dynamic.float)(value__))
+  use samples <- result.try(dynamic.optional_field(
+    "samples",
+    dynamic.list(dynamic.int),
+  )(value__))
+  use time_deltas <- result.try(dynamic.optional_field(
+    "timeDeltas",
+    dynamic.list(dynamic.int),
+  )(value__))
 
-  Profile(
+  Ok(Profile(
     nodes: nodes,
     start_time: start_time,
     end_time: end_time,
     samples: samples,
     time_deltas: time_deltas,
-  )
+  ))
 }
 
 /// Specifies a number of samples attributed to a certain source position.
@@ -182,16 +170,10 @@ pub fn encode__position_tick_info(value__: PositionTickInfo) {
 
 @internal
 pub fn decode__position_tick_info(value__: dynamic.Dynamic) {
-  use line <- result.try(
-    dynamic.field("line", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use ticks <- result.try(
-    dynamic.field("ticks", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use line <- result.try(dynamic.field("line", dynamic.int)(value__))
+  use ticks <- result.try(dynamic.field("ticks", dynamic.int)(value__))
 
-  PositionTickInfo(line: line, ticks: ticks)
+  Ok(PositionTickInfo(line: line, ticks: ticks))
 }
 
 /// Coverage data for a source range.
@@ -210,24 +192,17 @@ pub fn encode__coverage_range(value__: CoverageRange) {
 
 @internal
 pub fn decode__coverage_range(value__: dynamic.Dynamic) {
-  use start_offset <- result.try(
-    dynamic.field("startOffset", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use end_offset <- result.try(
-    dynamic.field("endOffset", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use count <- result.try(
-    dynamic.field("count", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use start_offset <- result.try(dynamic.field("startOffset", dynamic.int)(
+    value__,
+  ))
+  use end_offset <- result.try(dynamic.field("endOffset", dynamic.int)(value__))
+  use count <- result.try(dynamic.field("count", dynamic.int)(value__))
 
-  CoverageRange(
+  Ok(CoverageRange(
     start_offset: start_offset,
     end_offset: end_offset,
     count: count,
-  )
+  ))
 }
 
 /// Coverage data for a JavaScript function.
@@ -250,24 +225,23 @@ pub fn encode__function_coverage(value__: FunctionCoverage) {
 
 @internal
 pub fn decode__function_coverage(value__: dynamic.Dynamic) {
-  use function_name <- result.try(
-    dynamic.field("functionName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use ranges <- result.try(
-    dynamic.field("ranges", dynamic.list(decode__coverage_range))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use is_block_coverage <- result.try(
-    dynamic.field("isBlockCoverage", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use function_name <- result.try(dynamic.field("functionName", dynamic.string)(
+    value__,
+  ))
+  use ranges <- result.try(dynamic.field(
+    "ranges",
+    dynamic.list(decode__coverage_range),
+  )(value__))
+  use is_block_coverage <- result.try(dynamic.field(
+    "isBlockCoverage",
+    dynamic.bool,
+  )(value__))
 
-  FunctionCoverage(
+  Ok(FunctionCoverage(
     function_name: function_name,
     ranges: ranges,
     is_block_coverage: is_block_coverage,
-  )
+  ))
 }
 
 /// Coverage data for a JavaScript script.
@@ -290,18 +264,15 @@ pub fn encode__script_coverage(value__: ScriptCoverage) {
 
 @internal
 pub fn decode__script_coverage(value__: dynamic.Dynamic) {
-  use script_id <- result.try(
-    dynamic.field("scriptId", runtime.decode__script_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use url <- result.try(
-    dynamic.field("url", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use functions <- result.try(
-    dynamic.field("functions", dynamic.list(decode__function_coverage))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use script_id <- result.try(dynamic.field(
+    "scriptId",
+    runtime.decode__script_id,
+  )(value__))
+  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
+  use functions <- result.try(dynamic.field(
+    "functions",
+    dynamic.list(decode__function_coverage),
+  )(value__))
 
-  ScriptCoverage(script_id: script_id, url: url, functions: functions)
+  Ok(ScriptCoverage(script_id: script_id, url: url, functions: functions))
 }

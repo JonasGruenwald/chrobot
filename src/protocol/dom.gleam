@@ -16,7 +16,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -39,7 +38,6 @@ pub fn encode__node_id(value__: NodeId) {
 pub fn decode__node_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(NodeId, dynamic.int)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Unique DOM node identifier used to reference a node that may not have been pushed to the
@@ -59,7 +57,6 @@ pub fn encode__backend_node_id(value__: BackendNodeId) {
 pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(BackendNodeId, dynamic.int)
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Backend node with a friendly name.
@@ -78,24 +75,18 @@ pub fn encode__backend_node(value__: BackendNode) {
 
 @internal
 pub fn decode__backend_node(value__: dynamic.Dynamic) {
-  use node_type <- result.try(
-    dynamic.field("nodeType", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use node_name <- result.try(
-    dynamic.field("nodeName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use backend_node_id <- result.try(
-    dynamic.field("backendNodeId", decode__backend_node_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use node_type <- result.try(dynamic.field("nodeType", dynamic.int)(value__))
+  use node_name <- result.try(dynamic.field("nodeName", dynamic.string)(value__))
+  use backend_node_id <- result.try(dynamic.field(
+    "backendNodeId",
+    decode__backend_node_id,
+  )(value__))
 
-  BackendNode(
+  Ok(BackendNode(
     node_type: node_type,
     node_name: node_name,
     backend_node_id: backend_node_id,
-  )
+  ))
 }
 
 /// Pseudo element type.
@@ -193,7 +184,15 @@ pub fn decode__pseudo_type(value__: dynamic.Dynamic) {
     Ok("view-transition-image-pair") -> Ok(PseudoTypeViewTransitionImagePair)
     Ok("view-transition-old") -> Ok(PseudoTypeViewTransitionOld)
     Ok("view-transition-new") -> Ok(PseudoTypeViewTransitionNew)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -220,7 +219,15 @@ pub fn decode__shadow_root_type(value__: dynamic.Dynamic) {
     Ok("user-agent") -> Ok(ShadowRootTypeUserAgent)
     Ok("open") -> Ok(ShadowRootTypeOpen)
     Ok("closed") -> Ok(ShadowRootTypeClosed)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -247,7 +254,15 @@ pub fn decode__compatibility_mode(value__: dynamic.Dynamic) {
     Ok("QuirksMode") -> Ok(CompatibilityModeQuirksMode)
     Ok("LimitedQuirksMode") -> Ok(CompatibilityModeLimitedQuirksMode)
     Ok("NoQuirksMode") -> Ok(CompatibilityModeNoQuirksMode)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -274,7 +289,15 @@ pub fn decode__physical_axes(value__: dynamic.Dynamic) {
     Ok("Horizontal") -> Ok(PhysicalAxesHorizontal)
     Ok("Vertical") -> Ok(PhysicalAxesVertical)
     Ok("Both") -> Ok(PhysicalAxesBoth)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -301,7 +324,15 @@ pub fn decode__logical_axes(value__: dynamic.Dynamic) {
     Ok("Inline") -> Ok(LogicalAxesInline)
     Ok("Block") -> Ok(LogicalAxesBlock)
     Ok("Both") -> Ok(LogicalAxesBoth)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -325,7 +356,15 @@ pub fn decode__scroll_orientation(value__: dynamic.Dynamic) {
   case dynamic.string(value__) {
     Ok("horizontal") -> Ok(ScrollOrientationHorizontal)
     Ok("vertical") -> Ok(ScrollOrientationVertical)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -524,135 +563,108 @@ pub fn encode__node(value__: Node) {
 
 @internal
 pub fn decode__node(value__: dynamic.Dynamic) {
-  use node_id <- result.try(
-    dynamic.field("nodeId", decode__node_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use parent_id <- result.try(
-    dynamic.optional_field("parentId", decode__node_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use backend_node_id <- result.try(
-    dynamic.field("backendNodeId", decode__backend_node_id)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use node_type <- result.try(
-    dynamic.field("nodeType", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use node_name <- result.try(
-    dynamic.field("nodeName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use local_name <- result.try(
-    dynamic.field("localName", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use node_value <- result.try(
-    dynamic.field("nodeValue", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use child_node_count <- result.try(
-    dynamic.optional_field("childNodeCount", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use children <- result.try(
-    dynamic.optional_field("children", dynamic.list(decode__node))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use attributes <- result.try(
-    dynamic.optional_field("attributes", dynamic.list(string))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use document_url <- result.try(
-    dynamic.optional_field("documentURL", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use base_url <- result.try(
-    dynamic.optional_field("baseURL", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use public_id <- result.try(
-    dynamic.optional_field("publicId", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use system_id <- result.try(
-    dynamic.optional_field("systemId", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use internal_subset <- result.try(
-    dynamic.optional_field("internalSubset", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use xml_version <- result.try(
-    dynamic.optional_field("xmlVersion", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use name <- result.try(
-    dynamic.optional_field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.optional_field("value", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use pseudo_type <- result.try(
-    dynamic.optional_field("pseudoType", decode__pseudo_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use pseudo_identifier <- result.try(
-    dynamic.optional_field("pseudoIdentifier", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use shadow_root_type <- result.try(
-    dynamic.optional_field("shadowRootType", decode__shadow_root_type)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use frame_id <- result.try(
-    dynamic.optional_field("frameId", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use content_document <- result.try(
-    dynamic.optional_field("contentDocument", decode__node)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use shadow_roots <- result.try(
-    dynamic.optional_field("shadowRoots", dynamic.list(decode__node))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use template_content <- result.try(
-    dynamic.optional_field("templateContent", decode__node)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use pseudo_elements <- result.try(
-    dynamic.optional_field("pseudoElements", dynamic.list(decode__node))(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use distributed_nodes <- result.try(
-    dynamic.optional_field(
-      "distributedNodes",
-      dynamic.list(decode__backend_node),
-    )(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use is_svg <- result.try(
-    dynamic.optional_field("isSVG", dynamic.bool)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use compatibility_mode <- result.try(
-    dynamic.optional_field("compatibilityMode", decode__compatibility_mode)(
-      value__,
-    )
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use assigned_slot <- result.try(
-    dynamic.optional_field("assignedSlot", decode__backend_node)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+  use parent_id <- result.try(dynamic.optional_field(
+    "parentId",
+    decode__node_id,
+  )(value__))
+  use backend_node_id <- result.try(dynamic.field(
+    "backendNodeId",
+    decode__backend_node_id,
+  )(value__))
+  use node_type <- result.try(dynamic.field("nodeType", dynamic.int)(value__))
+  use node_name <- result.try(dynamic.field("nodeName", dynamic.string)(value__))
+  use local_name <- result.try(dynamic.field("localName", dynamic.string)(
+    value__,
+  ))
+  use node_value <- result.try(dynamic.field("nodeValue", dynamic.string)(
+    value__,
+  ))
+  use child_node_count <- result.try(dynamic.optional_field(
+    "childNodeCount",
+    dynamic.int,
+  )(value__))
+  use children <- result.try(dynamic.optional_field(
+    "children",
+    dynamic.list(decode__node),
+  )(value__))
+  use attributes <- result.try(dynamic.optional_field(
+    "attributes",
+    dynamic.list(dynamic.string),
+  )(value__))
+  use document_url <- result.try(dynamic.optional_field(
+    "documentURL",
+    dynamic.string,
+  )(value__))
+  use base_url <- result.try(dynamic.optional_field("baseURL", dynamic.string)(
+    value__,
+  ))
+  use public_id <- result.try(dynamic.optional_field("publicId", dynamic.string)(
+    value__,
+  ))
+  use system_id <- result.try(dynamic.optional_field("systemId", dynamic.string)(
+    value__,
+  ))
+  use internal_subset <- result.try(dynamic.optional_field(
+    "internalSubset",
+    dynamic.string,
+  )(value__))
+  use xml_version <- result.try(dynamic.optional_field(
+    "xmlVersion",
+    dynamic.string,
+  )(value__))
+  use name <- result.try(dynamic.optional_field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.optional_field("value", dynamic.string)(
+    value__,
+  ))
+  use pseudo_type <- result.try(dynamic.optional_field(
+    "pseudoType",
+    decode__pseudo_type,
+  )(value__))
+  use pseudo_identifier <- result.try(dynamic.optional_field(
+    "pseudoIdentifier",
+    dynamic.string,
+  )(value__))
+  use shadow_root_type <- result.try(dynamic.optional_field(
+    "shadowRootType",
+    decode__shadow_root_type,
+  )(value__))
+  use frame_id <- result.try(dynamic.optional_field("frameId", dynamic.string)(
+    value__,
+  ))
+  use content_document <- result.try(dynamic.optional_field(
+    "contentDocument",
+    decode__node,
+  )(value__))
+  use shadow_roots <- result.try(dynamic.optional_field(
+    "shadowRoots",
+    dynamic.list(decode__node),
+  )(value__))
+  use template_content <- result.try(dynamic.optional_field(
+    "templateContent",
+    decode__node,
+  )(value__))
+  use pseudo_elements <- result.try(dynamic.optional_field(
+    "pseudoElements",
+    dynamic.list(decode__node),
+  )(value__))
+  use distributed_nodes <- result.try(dynamic.optional_field(
+    "distributedNodes",
+    dynamic.list(decode__backend_node),
+  )(value__))
+  use is_svg <- result.try(dynamic.optional_field("isSVG", dynamic.bool)(
+    value__,
+  ))
+  use compatibility_mode <- result.try(dynamic.optional_field(
+    "compatibilityMode",
+    decode__compatibility_mode,
+  )(value__))
+  use assigned_slot <- result.try(dynamic.optional_field(
+    "assignedSlot",
+    decode__backend_node,
+  )(value__))
 
-  Node(
+  Ok(Node(
     node_id: node_id,
     parent_id: parent_id,
     backend_node_id: backend_node_id,
@@ -683,7 +695,7 @@ pub fn decode__node(value__: dynamic.Dynamic) {
     is_svg: is_svg,
     compatibility_mode: compatibility_mode,
     assigned_slot: assigned_slot,
-  )
+  ))
 }
 
 /// A structure holding an RGBA color.
@@ -708,24 +720,12 @@ pub fn encode__rgba(value__: RGBA) {
 
 @internal
 pub fn decode__rgba(value__: dynamic.Dynamic) {
-  use r <- result.try(
-    dynamic.field("r", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use g <- result.try(
-    dynamic.field("g", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use b <- result.try(
-    dynamic.field("b", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use a <- result.try(
-    dynamic.optional_field("a", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use r <- result.try(dynamic.field("r", dynamic.int)(value__))
+  use g <- result.try(dynamic.field("g", dynamic.int)(value__))
+  use b <- result.try(dynamic.field("b", dynamic.int)(value__))
+  use a <- result.try(dynamic.optional_field("a", dynamic.float)(value__))
 
-  RGBA(r: r, g: g, b: b, a: a)
+  Ok(RGBA(r: r, g: g, b: b, a: a))
 }
 
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
@@ -744,7 +744,6 @@ pub fn encode__quad(value__: Quad) {
 pub fn decode__quad(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(Quad, dynamic.list(dynamic.float))
-  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Box model.
@@ -780,36 +779,18 @@ pub fn encode__box_model(value__: BoxModel) {
 
 @internal
 pub fn decode__box_model(value__: dynamic.Dynamic) {
-  use content <- result.try(
-    dynamic.field("content", decode__quad)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use padding <- result.try(
-    dynamic.field("padding", decode__quad)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use border <- result.try(
-    dynamic.field("border", decode__quad)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use margin <- result.try(
-    dynamic.field("margin", decode__quad)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use width <- result.try(
-    dynamic.field("width", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use height <- result.try(
-    dynamic.field("height", dynamic.int)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use shape_outside <- result.try(
-    dynamic.optional_field("shapeOutside", decode__shape_outside_info)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use content <- result.try(dynamic.field("content", decode__quad)(value__))
+  use padding <- result.try(dynamic.field("padding", decode__quad)(value__))
+  use border <- result.try(dynamic.field("border", decode__quad)(value__))
+  use margin <- result.try(dynamic.field("margin", decode__quad)(value__))
+  use width <- result.try(dynamic.field("width", dynamic.int)(value__))
+  use height <- result.try(dynamic.field("height", dynamic.int)(value__))
+  use shape_outside <- result.try(dynamic.optional_field(
+    "shapeOutside",
+    decode__shape_outside_info,
+  )(value__))
 
-  BoxModel(
+  Ok(BoxModel(
     content: content,
     padding: padding,
     border: border,
@@ -817,7 +798,7 @@ pub fn decode__box_model(value__: dynamic.Dynamic) {
     width: width,
     height: height,
     shape_outside: shape_outside,
-  )
+  ))
 }
 
 /// CSS Shape Outside details.
@@ -848,20 +829,16 @@ pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
 
 @internal
 pub fn decode__shape_outside_info(value__: dynamic.Dynamic) {
-  use bounds <- result.try(
-    dynamic.field("bounds", decode__quad)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use shape <- result.try(
-    dynamic.field("shape", dynamic.list(dynamic))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use margin_shape <- result.try(
-    dynamic.field("marginShape", dynamic.list(dynamic))(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use bounds <- result.try(dynamic.field("bounds", decode__quad)(value__))
+  use shape <- result.try(dynamic.field("shape", dynamic.list(dynamic.dynamic))(
+    value__,
+  ))
+  use margin_shape <- result.try(dynamic.field(
+    "marginShape",
+    dynamic.list(dynamic.dynamic),
+  )(value__))
 
-  ShapeOutsideInfo(bounds: bounds, shape: shape, margin_shape: margin_shape)
+  Ok(ShapeOutsideInfo(bounds: bounds, shape: shape, margin_shape: margin_shape))
 }
 
 /// Rectangle.
@@ -881,24 +858,12 @@ pub fn encode__rect(value__: Rect) {
 
 @internal
 pub fn decode__rect(value__: dynamic.Dynamic) {
-  use x <- result.try(
-    dynamic.field("x", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use y <- result.try(
-    dynamic.field("y", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use width <- result.try(
-    dynamic.field("width", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use height <- result.try(
-    dynamic.field("height", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use x <- result.try(dynamic.field("x", dynamic.float)(value__))
+  use y <- result.try(dynamic.field("y", dynamic.float)(value__))
+  use width <- result.try(dynamic.field("width", dynamic.float)(value__))
+  use height <- result.try(dynamic.field("height", dynamic.float)(value__))
 
-  Rect(x: x, y: y, width: width, height: height)
+  Ok(Rect(x: x, y: y, width: width, height: height))
 }
 
 pub type CSSComputedStyleProperty {
@@ -915,14 +880,8 @@ pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
 
 @internal
 pub fn decode__css_computed_style_property(value__: dynamic.Dynamic) {
-  use name <- result.try(
-    dynamic.field("name", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use value <- result.try(
-    dynamic.field("value", dynamic.string)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
+  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
 
-  CSSComputedStyleProperty(name: name, value: value)
+  Ok(CSSComputedStyleProperty(name: name, value: value))
 }

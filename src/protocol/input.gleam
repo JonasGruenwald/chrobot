@@ -10,7 +10,6 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -82,44 +81,30 @@ pub fn encode__touch_point(value__: TouchPoint) {
 
 @internal
 pub fn decode__touch_point(value__: dynamic.Dynamic) {
-  use x <- result.try(
-    dynamic.field("x", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use y <- result.try(
-    dynamic.field("y", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use radius_x <- result.try(
-    dynamic.optional_field("radiusX", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use radius_y <- result.try(
-    dynamic.optional_field("radiusY", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use rotation_angle <- result.try(
-    dynamic.optional_field("rotationAngle", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use force <- result.try(
-    dynamic.optional_field("force", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use tilt_x <- result.try(
-    dynamic.optional_field("tiltX", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use tilt_y <- result.try(
-    dynamic.optional_field("tiltY", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
-  use id <- result.try(
-    dynamic.optional_field("id", dynamic.float)(value__)
-    |> result.replace_error(chrome.ProtocolError),
-  )
+  use x <- result.try(dynamic.field("x", dynamic.float)(value__))
+  use y <- result.try(dynamic.field("y", dynamic.float)(value__))
+  use radius_x <- result.try(dynamic.optional_field("radiusX", dynamic.float)(
+    value__,
+  ))
+  use radius_y <- result.try(dynamic.optional_field("radiusY", dynamic.float)(
+    value__,
+  ))
+  use rotation_angle <- result.try(dynamic.optional_field(
+    "rotationAngle",
+    dynamic.float,
+  )(value__))
+  use force <- result.try(dynamic.optional_field("force", dynamic.float)(
+    value__,
+  ))
+  use tilt_x <- result.try(dynamic.optional_field("tiltX", dynamic.float)(
+    value__,
+  ))
+  use tilt_y <- result.try(dynamic.optional_field("tiltY", dynamic.float)(
+    value__,
+  ))
+  use id <- result.try(dynamic.optional_field("id", dynamic.float)(value__))
 
-  TouchPoint(
+  Ok(TouchPoint(
     x: x,
     y: y,
     radius_x: radius_x,
@@ -129,7 +114,7 @@ pub fn decode__touch_point(value__: dynamic.Dynamic) {
     tilt_x: tilt_x,
     tilt_y: tilt_y,
     id: id,
-  )
+  ))
 }
 
 pub type MouseButton {
@@ -163,7 +148,15 @@ pub fn decode__mouse_button(value__: dynamic.Dynamic) {
     Ok("right") -> Ok(MouseButtonRight)
     Ok("back") -> Ok(MouseButtonBack)
     Ok("forward") -> Ok(MouseButtonForward)
-    _ -> Error(chrome.ProtocolError)
+    Error(error) -> Error(error)
+    Ok(other) ->
+      Error([
+        dynamic.DecodeError(
+          expected: "valid enum property",
+          found: other,
+          path: ["enum decoder"],
+        ),
+      ])
   }
 }
 
@@ -183,5 +176,4 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
 pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
   value__
   |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
-  |> result.replace_error(chrome.ProtocolError)
 }
