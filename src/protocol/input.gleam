@@ -130,6 +130,7 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
 
 @internal
 pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
-  dynamic.float(value__)
+  value__
+  |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
   |> result.replace_error(chrome.ProtocolError)
 }

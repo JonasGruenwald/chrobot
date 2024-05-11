@@ -37,7 +37,8 @@ pub fn encode__node_id(value__: NodeId) {
 
 @internal
 pub fn decode__node_id(value__: dynamic.Dynamic) {
-  dynamic.int(value__)
+  value__
+  |> dynamic.decode1(NodeId, dynamic.int)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -56,7 +57,8 @@ pub fn encode__backend_node_id(value__: BackendNodeId) {
 
 @internal
 pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
-  dynamic.int(value__)
+  value__
+  |> dynamic.decode1(BackendNodeId, dynamic.int)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -533,7 +535,13 @@ pub fn encode__quad(value__: Quad) {
   }
 }
 
-// TODO implement decoder for Array of primitives
+@internal
+pub fn decode__quad(value__: dynamic.Dynamic) {
+  value__
+  |> dynamic.decode1(Quad, dynamic.list(dynamic.float))
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Box model.
 pub type BoxModel {
   BoxModel(
@@ -581,13 +589,13 @@ pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
     #("bounds", encode__quad(value__.bounds)),
     #(
       "shape",
-      json.null(),
       // dynamic values cannot be encoded!
+      json.null(),
     ),
     #(
       "marginShape",
-      json.null(),
       // dynamic values cannot be encoded!
+      json.null(),
     ),
   ])
 }

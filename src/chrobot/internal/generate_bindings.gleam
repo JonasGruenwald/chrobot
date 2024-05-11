@@ -1045,7 +1045,7 @@ fn gen_property_encoder(
 ) {
   case value_type {
     PrimitiveType("any") -> {
-      "json.null() // dynamic values cannot be encoded!\n"
+      "// dynamic values cannot be encoded!\n json.null()\n"
     }
     PrimitiveType(type_name) -> {
       "json."
@@ -1055,7 +1055,7 @@ fn gen_property_encoder(
       <> ")"
     }
     ArrayType(PrimitiveItem("any")) -> {
-      "json.null() // dynamic values cannot be encoded!\n"
+      "// dynamic values cannot be encoded!\n json.null()\n"
     }
     ArrayType(PrimitiveItem(type_name)) -> {
       "json.array("
@@ -1192,14 +1192,26 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
       get_decoder_name(type_def.id)
       |> decoder_fn(
         "value__: dynamic.Dynamic",
-        "dynamic." <> to_gleam_primitive_function(primitive_type) <> "(value__)",
+        "value__ |> dynamic.decode1("
+          <> type_def.id
+          <> ", dynamic."
+          <> to_gleam_primitive_function(primitive_type)
+          <> ")",
       )
     }
     EnumType(enum) -> {
       gen_enum_decoder(type_def.id, enum)
     }
     ArrayType(items: PrimitiveItem(primitive_type)) -> {
-      "\n// TODO implement decoder for Array of primitives\n"
+      get_decoder_name(type_def.id)
+      |> decoder_fn(
+        "value__: dynamic.Dynamic",
+        "value__ |> dynamic.decode1("
+          <> type_def.id
+          <> ", dynamic.list(dynamic."
+          <> to_gleam_primitive_function(primitive_type)
+          <> "))",
+      )
     }
     ObjectType(Some(properties)) -> {
       "\n// TODO implement decoder for Object with props\n"
@@ -1255,7 +1267,7 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   let full_string = sb.to_string(builder)
   builder
   |> remove_import_if_unused(full_string, "gleam/dynamic", [
-    "Dynamic", "string", "int", "list", "float", "dict", "field",
+    "Dynamic", "string", "int", "list", "float", "dict", "field", "decode1",
   ])
   |> remove_import_if_unused(full_string, "gleam/dict", ["Dict"])
   |> remove_import_if_unused(full_string, "gleam/result", [

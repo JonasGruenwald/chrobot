@@ -35,7 +35,8 @@ pub fn encode__frame_id(value__: FrameId) {
 
 @internal
 pub fn decode__frame_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(FrameId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -109,7 +110,8 @@ pub fn encode__script_identifier(value__: ScriptIdentifier) {
 
 @internal
 pub fn decode__script_identifier(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(ScriptIdentifier, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 

@@ -36,7 +36,8 @@ pub fn encode__script_id(value__: ScriptId) {
 
 @internal
 pub fn decode__script_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(ScriptId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -210,9 +211,10 @@ pub fn encode__deep_serialized_value(value__: DeepSerializedValue) {
     #("type", encode__deep_serialized_value_type(value__.type_)),
     #("value", {
       case value__.value {
-        option.Some(value__) -> json.null()
+        option.Some(value__) ->
+          // dynamic values cannot be encoded!
+          json.null()
 
-        // dynamic values cannot be encoded!
         option.None -> json.null()
       }
     }),
@@ -246,7 +248,8 @@ pub fn encode__remote_object_id(value__: RemoteObjectId) {
 
 @internal
 pub fn decode__remote_object_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(RemoteObjectId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -265,7 +268,8 @@ pub fn encode__unserializable_value(value__: UnserializableValue) {
 
 @internal
 pub fn decode__unserializable_value(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(UnserializableValue, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -419,9 +423,10 @@ pub fn encode__remote_object(value__: RemoteObject) {
     }),
     #("value", {
       case value__.value {
-        option.Some(value__) -> json.null()
+        option.Some(value__) ->
+          // dynamic values cannot be encoded!
+          json.null()
 
-        // dynamic values cannot be encoded!
         option.None -> json.null()
       }
     }),
@@ -549,9 +554,10 @@ pub fn encode__call_argument(value__: CallArgument) {
   json.object([
     #("value", {
       case value__.value {
-        option.Some(value__) -> json.null()
+        option.Some(value__) ->
+          // dynamic values cannot be encoded!
+          json.null()
 
-        // dynamic values cannot be encoded!
         option.None -> json.null()
       }
     }),
@@ -585,7 +591,8 @@ pub fn encode__execution_context_id(value__: ExecutionContextId) {
 
 @internal
 pub fn decode__execution_context_id(value__: dynamic.Dynamic) {
-  dynamic.int(value__)
+  value__
+  |> dynamic.decode1(ExecutionContextId, dynamic.int)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -689,7 +696,8 @@ pub fn encode__timestamp(value__: Timestamp) {
 
 @internal
 pub fn decode__timestamp(value__: dynamic.Dynamic) {
-  dynamic.float(value__)
+  value__
+  |> dynamic.decode1(Timestamp, dynamic.float)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -707,7 +715,8 @@ pub fn encode__time_delta(value__: TimeDelta) {
 
 @internal
 pub fn decode__time_delta(value__: dynamic.Dynamic) {
-  dynamic.float(value__)
+  value__
+  |> dynamic.decode1(TimeDelta, dynamic.float)
   |> result.replace_error(chrome.ProtocolError)
 }
 

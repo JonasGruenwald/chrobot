@@ -108,7 +108,8 @@ pub fn encode__loader_id(value__: LoaderId) {
 
 @internal
 pub fn decode__loader_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(LoaderId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -126,7 +127,8 @@ pub fn encode__request_id(value__: RequestId) {
 
 @internal
 pub fn decode__request_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(RequestId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -144,7 +146,8 @@ pub fn encode__interception_id(value__: InterceptionId) {
 
 @internal
 pub fn decode__interception_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(InterceptionId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -222,7 +225,8 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
 
 @internal
 pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
-  dynamic.float(value__)
+  value__
+  |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -240,7 +244,8 @@ pub fn encode__monotonic_time(value__: MonotonicTime) {
 
 @internal
 pub fn decode__monotonic_time(value__: dynamic.Dynamic) {
-  dynamic.float(value__)
+  value__
+  |> dynamic.decode1(MonotonicTime, dynamic.float)
   |> result.replace_error(chrome.ProtocolError)
 }
 

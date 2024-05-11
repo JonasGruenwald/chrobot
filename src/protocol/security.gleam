@@ -30,7 +30,8 @@ pub fn encode__certificate_id(value__: CertificateId) {
 
 @internal
 pub fn decode__certificate_id(value__: dynamic.Dynamic) {
-  dynamic.int(value__)
+  value__
+  |> dynamic.decode1(CertificateId, dynamic.int)
   |> result.replace_error(chrome.ProtocolError)
 }
 

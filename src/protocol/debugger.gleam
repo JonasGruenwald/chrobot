@@ -32,7 +32,8 @@ pub fn encode__breakpoint_id(value__: BreakpointId) {
 
 @internal
 pub fn decode__breakpoint_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(BreakpointId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -50,7 +51,8 @@ pub fn encode__call_frame_id(value__: CallFrameId) {
 
 @internal
 pub fn decode__call_frame_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(CallFrameId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 

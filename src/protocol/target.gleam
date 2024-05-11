@@ -29,7 +29,8 @@ pub fn encode__target_id(value__: TargetID) {
 
 @internal
 pub fn decode__target_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(TargetID, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -47,7 +48,8 @@ pub fn encode__session_id(value__: SessionID) {
 
 @internal
 pub fn decode__session_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(SessionID, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 

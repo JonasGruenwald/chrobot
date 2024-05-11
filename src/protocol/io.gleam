@@ -30,6 +30,7 @@ pub fn encode__stream_handle(value__: StreamHandle) {
 
 @internal
 pub fn decode__stream_handle(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(StreamHandle, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }

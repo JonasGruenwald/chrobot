@@ -33,7 +33,8 @@ pub fn encode__request_id(value__: RequestId) {
 
 @internal
 pub fn decode__request_id(value__: dynamic.Dynamic) {
-  dynamic.string(value__)
+  value__
+  |> dynamic.decode1(RequestId, dynamic.string)
   |> result.replace_error(chrome.ProtocolError)
 }
 
