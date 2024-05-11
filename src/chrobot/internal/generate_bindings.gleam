@@ -1217,7 +1217,13 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
       "\n// TODO implement decoder for Object with props\n"
     }
     ObjectType(None) -> {
-      "\n// TODO implement decoder for Dict \n"
+      get_decoder_name(type_def.id)
+      |> decoder_fn(
+        "value__: dynamic.Dynamic",
+        "value__ |> dynamic.decode1("
+          <> type_def.id
+          <> ", dynamic.dict(dynamic.string, dynamic.string))",
+      )
     }
     // Below are not implemented because they currently don't occur
     ArrayType(items: ReferenceItem(ref_target)) -> {

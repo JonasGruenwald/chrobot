@@ -264,7 +264,13 @@ pub fn encode__headers(value__: Headers) {
   }
 }
 
-// TODO implement decoder for Dict 
+@internal
+pub fn decode__headers(value__: dynamic.Dynamic) {
+  value__
+  |> dynamic.decode1(Headers, dynamic.dict(dynamic.string, dynamic.string))
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// The underlying connection technology that the browser is supposedly using.
 pub type ConnectionType {
   ConnectionTypeNone
