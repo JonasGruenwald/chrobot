@@ -1033,7 +1033,7 @@ pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
 }
 
 /// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
-/// Given the vallue_name "value.lives" 
+/// Given the value_name "value.lives" 
 /// and its corresponding type PrimitiveType("int")
 /// it should output: `json.int(value.lives))`
 /// The root name and attribute name are just there to construct the function name of Enum encoders
@@ -1092,7 +1092,7 @@ fn gen_property_encoder(
   }
 }
 
-/// Generate an object property encoder like:
+/// Generate an object property encoder tuple like:
 /// #("name", string(cat.name)),
 /// or
 /// #("lives", int(cat.lives)),
@@ -1186,6 +1186,61 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
   }
 }
 
+/// Generates a decoder function for a given value, wich can be called with the value
+/// E.g. `dynamic.string`
+fn gen_property_decoder(
+  root_name: String,
+  attribute_name: String,
+  value_type: Type,
+) {
+  case value_type {
+    PrimitiveType(type_name) -> {
+      "dynamic." <> to_gleam_primitive_function(type_name)
+    }
+    ArrayType(PrimitiveItem(type_name)) -> {
+      "dynamic.list(" <> to_gleam_primitive_function(type_name) <> ")"
+    }
+    ArrayType(ReferenceItem(ref_target)) -> {
+      "dynamic.list(" <> get_decoder_name(ref_target) <> ")"
+    }
+    EnumType(_enum) -> {
+      get_decoder_name(pascal_case(root_name) <> pascal_case(attribute_name))
+    }
+    RefType(ref_target) -> get_decoder_name(ref_target)
+    ObjectType(Some(_properties)) -> {
+      io.debug(#(root_name, attribute_name, value_type))
+      panic as "Attempting nested object decoder generation"
+    }
+    ObjectType(None) -> {
+      "dynamic.dict(dynamic.string, dynamic.string)"
+    }
+  }
+}
+
+/// Generate an object property encoder statement like:
+/// gleam```
+///   use width <- result.try(
+///    dynamic.field("field", dynamic.int)(value__)
+///    |> result.replace_error(chrome.ProtocolError)
+///  )
+/// ```
+/// This is to be inserted into the function body of an object decoder function
+fn gen_object_property_decoder(root_name: String, prop_def: PropertyDefinition) {
+  let base_decoder = case prop_def.optional {
+    Some(True) -> "optional_field"
+    _ -> "field"
+  }
+  "use "
+  <> safe_snake_case(prop_def.name)
+  <> " <- result.try(dynamic."
+  <> base_decoder
+  <> "(\""
+  <> prop_def.name
+  <> "\","
+  <> gen_property_decoder(root_name, prop_def.name, prop_def.inner)
+  <> ")(value__)|> result.replace_error(chrome.ProtocolError))\n"
+}
+
 fn gen_type_def_decoder(type_def: TypeDefinition) {
   case type_def.inner {
     PrimitiveType(primitive_type) -> {
@@ -1214,7 +1269,28 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
       )
     }
     ObjectType(Some(properties)) -> {
-      "\n// TODO implement decoder for Object with props\n"
+      let prop_encoder_lines =
+        list.map(properties, fn(p) {
+          gen_object_property_decoder(type_def.id, p)
+        })
+        |> string.join("")
+
+      let return_statement =
+        type_def.id
+        <> "(\n"
+        <> {
+          list.map(properties, fn(p) {
+            safe_snake_case(p.name) <> ":" <> safe_snake_case(p.name) <> ",\n"
+          })
+          |> string.join("")
+        }
+        <> ")"
+
+      get_decoder_name(type_def.id)
+      |> internal_fn(
+        "value__: dynamic.Dynamic",
+        prop_encoder_lines <> "\n" <> return_statement,
+      )
     }
     ObjectType(None) -> {
       get_decoder_name(type_def.id)

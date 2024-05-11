@@ -133,7 +133,48 @@ pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__security_state_explanation(value__: dynamic.Dynamic) {
+  use security_state <- result.try(
+    dynamic.field("securityState", decode__security_state)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use title <- result.try(
+    dynamic.field("title", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use summary <- result.try(
+    dynamic.field("summary", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use description <- result.try(
+    dynamic.field("description", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mixed_content_type <- result.try(
+    dynamic.field("mixedContentType", decode__mixed_content_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use certificate <- result.try(
+    dynamic.field("certificate", dynamic.list(string))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use recommendations <- result.try(
+    dynamic.optional_field("recommendations", dynamic.list(string))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  SecurityStateExplanation(
+    security_state: security_state,
+    title: title,
+    summary: summary,
+    description: description,
+    mixed_content_type: mixed_content_type,
+    certificate: certificate,
+    recommendations: recommendations,
+  )
+}
+
 /// The action to take when a certificate error occurs. continue will continue processing the
 /// request and cancel will cancel the request.
 pub type CertificateErrorAction {

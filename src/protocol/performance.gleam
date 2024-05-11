@@ -10,7 +10,10 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
+import gleam/result
 
 /// Run-time execution metric.
 pub type Metric {
@@ -24,4 +27,17 @@ pub fn encode__metric(value__: Metric) {
     #("value", json.float(value__.value)),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__metric(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Metric(name: name, value: value)
+}

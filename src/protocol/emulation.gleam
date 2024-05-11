@@ -13,6 +13,7 @@
 import chrome
 import gleam/dynamic
 import gleam/json
+import gleam/result
 import protocol/dom
 import protocol/page
 import protocol/runtime
@@ -61,7 +62,20 @@ pub fn encode__screen_orientation(value__: ScreenOrientation) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__screen_orientation(value__: dynamic.Dynamic) {
+  use type_ <- result.try(
+    dynamic.field("type", decode__screen_orientation_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use angle <- result.try(
+    dynamic.field("angle", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  ScreenOrientation(type_: type_, angle: angle)
+}
+
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
@@ -104,7 +118,28 @@ pub fn encode__display_feature(value__: DisplayFeature) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__display_feature(value__: dynamic.Dynamic) {
+  use orientation <- result.try(
+    dynamic.field("orientation", decode__display_feature_orientation)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use offset <- result.try(
+    dynamic.field("offset", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mask_length <- result.try(
+    dynamic.field("maskLength", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  DisplayFeature(
+    orientation: orientation,
+    offset: offset,
+    mask_length: mask_length,
+  )
+}
+
 pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
@@ -139,7 +174,16 @@ pub fn encode__device_posture(value__: DevicePosture) {
   json.object([#("type", encode__device_posture_type(value__.type_))])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__device_posture(value__: dynamic.Dynamic) {
+  use type_ <- result.try(
+    dynamic.field("type", decode__device_posture_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  DevicePosture(type_: type_)
+}
+
 pub type MediaFeature {
   MediaFeature(name: String, value: String)
 }
@@ -151,4 +195,17 @@ pub fn encode__media_feature(value__: MediaFeature) {
     #("value", json.string(value__.value)),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__media_feature(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  MediaFeature(name: name, value: value)
+}

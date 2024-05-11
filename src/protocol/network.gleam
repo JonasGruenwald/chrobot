@@ -380,7 +380,73 @@ pub fn encode__resource_timing(value__: ResourceTiming) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__resource_timing(value__: dynamic.Dynamic) {
+  use request_time <- result.try(
+    dynamic.field("requestTime", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use proxy_start <- result.try(
+    dynamic.field("proxyStart", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use proxy_end <- result.try(
+    dynamic.field("proxyEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use dns_start <- result.try(
+    dynamic.field("dnsStart", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use dns_end <- result.try(
+    dynamic.field("dnsEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use connect_start <- result.try(
+    dynamic.field("connectStart", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use connect_end <- result.try(
+    dynamic.field("connectEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use ssl_start <- result.try(
+    dynamic.field("sslStart", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use ssl_end <- result.try(
+    dynamic.field("sslEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use send_start <- result.try(
+    dynamic.field("sendStart", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use send_end <- result.try(
+    dynamic.field("sendEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use receive_headers_end <- result.try(
+    dynamic.field("receiveHeadersEnd", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  ResourceTiming(
+    request_time: request_time,
+    proxy_start: proxy_start,
+    proxy_end: proxy_end,
+    dns_start: dns_start,
+    dns_end: dns_end,
+    connect_start: connect_start,
+    connect_end: connect_end,
+    ssl_start: ssl_start,
+    ssl_end: ssl_end,
+    send_start: send_start,
+    send_end: send_end,
+    receive_headers_end: receive_headers_end,
+  )
+}
+
 /// Loading priority of a resource request.
 pub type ResourcePriority {
   ResourcePriorityVeryLow
@@ -431,7 +497,16 @@ pub fn encode__post_data_entry(value__: PostDataEntry) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__post_data_entry(value__: dynamic.Dynamic) {
+  use bytes <- result.try(
+    dynamic.optional_field("bytes", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  PostDataEntry(bytes: bytes)
+}
+
 /// HTTP request data.
 pub type Request {
   Request(
@@ -532,7 +607,61 @@ pub fn encode__request(value__: Request) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__request(value__: dynamic.Dynamic) {
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url_fragment <- result.try(
+    dynamic.optional_field("urlFragment", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use method <- result.try(
+    dynamic.field("method", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use headers <- result.try(
+    dynamic.field("headers", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use has_post_data <- result.try(
+    dynamic.optional_field("hasPostData", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mixed_content_type <- result.try(
+    dynamic.optional_field(
+      "mixedContentType",
+      security.decode__mixed_content_type,
+    )(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use initial_priority <- result.try(
+    dynamic.field("initialPriority", decode__resource_priority)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use referrer_policy <- result.try(
+    dynamic.field("referrerPolicy", decode__request_referrer_policy)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use is_link_preload <- result.try(
+    dynamic.optional_field("isLinkPreload", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Request(
+    url: url,
+    url_fragment: url_fragment,
+    method: method,
+    headers: headers,
+    has_post_data: has_post_data,
+    mixed_content_type: mixed_content_type,
+    initial_priority: initial_priority,
+    referrer_policy: referrer_policy,
+    is_link_preload: is_link_preload,
+  )
+}
+
 /// Details of a signed certificate timestamp (SCT).
 pub type SignedCertificateTimestamp {
   SignedCertificateTimestamp(
@@ -561,7 +690,53 @@ pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp)
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__signed_certificate_timestamp(value__: dynamic.Dynamic) {
+  use status <- result.try(
+    dynamic.field("status", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use origin <- result.try(
+    dynamic.field("origin", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use log_description <- result.try(
+    dynamic.field("logDescription", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use log_id <- result.try(
+    dynamic.field("logId", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use timestamp <- result.try(
+    dynamic.field("timestamp", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use hash_algorithm <- result.try(
+    dynamic.field("hashAlgorithm", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use signature_algorithm <- result.try(
+    dynamic.field("signatureAlgorithm", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use signature_data <- result.try(
+    dynamic.field("signatureData", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  SignedCertificateTimestamp(
+    status: status,
+    origin: origin,
+    log_description: log_description,
+    log_id: log_id,
+    timestamp: timestamp,
+    hash_algorithm: hash_algorithm,
+    signature_algorithm: signature_algorithm,
+    signature_data: signature_data,
+  )
+}
+
 /// Security details about a request.
 pub type SecurityDetails {
   SecurityDetails(
@@ -630,7 +805,94 @@ pub fn encode__security_details(value__: SecurityDetails) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__security_details(value__: dynamic.Dynamic) {
+  use protocol <- result.try(
+    dynamic.field("protocol", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use key_exchange <- result.try(
+    dynamic.field("keyExchange", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use key_exchange_group <- result.try(
+    dynamic.optional_field("keyExchangeGroup", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use cipher <- result.try(
+    dynamic.field("cipher", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mac <- result.try(
+    dynamic.optional_field("mac", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use certificate_id <- result.try(
+    dynamic.field("certificateId", security.decode__certificate_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use subject_name <- result.try(
+    dynamic.field("subjectName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use san_list <- result.try(
+    dynamic.field("sanList", dynamic.list(string))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use issuer <- result.try(
+    dynamic.field("issuer", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use valid_from <- result.try(
+    dynamic.field("validFrom", decode__time_since_epoch)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use valid_to <- result.try(
+    dynamic.field("validTo", decode__time_since_epoch)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use signed_certificate_timestamp_list <- result.try(
+    dynamic.field(
+      "signedCertificateTimestampList",
+      dynamic.list(decode__signed_certificate_timestamp),
+    )(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use certificate_transparency_compliance <- result.try(
+    dynamic.field(
+      "certificateTransparencyCompliance",
+      decode__certificate_transparency_compliance,
+    )(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use server_signature_algorithm <- result.try(
+    dynamic.optional_field("serverSignatureAlgorithm", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use encrypted_client_hello <- result.try(
+    dynamic.field("encryptedClientHello", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  SecurityDetails(
+    protocol: protocol,
+    key_exchange: key_exchange,
+    key_exchange_group: key_exchange_group,
+    cipher: cipher,
+    mac: mac,
+    certificate_id: certificate_id,
+    subject_name: subject_name,
+    san_list: san_list,
+    issuer: issuer,
+    valid_from: valid_from,
+    valid_to: valid_to,
+    signed_certificate_timestamp_list: signed_certificate_timestamp_list,
+    certificate_transparency_compliance: certificate_transparency_compliance,
+    server_signature_algorithm: server_signature_algorithm,
+    encrypted_client_hello: encrypted_client_hello,
+  )
+}
+
 /// Whether the request complied with Certificate Transparency policy.
 pub type CertificateTransparencyCompliance {
   CertificateTransparencyComplianceUnknown
@@ -888,7 +1150,20 @@ pub fn encode__cors_error_status(value__: CorsErrorStatus) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__cors_error_status(value__: dynamic.Dynamic) {
+  use cors_error <- result.try(
+    dynamic.field("corsError", decode__cors_error)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use failed_parameter <- result.try(
+    dynamic.field("failedParameter", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  CorsErrorStatus(cors_error: cors_error, failed_parameter: failed_parameter)
+}
+
 /// Source of serviceworker response.
 pub type ServiceWorkerResponseSource {
   ServiceWorkerResponseSourceCacheStorage
@@ -1074,7 +1349,131 @@ pub fn encode__response(value__: Response) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__response(value__: dynamic.Dynamic) {
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use status <- result.try(
+    dynamic.field("status", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use status_text <- result.try(
+    dynamic.field("statusText", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use headers <- result.try(
+    dynamic.field("headers", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mime_type <- result.try(
+    dynamic.field("mimeType", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use charset <- result.try(
+    dynamic.field("charset", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use request_headers <- result.try(
+    dynamic.optional_field("requestHeaders", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use connection_reused <- result.try(
+    dynamic.field("connectionReused", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use connection_id <- result.try(
+    dynamic.field("connectionId", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use remote_ip_address <- result.try(
+    dynamic.optional_field("remoteIPAddress", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use remote_port <- result.try(
+    dynamic.optional_field("remotePort", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use from_disk_cache <- result.try(
+    dynamic.optional_field("fromDiskCache", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use from_service_worker <- result.try(
+    dynamic.optional_field("fromServiceWorker", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use from_prefetch_cache <- result.try(
+    dynamic.optional_field("fromPrefetchCache", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use from_early_hints <- result.try(
+    dynamic.optional_field("fromEarlyHints", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use encoded_data_length <- result.try(
+    dynamic.field("encodedDataLength", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use timing <- result.try(
+    dynamic.optional_field("timing", decode__resource_timing)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use service_worker_response_source <- result.try(
+    dynamic.optional_field(
+      "serviceWorkerResponseSource",
+      decode__service_worker_response_source,
+    )(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use response_time <- result.try(
+    dynamic.optional_field("responseTime", decode__time_since_epoch)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use cache_storage_cache_name <- result.try(
+    dynamic.optional_field("cacheStorageCacheName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use protocol <- result.try(
+    dynamic.optional_field("protocol", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use security_state <- result.try(
+    dynamic.field("securityState", security.decode__security_state)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use security_details <- result.try(
+    dynamic.optional_field("securityDetails", decode__security_details)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Response(
+    url: url,
+    status: status,
+    status_text: status_text,
+    headers: headers,
+    mime_type: mime_type,
+    charset: charset,
+    request_headers: request_headers,
+    connection_reused: connection_reused,
+    connection_id: connection_id,
+    remote_ip_address: remote_ip_address,
+    remote_port: remote_port,
+    from_disk_cache: from_disk_cache,
+    from_service_worker: from_service_worker,
+    from_prefetch_cache: from_prefetch_cache,
+    from_early_hints: from_early_hints,
+    encoded_data_length: encoded_data_length,
+    timing: timing,
+    service_worker_response_source: service_worker_response_source,
+    response_time: response_time,
+    cache_storage_cache_name: cache_storage_cache_name,
+    protocol: protocol,
+    security_state: security_state,
+    security_details: security_details,
+  )
+}
+
 /// WebSocket request data.
 pub type WebSocketRequest {
   WebSocketRequest(headers: Headers)
@@ -1085,7 +1484,16 @@ pub fn encode__web_socket_request(value__: WebSocketRequest) {
   json.object([#("headers", encode__headers(value__.headers))])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__web_socket_request(value__: dynamic.Dynamic) {
+  use headers <- result.try(
+    dynamic.field("headers", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  WebSocketRequest(headers: headers)
+}
+
 /// WebSocket response data.
 pub type WebSocketResponse {
   WebSocketResponse(
@@ -1125,7 +1533,43 @@ pub fn encode__web_socket_response(value__: WebSocketResponse) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__web_socket_response(value__: dynamic.Dynamic) {
+  use status <- result.try(
+    dynamic.field("status", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use status_text <- result.try(
+    dynamic.field("statusText", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use headers <- result.try(
+    dynamic.field("headers", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use headers_text <- result.try(
+    dynamic.optional_field("headersText", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use request_headers <- result.try(
+    dynamic.optional_field("requestHeaders", decode__headers)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use request_headers_text <- result.try(
+    dynamic.optional_field("requestHeadersText", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  WebSocketResponse(
+    status: status,
+    status_text: status_text,
+    headers: headers,
+    headers_text: headers_text,
+    request_headers: request_headers,
+    request_headers_text: request_headers_text,
+  )
+}
+
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
 pub type WebSocketFrame {
   WebSocketFrame(opcode: Float, mask: Bool, payload_data: String)
@@ -1140,7 +1584,24 @@ pub fn encode__web_socket_frame(value__: WebSocketFrame) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__web_socket_frame(value__: dynamic.Dynamic) {
+  use opcode <- result.try(
+    dynamic.field("opcode", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mask <- result.try(
+    dynamic.field("mask", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use payload_data <- result.try(
+    dynamic.field("payloadData", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  WebSocketFrame(opcode: opcode, mask: mask, payload_data: payload_data)
+}
+
 /// Information about the cached resource.
 pub type CachedResource {
   CachedResource(
@@ -1166,7 +1627,33 @@ pub fn encode__cached_resource(value__: CachedResource) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__cached_resource(value__: dynamic.Dynamic) {
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use type_ <- result.try(
+    dynamic.field("type", decode__resource_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use response <- result.try(
+    dynamic.optional_field("response", decode__response)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use body_size <- result.try(
+    dynamic.field("bodySize", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  CachedResource(
+    url: url,
+    type_: type_,
+    response: response,
+    body_size: body_size,
+  )
+}
+
 /// Information about the request initiator.
 pub type Initiator {
   Initiator(
@@ -1253,7 +1740,43 @@ pub fn encode__initiator(value__: Initiator) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__initiator(value__: dynamic.Dynamic) {
+  use type_ <- result.try(
+    dynamic.field("type", decode__initiator_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use stack <- result.try(
+    dynamic.optional_field("stack", runtime.decode__stack_trace)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.optional_field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line_number <- result.try(
+    dynamic.optional_field("lineNumber", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use column_number <- result.try(
+    dynamic.optional_field("columnNumber", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use request_id <- result.try(
+    dynamic.optional_field("requestId", decode__request_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Initiator(
+    type_: type_,
+    stack: stack,
+    url: url,
+    line_number: line_number,
+    column_number: column_number,
+    request_id: request_id,
+  )
+}
+
 /// Cookie object
 pub type Cookie {
   Cookie(
@@ -1291,7 +1814,63 @@ pub fn encode__cookie(value__: Cookie) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__cookie(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use domain <- result.try(
+    dynamic.field("domain", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use path <- result.try(
+    dynamic.field("path", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use expires <- result.try(
+    dynamic.field("expires", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use size <- result.try(
+    dynamic.field("size", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use http_only <- result.try(
+    dynamic.field("httpOnly", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use secure <- result.try(
+    dynamic.field("secure", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use session <- result.try(
+    dynamic.field("session", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use same_site <- result.try(
+    dynamic.optional_field("sameSite", decode__cookie_same_site)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Cookie(
+    name: name,
+    value: value,
+    domain: domain,
+    path: path,
+    expires: expires,
+    size: size,
+    http_only: http_only,
+    secure: secure,
+    session: session,
+    same_site: same_site,
+  )
+}
+
 /// Cookie parameter object
 pub type CookieParam {
   CookieParam(
@@ -1356,4 +1935,55 @@ pub fn encode__cookie_param(value__: CookieParam) {
     }),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__cookie_param(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.optional_field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use domain <- result.try(
+    dynamic.optional_field("domain", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use path <- result.try(
+    dynamic.optional_field("path", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use secure <- result.try(
+    dynamic.optional_field("secure", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use http_only <- result.try(
+    dynamic.optional_field("httpOnly", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use same_site <- result.try(
+    dynamic.optional_field("sameSite", decode__cookie_same_site)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use expires <- result.try(
+    dynamic.optional_field("expires", decode__time_since_epoch)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  CookieParam(
+    name: name,
+    value: value,
+    url: url,
+    domain: domain,
+    path: path,
+    secure: secure,
+    http_only: http_only,
+    same_site: same_site,
+    expires: expires,
+  )
+}

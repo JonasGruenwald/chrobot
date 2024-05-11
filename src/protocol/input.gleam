@@ -80,7 +80,58 @@ pub fn encode__touch_point(value__: TouchPoint) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__touch_point(value__: dynamic.Dynamic) {
+  use x <- result.try(
+    dynamic.field("x", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use y <- result.try(
+    dynamic.field("y", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use radius_x <- result.try(
+    dynamic.optional_field("radiusX", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use radius_y <- result.try(
+    dynamic.optional_field("radiusY", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use rotation_angle <- result.try(
+    dynamic.optional_field("rotationAngle", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use force <- result.try(
+    dynamic.optional_field("force", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use tilt_x <- result.try(
+    dynamic.optional_field("tiltX", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use tilt_y <- result.try(
+    dynamic.optional_field("tiltY", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use id <- result.try(
+    dynamic.optional_field("id", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  TouchPoint(
+    x: x,
+    y: y,
+    radius_x: radius_x,
+    radius_y: radius_y,
+    rotation_angle: rotation_angle,
+    force: force,
+    tilt_x: tilt_x,
+    tilt_y: tilt_y,
+    id: id,
+  )
+}
+
 pub type MouseButton {
   MouseButtonNone
   MouseButtonLeft

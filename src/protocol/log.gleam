@@ -14,6 +14,7 @@ import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 import protocol/network
 import protocol/runtime
 
@@ -198,7 +199,72 @@ pub fn encode__log_entry(value__: LogEntry) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__log_entry(value__: dynamic.Dynamic) {
+  use source <- result.try(
+    dynamic.field("source", decode__log_entry_source)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use level <- result.try(
+    dynamic.field("level", decode__log_entry_level)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use text <- result.try(
+    dynamic.field("text", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use category <- result.try(
+    dynamic.optional_field("category", decode__log_entry_category)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use timestamp <- result.try(
+    dynamic.field("timestamp", runtime.decode__timestamp)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.optional_field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line_number <- result.try(
+    dynamic.optional_field("lineNumber", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use stack_trace <- result.try(
+    dynamic.optional_field("stackTrace", runtime.decode__stack_trace)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use network_request_id <- result.try(
+    dynamic.optional_field("networkRequestId", network.decode__request_id)(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use worker_id <- result.try(
+    dynamic.optional_field("workerId", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use args <- result.try(
+    dynamic.optional_field("args", dynamic.list(runtime.decode__remote_object))(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  LogEntry(
+    source: source,
+    level: level,
+    text: text,
+    category: category,
+    timestamp: timestamp,
+    url: url,
+    line_number: line_number,
+    stack_trace: stack_trace,
+    network_request_id: network_request_id,
+    worker_id: worker_id,
+    args: args,
+  )
+}
+
 /// Violation configuration setting.
 pub type ViolationSetting {
   ViolationSetting(name: ViolationSettingName, threshold: Float)
@@ -251,4 +317,17 @@ pub fn encode__violation_setting(value__: ViolationSetting) {
     #("threshold", json.float(value__.threshold)),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__violation_setting(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", decode__violation_setting_name)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use threshold <- result.try(
+    dynamic.field("threshold", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  ViolationSetting(name: name, threshold: threshold)
+}

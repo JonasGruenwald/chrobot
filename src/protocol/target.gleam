@@ -80,4 +80,40 @@ pub fn encode__target_info(value__: TargetInfo) {
     }),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__target_info(value__: dynamic.Dynamic) {
+  use target_id <- result.try(
+    dynamic.field("targetId", decode__target_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use type_ <- result.try(
+    dynamic.field("type", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use title <- result.try(
+    dynamic.field("title", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use attached <- result.try(
+    dynamic.field("attached", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use opener_id <- result.try(
+    dynamic.optional_field("openerId", decode__target_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  TargetInfo(
+    target_id: target_id,
+    type_: type_,
+    title: title,
+    url: url,
+    attached: attached,
+    opener_id: opener_id,
+  )
+}

@@ -76,7 +76,28 @@ pub fn encode__backend_node(value__: BackendNode) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__backend_node(value__: dynamic.Dynamic) {
+  use node_type <- result.try(
+    dynamic.field("nodeType", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use node_name <- result.try(
+    dynamic.field("nodeName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use backend_node_id <- result.try(
+    dynamic.field("backendNodeId", decode__backend_node_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  BackendNode(
+    node_type: node_type,
+    node_name: node_name,
+    backend_node_id: backend_node_id,
+  )
+}
+
 /// Pseudo element type.
 pub type PseudoType {
   PseudoTypeFirstLine
@@ -501,7 +522,170 @@ pub fn encode__node(value__: Node) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__node(value__: dynamic.Dynamic) {
+  use node_id <- result.try(
+    dynamic.field("nodeId", decode__node_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use parent_id <- result.try(
+    dynamic.optional_field("parentId", decode__node_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use backend_node_id <- result.try(
+    dynamic.field("backendNodeId", decode__backend_node_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use node_type <- result.try(
+    dynamic.field("nodeType", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use node_name <- result.try(
+    dynamic.field("nodeName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use local_name <- result.try(
+    dynamic.field("localName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use node_value <- result.try(
+    dynamic.field("nodeValue", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use child_node_count <- result.try(
+    dynamic.optional_field("childNodeCount", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use children <- result.try(
+    dynamic.optional_field("children", dynamic.list(decode__node))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use attributes <- result.try(
+    dynamic.optional_field("attributes", dynamic.list(string))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use document_url <- result.try(
+    dynamic.optional_field("documentURL", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use base_url <- result.try(
+    dynamic.optional_field("baseURL", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use public_id <- result.try(
+    dynamic.optional_field("publicId", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use system_id <- result.try(
+    dynamic.optional_field("systemId", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use internal_subset <- result.try(
+    dynamic.optional_field("internalSubset", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use xml_version <- result.try(
+    dynamic.optional_field("xmlVersion", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use name <- result.try(
+    dynamic.optional_field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.optional_field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use pseudo_type <- result.try(
+    dynamic.optional_field("pseudoType", decode__pseudo_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use pseudo_identifier <- result.try(
+    dynamic.optional_field("pseudoIdentifier", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use shadow_root_type <- result.try(
+    dynamic.optional_field("shadowRootType", decode__shadow_root_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use frame_id <- result.try(
+    dynamic.optional_field("frameId", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use content_document <- result.try(
+    dynamic.optional_field("contentDocument", decode__node)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use shadow_roots <- result.try(
+    dynamic.optional_field("shadowRoots", dynamic.list(decode__node))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use template_content <- result.try(
+    dynamic.optional_field("templateContent", decode__node)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use pseudo_elements <- result.try(
+    dynamic.optional_field("pseudoElements", dynamic.list(decode__node))(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use distributed_nodes <- result.try(
+    dynamic.optional_field(
+      "distributedNodes",
+      dynamic.list(decode__backend_node),
+    )(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use is_svg <- result.try(
+    dynamic.optional_field("isSVG", dynamic.bool)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use compatibility_mode <- result.try(
+    dynamic.optional_field("compatibilityMode", decode__compatibility_mode)(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use assigned_slot <- result.try(
+    dynamic.optional_field("assignedSlot", decode__backend_node)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Node(
+    node_id: node_id,
+    parent_id: parent_id,
+    backend_node_id: backend_node_id,
+    node_type: node_type,
+    node_name: node_name,
+    local_name: local_name,
+    node_value: node_value,
+    child_node_count: child_node_count,
+    children: children,
+    attributes: attributes,
+    document_url: document_url,
+    base_url: base_url,
+    public_id: public_id,
+    system_id: system_id,
+    internal_subset: internal_subset,
+    xml_version: xml_version,
+    name: name,
+    value: value,
+    pseudo_type: pseudo_type,
+    pseudo_identifier: pseudo_identifier,
+    shadow_root_type: shadow_root_type,
+    frame_id: frame_id,
+    content_document: content_document,
+    shadow_roots: shadow_roots,
+    template_content: template_content,
+    pseudo_elements: pseudo_elements,
+    distributed_nodes: distributed_nodes,
+    is_svg: is_svg,
+    compatibility_mode: compatibility_mode,
+    assigned_slot: assigned_slot,
+  )
+}
+
 /// A structure holding an RGBA color.
 pub type RGBA {
   RGBA(r: Int, g: Int, b: Int, a: option.Option(Float))
@@ -522,7 +706,28 @@ pub fn encode__rgba(value__: RGBA) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__rgba(value__: dynamic.Dynamic) {
+  use r <- result.try(
+    dynamic.field("r", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use g <- result.try(
+    dynamic.field("g", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use b <- result.try(
+    dynamic.field("b", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use a <- result.try(
+    dynamic.optional_field("a", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  RGBA(r: r, g: g, b: b, a: a)
+}
+
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
 pub type Quad {
   Quad(List(Float))
@@ -573,7 +778,48 @@ pub fn encode__box_model(value__: BoxModel) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__box_model(value__: dynamic.Dynamic) {
+  use content <- result.try(
+    dynamic.field("content", decode__quad)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use padding <- result.try(
+    dynamic.field("padding", decode__quad)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use border <- result.try(
+    dynamic.field("border", decode__quad)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use margin <- result.try(
+    dynamic.field("margin", decode__quad)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use width <- result.try(
+    dynamic.field("width", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use height <- result.try(
+    dynamic.field("height", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use shape_outside <- result.try(
+    dynamic.optional_field("shapeOutside", decode__shape_outside_info)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  BoxModel(
+    content: content,
+    padding: padding,
+    border: border,
+    margin: margin,
+    width: width,
+    height: height,
+    shape_outside: shape_outside,
+  )
+}
+
 /// CSS Shape Outside details.
 pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
@@ -600,7 +846,24 @@ pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__shape_outside_info(value__: dynamic.Dynamic) {
+  use bounds <- result.try(
+    dynamic.field("bounds", decode__quad)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use shape <- result.try(
+    dynamic.field("shape", dynamic.list(dynamic))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use margin_shape <- result.try(
+    dynamic.field("marginShape", dynamic.list(dynamic))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  ShapeOutsideInfo(bounds: bounds, shape: shape, margin_shape: margin_shape)
+}
+
 /// Rectangle.
 pub type Rect {
   Rect(x: Float, y: Float, width: Float, height: Float)
@@ -616,7 +879,28 @@ pub fn encode__rect(value__: Rect) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__rect(value__: dynamic.Dynamic) {
+  use x <- result.try(
+    dynamic.field("x", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use y <- result.try(
+    dynamic.field("y", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use width <- result.try(
+    dynamic.field("width", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use height <- result.try(
+    dynamic.field("height", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Rect(x: x, y: y, width: width, height: height)
+}
+
 pub type CSSComputedStyleProperty {
   CSSComputedStyleProperty(name: String, value: String)
 }
@@ -628,4 +912,17 @@ pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
     #("value", json.string(value__.value)),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__css_computed_style_property(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  CSSComputedStyleProperty(name: name, value: value)
+}

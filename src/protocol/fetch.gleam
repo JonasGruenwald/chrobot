@@ -96,7 +96,30 @@ pub fn encode__request_pattern(value__: RequestPattern) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__request_pattern(value__: dynamic.Dynamic) {
+  use url_pattern <- result.try(
+    dynamic.optional_field("urlPattern", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use resource_type <- result.try(
+    dynamic.optional_field("resourceType", network.decode__resource_type)(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use request_stage <- result.try(
+    dynamic.optional_field("requestStage", decode__request_stage)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  RequestPattern(
+    url_pattern: url_pattern,
+    resource_type: resource_type,
+    request_stage: request_stage,
+  )
+}
+
 /// Response HTTP header entry
 pub type HeaderEntry {
   HeaderEntry(name: String, value: String)
@@ -110,7 +133,20 @@ pub fn encode__header_entry(value__: HeaderEntry) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__header_entry(value__: dynamic.Dynamic) {
+  use name <- result.try(
+    dynamic.field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use value <- result.try(
+    dynamic.field("value", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  HeaderEntry(name: name, value: value)
+}
+
 /// Authorization challenge for HTTP status code 401 or 407.
 pub type AuthChallenge {
   AuthChallenge(
@@ -161,7 +197,28 @@ pub fn encode__auth_challenge(value__: AuthChallenge) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__auth_challenge(value__: dynamic.Dynamic) {
+  use source <- result.try(
+    dynamic.optional_field("source", decode__auth_challenge_source)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use origin <- result.try(
+    dynamic.field("origin", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use scheme <- result.try(
+    dynamic.field("scheme", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use realm <- result.try(
+    dynamic.field("realm", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  AuthChallenge(source: source, origin: origin, scheme: scheme, realm: realm)
+}
+
 /// Response to an AuthChallenge.
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
@@ -218,4 +275,25 @@ pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
     }),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__auth_challenge_response(value__: dynamic.Dynamic) {
+  use response <- result.try(
+    dynamic.field("response", decode__auth_challenge_response_response)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use username <- result.try(
+    dynamic.optional_field("username", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use password <- result.try(
+    dynamic.optional_field("password", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  AuthChallengeResponse(
+    response: response,
+    username: username,
+    password: password,
+  )
+}

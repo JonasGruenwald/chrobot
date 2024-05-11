@@ -76,7 +76,48 @@ pub fn encode__frame(value__: Frame) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__frame(value__: dynamic.Dynamic) {
+  use id <- result.try(
+    dynamic.field("id", decode__frame_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use parent_id <- result.try(
+    dynamic.optional_field("parentId", decode__frame_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use loader_id <- result.try(
+    dynamic.field("loaderId", network.decode__loader_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use name <- result.try(
+    dynamic.optional_field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use security_origin <- result.try(
+    dynamic.field("securityOrigin", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use mime_type <- result.try(
+    dynamic.field("mimeType", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Frame(
+    id: id,
+    parent_id: parent_id,
+    loader_id: loader_id,
+    name: name,
+    url: url,
+    security_origin: security_origin,
+    mime_type: mime_type,
+  )
+}
+
 /// Information about the Frame hierarchy.
 pub type FrameTree {
   FrameTree(frame: Frame, child_frames: option.Option(List(FrameTree)))
@@ -95,7 +136,22 @@ pub fn encode__frame_tree(value__: FrameTree) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__frame_tree(value__: dynamic.Dynamic) {
+  use frame <- result.try(
+    dynamic.field("frame", decode__frame)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use child_frames <- result.try(
+    dynamic.optional_field("childFrames", dynamic.list(decode__frame_tree))(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  FrameTree(frame: frame, child_frames: child_frames)
+}
+
 /// Unique script identifier.
 pub type ScriptIdentifier {
   ScriptIdentifier(String)
@@ -194,7 +250,38 @@ pub fn encode__navigation_entry(value__: NavigationEntry) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__navigation_entry(value__: dynamic.Dynamic) {
+  use id <- result.try(
+    dynamic.field("id", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use url <- result.try(
+    dynamic.field("url", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use user_typed_url <- result.try(
+    dynamic.field("userTypedURL", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use title <- result.try(
+    dynamic.field("title", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use transition_type <- result.try(
+    dynamic.field("transitionType", decode__transition_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  NavigationEntry(
+    id: id,
+    url: url,
+    user_typed_url: user_typed_url,
+    title: title,
+    transition_type: transition_type,
+  )
+}
+
 /// Javascript dialog type.
 pub type DialogType {
   DialogTypeAlert
@@ -240,7 +327,33 @@ pub fn encode__app_manifest_error(value__: AppManifestError) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__app_manifest_error(value__: dynamic.Dynamic) {
+  use message <- result.try(
+    dynamic.field("message", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use critical <- result.try(
+    dynamic.field("critical", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line <- result.try(
+    dynamic.field("line", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use column <- result.try(
+    dynamic.field("column", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  AppManifestError(
+    message: message,
+    critical: critical,
+    line: line,
+    column: column,
+  )
+}
+
 /// Layout viewport position and dimensions.
 pub type LayoutViewport {
   LayoutViewport(
@@ -261,7 +374,33 @@ pub fn encode__layout_viewport(value__: LayoutViewport) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__layout_viewport(value__: dynamic.Dynamic) {
+  use page_x <- result.try(
+    dynamic.field("pageX", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use page_y <- result.try(
+    dynamic.field("pageY", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use client_width <- result.try(
+    dynamic.field("clientWidth", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use client_height <- result.try(
+    dynamic.field("clientHeight", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  LayoutViewport(
+    page_x: page_x,
+    page_y: page_y,
+    client_width: client_width,
+    client_height: client_height,
+  )
+}
+
 /// Visual viewport position, dimensions, and scale.
 pub type VisualViewport {
   VisualViewport(
@@ -295,7 +434,53 @@ pub fn encode__visual_viewport(value__: VisualViewport) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__visual_viewport(value__: dynamic.Dynamic) {
+  use offset_x <- result.try(
+    dynamic.field("offsetX", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use offset_y <- result.try(
+    dynamic.field("offsetY", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use page_x <- result.try(
+    dynamic.field("pageX", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use page_y <- result.try(
+    dynamic.field("pageY", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use client_width <- result.try(
+    dynamic.field("clientWidth", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use client_height <- result.try(
+    dynamic.field("clientHeight", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use scale <- result.try(
+    dynamic.field("scale", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use zoom <- result.try(
+    dynamic.optional_field("zoom", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  VisualViewport(
+    offset_x: offset_x,
+    offset_y: offset_y,
+    page_x: page_x,
+    page_y: page_y,
+    client_width: client_width,
+    client_height: client_height,
+    scale: scale,
+    zoom: zoom,
+  )
+}
+
 /// Viewport for capturing screenshot.
 pub type Viewport {
   Viewport(x: Float, y: Float, width: Float, height: Float, scale: Float)
@@ -311,4 +496,29 @@ pub fn encode__viewport(value__: Viewport) {
     #("scale", json.float(value__.scale)),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__viewport(value__: dynamic.Dynamic) {
+  use x <- result.try(
+    dynamic.field("x", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use y <- result.try(
+    dynamic.field("y", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use width <- result.try(
+    dynamic.field("width", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use height <- result.try(
+    dynamic.field("height", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use scale <- result.try(
+    dynamic.field("scale", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Viewport(x: x, y: y, width: width, height: height, scale: scale)
+}

@@ -79,7 +79,28 @@ pub fn encode__location(value__: Location) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__location(value__: dynamic.Dynamic) {
+  use script_id <- result.try(
+    dynamic.field("scriptId", runtime.decode__script_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line_number <- result.try(
+    dynamic.field("lineNumber", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use column_number <- result.try(
+    dynamic.optional_field("columnNumber", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Location(
+    script_id: script_id,
+    line_number: line_number,
+    column_number: column_number,
+  )
+}
+
 /// JavaScript call frame. Array of call frames form the call stack.
 pub type CallFrame {
   CallFrame(
@@ -116,7 +137,50 @@ pub fn encode__call_frame(value__: CallFrame) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__call_frame(value__: dynamic.Dynamic) {
+  use call_frame_id <- result.try(
+    dynamic.field("callFrameId", decode__call_frame_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use function_name <- result.try(
+    dynamic.field("functionName", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use function_location <- result.try(
+    dynamic.optional_field("functionLocation", decode__location)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use location <- result.try(
+    dynamic.field("location", decode__location)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use scope_chain <- result.try(
+    dynamic.field("scopeChain", dynamic.list(decode__scope))(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use this <- result.try(
+    dynamic.field("this", runtime.decode__remote_object)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use return_value <- result.try(
+    dynamic.optional_field("returnValue", runtime.decode__remote_object)(
+      value__,
+    )
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  CallFrame(
+    call_frame_id: call_frame_id,
+    function_name: function_name,
+    function_location: function_location,
+    location: location,
+    scope_chain: scope_chain,
+    this: this,
+    return_value: return_value,
+  )
+}
+
 /// Scope description.
 pub type Scope {
   Scope(
@@ -203,7 +267,38 @@ pub fn encode__scope(value__: Scope) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__scope(value__: dynamic.Dynamic) {
+  use type_ <- result.try(
+    dynamic.field("type", decode__scope_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use object <- result.try(
+    dynamic.field("object", runtime.decode__remote_object)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use name <- result.try(
+    dynamic.optional_field("name", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use start_location <- result.try(
+    dynamic.optional_field("startLocation", decode__location)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use end_location <- result.try(
+    dynamic.optional_field("endLocation", decode__location)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  Scope(
+    type_: type_,
+    object: object,
+    name: name,
+    start_location: start_location,
+    end_location: end_location,
+  )
+}
+
 /// Search match for resource.
 pub type SearchMatch {
   SearchMatch(line_number: Float, line_content: String)
@@ -217,7 +312,20 @@ pub fn encode__search_match(value__: SearchMatch) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__search_match(value__: dynamic.Dynamic) {
+  use line_number <- result.try(
+    dynamic.field("lineNumber", dynamic.float)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line_content <- result.try(
+    dynamic.field("lineContent", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  SearchMatch(line_number: line_number, line_content: line_content)
+}
+
 pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
@@ -275,7 +383,33 @@ pub fn encode__break_location(value__: BreakLocation) {
   ])
 }
 
-// TODO implement decoder for Object with props
+@internal
+pub fn decode__break_location(value__: dynamic.Dynamic) {
+  use script_id <- result.try(
+    dynamic.field("scriptId", runtime.decode__script_id)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use line_number <- result.try(
+    dynamic.field("lineNumber", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use column_number <- result.try(
+    dynamic.optional_field("columnNumber", dynamic.int)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use type_ <- result.try(
+    dynamic.optional_field("type", decode__break_location_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  BreakLocation(
+    script_id: script_id,
+    line_number: line_number,
+    column_number: column_number,
+    type_: type_,
+  )
+}
+
 /// Enum of possible script languages.
 pub type ScriptLanguage {
   ScriptLanguageJavaScript
@@ -348,4 +482,17 @@ pub fn encode__debug_symbols(value__: DebugSymbols) {
     }),
   ])
 }
-// TODO implement decoder for Object with props
+
+@internal
+pub fn decode__debug_symbols(value__: dynamic.Dynamic) {
+  use type_ <- result.try(
+    dynamic.field("type", decode__debug_symbols_type)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+  use external_url <- result.try(
+    dynamic.optional_field("externalURL", dynamic.string)(value__)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  DebugSymbols(type_: type_, external_url: external_url)
+}
