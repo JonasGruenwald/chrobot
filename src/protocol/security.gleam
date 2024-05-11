@@ -10,8 +10,11 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 
 /// An internal certificate ID value.
 pub type CertificateId {
@@ -23,6 +26,12 @@ pub fn encode__certificate_id(value__: CertificateId) {
   case value__ {
     CertificateId(inner_value__) -> json.int(inner_value__)
   }
+}
+
+@internal
+pub fn decode__certificate_id(value__: dynamic.Dynamic) {
+  dynamic.int(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// A description of mixed content (HTTP resources on HTTPS pages), as defined by
@@ -41,6 +50,16 @@ pub fn encode__mixed_content_type(value__: MixedContentType) {
     MixedContentTypeNone -> "none"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__mixed_content_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("blockable") -> Ok(MixedContentTypeBlockable)
+    Ok("optionally-blockable") -> Ok(MixedContentTypeOptionallyBlockable)
+    Ok("none") -> Ok(MixedContentTypeNone)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// The security level of a page or resource.
@@ -64,6 +83,19 @@ pub fn encode__security_state(value__: SecurityState) {
     SecurityStateInsecureBroken -> "insecure-broken"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__security_state(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("unknown") -> Ok(SecurityStateUnknown)
+    Ok("neutral") -> Ok(SecurityStateNeutral)
+    Ok("insecure") -> Ok(SecurityStateInsecure)
+    Ok("secure") -> Ok(SecurityStateSecure)
+    Ok("info") -> Ok(SecurityStateInfo)
+    Ok("insecure-broken") -> Ok(SecurityStateInsecureBroken)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// An explanation of an factor contributing to the security state.
@@ -100,6 +132,7 @@ pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// The action to take when a certificate error occurs. continue will continue processing the
 /// request and cancel will cancel the request.
 pub type CertificateErrorAction {
@@ -114,4 +147,13 @@ pub fn encode__certificate_error_action(value__: CertificateErrorAction) {
     CertificateErrorActionCancel -> "cancel"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("continue") -> Ok(CertificateErrorActionContinue)
+    Ok("cancel") -> Ok(CertificateErrorActionCancel)
+    _ -> Error(chrome.ProtocolError)
+  }
 }

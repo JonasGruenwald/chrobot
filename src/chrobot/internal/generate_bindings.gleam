@@ -722,7 +722,7 @@ fn to_gleam_primitive_function(protocol_primitive: String) {
     "integer" -> "int"
     "string" -> "string"
     "boolean" -> "bool"
-    "any" -> "string"
+    "any" -> "dynamic"
     _ -> {
       io.debug(protocol_primitive)
       panic as "can't translate to gleam primitive function"
@@ -952,6 +952,7 @@ fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
   |> sb.append(appendage)
   |> sb.append("\n")
   |> sb.append(gen_type_def_encoder(t))
+  |> sb.append(gen_type_def_decoder(t))
 }
 
 fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
@@ -961,6 +962,14 @@ fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
 
 fn internal_fn(name: String, params: String, body: String) {
   "@internal\npub fn " <> name <> "(\n" <> params <> ") {\n" <> body <> "}\n"
+}
+
+fn decoder_fn(name: String, params: String, body: String) {
+  internal_fn(
+    name,
+    params,
+    body <> "|> result.replace_error(chrome.ProtocolError)\n",
+  )
 }
 
 fn get_internal_function_name(internal_descriptor: String, type_name: String) {
@@ -1164,6 +1173,39 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
       |> json.object
  }         ",
       )
+    }
+    // Below are not implemented because they currently don't occur
+    ArrayType(items: ReferenceItem(ref_target)) -> {
+      io.debug(type_def)
+      panic as "tried to generate type def encoder for an array of refs"
+    }
+    RefType(_) -> {
+      io.debug(type_def)
+      panic as "tried to generate type def encoder for a type which is a ref!"
+    }
+  }
+}
+
+fn gen_type_def_decoder(type_def: TypeDefinition) {
+  case type_def.inner {
+    PrimitiveType(primitive_type) -> {
+      get_decoder_name(type_def.id)
+      |> decoder_fn(
+        "value__: dynamic.Dynamic",
+        "dynamic." <> to_gleam_primitive_function(primitive_type) <> "(value__)",
+      )
+    }
+    EnumType(enum) -> {
+      gen_enum_decoder(type_def.id, enum)
+    }
+    ArrayType(items: PrimitiveItem(primitive_type)) -> {
+      "\n// TODO implement decoder for Array of primitives\n"
+    }
+    ObjectType(Some(properties)) -> {
+      "\n// TODO implement decoder for Object with props\n"
+    }
+    ObjectType(None) -> {
+      "\n// TODO implement decoder for Dict \n"
     }
     // Below are not implemented because they currently don't occur
     ArrayType(items: ReferenceItem(ref_target)) -> {

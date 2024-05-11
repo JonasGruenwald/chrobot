@@ -38,3 +38,4 @@ pub fn encode__trace_config(value__: TraceConfig) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

@@ -198,6 +198,7 @@ pub fn encode__log_entry(value__: LogEntry) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Violation configuration setting.
 pub type ViolationSetting {
   ViolationSetting(name: ViolationSettingName, threshold: Float)
@@ -250,3 +251,4 @@ pub fn encode__violation_setting(value__: ViolationSetting) {
     #("threshold", json.float(value__.threshold)),
   ])
 }
+// TODO implement decoder for Object with props

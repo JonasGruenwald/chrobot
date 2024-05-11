@@ -11,6 +11,8 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
 import gleam/option
 import protocol/dom
@@ -31,6 +33,16 @@ pub fn encode__dom_breakpoint_type(value__: DOMBreakpointType) {
     DOMBreakpointTypeNodeRemoved -> "node-removed"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__dom_breakpoint_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("subtree-modified") -> Ok(DOMBreakpointTypeSubtreeModified)
+    Ok("attribute-modified") -> Ok(DOMBreakpointTypeAttributeModified)
+    Ok("node-removed") -> Ok(DOMBreakpointTypeNodeRemoved)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Object event listener.
@@ -79,3 +91,4 @@ pub fn encode__event_listener(value__: EventListener) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

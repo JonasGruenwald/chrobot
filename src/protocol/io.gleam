@@ -10,7 +10,10 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
+import gleam/result
 
 /// This is either obtained from another method or specified as `blob:<uuid>` where
 /// `<uuid>` is an UUID of a Blob.
@@ -23,4 +26,10 @@ pub fn encode__stream_handle(value__: StreamHandle) {
   case value__ {
     StreamHandle(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__stream_handle(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }

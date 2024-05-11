@@ -15,6 +15,7 @@ import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 import protocol/runtime
 
 /// Breakpoint identifier.
@@ -29,6 +30,12 @@ pub fn encode__breakpoint_id(value__: BreakpointId) {
   }
 }
 
+@internal
+pub fn decode__breakpoint_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Call frame identifier.
 pub type CallFrameId {
   CallFrameId(String)
@@ -39,6 +46,12 @@ pub fn encode__call_frame_id(value__: CallFrameId) {
   case value__ {
     CallFrameId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__call_frame_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Location in the source code.
@@ -64,6 +77,7 @@ pub fn encode__location(value__: Location) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// JavaScript call frame. Array of call frames form the call stack.
 pub type CallFrame {
   CallFrame(
@@ -100,6 +114,7 @@ pub fn encode__call_frame(value__: CallFrame) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Scope description.
 pub type Scope {
   Scope(
@@ -186,6 +201,7 @@ pub fn encode__scope(value__: Scope) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Search match for resource.
 pub type SearchMatch {
   SearchMatch(line_number: Float, line_content: String)
@@ -199,6 +215,7 @@ pub fn encode__search_match(value__: SearchMatch) {
   ])
 }
 
+// TODO implement decoder for Object with props
 pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
@@ -256,6 +273,7 @@ pub fn encode__break_location(value__: BreakLocation) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Enum of possible script languages.
 pub type ScriptLanguage {
   ScriptLanguageJavaScript
@@ -269,6 +287,15 @@ pub fn encode__script_language(value__: ScriptLanguage) {
     ScriptLanguageWebAssembly -> "WebAssembly"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__script_language(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("JavaScript") -> Ok(ScriptLanguageJavaScript)
+    Ok("WebAssembly") -> Ok(ScriptLanguageWebAssembly)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Debug symbols available for a wasm script.
@@ -319,3 +346,4 @@ pub fn encode__debug_symbols(value__: DebugSymbols) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

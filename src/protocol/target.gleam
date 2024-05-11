@@ -10,8 +10,11 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 
 pub type TargetID {
   TargetID(String)
@@ -24,6 +27,12 @@ pub fn encode__target_id(value__: TargetID) {
   }
 }
 
+@internal
+pub fn decode__target_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Unique identifier of attached debugging session.
 pub type SessionID {
   SessionID(String)
@@ -34,6 +43,12 @@ pub fn encode__session_id(value__: SessionID) {
   case value__ {
     SessionID(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__session_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 pub type TargetInfo {
@@ -63,3 +78,4 @@ pub fn encode__target_info(value__: TargetInfo) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

@@ -10,8 +10,11 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
+import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 
 pub type TouchPoint {
   TouchPoint(
@@ -77,6 +80,7 @@ pub fn encode__touch_point(value__: TouchPoint) {
   ])
 }
 
+// TODO implement decoder for Object with props
 pub type MouseButton {
   MouseButtonNone
   MouseButtonLeft
@@ -99,6 +103,19 @@ pub fn encode__mouse_button(value__: MouseButton) {
   |> json.string()
 }
 
+@internal
+pub fn decode__mouse_button(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("none") -> Ok(MouseButtonNone)
+    Ok("left") -> Ok(MouseButtonLeft)
+    Ok("middle") -> Ok(MouseButtonMiddle)
+    Ok("right") -> Ok(MouseButtonRight)
+    Ok("back") -> Ok(MouseButtonBack)
+    Ok("forward") -> Ok(MouseButtonForward)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// UTC time in seconds, counted from January 1, 1970.
 pub type TimeSinceEpoch {
   TimeSinceEpoch(Float)
@@ -109,4 +126,10 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
   case value__ {
     TimeSinceEpoch(inner_value__) -> json.float(inner_value__)
   }
+}
+
+@internal
+pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
+  dynamic.float(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }

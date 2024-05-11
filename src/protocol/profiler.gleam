@@ -60,6 +60,7 @@ pub fn encode__profile_node(value__: ProfileNode) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Profile.
 pub type Profile {
   Profile(
@@ -92,6 +93,7 @@ pub fn encode__profile(value__: Profile) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Specifies a number of samples attributed to a certain source position.
 pub type PositionTickInfo {
   PositionTickInfo(line: Int, ticks: Int)
@@ -105,6 +107,7 @@ pub fn encode__position_tick_info(value__: PositionTickInfo) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Coverage data for a source range.
 pub type CoverageRange {
   CoverageRange(start_offset: Int, end_offset: Int, count: Int)
@@ -119,6 +122,7 @@ pub fn encode__coverage_range(value__: CoverageRange) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Coverage data for a JavaScript function.
 pub type FunctionCoverage {
   FunctionCoverage(
@@ -137,6 +141,7 @@ pub fn encode__function_coverage(value__: FunctionCoverage) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Coverage data for a JavaScript script.
 pub type ScriptCoverage {
   ScriptCoverage(
@@ -154,3 +159,4 @@ pub fn encode__script_coverage(value__: ScriptCoverage) {
     #("functions", json.array(value__.functions, of: encode__function_coverage)),
   ])
 }
+// TODO implement decoder for Object with props

@@ -20,6 +20,7 @@ import gleam/dynamic
 import gleam/json
 import gleam/list
 import gleam/option
+import gleam/result
 
 /// Unique script identifier.
 pub type ScriptId {
@@ -31,6 +32,12 @@ pub fn encode__script_id(value__: ScriptId) {
   case value__ {
     ScriptId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__script_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
@@ -95,6 +102,7 @@ pub fn encode__serialization_options(value__: SerializationOptions) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Represents deep serialized value.
 pub type DeepSerializedValue {
   DeepSerializedValue(
@@ -223,6 +231,7 @@ pub fn encode__deep_serialized_value(value__: DeepSerializedValue) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Unique object identifier.
 pub type RemoteObjectId {
   RemoteObjectId(String)
@@ -233,6 +242,12 @@ pub fn encode__remote_object_id(value__: RemoteObjectId) {
   case value__ {
     RemoteObjectId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__remote_object_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
@@ -246,6 +261,12 @@ pub fn encode__unserializable_value(value__: UnserializableValue) {
   case value__ {
     UnserializableValue(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__unserializable_value(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Mirror object referencing original JavaScript object.
@@ -425,6 +446,7 @@ pub fn encode__remote_object(value__: RemoteObject) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Object property descriptor.
 pub type PropertyDescriptor {
   PropertyDescriptor(
@@ -492,6 +514,7 @@ pub fn encode__property_descriptor(value__: PropertyDescriptor) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor {
   InternalPropertyDescriptor(name: String, value: option.Option(RemoteObject))
@@ -510,6 +533,7 @@ pub fn encode__internal_property_descriptor(value__: InternalPropertyDescriptor)
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
 /// unserializable primitive value or neither of (for undefined) them should be specified.
 pub type CallArgument {
@@ -546,6 +570,7 @@ pub fn encode__call_argument(value__: CallArgument) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Id of an execution context.
 pub type ExecutionContextId {
   ExecutionContextId(Int)
@@ -556,6 +581,12 @@ pub fn encode__execution_context_id(value__: ExecutionContextId) {
   case value__ {
     ExecutionContextId(inner_value__) -> json.int(inner_value__)
   }
+}
+
+@internal
+pub fn decode__execution_context_id(value__: dynamic.Dynamic) {
+  dynamic.int(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Description of an isolated world.
@@ -586,6 +617,7 @@ pub fn encode__execution_context_description(value__: ExecutionContextDescriptio
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Detailed information about exception (or error) that was thrown during script compilation or
 /// execution.
 pub type ExceptionDetails {
@@ -642,6 +674,7 @@ pub fn encode__exception_details(value__: ExceptionDetails) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Number of milliseconds since epoch.
 pub type Timestamp {
   Timestamp(Float)
@@ -654,6 +687,12 @@ pub fn encode__timestamp(value__: Timestamp) {
   }
 }
 
+@internal
+pub fn decode__timestamp(value__: dynamic.Dynamic) {
+  dynamic.float(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Number of milliseconds.
 pub type TimeDelta {
   TimeDelta(Float)
@@ -664,6 +703,12 @@ pub fn encode__time_delta(value__: TimeDelta) {
   case value__ {
     TimeDelta(inner_value__) -> json.float(inner_value__)
   }
+}
+
+@internal
+pub fn decode__time_delta(value__: dynamic.Dynamic) {
+  dynamic.float(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Stack entry for runtime errors and assertions.
@@ -688,6 +733,7 @@ pub fn encode__call_frame(value__: CallFrame) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Call frames for assertions or error messages.
 pub type StackTrace {
   StackTrace(
@@ -715,3 +761,4 @@ pub fn encode__stack_trace(value__: StackTrace) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

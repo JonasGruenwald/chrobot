@@ -16,9 +16,11 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 import protocol/runtime
 
 /// Unique DOM node identifier.
@@ -33,6 +35,12 @@ pub fn encode__node_id(value__: NodeId) {
   }
 }
 
+@internal
+pub fn decode__node_id(value__: dynamic.Dynamic) {
+  dynamic.int(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Unique DOM node identifier used to reference a node that may not have been pushed to the
 /// front-end.
 pub type BackendNodeId {
@@ -44,6 +52,12 @@ pub fn encode__backend_node_id(value__: BackendNodeId) {
   case value__ {
     BackendNodeId(inner_value__) -> json.int(inner_value__)
   }
+}
+
+@internal
+pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
+  dynamic.int(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Backend node with a friendly name.
@@ -60,6 +74,7 @@ pub fn encode__backend_node(value__: BackendNode) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Pseudo element type.
 pub type PseudoType {
   PseudoTypeFirstLine
@@ -125,6 +140,40 @@ pub fn encode__pseudo_type(value__: PseudoType) {
   |> json.string()
 }
 
+@internal
+pub fn decode__pseudo_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("first-line") -> Ok(PseudoTypeFirstLine)
+    Ok("first-letter") -> Ok(PseudoTypeFirstLetter)
+    Ok("before") -> Ok(PseudoTypeBefore)
+    Ok("after") -> Ok(PseudoTypeAfter)
+    Ok("marker") -> Ok(PseudoTypeMarker)
+    Ok("backdrop") -> Ok(PseudoTypeBackdrop)
+    Ok("selection") -> Ok(PseudoTypeSelection)
+    Ok("target-text") -> Ok(PseudoTypeTargetText)
+    Ok("spelling-error") -> Ok(PseudoTypeSpellingError)
+    Ok("grammar-error") -> Ok(PseudoTypeGrammarError)
+    Ok("highlight") -> Ok(PseudoTypeHighlight)
+    Ok("first-line-inherited") -> Ok(PseudoTypeFirstLineInherited)
+    Ok("scroll-marker") -> Ok(PseudoTypeScrollMarker)
+    Ok("scroll-markers") -> Ok(PseudoTypeScrollMarkers)
+    Ok("scrollbar") -> Ok(PseudoTypeScrollbar)
+    Ok("scrollbar-thumb") -> Ok(PseudoTypeScrollbarThumb)
+    Ok("scrollbar-button") -> Ok(PseudoTypeScrollbarButton)
+    Ok("scrollbar-track") -> Ok(PseudoTypeScrollbarTrack)
+    Ok("scrollbar-track-piece") -> Ok(PseudoTypeScrollbarTrackPiece)
+    Ok("scrollbar-corner") -> Ok(PseudoTypeScrollbarCorner)
+    Ok("resizer") -> Ok(PseudoTypeResizer)
+    Ok("input-list-button") -> Ok(PseudoTypeInputListButton)
+    Ok("view-transition") -> Ok(PseudoTypeViewTransition)
+    Ok("view-transition-group") -> Ok(PseudoTypeViewTransitionGroup)
+    Ok("view-transition-image-pair") -> Ok(PseudoTypeViewTransitionImagePair)
+    Ok("view-transition-old") -> Ok(PseudoTypeViewTransitionOld)
+    Ok("view-transition-new") -> Ok(PseudoTypeViewTransitionNew)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Shadow root type.
 pub type ShadowRootType {
   ShadowRootTypeUserAgent
@@ -140,6 +189,16 @@ pub fn encode__shadow_root_type(value__: ShadowRootType) {
     ShadowRootTypeClosed -> "closed"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__shadow_root_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("user-agent") -> Ok(ShadowRootTypeUserAgent)
+    Ok("open") -> Ok(ShadowRootTypeOpen)
+    Ok("closed") -> Ok(ShadowRootTypeClosed)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Document compatibility mode.
@@ -159,6 +218,16 @@ pub fn encode__compatibility_mode(value__: CompatibilityMode) {
   |> json.string()
 }
 
+@internal
+pub fn decode__compatibility_mode(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("QuirksMode") -> Ok(CompatibilityModeQuirksMode)
+    Ok("LimitedQuirksMode") -> Ok(CompatibilityModeLimitedQuirksMode)
+    Ok("NoQuirksMode") -> Ok(CompatibilityModeNoQuirksMode)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// ContainerSelector physical axes
 pub type PhysicalAxes {
   PhysicalAxesHorizontal
@@ -174,6 +243,16 @@ pub fn encode__physical_axes(value__: PhysicalAxes) {
     PhysicalAxesBoth -> "Both"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__physical_axes(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Horizontal") -> Ok(PhysicalAxesHorizontal)
+    Ok("Vertical") -> Ok(PhysicalAxesVertical)
+    Ok("Both") -> Ok(PhysicalAxesBoth)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// ContainerSelector logical axes
@@ -193,6 +272,16 @@ pub fn encode__logical_axes(value__: LogicalAxes) {
   |> json.string()
 }
 
+@internal
+pub fn decode__logical_axes(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Inline") -> Ok(LogicalAxesInline)
+    Ok("Block") -> Ok(LogicalAxesBlock)
+    Ok("Both") -> Ok(LogicalAxesBoth)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Physical scroll orientation
 pub type ScrollOrientation {
   ScrollOrientationHorizontal
@@ -206,6 +295,15 @@ pub fn encode__scroll_orientation(value__: ScrollOrientation) {
     ScrollOrientationVertical -> "vertical"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__scroll_orientation(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("horizontal") -> Ok(ScrollOrientationHorizontal)
+    Ok("vertical") -> Ok(ScrollOrientationVertical)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes.
@@ -401,6 +499,7 @@ pub fn encode__node(value__: Node) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// A structure holding an RGBA color.
 pub type RGBA {
   RGBA(r: Int, g: Int, b: Int, a: option.Option(Float))
@@ -421,6 +520,7 @@ pub fn encode__rgba(value__: RGBA) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
 pub type Quad {
   Quad(List(Float))
@@ -433,6 +533,7 @@ pub fn encode__quad(value__: Quad) {
   }
 }
 
+// TODO implement decoder for Array of primitives
 /// Box model.
 pub type BoxModel {
   BoxModel(
@@ -464,6 +565,7 @@ pub fn encode__box_model(value__: BoxModel) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// CSS Shape Outside details.
 pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
@@ -490,6 +592,7 @@ pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Rectangle.
 pub type Rect {
   Rect(x: Float, y: Float, width: Float, height: Float)
@@ -505,6 +608,7 @@ pub fn encode__rect(value__: Rect) {
   ])
 }
 
+// TODO implement decoder for Object with props
 pub type CSSComputedStyleProperty {
   CSSComputedStyleProperty(name: String, value: String)
 }
@@ -516,3 +620,4 @@ pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
     #("value", json.string(value__.value)),
   ])
 }
+// TODO implement decoder for Object with props

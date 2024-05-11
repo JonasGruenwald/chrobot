@@ -14,6 +14,7 @@ import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
+import gleam/result
 import protocol/io
 import protocol/network
 import protocol/page
@@ -28,6 +29,12 @@ pub fn encode__request_id(value__: RequestId) {
   case value__ {
     RequestId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__request_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Stages of the request to handle. Request will intercept before the request is
@@ -45,6 +52,15 @@ pub fn encode__request_stage(value__: RequestStage) {
     RequestStageResponse -> "Response"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__request_stage(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Request") -> Ok(RequestStageRequest)
+    Ok("Response") -> Ok(RequestStageResponse)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 pub type RequestPattern {
@@ -79,6 +95,7 @@ pub fn encode__request_pattern(value__: RequestPattern) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Response HTTP header entry
 pub type HeaderEntry {
   HeaderEntry(name: String, value: String)
@@ -92,6 +109,7 @@ pub fn encode__header_entry(value__: HeaderEntry) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Authorization challenge for HTTP status code 401 or 407.
 pub type AuthChallenge {
   AuthChallenge(
@@ -142,6 +160,7 @@ pub fn encode__auth_challenge(value__: AuthChallenge) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Response to an AuthChallenge.
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
@@ -198,3 +217,4 @@ pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

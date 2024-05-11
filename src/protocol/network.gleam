@@ -17,6 +17,7 @@ import gleam/dynamic
 import gleam/json
 import gleam/list
 import gleam/option
+import gleam/result
 import protocol/debugger
 import protocol/runtime
 import protocol/security
@@ -68,6 +69,31 @@ pub fn encode__resource_type(value__: ResourceType) {
   |> json.string()
 }
 
+@internal
+pub fn decode__resource_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Document") -> Ok(ResourceTypeDocument)
+    Ok("Stylesheet") -> Ok(ResourceTypeStylesheet)
+    Ok("Image") -> Ok(ResourceTypeImage)
+    Ok("Media") -> Ok(ResourceTypeMedia)
+    Ok("Font") -> Ok(ResourceTypeFont)
+    Ok("Script") -> Ok(ResourceTypeScript)
+    Ok("TextTrack") -> Ok(ResourceTypeTextTrack)
+    Ok("XHR") -> Ok(ResourceTypeXhr)
+    Ok("Fetch") -> Ok(ResourceTypeFetch)
+    Ok("Prefetch") -> Ok(ResourceTypePrefetch)
+    Ok("EventSource") -> Ok(ResourceTypeEventSource)
+    Ok("WebSocket") -> Ok(ResourceTypeWebSocket)
+    Ok("Manifest") -> Ok(ResourceTypeManifest)
+    Ok("SignedExchange") -> Ok(ResourceTypeSignedExchange)
+    Ok("Ping") -> Ok(ResourceTypePing)
+    Ok("CSPViolationReport") -> Ok(ResourceTypeCspViolationReport)
+    Ok("Preflight") -> Ok(ResourceTypePreflight)
+    Ok("Other") -> Ok(ResourceTypeOther)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Unique loader identifier.
 pub type LoaderId {
   LoaderId(String)
@@ -78,6 +104,12 @@ pub fn encode__loader_id(value__: LoaderId) {
   case value__ {
     LoaderId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__loader_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Unique request identifier.
@@ -92,6 +124,12 @@ pub fn encode__request_id(value__: RequestId) {
   }
 }
 
+@internal
+pub fn decode__request_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Unique intercepted request identifier.
 pub type InterceptionId {
   InterceptionId(String)
@@ -102,6 +140,12 @@ pub fn encode__interception_id(value__: InterceptionId) {
   case value__ {
     InterceptionId(inner_value__) -> json.string(inner_value__)
   }
+}
+
+@internal
+pub fn decode__interception_id(value__: dynamic.Dynamic) {
+  dynamic.string(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Network level fetch failure reason.
@@ -143,6 +187,27 @@ pub fn encode__error_reason(value__: ErrorReason) {
   |> json.string()
 }
 
+@internal
+pub fn decode__error_reason(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Failed") -> Ok(ErrorReasonFailed)
+    Ok("Aborted") -> Ok(ErrorReasonAborted)
+    Ok("TimedOut") -> Ok(ErrorReasonTimedOut)
+    Ok("AccessDenied") -> Ok(ErrorReasonAccessDenied)
+    Ok("ConnectionClosed") -> Ok(ErrorReasonConnectionClosed)
+    Ok("ConnectionReset") -> Ok(ErrorReasonConnectionReset)
+    Ok("ConnectionRefused") -> Ok(ErrorReasonConnectionRefused)
+    Ok("ConnectionAborted") -> Ok(ErrorReasonConnectionAborted)
+    Ok("ConnectionFailed") -> Ok(ErrorReasonConnectionFailed)
+    Ok("NameNotResolved") -> Ok(ErrorReasonNameNotResolved)
+    Ok("InternetDisconnected") -> Ok(ErrorReasonInternetDisconnected)
+    Ok("AddressUnreachable") -> Ok(ErrorReasonAddressUnreachable)
+    Ok("BlockedByClient") -> Ok(ErrorReasonBlockedByClient)
+    Ok("BlockedByResponse") -> Ok(ErrorReasonBlockedByResponse)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// UTC time in seconds, counted from January 1, 1970.
 pub type TimeSinceEpoch {
   TimeSinceEpoch(Float)
@@ -155,6 +220,12 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
   }
 }
 
+@internal
+pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
+  dynamic.float(value__)
+  |> result.replace_error(chrome.ProtocolError)
+}
+
 /// Monotonically increasing time in seconds since an arbitrary point in the past.
 pub type MonotonicTime {
   MonotonicTime(Float)
@@ -165,6 +236,12 @@ pub fn encode__monotonic_time(value__: MonotonicTime) {
   case value__ {
     MonotonicTime(inner_value__) -> json.float(inner_value__)
   }
+}
+
+@internal
+pub fn decode__monotonic_time(value__: dynamic.Dynamic) {
+  dynamic.float(value__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Request / response headers as keys / values of JSON object.
@@ -182,6 +259,7 @@ pub fn encode__headers(value__: Headers) {
   }
 }
 
+// TODO implement decoder for Dict 
 /// The underlying connection technology that the browser is supposedly using.
 pub type ConnectionType {
   ConnectionTypeNone
@@ -211,6 +289,22 @@ pub fn encode__connection_type(value__: ConnectionType) {
   |> json.string()
 }
 
+@internal
+pub fn decode__connection_type(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("none") -> Ok(ConnectionTypeNone)
+    Ok("cellular2g") -> Ok(ConnectionTypeCellular2g)
+    Ok("cellular3g") -> Ok(ConnectionTypeCellular3g)
+    Ok("cellular4g") -> Ok(ConnectionTypeCellular4g)
+    Ok("bluetooth") -> Ok(ConnectionTypeBluetooth)
+    Ok("ethernet") -> Ok(ConnectionTypeEthernet)
+    Ok("wifi") -> Ok(ConnectionTypeWifi)
+    Ok("wimax") -> Ok(ConnectionTypeWimax)
+    Ok("other") -> Ok(ConnectionTypeOther)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Represents the cookie's 'SameSite' status:
 /// https://tools.ietf.org/html/draft-west-first-party-cookies
 pub type CookieSameSite {
@@ -227,6 +321,16 @@ pub fn encode__cookie_same_site(value__: CookieSameSite) {
     CookieSameSiteNone -> "None"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__cookie_same_site(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("Strict") -> Ok(CookieSameSiteStrict)
+    Ok("Lax") -> Ok(CookieSameSiteLax)
+    Ok("None") -> Ok(CookieSameSiteNone)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Timing information for the request.
@@ -265,6 +369,7 @@ pub fn encode__resource_timing(value__: ResourceTiming) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Loading priority of a resource request.
 pub type ResourcePriority {
   ResourcePriorityVeryLow
@@ -286,6 +391,18 @@ pub fn encode__resource_priority(value__: ResourcePriority) {
   |> json.string()
 }
 
+@internal
+pub fn decode__resource_priority(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("VeryLow") -> Ok(ResourcePriorityVeryLow)
+    Ok("Low") -> Ok(ResourcePriorityLow)
+    Ok("Medium") -> Ok(ResourcePriorityMedium)
+    Ok("High") -> Ok(ResourcePriorityHigh)
+    Ok("VeryHigh") -> Ok(ResourcePriorityVeryHigh)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 /// Post data entry for HTTP request
 pub type PostDataEntry {
   PostDataEntry(bytes: option.Option(String))
@@ -303,6 +420,7 @@ pub fn encode__post_data_entry(value__: PostDataEntry) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// HTTP request data.
 pub type Request {
   Request(
@@ -403,6 +521,7 @@ pub fn encode__request(value__: Request) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Details of a signed certificate timestamp (SCT).
 pub type SignedCertificateTimestamp {
   SignedCertificateTimestamp(
@@ -431,6 +550,7 @@ pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp)
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Security details about a request.
 pub type SecurityDetails {
   SecurityDetails(
@@ -499,6 +619,7 @@ pub fn encode__security_details(value__: SecurityDetails) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Whether the request complied with Certificate Transparency policy.
 pub type CertificateTransparencyCompliance {
   CertificateTransparencyComplianceUnknown
@@ -514,6 +635,16 @@ pub fn encode__certificate_transparency_compliance(value__: CertificateTranspare
     CertificateTransparencyComplianceCompliant -> "compliant"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__certificate_transparency_compliance(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("unknown") -> Ok(CertificateTransparencyComplianceUnknown)
+    Ok("not-compliant") -> Ok(CertificateTransparencyComplianceNotCompliant)
+    Ok("compliant") -> Ok(CertificateTransparencyComplianceCompliant)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// The reason why request was blocked.
@@ -552,6 +683,28 @@ pub fn encode__blocked_reason(value__: BlockedReason) {
     BlockedReasonCorpNotSameSite -> "corp-not-same-site"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__blocked_reason(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("other") -> Ok(BlockedReasonOther)
+    Ok("csp") -> Ok(BlockedReasonCsp)
+    Ok("mixed-content") -> Ok(BlockedReasonMixedContent)
+    Ok("origin") -> Ok(BlockedReasonOrigin)
+    Ok("inspector") -> Ok(BlockedReasonInspector)
+    Ok("subresource-filter") -> Ok(BlockedReasonSubresourceFilter)
+    Ok("content-type") -> Ok(BlockedReasonContentType)
+    Ok("coep-frame-resource-needs-coep-header") ->
+      Ok(BlockedReasonCoepFrameResourceNeedsCoepHeader)
+    Ok("coop-sandboxed-iframe-cannot-navigate-to-coop-page") ->
+      Ok(BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage)
+    Ok("corp-not-same-origin") -> Ok(BlockedReasonCorpNotSameOrigin)
+    Ok("corp-not-same-origin-after-defaulted-to-same-origin-by-coep") ->
+      Ok(BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep)
+    Ok("corp-not-same-site") -> Ok(BlockedReasonCorpNotSameSite)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// The reason why request was blocked.
@@ -648,6 +801,70 @@ pub fn encode__cors_error(value__: CorsError) {
   |> json.string()
 }
 
+@internal
+pub fn decode__cors_error(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("DisallowedByMode") -> Ok(CorsErrorDisallowedByMode)
+    Ok("InvalidResponse") -> Ok(CorsErrorInvalidResponse)
+    Ok("WildcardOriginNotAllowed") -> Ok(CorsErrorWildcardOriginNotAllowed)
+    Ok("MissingAllowOriginHeader") -> Ok(CorsErrorMissingAllowOriginHeader)
+    Ok("MultipleAllowOriginValues") -> Ok(CorsErrorMultipleAllowOriginValues)
+    Ok("InvalidAllowOriginValue") -> Ok(CorsErrorInvalidAllowOriginValue)
+    Ok("AllowOriginMismatch") -> Ok(CorsErrorAllowOriginMismatch)
+    Ok("InvalidAllowCredentials") -> Ok(CorsErrorInvalidAllowCredentials)
+    Ok("CorsDisabledScheme") -> Ok(CorsErrorCorsDisabledScheme)
+    Ok("PreflightInvalidStatus") -> Ok(CorsErrorPreflightInvalidStatus)
+    Ok("PreflightDisallowedRedirect") ->
+      Ok(CorsErrorPreflightDisallowedRedirect)
+    Ok("PreflightWildcardOriginNotAllowed") ->
+      Ok(CorsErrorPreflightWildcardOriginNotAllowed)
+    Ok("PreflightMissingAllowOriginHeader") ->
+      Ok(CorsErrorPreflightMissingAllowOriginHeader)
+    Ok("PreflightMultipleAllowOriginValues") ->
+      Ok(CorsErrorPreflightMultipleAllowOriginValues)
+    Ok("PreflightInvalidAllowOriginValue") ->
+      Ok(CorsErrorPreflightInvalidAllowOriginValue)
+    Ok("PreflightAllowOriginMismatch") ->
+      Ok(CorsErrorPreflightAllowOriginMismatch)
+    Ok("PreflightInvalidAllowCredentials") ->
+      Ok(CorsErrorPreflightInvalidAllowCredentials)
+    Ok("PreflightMissingAllowExternal") ->
+      Ok(CorsErrorPreflightMissingAllowExternal)
+    Ok("PreflightInvalidAllowExternal") ->
+      Ok(CorsErrorPreflightInvalidAllowExternal)
+    Ok("PreflightMissingAllowPrivateNetwork") ->
+      Ok(CorsErrorPreflightMissingAllowPrivateNetwork)
+    Ok("PreflightInvalidAllowPrivateNetwork") ->
+      Ok(CorsErrorPreflightInvalidAllowPrivateNetwork)
+    Ok("InvalidAllowMethodsPreflightResponse") ->
+      Ok(CorsErrorInvalidAllowMethodsPreflightResponse)
+    Ok("InvalidAllowHeadersPreflightResponse") ->
+      Ok(CorsErrorInvalidAllowHeadersPreflightResponse)
+    Ok("MethodDisallowedByPreflightResponse") ->
+      Ok(CorsErrorMethodDisallowedByPreflightResponse)
+    Ok("HeaderDisallowedByPreflightResponse") ->
+      Ok(CorsErrorHeaderDisallowedByPreflightResponse)
+    Ok("RedirectContainsCredentials") ->
+      Ok(CorsErrorRedirectContainsCredentials)
+    Ok("InsecurePrivateNetwork") -> Ok(CorsErrorInsecurePrivateNetwork)
+    Ok("InvalidPrivateNetworkAccess") ->
+      Ok(CorsErrorInvalidPrivateNetworkAccess)
+    Ok("UnexpectedPrivateNetworkAccess") ->
+      Ok(CorsErrorUnexpectedPrivateNetworkAccess)
+    Ok("NoCorsRedirectModeNotFollow") ->
+      Ok(CorsErrorNoCorsRedirectModeNotFollow)
+    Ok("PreflightMissingPrivateNetworkAccessId") ->
+      Ok(CorsErrorPreflightMissingPrivateNetworkAccessId)
+    Ok("PreflightMissingPrivateNetworkAccessName") ->
+      Ok(CorsErrorPreflightMissingPrivateNetworkAccessName)
+    Ok("PrivateNetworkAccessPermissionUnavailable") ->
+      Ok(CorsErrorPrivateNetworkAccessPermissionUnavailable)
+    Ok("PrivateNetworkAccessPermissionDenied") ->
+      Ok(CorsErrorPrivateNetworkAccessPermissionDenied)
+    _ -> Error(chrome.ProtocolError)
+  }
+}
+
 pub type CorsErrorStatus {
   CorsErrorStatus(cors_error: CorsError, failed_parameter: String)
 }
@@ -660,6 +877,7 @@ pub fn encode__cors_error_status(value__: CorsErrorStatus) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Source of serviceworker response.
 pub type ServiceWorkerResponseSource {
   ServiceWorkerResponseSourceCacheStorage
@@ -677,6 +895,17 @@ pub fn encode__service_worker_response_source(value__: ServiceWorkerResponseSour
     ServiceWorkerResponseSourceNetwork -> "network"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__service_worker_response_source(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("cache-storage") -> Ok(ServiceWorkerResponseSourceCacheStorage)
+    Ok("http-cache") -> Ok(ServiceWorkerResponseSourceHttpCache)
+    Ok("fallback-code") -> Ok(ServiceWorkerResponseSourceFallbackCode)
+    Ok("network") -> Ok(ServiceWorkerResponseSourceNetwork)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// Source of service worker router.
@@ -697,6 +926,18 @@ pub fn encode__service_worker_router_source(value__: ServiceWorkerRouterSource) 
       "race-network-and-fetch-handler"
   }
   |> json.string()
+}
+
+@internal
+pub fn decode__service_worker_router_source(value__: dynamic.Dynamic) {
+  case dynamic.string(value__) {
+    Ok("network") -> Ok(ServiceWorkerRouterSourceNetwork)
+    Ok("cache") -> Ok(ServiceWorkerRouterSourceCache)
+    Ok("fetch-event") -> Ok(ServiceWorkerRouterSourceFetchEvent)
+    Ok("race-network-and-fetch-handler") ->
+      Ok(ServiceWorkerRouterSourceRaceNetworkAndFetchHandler)
+    _ -> Error(chrome.ProtocolError)
+  }
 }
 
 /// HTTP response data.
@@ -822,6 +1063,7 @@ pub fn encode__response(value__: Response) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// WebSocket request data.
 pub type WebSocketRequest {
   WebSocketRequest(headers: Headers)
@@ -832,6 +1074,7 @@ pub fn encode__web_socket_request(value__: WebSocketRequest) {
   json.object([#("headers", encode__headers(value__.headers))])
 }
 
+// TODO implement decoder for Object with props
 /// WebSocket response data.
 pub type WebSocketResponse {
   WebSocketResponse(
@@ -871,6 +1114,7 @@ pub fn encode__web_socket_response(value__: WebSocketResponse) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
 pub type WebSocketFrame {
   WebSocketFrame(opcode: Float, mask: Bool, payload_data: String)
@@ -885,6 +1129,7 @@ pub fn encode__web_socket_frame(value__: WebSocketFrame) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Information about the cached resource.
 pub type CachedResource {
   CachedResource(
@@ -910,6 +1155,7 @@ pub fn encode__cached_resource(value__: CachedResource) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Information about the request initiator.
 pub type Initiator {
   Initiator(
@@ -996,6 +1242,7 @@ pub fn encode__initiator(value__: Initiator) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Cookie object
 pub type Cookie {
   Cookie(
@@ -1033,6 +1280,7 @@ pub fn encode__cookie(value__: Cookie) {
   ])
 }
 
+// TODO implement decoder for Object with props
 /// Cookie parameter object
 pub type CookieParam {
   CookieParam(
@@ -1097,3 +1345,4 @@ pub fn encode__cookie_param(value__: CookieParam) {
     }),
   ])
 }
+// TODO implement decoder for Object with props

@@ -24,3 +24,4 @@ pub fn encode__metric(value__: Metric) {
     #("value", json.float(value__.value)),
   ])
 }
+// TODO implement decoder for Object with props

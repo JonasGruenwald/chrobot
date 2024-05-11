@@ -61,6 +61,7 @@ pub fn encode__screen_orientation(value__: ScreenOrientation) {
   ])
 }
 
+// TODO implement decoder for Object with props
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
@@ -103,6 +104,7 @@ pub fn encode__display_feature(value__: DisplayFeature) {
   ])
 }
 
+// TODO implement decoder for Object with props
 pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
@@ -137,6 +139,7 @@ pub fn encode__device_posture(value__: DevicePosture) {
   json.object([#("type", encode__device_posture_type(value__.type_))])
 }
 
+// TODO implement decoder for Object with props
 pub type MediaFeature {
   MediaFeature(name: String, value: String)
 }
@@ -148,3 +151,4 @@ pub fn encode__media_feature(value__: MediaFeature) {
     #("value", json.string(value__.value)),
   ])
 }
+// TODO implement decoder for Object with props
