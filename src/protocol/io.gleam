@@ -14,6 +14,7 @@ import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
+import protocol/runtime
 
 /// This is either obtained from another method or specified as `blob:<uuid>` where
 /// `<uuid>` is an UUID of a Blob.
@@ -79,7 +80,7 @@ pub fn read(
   // TODO generate command body
 }
 
-pub fn resolve_blob(object_id: String) {
+pub fn resolve_blob(object_id: runtime.RemoteObjectId) {
   todo
   // TODO generate command body
 }

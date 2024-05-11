@@ -410,86 +410,56 @@ fn apply_propdef_patches(
   propdef: PropertyDefinition,
   domain: Domain,
 ) -> PropertyDefinition {
-  io.debug(propdef.inner)
-  case propdef.inner {
+  PropertyDefinition(
+    name: propdef.name,
+    description: propdef.description,
+    experimental: propdef.experimental,
+    deprecated: propdef.deprecated,
+    optional: propdef.optional,
+    inner: apply_type_patches(propdef.inner, domain),
+  )
+}
+
+/// See `apply_protocol_patches` for more info
+fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
+  case inner_type {
     // These patches are all references to other domains, which are not declared as dependencies.
     // We can't declare them as dependencies because that would create a circular dependency.
     // So we replace the reference with the actual type from the other domain.
     RefType("Page.FrameId")
       if domain.domain == "DOM" || domain.domain == "Accessibility"
-    ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: PrimitiveType("string"),
+    -> {
+      io.println(
+        "[PATCHING PROTOCOL] Replacing instance of 'Page.FrameId' with its primitive type, because the domain is not a depencency of "
+        <> domain.domain,
       )
+      PrimitiveType("string")
+    }
     RefType("Network.TimeSinceEpoch") if domain.domain == "Security"
-      || domain.domain == "Accessibility" ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: PrimitiveType("number"),
+      || domain.domain == "Accessibility" -> {
+      io.println(
+        "[PATCHING PROTOCOL] Replacing instance of 'Network.TimeSinceEpoch' with its primitive type, because the domain is not a depencency of "
+        <> domain.domain,
       )
-    // This reference occurs in the stable protocol here:
+      PrimitiveType("number")
+    }
+    // This reference occurs in the stable protocol for example here:
     // https://chromedevtools.github.io/devtools-protocol/1-3/Target/#method-createBrowserContext
     // But the referenced type is an experimental one
-    RefType("Browser.BrowserContextID") if domain.domain == "Target" ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: PrimitiveType("string"),
+    RefType("Browser.BrowserContextID") | RefType("BrowserContextID") -> {
+      io.println(
+        "[PATCHING PROTOCOL] Replacing instance of 'BrowserContextID' with its primitive type, because it is an experimental property referenced by a stable one",
       )
+      PrimitiveType("string")
+    }
     ArrayType(ReferenceItem("Browser.BrowserContextID")) if domain.domain
-      == "Target" ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: ArrayType(PrimitiveItem("string")),
+      == "Target" -> {
+      io.println(
+        "[PATCHING PROTOCOL] Replacing instance of 'BrowserContextID' (array) with its primitive type, because it is an experimental property referenced by a stable one",
       )
-    RefType("BrowserContextID") if domain.domain == "Browser" ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: PrimitiveType("string"),
-      )
+      ArrayType(PrimitiveItem("string"))
+    }
     // Object recursion
-    ObjectType(Some(object_props)) ->
-      PropertyDefinition(
-        name: propdef.name,
-        description: propdef.description,
-        experimental: propdef.experimental,
-        deprecated: propdef.deprecated,
-        optional: propdef.optional,
-        inner: ObjectType(
-          properties: Some(
-            list.map(object_props, fn(prop) {
-              apply_propdef_patches(prop, domain)
-            }),
-          ),
-        ),
-      )
-    _ -> propdef
-  }
-}
-
-/// See `apply_propdef_patches` for more info
-fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
-  case inner_type {
     ObjectType(properties: Some(property_definitions)) -> {
       ObjectType(properties: {
         Some(
@@ -499,22 +469,63 @@ fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
         )
       })
     }
+    // Check for type in the same domain with unnnecessary domain qualifier
+    RefType(ref_target) -> {
+      let parts = string.split(ref_target, ".")
+      case parts {
+        [ref_domain, ref_name] if ref_domain == domain.domain -> {
+          io.println(
+            "[PATCHING PROTOCOL] Modifying ref target '"
+            <> ref_target
+            <> "'' because it is in the '"
+            <> domain.domain
+            <> "'' domain and does not need the domain qualifier.",
+          )
+          RefType(ref_name)
+        }
+        _ -> inner_type
+      }
+    }
     _ -> inner_type
   }
 }
 
 /// Apply patches to the parsed protocol to make it possible to generate bindings
-/// The patches are hardcoded into the called functions
-/// There will be note in the code where the patches are applied about what they do
+/// The patches are hardcoded into the called functions.
+/// There will be note in the code where the patches are applied about what they do,
+/// and each patch application logs a line about being applied.
 fn apply_protocol_patches(protocol: Protocol) -> Protocol {
   Protocol(
     version: protocol.version,
     domains: list.map(protocol.domains, fn(domain) {
       Domain(
         domain: domain.domain,
-        experimental: domain.experimental,
+        experimental: {
+          case domain.domain {
+            // Mark the tracing domain as experimental so it gets filetred out
+            "Tracing" -> {
+              io.println(
+                "[PATCHING PROTOCOL] Marking 'Tracing' domain as experimental because it is not included in stable 1.3",
+              )
+              Some(True)
+            }
+            _ -> domain.experimental
+          }
+        },
         deprecated: domain.deprecated,
-        dependencies: domain.dependencies,
+        dependencies: {
+          case domain.domain, domain.dependencies {
+            // IO domain references Runtime.RemoteObjectId but doesn't declare the dependency
+            "IO", None
+            -> {
+              io.println(
+                "[PATCHING PROTOCOL] Adding 'Runtime' dependency to IO domain",
+              )
+              Some(["Runtime"])
+            }
+            _, _ -> domain.dependencies
+          }
+        },
         types: {
           case domain.types {
             Some(types) ->
