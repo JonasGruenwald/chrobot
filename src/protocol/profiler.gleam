@@ -326,24 +326,39 @@ pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
 }
 
 /// This generated protocol command has no description
-pub fn disable(browser_subject) {
-  let _ = chrome.call(browser_subject, "Profiler.disable", option.None, 10_000)
+pub fn disable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "Profiler.disable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// This generated protocol command has no description
-pub fn enable(browser_subject) {
-  let _ = chrome.call(browser_subject, "Profiler.enable", option.None, 10_000)
+pub fn enable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "Profiler.enable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Collect coverage data for the current isolate. The coverage data may be incomplete due to
 /// garbage collection.
-pub fn get_best_effort_coverage(browser_subject) {
+pub fn get_best_effort_coverage(browser_subject__, session_id__) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "Profiler.getBestEffortCoverage",
     option.None,
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -353,20 +368,28 @@ pub fn get_best_effort_coverage(browser_subject) {
 }
 
 /// Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
-pub fn set_sampling_interval(browser_subject, interval: Int) {
+pub fn set_sampling_interval(browser_subject__, session_id__, interval: Int) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Profiler.setSamplingInterval",
       option.Some(json.object([#("interval", json.int(interval))])),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// This generated protocol command has no description
-pub fn start(browser_subject) {
-  let _ = chrome.call(browser_subject, "Profiler.start", option.None, 10_000)
+pub fn start(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "Profiler.start",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
@@ -374,13 +397,14 @@ pub fn start(browser_subject) {
 /// coverage may be incomplete. Enabling prevents running optimized code and resets execution
 /// counters.
 pub fn start_precise_coverage(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   call_count: option.Option(Bool),
   detailed: option.Option(Bool),
   allow_triggered_updates: option.Option(Bool),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "Profiler.startPreciseCoverage",
     option.Some(json.object(
       []
@@ -394,6 +418,7 @@ pub fn start_precise_coverage(
         #("allowTriggeredUpdates", json.bool(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -403,8 +428,14 @@ pub fn start_precise_coverage(
 }
 
 /// This generated protocol command has no description
-pub fn stop(browser_subject) {
-  chrome.call(browser_subject, "Profiler.stop", option.None, 10_000)
+pub fn stop(browser_subject__, session_id__) {
+  chrome.call(
+    browser_subject__,
+    "Profiler.stop",
+    option.None,
+    session_id__,
+    10_000,
+  )
   |> result.try(fn(result__) {
     decode__stop_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -413,12 +444,13 @@ pub fn stop(browser_subject) {
 
 /// Disable precise code coverage. Disabling releases unnecessary execution count records and allows
 /// executing optimized code.
-pub fn stop_precise_coverage(browser_subject) {
+pub fn stop_precise_coverage(browser_subject__, session_id__) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Profiler.stopPreciseCoverage",
       option.None,
+      session_id__,
       10_000,
     )
   Nil
@@ -426,11 +458,12 @@ pub fn stop_precise_coverage(browser_subject) {
 
 /// Collect coverage data for the current isolate, and resets execution counters. Precise code
 /// coverage needs to have started.
-pub fn take_precise_coverage(browser_subject) {
+pub fn take_precise_coverage(browser_subject__, session_id__) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "Profiler.takePreciseCoverage",
     option.None,
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {

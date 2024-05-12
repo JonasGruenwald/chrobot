@@ -1,5 +1,6 @@
 import chrome
 import gleam/erlang/os
+import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option
@@ -415,7 +416,13 @@ pub fn handle_protocol_error_test() {
     )
 
   let res =
-    chrome.call(browser_subject, "Target.createTarget", invalid_payload, 5000)
+    chrome.call(
+      browser_subject,
+      "Target.createTarget",
+      invalid_payload,
+      option.None,
+      5000,
+    )
 
   case res {
     Error(chrome.BrowserError(code, message, _data)) -> {
@@ -427,4 +434,33 @@ pub fn handle_protocol_error_test() {
     Ok(_) -> panic as "didn't receive error from call with invalid payload"
     _ -> panic as "didn't receive correct error from call with invalid payload"
   }
+  should.be_ok(chrome.quit(browser_subject))
+}
+
+pub fn handle_protocol_error_2_test() {
+  let browser_path = utils.get_browser_path()
+  let config =
+    chrome.BrowserConfig(
+      path: browser_path,
+      args: chrome.get_default_chrome_args(),
+      start_timeout: 5000,
+    )
+  let browser_subject = should.be_ok(chrome.launch_with_config(config))
+
+  let res =
+    chrome.call(browser_subject, "Bogus.method", option.None, option.None, 5000)
+
+  case res {
+    Error(chrome.BrowserError(code, message, _data)) -> {
+      io.debug(#(code, message))
+      message
+      |> should.equal("'Bogus.method' wasn't found")
+      code
+      |> should.equal(-32_601)
+    }
+    Ok(_) -> panic as "didn't receive error from call with invalid method"
+    _ -> panic as "didn't receive correct error from call with invalid method"
+  }
+
+  should.be_ok(chrome.quit(browser_subject))
 }

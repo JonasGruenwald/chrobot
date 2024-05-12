@@ -160,7 +160,8 @@ pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
 
 /// Dispatches a key event to the page.
 pub fn dispatch_key_event(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   type_: DispatchKeyEventType,
   modifiers: option.Option(Int),
   timestamp: option.Option(TimeSinceEpoch),
@@ -178,7 +179,7 @@ pub fn dispatch_key_event(
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Input.dispatchKeyEvent",
       option.Some(json.object(
         [#("type", encode__dispatch_key_event_type(type_))]
@@ -222,6 +223,7 @@ pub fn dispatch_key_event(
           #("location", json.int(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -268,7 +270,8 @@ pub fn decode__dispatch_key_event_type(value__: dynamic.Dynamic) {
 
 /// Dispatches a mouse event to the page.
 pub fn dispatch_mouse_event(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   type_: DispatchMouseEventType,
   x: Float,
   y: Float,
@@ -285,7 +288,7 @@ pub fn dispatch_mouse_event(
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Input.dispatchMouseEvent",
       option.Some(json.object(
         [
@@ -327,6 +330,7 @@ pub fn dispatch_mouse_event(
           )
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -406,7 +410,8 @@ pub fn decode__dispatch_mouse_event_pointer_type(value__: dynamic.Dynamic) {
 
 /// Dispatches a touch event to the page.
 pub fn dispatch_touch_event(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   type_: DispatchTouchEventType,
   touch_points: List(TouchPoint),
   modifiers: option.Option(Int),
@@ -414,7 +419,7 @@ pub fn dispatch_touch_event(
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Input.dispatchTouchEvent",
       option.Some(json.object(
         [
@@ -428,6 +433,7 @@ pub fn dispatch_touch_event(
           #("timestamp", encode__time_since_epoch(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -473,19 +479,26 @@ pub fn decode__dispatch_touch_event_type(value__: dynamic.Dynamic) {
 }
 
 /// Cancels any active dragging in the page.
-pub fn cancel_dragging(browser_subject) {
+pub fn cancel_dragging(browser_subject__, session_id__) {
   let _ =
-    chrome.call(browser_subject, "Input.cancelDragging", option.None, 10_000)
+    chrome.call(
+      browser_subject__,
+      "Input.cancelDragging",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Ignores input events (useful while auditing page).
-pub fn set_ignore_input_events(browser_subject, ignore: Bool) {
+pub fn set_ignore_input_events(browser_subject__, session_id__, ignore: Bool) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Input.setIgnoreInputEvents",
       option.Some(json.object([#("ignore", json.bool(ignore))])),
+      session_id__,
       10_000,
     )
   Nil

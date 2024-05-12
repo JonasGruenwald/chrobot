@@ -217,24 +217,43 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
 }
 
 /// Disables tracking security state changes.
-pub fn disable(browser_subject) {
-  let _ = chrome.call(browser_subject, "Security.disable", option.None, 10_000)
+pub fn disable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "Security.disable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Enables tracking security state changes.
-pub fn enable(browser_subject) {
-  let _ = chrome.call(browser_subject, "Security.enable", option.None, 10_000)
+pub fn enable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "Security.enable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Enable/disable whether all certificate errors should be ignored.
-pub fn set_ignore_certificate_errors(browser_subject, ignore: Bool) {
+pub fn set_ignore_certificate_errors(
+  browser_subject__,
+  session_id__,
+  ignore: Bool,
+) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Security.setIgnoreCertificateErrors",
       option.Some(json.object([#("ignore", json.bool(ignore))])),
+      session_id__,
       10_000,
     )
   Nil

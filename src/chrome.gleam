@@ -14,6 +14,7 @@
 
 // TODO: Doesn't handle events yet
 
+import chrobot/internal/utils
 import filepath as path
 import gleam/dynamic as d
 import gleam/erlang/atom
@@ -33,6 +34,7 @@ const default_message_timeout: Int = 5000
 
 // --- PUBLIC API ---
 
+/// Errors that may occur during launch of the browser instance
 pub type LaunchError {
   UnknowOperatingSystem
   CouldNotFindExecutable
@@ -42,6 +44,7 @@ pub type LaunchError {
   ProtocolVersionMismatch(supported_version: String, got_version: String)
 }
 
+/// Errors that may occur when a protocol request is made
 pub type RequestError {
   PortError
   // These errors are for OTP actor failures
@@ -157,9 +160,12 @@ pub fn call(
   browser: Subject(Message),
   method: String,
   params: Option(Json),
+  session_id: Option(String),
   time_out,
 ) -> Result(d.Dynamic, RequestError) {
-  case process.try_call(browser, Call(_, method, params), time_out) {
+  case
+    process.try_call(browser, Call(_, method, params, session_id), time_out)
+  {
     Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
     Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
     Ok(nested_result) -> nested_result
@@ -187,6 +193,7 @@ pub fn get_version(
   use res <- result.try(call(
     browser,
     "Browser.getVersion",
+    None,
     None,
     default_message_timeout,
   ))
@@ -383,6 +390,7 @@ pub type Message {
     reply_with: Subject(Result(d.Dynamic, RequestError)),
     method: String,
     params: Option(Json),
+    session_id: Option(String),
   )
   Send(method: String, params: Option(Json))
   UnexpectedPortMessage(d.Dynamic)
@@ -404,16 +412,24 @@ fn loop(message: Message, state: BrowserState) {
       )
       actor.Stop(process.Normal)
     }
-    Call(client, method, params) -> {
+    Call(client, method, params, session_id) -> {
       // Handle call leaves the calling process hanging until a response is received
       // from the browser, which must be sent back to the client
-      handle_call(state, client, method, params)
+      handle_call(state, client, method, params, session_id)
     }
     Send(method, params) -> {
       handle_send(state, method, params)
     }
     PortResponse(data) -> {
-      handle_port_response(state, data)
+      // There may be more than one JSON payload!
+      // JSON payloads are separated by null bytes.
+      // We want to drop the last null byte then split by them
+      // to process each response
+      let new_state =
+        string.drop_right(data, 1)
+        |> string.split("\u{0000}")
+        |> list.fold(state, fn(acc, curr) { handle_port_response(acc, curr) })
+      actor.continue(new_state)
     }
     UnexpectedPortMessage(msg) -> {
       log(
@@ -472,13 +488,17 @@ fn handle_call(
   client: Subject(Result(d.Dynamic, RequestError)),
   method: String,
   params: Option(Json),
+  session_id: Option(String),
 ) {
   let request_id = state.next_id
   let request_memo = PendingRequest(id: request_id, reply_with: client)
   let payload =
     json.object(
       [#("id", json.int(request_id)), #("method", json.string(method))]
-      |> add_optional_params(params),
+      |> utils.add_optional(params, fn(some_params) { #("params", some_params) })
+      |> utils.add_optional(session_id, fn(some_session_id) {
+        #("sessionId", json.string(some_session_id))
+      }),
     )
   case send_to_browser(state.instance, payload) {
     Error(_) -> {
@@ -510,7 +530,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
   let payload =
     json.object(
       [#("id", json.int(request_id)), #("method", json.string(method))]
-      |> add_optional_params(params),
+      |> utils.add_optional(params, fn(some_params) { #("params", some_params) }),
     )
   case send_to_browser(state.instance, payload) {
     Error(_) -> {
@@ -578,7 +598,11 @@ fn answer_failed_request(
     Ok(#(req, rest)) -> {
       process.send(
         req.reply_with,
-        Error(BrowserError(data.code, data.message, data.data)),
+        Error(BrowserError(
+          option.unwrap(data.code, 0),
+          option.unwrap(data.message, "No message"),
+          option.unwrap(data.data, "No data"),
+        )),
       )
       rest
     }
@@ -607,24 +631,22 @@ type BrowserResponse {
 }
 
 type RawBrowserError {
-  RawBrowserError(code: Int, message: String, data: String)
+  RawBrowserError(
+    code: Option(Int),
+    message: Option(String),
+    data: Option(String),
+  )
 }
 
 /// Handle a message from the browser, delivered via the port.
 /// The message can be a response to a request or an event
-fn handle_port_response(
-  state: BrowserState,
-  raw_response: String,
-) -> actor.Next(a, BrowserState) {
-  // The response is expected to be a JSON string, with a null byte at the end
-  // we need to remove the null byte before decoding
-  let response = string.drop_right(raw_response, 1)
+fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
   let error_decoder =
     d.decode3(
       RawBrowserError,
-      d.field("code", d.int),
-      d.field("message", d.string),
-      d.field("data", d.string),
+      d.optional_field("code", d.int),
+      d.optional_field("message", d.string),
+      d.optional_field("data", d.string),
     )
   // The decoder contains all possible fields of the response, event or request response
   let response_decoder =
@@ -639,21 +661,21 @@ fn handle_port_response(
   case json.decode(response, response_decoder) {
     Ok(BrowserResponse(Some(id), Some(result), None, None, None)) -> {
       // A response to a request -> should be sent to the client
-      actor.continue(BrowserState(
+      BrowserState(
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: answer_request(state, id, result),
         shutdown_request: state.shutdown_request,
-      ))
+      )
     }
     Ok(BrowserResponse(Some(id), _, _, _, Some(raw_error))) -> {
       // A response to a request that resulted in an error
-      actor.continue(BrowserState(
+      BrowserState(
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: answer_failed_request(state, id, raw_error),
         shutdown_request: state.shutdown_request,
-      ))
+      )
     }
     Ok(BrowserResponse(None, None, Some(method), Some(params), None)) -> {
       // TODO An event from the browser
@@ -662,7 +684,7 @@ fn handle_port_response(
         "Received an event, event forwarding is not implemented yet",
       )
       io.debug(#(method, params))
-      actor.continue(state)
+      state
     }
     Ok(_) -> {
       log(
@@ -670,13 +692,13 @@ fn handle_port_response(
         "Received an unexpectedly formatted response from the browser",
       )
       io.debug(response)
-      actor.continue(state)
+      state
     }
     Error(e) -> {
       log(state.instance, "Failed to decode data from port message, ignoring!")
       io.debug(response)
       io.debug(e)
-      actor.continue(state)
+      state
     }
   }
 }
@@ -689,14 +711,6 @@ fn handle_port_response(
 /// which is used by the browser to detect when a message ends.
 fn send_to_browser(instance: BrowserInstance, data: Json) {
   send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
-}
-
-/// Add the params key to a JSON object if it is not None
-fn add_optional_params(payload: List(#(String, Json)), params: Option(Json)) {
-  case params {
-    option.Some(data) -> [#("params", data), ..payload]
-    option.None -> payload
-  }
 }
 
 fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {

@@ -55,17 +55,27 @@ pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
 }
 
 /// Disable collecting and reporting metrics.
-pub fn disable(browser_subject) {
+pub fn disable(browser_subject__, session_id__) {
   let _ =
-    chrome.call(browser_subject, "Performance.disable", option.None, 10_000)
+    chrome.call(
+      browser_subject__,
+      "Performance.disable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Enable collecting and reporting metrics.
-pub fn enable(browser_subject, time_domain: option.Option(EnableTimeDomain)) {
+pub fn enable(
+  browser_subject__,
+  session_id__,
+  time_domain: option.Option(EnableTimeDomain),
+) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "Performance.enable",
       option.Some(json.object(
         []
@@ -73,6 +83,7 @@ pub fn enable(browser_subject, time_domain: option.Option(EnableTimeDomain)) {
           #("timeDomain", encode__enable_time_domain(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -112,8 +123,14 @@ pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
 }
 
 /// Retrieve current values of run-time metrics.
-pub fn get_metrics(browser_subject) {
-  chrome.call(browser_subject, "Performance.getMetrics", option.None, 10_000)
+pub fn get_metrics(browser_subject__, session_id__) {
+  chrome.call(
+    browser_subject__,
+    "Performance.getMetrics",
+    option.None,
+    session_id__,
+    10_000,
+  )
   |> result.try(fn(result__) {
     decode__get_metrics_response(result__)
     |> result.replace_error(chrome.ProtocolError)

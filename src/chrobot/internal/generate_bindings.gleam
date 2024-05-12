@@ -1478,11 +1478,11 @@ fn gen_command_body(command: Command, domain: Domain) {
   let encoder_part = {
     case command.parameters {
       None | Some([]) -> {
-        "chrome.call(browser_subject, \""
+        "chrome.call(browser_subject__, \""
         <> domain.domain
         <> "."
         <> command.name
-        <> "\", option.None, "
+        <> "\", option.None, session_id__,"
         <> call_timeout
         <> ")\n"
       }
@@ -1492,7 +1492,7 @@ fn gen_command_body(command: Command, domain: Domain) {
             gen_object_property_encoder(command.name, p, "")
           })
           |> list.unzip()
-        "chrome.call(browser_subject, \""
+        "chrome.call(browser_subject__,\""
         <> domain.domain
         <> "."
         <> command.name
@@ -1500,7 +1500,7 @@ fn gen_command_body(command: Command, domain: Domain) {
         <> string.join(property_encoders, "")
         <> "]"
         <> string.join(appendices, "")
-        <> ")),"
+        <> ")), session_id__,"
         <> call_timeout
         <> ")\n"
       }
@@ -1538,7 +1538,7 @@ fn gen_command_function(command: Command, domain: Domain) {
   |> sb.append("pub fn ")
   |> sb.append(safe_snake_case(command.name))
   |> sb.append("(\n")
-  |> sb.append("browser_subject,\n")
+  |> sb.append("browser_subject__, session_id__, \n")
   |> sb.append(param_definition)
   |> sb.append("){\n")
   |> sb.append(gen_command_body(command, domain))

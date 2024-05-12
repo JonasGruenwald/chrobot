@@ -1001,7 +1001,8 @@ pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
 /// Describes node given its id, does not require domain to be enabled. Does not start tracking any
 /// objects, can be used for automation.
 pub fn describe_node(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
@@ -1009,7 +1010,7 @@ pub fn describe_node(
   pierce: option.Option(Bool),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.describeNode",
     option.Some(json.object(
       []
@@ -1029,6 +1030,7 @@ pub fn describe_node(
         #("pierce", json.bool(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1041,7 +1043,8 @@ pub fn describe_node(
 /// Note: exactly one between nodeId, backendNodeId and objectId should be passed
 /// to identify the node.
 pub fn scroll_into_view_if_needed(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
@@ -1049,7 +1052,7 @@ pub fn scroll_into_view_if_needed(
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.scrollIntoViewIfNeeded",
       option.Some(json.object(
         []
@@ -1066,33 +1069,49 @@ pub fn scroll_into_view_if_needed(
           #("rect", encode__rect(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// Disables DOM agent for the given page.
-pub fn disable(browser_subject) {
-  let _ = chrome.call(browser_subject, "DOM.disable", option.None, 10_000)
+pub fn disable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "DOM.disable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Enables DOM agent for the given page.
-pub fn enable(browser_subject) {
-  let _ = chrome.call(browser_subject, "DOM.enable", option.None, 10_000)
+pub fn enable(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "DOM.enable",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Focuses the given element.
 pub fn focus(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.focus",
       option.Some(json.object(
         []
@@ -1106,17 +1125,19 @@ pub fn focus(
           #("objectId", runtime.encode__remote_object_id(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// Returns attributes for the specified node.
-pub fn get_attributes(browser_subject, node_id: NodeId) {
+pub fn get_attributes(browser_subject__, session_id__, node_id: NodeId) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.getAttributes",
     option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1127,13 +1148,14 @@ pub fn get_attributes(browser_subject, node_id: NodeId) {
 
 /// Returns boxes for the given node.
 pub fn get_box_model(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.getBoxModel",
     option.Some(json.object(
       []
@@ -1147,6 +1169,7 @@ pub fn get_box_model(
         #("objectId", runtime.encode__remote_object_id(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1158,12 +1181,13 @@ pub fn get_box_model(
 /// Returns the root DOM node (and optionally the subtree) to the caller.
 /// Implicitly enables the DOM domain events for the current target.
 pub fn get_document(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.getDocument",
     option.Some(json.object(
       []
@@ -1174,6 +1198,7 @@ pub fn get_document(
         #("pierce", json.bool(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1185,14 +1210,15 @@ pub fn get_document(
 /// Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
 /// either returned or not.
 pub fn get_node_for_location(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   x: Int,
   y: Int,
   include_user_agent_shadow_dom: option.Option(Bool),
   ignore_pointer_events_none: option.Option(Bool),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.getNodeForLocation",
     option.Some(json.object(
       [#("x", json.int(x)), #("y", json.int(y))]
@@ -1203,6 +1229,7 @@ pub fn get_node_for_location(
         #("ignorePointerEventsNone", json.bool(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1213,13 +1240,14 @@ pub fn get_node_for_location(
 
 /// Returns node's HTML markup.
 pub fn get_outer_html(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.getOuterHTML",
     option.Some(json.object(
       []
@@ -1233,6 +1261,7 @@ pub fn get_outer_html(
         #("objectId", runtime.encode__remote_object_id(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1242,32 +1271,54 @@ pub fn get_outer_html(
 }
 
 /// Hides any highlight.
-pub fn hide_highlight(browser_subject) {
-  let _ = chrome.call(browser_subject, "DOM.hideHighlight", option.None, 10_000)
+pub fn hide_highlight(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "DOM.hideHighlight",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Highlights DOM node.
-pub fn highlight_node(browser_subject) {
-  let _ = chrome.call(browser_subject, "DOM.highlightNode", option.None, 10_000)
+pub fn highlight_node(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "DOM.highlightNode",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Highlights given rectangle.
-pub fn highlight_rect(browser_subject) {
-  let _ = chrome.call(browser_subject, "DOM.highlightRect", option.None, 10_000)
+pub fn highlight_rect(browser_subject__, session_id__) {
+  let _ =
+    chrome.call(
+      browser_subject__,
+      "DOM.highlightRect",
+      option.None,
+      session_id__,
+      10_000,
+    )
   Nil
 }
 
 /// Moves node into the new container, places it before the given anchor.
 pub fn move_to(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: NodeId,
   target_node_id: NodeId,
   insert_before_node_id: option.Option(NodeId),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.moveTo",
     option.Some(json.object(
       [
@@ -1278,6 +1329,7 @@ pub fn move_to(
         #("insertBeforeNodeId", encode__node_id(inner_value__))
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1287,9 +1339,14 @@ pub fn move_to(
 }
 
 /// Executes `querySelector` on a given node.
-pub fn query_selector(browser_subject, node_id: NodeId, selector: String) {
+pub fn query_selector(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  selector: String,
+) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.querySelector",
     option.Some(
       json.object([
@@ -1297,6 +1354,7 @@ pub fn query_selector(browser_subject, node_id: NodeId, selector: String) {
         #("selector", json.string(selector)),
       ]),
     ),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1306,9 +1364,14 @@ pub fn query_selector(browser_subject, node_id: NodeId, selector: String) {
 }
 
 /// Executes `querySelectorAll` on a given node.
-pub fn query_selector_all(browser_subject, node_id: NodeId, selector: String) {
+pub fn query_selector_all(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  selector: String,
+) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.querySelectorAll",
     option.Some(
       json.object([
@@ -1316,6 +1379,7 @@ pub fn query_selector_all(browser_subject, node_id: NodeId, selector: String) {
         #("selector", json.string(selector)),
       ]),
     ),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1325,10 +1389,15 @@ pub fn query_selector_all(browser_subject, node_id: NodeId, selector: String) {
 }
 
 /// Removes attribute with given name from an element with given id.
-pub fn remove_attribute(browser_subject, node_id: NodeId, name: String) {
+pub fn remove_attribute(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  name: String,
+) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.removeAttribute",
       option.Some(
         json.object([
@@ -1336,18 +1405,20 @@ pub fn remove_attribute(browser_subject, node_id: NodeId, name: String) {
           #("name", json.string(name)),
         ]),
       ),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// Removes node with given id.
-pub fn remove_node(browser_subject, node_id: NodeId) {
+pub fn remove_node(browser_subject__, session_id__, node_id: NodeId) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.removeNode",
       option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+      session_id__,
       10_000,
     )
   Nil
@@ -1357,14 +1428,15 @@ pub fn remove_node(browser_subject, node_id: NodeId) {
 /// `setChildNodes` events where not only immediate children are retrieved, but all children down to
 /// the specified depth.
 pub fn request_child_nodes(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: NodeId,
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.requestChildNodes",
       option.Some(json.object(
         [#("nodeId", encode__node_id(node_id))]
@@ -1375,6 +1447,7 @@ pub fn request_child_nodes(
           #("pierce", json.bool(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -1383,13 +1456,18 @@ pub fn request_child_nodes(
 /// Requests that the node is sent to the caller given the JavaScript node object reference. All
 /// nodes that form the path from the node to the root are also sent to the client as a series of
 /// `setChildNodes` notifications.
-pub fn request_node(browser_subject, object_id: runtime.RemoteObjectId) {
+pub fn request_node(
+  browser_subject__,
+  session_id__,
+  object_id: runtime.RemoteObjectId,
+) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.requestNode",
     option.Some(
       json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
     ),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1400,14 +1478,15 @@ pub fn request_node(browser_subject, object_id: runtime.RemoteObjectId) {
 
 /// Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 pub fn resolve_node(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_group: option.Option(String),
   execution_context_id: option.Option(runtime.ExecutionContextId),
 ) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.resolveNode",
     option.Some(json.object(
       []
@@ -1427,6 +1506,7 @@ pub fn resolve_node(
         )
       }),
     )),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1437,14 +1517,15 @@ pub fn resolve_node(
 
 /// Sets attribute for an element with given id.
 pub fn set_attribute_value(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: NodeId,
   name: String,
   value: String,
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.setAttributeValue",
       option.Some(
         json.object([
@@ -1453,6 +1534,7 @@ pub fn set_attribute_value(
           #("value", json.string(value)),
         ]),
       ),
+      session_id__,
       10_000,
     )
   Nil
@@ -1461,14 +1543,15 @@ pub fn set_attribute_value(
 /// Sets attributes on element with given id. This method is useful when user edits some existing
 /// attribute value and types in several attribute name/value pairs.
 pub fn set_attributes_as_text(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   node_id: NodeId,
   text: String,
   name: option.Option(String),
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.setAttributesAsText",
       option.Some(json.object(
         [#("nodeId", encode__node_id(node_id)), #("text", json.string(text))]
@@ -1476,6 +1559,7 @@ pub fn set_attributes_as_text(
           #("name", json.string(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
@@ -1483,7 +1567,8 @@ pub fn set_attributes_as_text(
 
 /// Sets files for the given file input element.
 pub fn set_file_input_files(
-  browser_subject,
+  browser_subject__,
+  session_id__,
   files: List(String),
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
@@ -1491,7 +1576,7 @@ pub fn set_file_input_files(
 ) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.setFileInputFiles",
       option.Some(json.object(
         [#("files", json.array(files, of: json.string))]
@@ -1505,15 +1590,21 @@ pub fn set_file_input_files(
           #("objectId", runtime.encode__remote_object_id(inner_value__))
         }),
       )),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// Sets node name for a node with given id.
-pub fn set_node_name(browser_subject, node_id: NodeId, name: String) {
+pub fn set_node_name(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  name: String,
+) {
   chrome.call(
-    browser_subject,
+    browser_subject__,
     "DOM.setNodeName",
     option.Some(
       json.object([
@@ -1521,6 +1612,7 @@ pub fn set_node_name(browser_subject, node_id: NodeId, name: String) {
         #("name", json.string(name)),
       ]),
     ),
+    session_id__,
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1530,10 +1622,15 @@ pub fn set_node_name(browser_subject, node_id: NodeId, name: String) {
 }
 
 /// Sets node value for a node with given id.
-pub fn set_node_value(browser_subject, node_id: NodeId, value: String) {
+pub fn set_node_value(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  value: String,
+) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.setNodeValue",
       option.Some(
         json.object([
@@ -1541,16 +1638,22 @@ pub fn set_node_value(browser_subject, node_id: NodeId, value: String) {
           #("value", json.string(value)),
         ]),
       ),
+      session_id__,
       10_000,
     )
   Nil
 }
 
 /// Sets node HTML markup, returns new node id.
-pub fn set_outer_html(browser_subject, node_id: NodeId, outer_html: String) {
+pub fn set_outer_html(
+  browser_subject__,
+  session_id__,
+  node_id: NodeId,
+  outer_html: String,
+) {
   let _ =
     chrome.call(
-      browser_subject,
+      browser_subject__,
       "DOM.setOuterHTML",
       option.Some(
         json.object([
@@ -1558,6 +1661,7 @@ pub fn set_outer_html(browser_subject, node_id: NodeId, outer_html: String) {
           #("outerHTML", json.string(outer_html)),
         ]),
       ),
+      session_id__,
       10_000,
     )
   Nil
