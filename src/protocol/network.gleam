@@ -19,7 +19,6 @@ import gleam/json
 import gleam/list
 import gleam/option
 import gleam/result
-import protocol/debugger
 import protocol/runtime
 import protocol/security
 

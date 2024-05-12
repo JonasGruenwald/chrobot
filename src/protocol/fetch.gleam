@@ -18,7 +18,6 @@ import gleam/option
 import gleam/result
 import protocol/io
 import protocol/network
-import protocol/page
 
 /// Unique request identifier.
 pub type RequestId {

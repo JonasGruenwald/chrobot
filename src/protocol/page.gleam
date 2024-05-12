@@ -16,9 +16,7 @@ import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/debugger
 import protocol/dom
-import protocol/io
 import protocol/network
 import protocol/runtime
 

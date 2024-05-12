@@ -28,6 +28,7 @@ import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/regex
 import gleam/result
 import gleam/string
 import gleam/string_builder as sb
@@ -1289,7 +1290,7 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
       )
     }
     // Below are not implemented because they currently don't occur
-    ArrayType(items: ReferenceItem(ref_target)) -> {
+    ArrayType(items: ReferenceItem(_ref_target)) -> {
       io.debug(type_def)
       panic as "tried to generate type def encoder for an array of refs"
     }
@@ -1416,7 +1417,7 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
       )
     }
     // Below are not implemented because they currently don't occur
-    ArrayType(items: ReferenceItem(ref_target)) -> {
+    ArrayType(items: ReferenceItem(_ref_target)) -> {
       io.debug(type_def)
       panic as "tried to generate type def encoder for an array of refs"
     }
@@ -1558,62 +1559,39 @@ fn gen_commands(domain: Domain) {
   )
 }
 
+/// The heuristic is very naive, given an import like
+/// `import gleam/option`
+/// if the generated code contains the string`option.`
+/// the import is considered used.
+/// This should be good enough for our codegen output though.
 fn remove_import_if_unused(
   builder: sb.StringBuilder,
   full_string: String,
   import_name: String,
-  possible_uses: List(String),
 ) -> sb.StringBuilder {
   let assert Ok(import_short_name) =
     string.split(import_name, "/")
     |> list.last
-  let has_uses =
-    list.fold(possible_uses, False, fn(flag, current) {
-      case
-        flag,
-        string.contains(full_string, import_short_name <> "." <> current)
-      {
-        True, _ -> True
-        False, True -> True
-        False, False -> False
-      }
-    })
-  case has_uses {
+  let assert Ok(matcher) = regex.from_string(import_short_name <> "\\.\\S+")
+  case regex.check(matcher, full_string) {
     False -> sb.replace(builder, "import " <> import_name <> "\n", "")
     True -> builder
   }
 }
 
-/// Remove unused imports package imports from the generated code 
-/// We add all possible required imports at the start, then remove them if they are not being accessed
-/// because we know the usages we could have of each import, we just need to check if they are present
-/// in the generated code. Of course imports of protocol domain deps are not handled here.
-/// 
-/// It's a bit silly but it should work.
-/// TODO move to automate this
+/// Remove unused imports from the generated code 
 fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   let full_string = sb.to_string(builder)
-  builder
-  |> remove_import_if_unused(full_string, "gleam/dynamic", [
-    "Dynamic", "string", "int", "list", "float", "dict", "field", "decode1",
-  ])
-  |> remove_import_if_unused(full_string, "gleam/dict", ["Dict"])
-  |> remove_import_if_unused(full_string, "gleam/result", [
-    "try", "replace_error",
-  ])
-  |> remove_import_if_unused(full_string, "gleam/option", [
-    "Option", "Some", "None",
-  ])
-  |> remove_import_if_unused(full_string, "gleam/list", ["map"])
-  |> remove_import_if_unused(full_string, "chrobot/internal/utils", [
-    "add_optional",
-  ])
-  |> remove_import_if_unused(full_string, "chrome", [
-    "call", "send", "ProtocolError",
-  ])
-  |> remove_import_if_unused(full_string, "gleam/json", [
-    "object", "string", "array", "int", "null", "bool", "float",
-  ])
+  string.split(full_string, "\n")
+  |> list.filter_map(fn(line) {
+    case string.starts_with(line, "import ") {
+      True -> Ok(string.drop_left(line, 7))
+      False -> Error(Nil)
+    }
+  })
+  |> list.fold(builder, fn(acc, current) {
+    remove_import_if_unused(acc, full_string, current)
+  })
 }
 
 @internal

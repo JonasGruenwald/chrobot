@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -r src/protocol 
+# rm -r src/protocol 
 set -e
 gleam run -m chrobot/internal/generate_bindings
 gleam format

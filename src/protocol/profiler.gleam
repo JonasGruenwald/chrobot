@@ -16,7 +16,6 @@ import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/debugger
 import protocol/runtime
 
 /// Profile node. Holds callsite information, execution statistics and child nodes.

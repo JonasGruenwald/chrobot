@@ -17,8 +17,6 @@ import gleam/json
 import gleam/option
 import gleam/result
 import protocol/dom
-import protocol/page
-import protocol/runtime
 
 /// Screen orientation.
 pub type ScreenOrientation {
