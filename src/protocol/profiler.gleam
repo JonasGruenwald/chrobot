@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -336,51 +337,126 @@ pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
   Ok(TakePreciseCoverageResponse(result: result, timestamp: timestamp))
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// This generated protocol command has no description
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Profiler.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// This generated protocol command has no description
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Profiler.enable", option.None, 10_000)
+  Nil
 }
 
-pub fn get_best_effort_coverage() {
-  todo
-  // TODO generate command body
+/// Collect coverage data for the current isolate. The coverage data may be incomplete due to
+/// garbage collection.
+pub fn get_best_effort_coverage(browser_subject) {
+  chrome.call(
+    browser_subject,
+    "Profiler.getBestEffortCoverage",
+    option.None,
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_best_effort_coverage_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_sampling_interval(interval: Int) {
-  todo
-  // TODO generate command body
+/// Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
+pub fn set_sampling_interval(browser_subject, interval: Int) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Profiler.setSamplingInterval",
+      option.Some(json.object([#("interval", json.int(interval))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn start() {
-  todo
-  // TODO generate command body
+/// This generated protocol command has no description
+pub fn start(browser_subject) {
+  let _ = chrome.call(browser_subject, "Profiler.start", option.None, 10_000)
+  Nil
 }
 
+/// Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
+/// coverage may be incomplete. Enabling prevents running optimized code and resets execution
+/// counters.
 pub fn start_precise_coverage(
+  browser_subject,
   call_count: option.Option(Bool),
   detailed: option.Option(Bool),
   allow_triggered_updates: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Profiler.startPreciseCoverage",
+    option.Some(
+      json.object([
+        #("callCount", {
+          case call_count {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("detailed", {
+          case detailed {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("allowTriggeredUpdates", {
+          case allow_triggered_updates {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__start_precise_coverage_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn stop() {
-  todo
-  // TODO generate command body
+/// This generated protocol command has no description
+pub fn stop(browser_subject) {
+  chrome.call(browser_subject, "Profiler.stop", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__stop_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn stop_precise_coverage() {
-  todo
-  // TODO generate command body
+/// Disable precise code coverage. Disabling releases unnecessary execution count records and allows
+/// executing optimized code.
+pub fn stop_precise_coverage(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Profiler.stopPreciseCoverage",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn take_precise_coverage() {
-  todo
-  // TODO generate command body
+/// Collect coverage data for the current isolate, and resets execution counters. Precise code
+/// coverage needs to have started.
+pub fn take_precise_coverage(browser_subject) {
+  chrome.call(
+    browser_subject,
+    "Profiler.takePreciseCoverage",
+    option.None,
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__take_precise_coverage_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }

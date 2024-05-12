@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -672,12 +673,31 @@ pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
   Ok(SetScriptSourceResponse(exception_details: exception_details))
 }
 
+/// Continues execution until specific location is reached.
 pub fn continue_to_location(
+  browser_subject,
   location: Location,
   target_call_frames: option.Option(ContinueToLocationTargetCallFrames),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.continueToLocation",
+      option.Some(
+        json.object([
+          #("location", encode__location(location)),
+          #("targetCallFrames", {
+            case target_call_frames {
+              option.Some(value__) ->
+                encode__continue_to_location_target_call_frames(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -713,17 +733,22 @@ pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic)
   }
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables debugger for given page.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables debugger for the given page. Clients should not assume that the debugging has been
+/// enabled until the result for this command is received.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.enable", option.None, 10_000)
+  Nil
 }
 
+/// Evaluates expression on a given call frame.
 pub fn evaluate_on_call_frame(
+  browser_subject,
   call_frame_id: CallFrameId,
   expression: String,
   object_group: option.Option(String),
@@ -732,69 +757,273 @@ pub fn evaluate_on_call_frame(
   return_by_value: option.Option(Bool),
   throw_on_side_effect: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.evaluateOnCallFrame",
+    option.Some(
+      json.object([
+        #("callFrameId", encode__call_frame_id(call_frame_id)),
+        #("expression", json.string(expression)),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("includeCommandLineAPI", {
+          case include_command_line_api {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("silent", {
+          case silent {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("returnByValue", {
+          case return_by_value {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("throwOnSideEffect", {
+          case throw_on_side_effect {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__evaluate_on_call_frame_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns possible locations for breakpoint. scriptId in start and end range locations should be
+/// the same.
 pub fn get_possible_breakpoints(
+  browser_subject,
   start: Location,
   end: option.Option(Location),
   restrict_to_function: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.getPossibleBreakpoints",
+    option.Some(
+      json.object([
+        #("start", encode__location(start)),
+        #("end", {
+          case end {
+            option.Some(value__) -> encode__location(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("restrictToFunction", {
+          case restrict_to_function {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_possible_breakpoints_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_script_source(script_id: runtime.ScriptId) {
-  todo
-  // TODO generate command body
+/// Returns source for the script with given id.
+pub fn get_script_source(browser_subject, script_id: runtime.ScriptId) {
+  chrome.call(
+    browser_subject,
+    "Debugger.getScriptSource",
+    option.Some(
+      json.object([#("scriptId", runtime.encode__script_id(script_id))]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_script_source_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn pause() {
-  todo
-  // TODO generate command body
+/// Stops on the next JavaScript statement.
+pub fn pause(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.pause", option.None, 10_000)
+  Nil
 }
 
-pub fn remove_breakpoint(breakpoint_id: BreakpointId) {
-  todo
-  // TODO generate command body
+/// Removes JavaScript breakpoint.
+pub fn remove_breakpoint(browser_subject, breakpoint_id: BreakpointId) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.removeBreakpoint",
+      option.Some(
+        json.object([#("breakpointId", encode__breakpoint_id(breakpoint_id))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn restart_frame(call_frame_id: CallFrameId) {
-  todo
-  // TODO generate command body
+/// Restarts particular call frame from the beginning. The old, deprecated
+/// behavior of `restartFrame` is to stay paused and allow further CDP commands
+/// after a restart was scheduled. This can cause problems with restarting, so
+/// we now continue execution immediatly after it has been scheduled until we
+/// reach the beginning of the restarted frame.
+/// 
+/// To stay back-wards compatible, `restartFrame` now expects a `mode`
+/// parameter to be present. If the `mode` parameter is missing, `restartFrame`
+/// errors out.
+/// 
+/// The various return values are deprecated and `callFrames` is always empty.
+/// Use the call frames from the `Debugger#paused` events instead, that fires
+/// once V8 pauses at the beginning of the restarted function.
+pub fn restart_frame(browser_subject, call_frame_id: CallFrameId) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.restartFrame",
+      option.Some(
+        json.object([#("callFrameId", encode__call_frame_id(call_frame_id))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn resume(terminate_on_resume: option.Option(Bool)) {
-  todo
-  // TODO generate command body
+/// Resumes JavaScript execution.
+pub fn resume(browser_subject, terminate_on_resume: option.Option(Bool)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.resume",
+      option.Some(
+        json.object([
+          #("terminateOnResume", {
+            case terminate_on_resume {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Searches for given string in script content.
 pub fn search_in_content(
+  browser_subject,
   script_id: runtime.ScriptId,
   query: String,
   case_sensitive: option.Option(Bool),
   is_regex: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.searchInContent",
+    option.Some(
+      json.object([
+        #("scriptId", runtime.encode__script_id(script_id)),
+        #("query", json.string(query)),
+        #("caseSensitive", {
+          case case_sensitive {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("isRegex", {
+          case is_regex {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__search_in_content_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_async_call_stack_depth(max_depth: Int) {
-  todo
-  // TODO generate command body
+/// Enables or disables async call stacks tracking.
+pub fn set_async_call_stack_depth(browser_subject, max_depth: Int) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.setAsyncCallStackDepth",
+      option.Some(json.object([#("maxDepth", json.int(max_depth))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_breakpoint(location: Location, condition: option.Option(String)) {
-  todo
-  // TODO generate command body
+/// Sets JavaScript breakpoint at a given location.
+pub fn set_breakpoint(
+  browser_subject,
+  location: Location,
+  condition: option.Option(String),
+) {
+  chrome.call(
+    browser_subject,
+    "Debugger.setBreakpoint",
+    option.Some(
+      json.object([
+        #("location", encode__location(location)),
+        #("condition", {
+          case condition {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__set_breakpoint_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Sets instrumentation breakpoint.
 pub fn set_instrumentation_breakpoint(
+  browser_subject,
   instrumentation: SetInstrumentationBreakpointInstrumentation,
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.setInstrumentationBreakpoint",
+    option.Some(
+      json.object([
+        #(
+          "instrumentation",
+          encode__set_instrumentation_breakpoint_instrumentation(
+            instrumentation,
+          ),
+        ),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__set_instrumentation_breakpoint_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -836,7 +1065,12 @@ pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.D
   }
 }
 
+/// Sets JavaScript breakpoint at given location specified either by URL or URL regex. Once this
+/// command is issued, all existing parsed scripts will have breakpoints resolved and returned in
+/// `locations` property. Further matching script parsing will result in subsequent
+/// `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
 pub fn set_breakpoint_by_url(
+  browser_subject,
   line_number: Int,
   url: option.Option(String),
   url_regex: option.Option(String),
@@ -844,18 +1078,80 @@ pub fn set_breakpoint_by_url(
   column_number: option.Option(Int),
   condition: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.setBreakpointByUrl",
+    option.Some(
+      json.object([
+        #("lineNumber", json.int(line_number)),
+        #("url", {
+          case url {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("urlRegex", {
+          case url_regex {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("scriptHash", {
+          case script_hash {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("columnNumber", {
+          case column_number {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("condition", {
+          case condition {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__set_breakpoint_by_url_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_breakpoints_active(active: Bool) {
-  todo
-  // TODO generate command body
+/// Activates / deactivates all breakpoints on the page.
+pub fn set_breakpoints_active(browser_subject, active: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.setBreakpointsActive",
+      option.Some(json.object([#("active", json.bool(active))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_pause_on_exceptions(state: SetPauseOnExceptionsState) {
-  todo
-  // TODO generate command body
+/// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
+/// or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
+pub fn set_pause_on_exceptions(
+  browser_subject,
+  state: SetPauseOnExceptionsState,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.setPauseOnExceptions",
+      option.Some(
+        json.object([#("state", encode__set_pause_on_exceptions_state(state))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -897,41 +1193,94 @@ pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
   }
 }
 
+/// Edits JavaScript source live.
+/// 
+/// In general, functions that are currently on the stack can not be edited with
+/// a single exception: If the edited function is the top-most stack frame and
+/// that is the only activation of that function on the stack. In this case
+/// the live edit will be successful and a `Debugger.restartFrame` for the
+/// top-most function is automatically triggered.
 pub fn set_script_source(
+  browser_subject,
   script_id: runtime.ScriptId,
   script_source: String,
   dry_run: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Debugger.setScriptSource",
+    option.Some(
+      json.object([
+        #("scriptId", runtime.encode__script_id(script_id)),
+        #("scriptSource", json.string(script_source)),
+        #("dryRun", {
+          case dry_run {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__set_script_source_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_skip_all_pauses(skip: Bool) {
-  todo
-  // TODO generate command body
+/// Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
+pub fn set_skip_all_pauses(browser_subject, skip: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.setSkipAllPauses",
+      option.Some(json.object([#("skip", json.bool(skip))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Changes value of variable in a callframe. Object-based scopes are not supported and must be
+/// mutated manually.
 pub fn set_variable_value(
+  browser_subject,
   scope_number: Int,
   variable_name: String,
   new_value: runtime.CallArgument,
   call_frame_id: CallFrameId,
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Debugger.setVariableValue",
+      option.Some(
+        json.object([
+          #("scopeNumber", json.int(scope_number)),
+          #("variableName", json.string(variable_name)),
+          #("newValue", runtime.encode__call_argument(new_value)),
+          #("callFrameId", encode__call_frame_id(call_frame_id)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn step_into() {
-  todo
-  // TODO generate command body
+/// Steps into the function call.
+pub fn step_into(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.stepInto", option.None, 10_000)
+  Nil
 }
 
-pub fn step_out() {
-  todo
-  // TODO generate command body
+/// Steps out of the function call.
+pub fn step_out(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.stepOut", option.None, 10_000)
+  Nil
 }
 
-pub fn step_over() {
-  todo
-  // TODO generate command body
+/// Steps over the statement.
+pub fn step_over(browser_subject) {
+  let _ = chrome.call(browser_subject, "Debugger.stepOver", option.None, 10_000)
+  Nil
 }

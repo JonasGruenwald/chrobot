@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -219,48 +220,150 @@ pub fn decode__media_feature(value__: dynamic.Dynamic) {
   Ok(MediaFeature(name: name, value: value))
 }
 
-pub fn clear_device_metrics_override() {
-  todo
-  // TODO generate command body
+/// Clears the overridden device metrics.
+pub fn clear_device_metrics_override(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.clearDeviceMetricsOverride",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn clear_geolocation_override() {
-  todo
-  // TODO generate command body
+/// Clears the overridden Geolocation Position and Error.
+pub fn clear_geolocation_override(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.clearGeolocationOverride",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_cpu_throttling_rate(rate: Float) {
-  todo
-  // TODO generate command body
+/// Enables CPU throttling to emulate slow CPUs.
+pub fn set_cpu_throttling_rate(browser_subject, rate: Float) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setCPUThrottlingRate",
+      option.Some(json.object([#("rate", json.float(rate))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_default_background_color_override(color: option.Option(dom.RGBA)) {
-  todo
-  // TODO generate command body
+/// Sets or clears an override of the default background color of the frame. This override is used
+/// if the content does not specify one.
+pub fn set_default_background_color_override(
+  browser_subject,
+  color: option.Option(dom.RGBA),
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setDefaultBackgroundColorOverride",
+      option.Some(
+        json.object([
+          #("color", {
+            case color {
+              option.Some(value__) -> dom.encode__rgba(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
+/// window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
+/// query results).
 pub fn set_device_metrics_override(
+  browser_subject,
   width: Int,
   height: Int,
   device_scale_factor: Float,
   mobile: Bool,
   screen_orientation: option.Option(ScreenOrientation),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setDeviceMetricsOverride",
+      option.Some(
+        json.object([
+          #("width", json.int(width)),
+          #("height", json.int(height)),
+          #("deviceScaleFactor", json.float(device_scale_factor)),
+          #("mobile", json.bool(mobile)),
+          #("screenOrientation", {
+            case screen_orientation {
+              option.Some(value__) -> encode__screen_orientation(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Emulates the given media type or media feature for CSS media queries.
 pub fn set_emulated_media(
+  browser_subject,
   media: option.Option(String),
   features: option.Option(List(MediaFeature)),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setEmulatedMedia",
+      option.Some(
+        json.object([
+          #("media", {
+            case media {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("features", {
+            case features {
+              option.Some(value__) ->
+                json.array(value__, of: encode__media_feature)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_emulated_vision_deficiency(type_: SetEmulatedVisionDeficiencyType) {
-  todo
-  // TODO generate command body
+/// Emulates the given vision deficiency.
+pub fn set_emulated_vision_deficiency(
+  browser_subject,
+  type_: SetEmulatedVisionDeficiencyType,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setEmulatedVisionDeficiency",
+      option.Some(
+        json.object([
+          #("type", encode__set_emulated_vision_deficiency_type(type_)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -311,48 +414,158 @@ pub fn decode__set_emulated_vision_deficiency_type(value__: dynamic.Dynamic) {
   }
 }
 
+/// Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
+/// unavailable.
 pub fn set_geolocation_override(
+  browser_subject,
   latitude: option.Option(Float),
   longitude: option.Option(Float),
   accuracy: option.Option(Float),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setGeolocationOverride",
+      option.Some(
+        json.object([
+          #("latitude", {
+            case latitude {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("longitude", {
+            case longitude {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("accuracy", {
+            case accuracy {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_idle_override(is_user_active: Bool, is_screen_unlocked: Bool) {
-  todo
-  // TODO generate command body
+/// Overrides the Idle state.
+pub fn set_idle_override(
+  browser_subject,
+  is_user_active: Bool,
+  is_screen_unlocked: Bool,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setIdleOverride",
+      option.Some(
+        json.object([
+          #("isUserActive", json.bool(is_user_active)),
+          #("isScreenUnlocked", json.bool(is_screen_unlocked)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn clear_idle_override() {
-  todo
-  // TODO generate command body
+/// Clears Idle state overrides.
+pub fn clear_idle_override(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.clearIdleOverride",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_script_execution_disabled(value: Bool) {
-  todo
-  // TODO generate command body
+/// Switches script execution in the page.
+pub fn set_script_execution_disabled(browser_subject, value: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setScriptExecutionDisabled",
+      option.Some(json.object([#("value", json.bool(value))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Enables touch on platforms which do not support them.
 pub fn set_touch_emulation_enabled(
+  browser_subject,
   enabled: Bool,
   max_touch_points: option.Option(Int),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setTouchEmulationEnabled",
+      option.Some(
+        json.object([
+          #("enabled", json.bool(enabled)),
+          #("maxTouchPoints", {
+            case max_touch_points {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_timezone_override(timezone_id: String) {
-  todo
-  // TODO generate command body
+/// Overrides default host system timezone with the specified one.
+pub fn set_timezone_override(browser_subject, timezone_id: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setTimezoneOverride",
+      option.Some(json.object([#("timezoneId", json.string(timezone_id))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Allows overriding user agent with the given string.
+/// `userAgentMetadata` must be set for Client Hint headers to be sent.
 pub fn set_user_agent_override(
+  browser_subject,
   user_agent: String,
   accept_language: option.Option(String),
   platform: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Emulation.setUserAgentOverride",
+      option.Some(
+        json.object([
+          #("userAgent", json.string(user_agent)),
+          #("acceptLanguage", {
+            case accept_language {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("platform", {
+            case platform {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }

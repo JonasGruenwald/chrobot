@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -346,27 +347,49 @@ pub fn decode__violation_setting(value__: dynamic.Dynamic) {
   Ok(ViolationSetting(name: name, threshold: threshold))
 }
 
-pub fn clear() {
-  todo
-  // TODO generate command body
+/// Clears the log.
+pub fn clear(browser_subject) {
+  let _ = chrome.call(browser_subject, "Log.clear", option.None, 10_000)
+  Nil
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables log domain, prevents further log entries from being reported to the client.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Log.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables log domain, sends the entries collected so far to the client by means of the
+/// `entryAdded` notification.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Log.enable", option.None, 10_000)
+  Nil
 }
 
-pub fn start_violations_report(config: List(ViolationSetting)) {
-  todo
-  // TODO generate command body
+/// start violation reporting.
+pub fn start_violations_report(browser_subject, config: List(ViolationSetting)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Log.startViolationsReport",
+      option.Some(
+        json.object([
+          #("config", json.array(config, of: encode__violation_setting)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn stop_violations_report() {
-  todo
-  // TODO generate command body
+/// Stop violation reporting.
+pub fn stop_violations_report(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Log.stopViolationsReport",
+      option.None,
+      10_000,
+    )
+  Nil
 }

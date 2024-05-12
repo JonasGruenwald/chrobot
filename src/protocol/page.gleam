@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -635,23 +636,64 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
   Ok(PrintToPdfResponse(data: data))
 }
 
-pub fn add_script_to_evaluate_on_new_document(source: String) {
-  todo
-  // TODO generate command body
+/// Evaluates given script in every frame upon creation (before loading frame's scripts).
+pub fn add_script_to_evaluate_on_new_document(browser_subject, source: String) {
+  chrome.call(
+    browser_subject,
+    "Page.addScriptToEvaluateOnNewDocument",
+    option.Some(json.object([#("source", json.string(source))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__add_script_to_evaluate_on_new_document_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn bring_to_front() {
-  todo
-  // TODO generate command body
+/// Brings page to front (activates tab).
+pub fn bring_to_front(browser_subject) {
+  let _ = chrome.call(browser_subject, "Page.bringToFront", option.None, 10_000)
+  Nil
 }
 
+/// Capture page screenshot.
 pub fn capture_screenshot(
+  browser_subject,
   format: option.Option(CaptureScreenshotFormat),
   quality: option.Option(Int),
   clip: option.Option(Viewport),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Page.captureScreenshot",
+    option.Some(
+      json.object([
+        #("format", {
+          case format {
+            option.Some(value__) -> encode__capture_screenshot_format(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("quality", {
+          case quality {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("clip", {
+          case clip {
+            option.Some(value__) -> encode__viewport(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__capture_screenshot_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -690,74 +732,202 @@ pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
   }
 }
 
+/// Creates an isolated world for the given frame.
 pub fn create_isolated_world(
+  browser_subject,
   frame_id: FrameId,
   world_name: option.Option(String),
   grant_univeral_access: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Page.createIsolatedWorld",
+    option.Some(
+      json.object([
+        #("frameId", encode__frame_id(frame_id)),
+        #("worldName", {
+          case world_name {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("grantUniveralAccess", {
+          case grant_univeral_access {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__create_isolated_world_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables page domain notifications.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Page.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables page domain notifications.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Page.enable", option.None, 10_000)
+  Nil
 }
 
-pub fn get_app_manifest(manifest_id: option.Option(String)) {
-  todo
-  // TODO generate command body
+/// Gets the processed manifest for this current document.
+///   This API always waits for the manifest to be loaded.
+///   If manifestId is provided, and it does not match the manifest of the
+///     current document, this API errors out.
+///   If there is not a loaded page, this API errors out immediately.
+pub fn get_app_manifest(browser_subject, manifest_id: option.Option(String)) {
+  chrome.call(
+    browser_subject,
+    "Page.getAppManifest",
+    option.Some(
+      json.object([
+        #("manifestId", {
+          case manifest_id {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_app_manifest_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_frame_tree() {
-  todo
-  // TODO generate command body
+/// Returns present frame tree structure.
+pub fn get_frame_tree(browser_subject) {
+  chrome.call(browser_subject, "Page.getFrameTree", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_frame_tree_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_layout_metrics() {
-  todo
-  // TODO generate command body
+/// Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
+pub fn get_layout_metrics(browser_subject) {
+  chrome.call(browser_subject, "Page.getLayoutMetrics", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_layout_metrics_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_navigation_history() {
-  todo
-  // TODO generate command body
+/// Returns navigation history for the current page.
+pub fn get_navigation_history(browser_subject) {
+  chrome.call(browser_subject, "Page.getNavigationHistory", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_navigation_history_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn reset_navigation_history() {
-  todo
-  // TODO generate command body
+/// Resets navigation history for the current page.
+pub fn reset_navigation_history(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.resetNavigationHistory",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
+/// Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 pub fn handle_java_script_dialog(
+  browser_subject,
   accept: Bool,
   prompt_text: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.handleJavaScriptDialog",
+      option.Some(
+        json.object([
+          #("accept", json.bool(accept)),
+          #("promptText", {
+            case prompt_text {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Navigates current page to the given URL.
 pub fn navigate(
+  browser_subject,
   url: String,
   referrer: option.Option(String),
   transition_type: option.Option(TransitionType),
   frame_id: option.Option(FrameId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Page.navigate",
+    option.Some(
+      json.object([
+        #("url", json.string(url)),
+        #("referrer", {
+          case referrer {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("transitionType", {
+          case transition_type {
+            option.Some(value__) -> encode__transition_type(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("frameId", {
+          case frame_id {
+            option.Some(value__) -> encode__frame_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__navigate_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn navigate_to_history_entry(entry_id: Int) {
-  todo
-  // TODO generate command body
+/// Navigates current page to the given history entry.
+pub fn navigate_to_history_entry(browser_subject, entry_id: Int) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.navigateToHistoryEntry",
+      option.Some(json.object([#("entryId", json.int(entry_id))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Print page as PDF.
 pub fn print_to_pdf(
+  browser_subject,
   landscape: option.Option(Bool),
   display_header_footer: option.Option(Bool),
   print_background: option.Option(Bool),
@@ -773,49 +943,216 @@ pub fn print_to_pdf(
   footer_template: option.Option(String),
   prefer_css_page_size: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Page.printToPDF",
+    option.Some(
+      json.object([
+        #("landscape", {
+          case landscape {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("displayHeaderFooter", {
+          case display_header_footer {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("printBackground", {
+          case print_background {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("scale", {
+          case scale {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("paperWidth", {
+          case paper_width {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("paperHeight", {
+          case paper_height {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("marginTop", {
+          case margin_top {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("marginBottom", {
+          case margin_bottom {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("marginLeft", {
+          case margin_left {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("marginRight", {
+          case margin_right {
+            option.Some(value__) -> json.float(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("pageRanges", {
+          case page_ranges {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("headerTemplate", {
+          case header_template {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("footerTemplate", {
+          case footer_template {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("preferCSSPageSize", {
+          case prefer_css_page_size {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__print_to_pdf_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Reloads given page optionally ignoring the cache.
 pub fn reload(
+  browser_subject,
   ignore_cache: option.Option(Bool),
   script_to_evaluate_on_load: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.reload",
+      option.Some(
+        json.object([
+          #("ignoreCache", {
+            case ignore_cache {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("scriptToEvaluateOnLoad", {
+            case script_to_evaluate_on_load {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn remove_script_to_evaluate_on_new_document(identifier: ScriptIdentifier) {
-  todo
-  // TODO generate command body
+/// Removes given script from the list.
+pub fn remove_script_to_evaluate_on_new_document(
+  browser_subject,
+  identifier: ScriptIdentifier,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.removeScriptToEvaluateOnNewDocument",
+      option.Some(
+        json.object([#("identifier", encode__script_identifier(identifier))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_bypass_csp(enabled: Bool) {
-  todo
-  // TODO generate command body
+/// Enable page Content Security Policy by-passing.
+pub fn set_bypass_csp(browser_subject, enabled: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.setBypassCSP",
+      option.Some(json.object([#("enabled", json.bool(enabled))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_document_content(frame_id: FrameId, html: String) {
-  todo
-  // TODO generate command body
+/// Sets given markup as the document's HTML.
+pub fn set_document_content(browser_subject, frame_id: FrameId, html: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.setDocumentContent",
+      option.Some(
+        json.object([
+          #("frameId", encode__frame_id(frame_id)),
+          #("html", json.string(html)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_lifecycle_events_enabled(enabled: Bool) {
-  todo
-  // TODO generate command body
+/// Controls whether page will emit lifecycle events.
+pub fn set_lifecycle_events_enabled(browser_subject, enabled: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.setLifecycleEventsEnabled",
+      option.Some(json.object([#("enabled", json.bool(enabled))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn stop_loading() {
-  todo
-  // TODO generate command body
+/// Force the page stop all navigations and pending resource fetches.
+pub fn stop_loading(browser_subject) {
+  let _ = chrome.call(browser_subject, "Page.stopLoading", option.None, 10_000)
+  Nil
 }
 
-pub fn close() {
-  todo
-  // TODO generate command body
+/// Tries to close page, running its beforeunload hooks, if any.
+pub fn close(browser_subject) {
+  let _ = chrome.call(browser_subject, "Page.close", option.None, 10_000)
+  Nil
 }
 
-pub fn set_intercept_file_chooser_dialog(enabled: Bool) {
-  todo
-  // TODO generate command body
+/// Intercept file chooser requests and transfer control to protocol clients.
+/// When file chooser interception is enabled, native file chooser dialog is not shown.
+/// Instead, a protocol event `Page.fileChooserOpened` is emitted.
+pub fn set_intercept_file_chooser_dialog(browser_subject, enabled: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Page.setInterceptFileChooserDialog",
+      option.Some(json.object([#("enabled", json.bool(enabled))])),
+      10_000,
+    )
+  Nil
 }

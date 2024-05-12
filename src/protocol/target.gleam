@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -180,63 +181,210 @@ pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
   Ok(GetTargetsResponse(target_infos: target_infos))
 }
 
-pub fn activate_target(target_id: TargetID) {
-  todo
-  // TODO generate command body
+/// Activates (focuses) the target.
+pub fn activate_target(browser_subject, target_id: TargetID) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.activateTarget",
+      option.Some(json.object([#("targetId", encode__target_id(target_id))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn attach_to_target(target_id: TargetID, flatten: option.Option(Bool)) {
-  todo
-  // TODO generate command body
+/// Attaches to the target with given id.
+pub fn attach_to_target(
+  browser_subject,
+  target_id: TargetID,
+  flatten: option.Option(Bool),
+) {
+  chrome.call(
+    browser_subject,
+    "Target.attachToTarget",
+    option.Some(
+      json.object([
+        #("targetId", encode__target_id(target_id)),
+        #("flatten", {
+          case flatten {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__attach_to_target_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn close_target(target_id: TargetID) {
-  todo
-  // TODO generate command body
+/// Closes the target. If the target is a page that gets closed too.
+pub fn close_target(browser_subject, target_id: TargetID) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.closeTarget",
+      option.Some(json.object([#("targetId", encode__target_id(target_id))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn create_browser_context() {
-  todo
-  // TODO generate command body
+/// Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
+/// one.
+pub fn create_browser_context(browser_subject) {
+  chrome.call(
+    browser_subject,
+    "Target.createBrowserContext",
+    option.None,
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__create_browser_context_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_browser_contexts() {
-  todo
-  // TODO generate command body
+/// Returns all browser contexts created with `Target.createBrowserContext` method.
+pub fn get_browser_contexts(browser_subject) {
+  chrome.call(browser_subject, "Target.getBrowserContexts", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_browser_contexts_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Creates a new page.
 pub fn create_target(
+  browser_subject,
   url: String,
   width: option.Option(Int),
   height: option.Option(Int),
   new_window: option.Option(Bool),
   background: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Target.createTarget",
+    option.Some(
+      json.object([
+        #("url", json.string(url)),
+        #("width", {
+          case width {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("height", {
+          case height {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("newWindow", {
+          case new_window {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("background", {
+          case background {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__create_target_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn detach_from_target(session_id: option.Option(SessionID)) {
-  todo
-  // TODO generate command body
+/// Detaches session with given id.
+pub fn detach_from_target(browser_subject, session_id: option.Option(SessionID)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.detachFromTarget",
+      option.Some(
+        json.object([
+          #("sessionId", {
+            case session_id {
+              option.Some(value__) -> encode__session_id(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn dispose_browser_context(browser_context_id: String) {
-  todo
-  // TODO generate command body
+/// Deletes a BrowserContext. All the belonging pages will be closed without calling their
+/// beforeunload hooks.
+pub fn dispose_browser_context(browser_subject, browser_context_id: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.disposeBrowserContext",
+      option.Some(
+        json.object([#("browserContextId", json.string(browser_context_id))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn get_targets() {
-  todo
-  // TODO generate command body
+/// Retrieves a list of available targets.
+pub fn get_targets(browser_subject) {
+  chrome.call(browser_subject, "Target.getTargets", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_targets_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_auto_attach(auto_attach: Bool, wait_for_debugger_on_start: Bool) {
-  todo
-  // TODO generate command body
+/// Controls whether to automatically attach to new targets which are considered to be related to
+/// this one. When turned on, attaches to all existing related targets as well. When turned off,
+/// automatically detaches from all currently attached targets.
+/// This also clears all targets added by `autoAttachRelated` from the list of targets to watch
+/// for creation of related targets.
+pub fn set_auto_attach(
+  browser_subject,
+  auto_attach: Bool,
+  wait_for_debugger_on_start: Bool,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.setAutoAttach",
+      option.Some(
+        json.object([
+          #("autoAttach", json.bool(auto_attach)),
+          #("waitForDebuggerOnStart", json.bool(wait_for_debugger_on_start)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_discover_targets(discover: Bool) {
-  todo
-  // TODO generate command body
+/// Controls whether to discover available targets and notify via
+/// `targetCreated/targetInfoChanged/targetDestroyed` events.
+pub fn set_discover_targets(browser_subject, discover: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Target.setDiscoverTargets",
+      option.Some(json.object([#("discover", json.bool(discover))])),
+      10_000,
+    )
+  Nil
 }

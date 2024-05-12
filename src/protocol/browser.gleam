@@ -10,7 +10,9 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
+import gleam/json
 import gleam/option
 import gleam/result
 
@@ -50,22 +52,54 @@ pub fn decode__get_version_response(value__: dynamic.Dynamic) {
   ))
 }
 
-pub fn reset_permissions(browser_context_id: option.Option(String)) {
-  todo
-  // TODO generate command body
+/// Reset all permission management for all origins.
+pub fn reset_permissions(
+  browser_subject,
+  browser_context_id: option.Option(String),
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Browser.resetPermissions",
+      option.Some(
+        json.object([
+          #("browserContextId", {
+            case browser_context_id {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn close() {
-  todo
-  // TODO generate command body
+/// Close browser gracefully.
+pub fn close(browser_subject) {
+  let _ = chrome.call(browser_subject, "Browser.close", option.None, 10_000)
+  Nil
 }
 
-pub fn get_version() {
-  todo
-  // TODO generate command body
+/// Returns version information.
+pub fn get_version(browser_subject) {
+  chrome.call(browser_subject, "Browser.getVersion", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_version_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn add_privacy_sandbox_enrollment_override(url: String) {
-  todo
-  // TODO generate command body
+/// Allows a site to use privacy sandbox features that require enrollment
+/// without the site actually being enrolled. Only supported on page targets.
+pub fn add_privacy_sandbox_enrollment_override(browser_subject, url: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Browser.addPrivacySandboxEnrollmentOverride",
+      option.Some(json.object([#("url", json.string(url))])),
+      10_000,
+    )
+  Nil
 }

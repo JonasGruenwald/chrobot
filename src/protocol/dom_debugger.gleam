@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -161,41 +162,127 @@ pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
   Ok(GetEventListenersResponse(listeners: listeners))
 }
 
+/// Returns event listeners of the given object.
 pub fn get_event_listeners(
+  browser_subject,
   object_id: runtime.RemoteObjectId,
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOMDebugger.getEventListeners",
+    option.Some(
+      json.object([
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+        #("depth", {
+          case depth {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("pierce", {
+          case pierce {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_event_listeners_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn remove_dom_breakpoint(node_id: dom.NodeId, type_: DOMBreakpointType) {
-  todo
-  // TODO generate command body
+/// Removes DOM breakpoint that was set using `setDOMBreakpoint`.
+pub fn remove_dom_breakpoint(
+  browser_subject,
+  node_id: dom.NodeId,
+  type_: DOMBreakpointType,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.removeDOMBreakpoint",
+      option.Some(
+        json.object([
+          #("nodeId", dom.encode__node_id(node_id)),
+          #("type", encode__dom_breakpoint_type(type_)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn remove_event_listener_breakpoint(event_name: String) {
-  todo
-  // TODO generate command body
+/// Removes breakpoint on particular DOM event.
+pub fn remove_event_listener_breakpoint(browser_subject, event_name: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.removeEventListenerBreakpoint",
+      option.Some(json.object([#("eventName", json.string(event_name))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn remove_xhr_breakpoint(url: String) {
-  todo
-  // TODO generate command body
+/// Removes breakpoint from XMLHttpRequest.
+pub fn remove_xhr_breakpoint(browser_subject, url: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.removeXHRBreakpoint",
+      option.Some(json.object([#("url", json.string(url))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_dom_breakpoint(node_id: dom.NodeId, type_: DOMBreakpointType) {
-  todo
-  // TODO generate command body
+/// Sets breakpoint on particular operation with DOM.
+pub fn set_dom_breakpoint(
+  browser_subject,
+  node_id: dom.NodeId,
+  type_: DOMBreakpointType,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.setDOMBreakpoint",
+      option.Some(
+        json.object([
+          #("nodeId", dom.encode__node_id(node_id)),
+          #("type", encode__dom_breakpoint_type(type_)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_event_listener_breakpoint(event_name: String) {
-  todo
-  // TODO generate command body
+/// Sets breakpoint on particular DOM event.
+pub fn set_event_listener_breakpoint(browser_subject, event_name: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.setEventListenerBreakpoint",
+      option.Some(json.object([#("eventName", json.string(event_name))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_xhr_breakpoint(url: String) {
-  todo
-  // TODO generate command body
+/// Sets breakpoint on XMLHttpRequest.
+pub fn set_xhr_breakpoint(browser_subject, url: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOMDebugger.setXHRBreakpoint",
+      option.Some(json.object([#("url", json.string(url))])),
+      10_000,
+    )
+  Nil
 }

@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -178,7 +179,9 @@ pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
   |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
 }
 
+/// Dispatches a key event to the page.
 pub fn dispatch_key_event(
+  browser_subject,
   type_: DispatchKeyEventType,
   modifiers: option.Option(Int),
   timestamp: option.Option(TimeSinceEpoch),
@@ -194,8 +197,96 @@ pub fn dispatch_key_event(
   is_system_key: option.Option(Bool),
   location: option.Option(Int),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Input.dispatchKeyEvent",
+      option.Some(
+        json.object([
+          #("type", encode__dispatch_key_event_type(type_)),
+          #("modifiers", {
+            case modifiers {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("timestamp", {
+            case timestamp {
+              option.Some(value__) -> encode__time_since_epoch(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("text", {
+            case text {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("unmodifiedText", {
+            case unmodified_text {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("keyIdentifier", {
+            case key_identifier {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("code", {
+            case code {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("key", {
+            case key {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("windowsVirtualKeyCode", {
+            case windows_virtual_key_code {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("nativeVirtualKeyCode", {
+            case native_virtual_key_code {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("autoRepeat", {
+            case auto_repeat {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("isKeypad", {
+            case is_keypad {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("isSystemKey", {
+            case is_system_key {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("location", {
+            case location {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -237,7 +328,9 @@ pub fn decode__dispatch_key_event_type(value__: dynamic.Dynamic) {
   }
 }
 
+/// Dispatches a mouse event to the page.
 pub fn dispatch_mouse_event(
+  browser_subject,
   type_: DispatchMouseEventType,
   x: Float,
   y: Float,
@@ -252,8 +345,81 @@ pub fn dispatch_mouse_event(
   delta_y: option.Option(Float),
   pointer_type: option.Option(DispatchMouseEventPointerType),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Input.dispatchMouseEvent",
+      option.Some(
+        json.object([
+          #("type", encode__dispatch_mouse_event_type(type_)),
+          #("x", json.float(x)),
+          #("y", json.float(y)),
+          #("modifiers", {
+            case modifiers {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("timestamp", {
+            case timestamp {
+              option.Some(value__) -> encode__time_since_epoch(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("button", {
+            case button {
+              option.Some(value__) -> encode__mouse_button(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("buttons", {
+            case buttons {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("clickCount", {
+            case click_count {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("tiltX", {
+            case tilt_x {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("tiltY", {
+            case tilt_y {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("deltaX", {
+            case delta_x {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("deltaY", {
+            case delta_y {
+              option.Some(value__) -> json.float(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("pointerType", {
+            case pointer_type {
+              option.Some(value__) ->
+                encode__dispatch_mouse_event_pointer_type(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -328,14 +494,39 @@ pub fn decode__dispatch_mouse_event_pointer_type(value__: dynamic.Dynamic) {
   }
 }
 
+/// Dispatches a touch event to the page.
 pub fn dispatch_touch_event(
+  browser_subject,
   type_: DispatchTouchEventType,
   touch_points: List(TouchPoint),
   modifiers: option.Option(Int),
   timestamp: option.Option(TimeSinceEpoch),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Input.dispatchTouchEvent",
+      option.Some(
+        json.object([
+          #("type", encode__dispatch_touch_event_type(type_)),
+          #("touchPoints", json.array(touch_points, of: encode__touch_point)),
+          #("modifiers", {
+            case modifiers {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("timestamp", {
+            case timestamp {
+              option.Some(value__) -> encode__time_since_epoch(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -377,12 +568,21 @@ pub fn decode__dispatch_touch_event_type(value__: dynamic.Dynamic) {
   }
 }
 
-pub fn cancel_dragging() {
-  todo
-  // TODO generate command body
+/// Cancels any active dragging in the page.
+pub fn cancel_dragging(browser_subject) {
+  let _ =
+    chrome.call(browser_subject, "Input.cancelDragging", option.None, 10_000)
+  Nil
 }
 
-pub fn set_ignore_input_events(ignore: Bool) {
-  todo
-  // TODO generate command body
+/// Ignores input events (useful while auditing page).
+pub fn set_ignore_input_events(browser_subject, ignore: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Input.setIgnoreInputEvents",
+      option.Some(json.object([#("ignore", json.bool(ignore))])),
+      10_000,
+    )
+  Nil
 }

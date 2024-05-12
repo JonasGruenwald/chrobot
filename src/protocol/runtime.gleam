@@ -14,6 +14,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dict
 import gleam/dynamic
 import gleam/json
@@ -1238,16 +1239,45 @@ pub fn decode__run_script_response(value__: dynamic.Dynamic) {
   Ok(RunScriptResponse(result: result, exception_details: exception_details))
 }
 
+/// Add handler to promise with given promise object id.
 pub fn await_promise(
+  browser_subject,
   promise_object_id: RemoteObjectId,
   return_by_value: option.Option(Bool),
   generate_preview: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.awaitPromise",
+    option.Some(
+      json.object([
+        #("promiseObjectId", encode__remote_object_id(promise_object_id)),
+        #("returnByValue", {
+          case return_by_value {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("generatePreview", {
+          case generate_preview {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__await_promise_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Calls function with given declaration on the given object. Object group of the result is
+/// inherited from the target object.
 pub fn call_function_on(
+  browser_subject,
   function_declaration: String,
   object_id: option.Option(RemoteObjectId),
   arguments: option.Option(List(CallArgument)),
@@ -1258,36 +1288,132 @@ pub fn call_function_on(
   execution_context_id: option.Option(ExecutionContextId),
   object_group: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.callFunctionOn",
+    option.Some(
+      json.object([
+        #("functionDeclaration", json.string(function_declaration)),
+        #("objectId", {
+          case object_id {
+            option.Some(value__) -> encode__remote_object_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("arguments", {
+          case arguments {
+            option.Some(value__) ->
+              json.array(value__, of: encode__call_argument)
+            option.None -> json.null()
+          }
+        }),
+        #("silent", {
+          case silent {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("returnByValue", {
+          case return_by_value {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("userGesture", {
+          case user_gesture {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("awaitPromise", {
+          case await_promise {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("executionContextId", {
+          case execution_context_id {
+            option.Some(value__) -> encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__call_function_on_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Compiles expression.
 pub fn compile_script(
+  browser_subject,
   expression: String,
   source_url: String,
   persist_script: Bool,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.compileScript",
+    option.Some(
+      json.object([
+        #("expression", json.string(expression)),
+        #("sourceURL", json.string(source_url)),
+        #("persistScript", json.bool(persist_script)),
+        #("executionContextId", {
+          case execution_context_id {
+            option.Some(value__) -> encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__compile_script_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables reporting of execution contexts creation.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Runtime.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn discard_console_entries() {
-  todo
-  // TODO generate command body
+/// Discards collected exceptions and console API calls.
+pub fn discard_console_entries(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.discardConsoleEntries",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables reporting of execution contexts creation by means of `executionContextCreated` event.
+/// When the reporting gets enabled the event will be sent immediately for each existing execution
+/// context.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Runtime.enable", option.None, 10_000)
+  Nil
 }
 
+/// Evaluates expression on global object.
 pub fn evaluate(
+  browser_subject,
   expression: String,
   object_group: option.Option(String),
   include_command_line_api: option.Option(Bool),
@@ -1297,49 +1423,188 @@ pub fn evaluate(
   user_gesture: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.evaluate",
+    option.Some(
+      json.object([
+        #("expression", json.string(expression)),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("includeCommandLineAPI", {
+          case include_command_line_api {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("silent", {
+          case silent {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("contextId", {
+          case context_id {
+            option.Some(value__) -> encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("returnByValue", {
+          case return_by_value {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("userGesture", {
+          case user_gesture {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("awaitPromise", {
+          case await_promise {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__evaluate_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns properties of a given object. Object group of the result is inherited from the target
+/// object.
 pub fn get_properties(
+  browser_subject,
   object_id: RemoteObjectId,
   own_properties: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.getProperties",
+    option.Some(
+      json.object([
+        #("objectId", encode__remote_object_id(object_id)),
+        #("ownProperties", {
+          case own_properties {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_properties_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns all let, const and class variables from global scope.
 pub fn global_lexical_scope_names(
+  browser_subject,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.globalLexicalScopeNames",
+    option.Some(
+      json.object([
+        #("executionContextId", {
+          case execution_context_id {
+            option.Some(value__) -> encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__global_lexical_scope_names_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// This generated protocol command has no description
 pub fn query_objects(
+  browser_subject,
   prototype_object_id: RemoteObjectId,
   object_group: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.queryObjects",
+    option.Some(
+      json.object([
+        #("prototypeObjectId", encode__remote_object_id(prototype_object_id)),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__query_objects_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn release_object(object_id: RemoteObjectId) {
-  todo
-  // TODO generate command body
+/// Releases remote object with given id.
+pub fn release_object(browser_subject, object_id: RemoteObjectId) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.releaseObject",
+      option.Some(
+        json.object([#("objectId", encode__remote_object_id(object_id))]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn release_object_group(object_group: String) {
-  todo
-  // TODO generate command body
+/// Releases all remote objects that belong to a given group.
+pub fn release_object_group(browser_subject, object_group: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.releaseObjectGroup",
+      option.Some(json.object([#("objectGroup", json.string(object_group))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn run_if_waiting_for_debugger() {
-  todo
-  // TODO generate command body
+/// Tells inspected instance to run if it was waiting for debugger to attach.
+pub fn run_if_waiting_for_debugger(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.runIfWaitingForDebugger",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
+/// Runs script with given id in a given context.
 pub fn run_script(
+  browser_subject,
   script_id: ScriptId,
   execution_context_id: option.Option(ExecutionContextId),
   object_group: option.Option(String),
@@ -1349,21 +1614,116 @@ pub fn run_script(
   generate_preview: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "Runtime.runScript",
+    option.Some(
+      json.object([
+        #("scriptId", encode__script_id(script_id)),
+        #("executionContextId", {
+          case execution_context_id {
+            option.Some(value__) -> encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("silent", {
+          case silent {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("includeCommandLineAPI", {
+          case include_command_line_api {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("returnByValue", {
+          case return_by_value {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("generatePreview", {
+          case generate_preview {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("awaitPromise", {
+          case await_promise {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__run_script_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_async_call_stack_depth(max_depth: Int) {
-  todo
-  // TODO generate command body
+/// Enables or disables async call stacks tracking.
+pub fn set_async_call_stack_depth(browser_subject, max_depth: Int) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.setAsyncCallStackDepth",
+      option.Some(json.object([#("maxDepth", json.int(max_depth))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn add_binding(name: String, execution_context_name: option.Option(String)) {
-  todo
-  // TODO generate command body
+/// If executionContextId is empty, adds binding with the given name on the
+/// global objects of all inspected contexts, including those created later,
+/// bindings survive reloads.
+/// Binding function takes exactly one argument, this argument should be string,
+/// in case of any other input, function throws an exception.
+/// Each binding function call produces Runtime.bindingCalled notification.
+pub fn add_binding(
+  browser_subject,
+  name: String,
+  execution_context_name: option.Option(String),
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.addBinding",
+      option.Some(
+        json.object([
+          #("name", json.string(name)),
+          #("executionContextName", {
+            case execution_context_name {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn remove_binding(name: String) {
-  todo
-  // TODO generate command body
+/// This method does not remove binding function from global object but
+/// unsubscribes current runtime agent from Runtime.bindingCalled notifications.
+pub fn remove_binding(browser_subject, name: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Runtime.removeBinding",
+      option.Some(json.object([#("name", json.string(name))])),
+      10_000,
+    )
+  Nil
 }

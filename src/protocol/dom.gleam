@@ -16,6 +16,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -1068,187 +1069,681 @@ pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
   Ok(SetNodeNameResponse(node_id: node_id))
 }
 
+/// Describes node given its id, does not require domain to be enabled. Does not start tracking any
+/// objects, can be used for automation.
 pub fn describe_node(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.describeNode",
+    option.Some(
+      json.object([
+        #("nodeId", {
+          case node_id {
+            option.Some(value__) -> encode__node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("backendNodeId", {
+          case backend_node_id {
+            option.Some(value__) -> encode__backend_node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectId", {
+          case object_id {
+            option.Some(value__) -> runtime.encode__remote_object_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("depth", {
+          case depth {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("pierce", {
+          case pierce {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__describe_node_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Scrolls the specified rect of the given node into view if not already visible.
+/// Note: exactly one between nodeId, backendNodeId and objectId should be passed
+/// to identify the node.
 pub fn scroll_into_view_if_needed(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
   rect: option.Option(Rect),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.scrollIntoViewIfNeeded",
+      option.Some(
+        json.object([
+          #("nodeId", {
+            case node_id {
+              option.Some(value__) -> encode__node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("backendNodeId", {
+            case backend_node_id {
+              option.Some(value__) -> encode__backend_node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("objectId", {
+            case object_id {
+              option.Some(value__) -> runtime.encode__remote_object_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("rect", {
+            case rect {
+              option.Some(value__) -> encode__rect(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables DOM agent for the given page.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "DOM.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables DOM agent for the given page.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "DOM.enable", option.None, 10_000)
+  Nil
 }
 
+/// Focuses the given element.
 pub fn focus(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.focus",
+      option.Some(
+        json.object([
+          #("nodeId", {
+            case node_id {
+              option.Some(value__) -> encode__node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("backendNodeId", {
+            case backend_node_id {
+              option.Some(value__) -> encode__backend_node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("objectId", {
+            case object_id {
+              option.Some(value__) -> runtime.encode__remote_object_id(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn get_attributes(node_id: NodeId) {
-  todo
-  // TODO generate command body
+/// Returns attributes for the specified node.
+pub fn get_attributes(browser_subject, node_id: NodeId) {
+  chrome.call(
+    browser_subject,
+    "DOM.getAttributes",
+    option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_attributes_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns boxes for the given node.
 pub fn get_box_model(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.getBoxModel",
+    option.Some(
+      json.object([
+        #("nodeId", {
+          case node_id {
+            option.Some(value__) -> encode__node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("backendNodeId", {
+          case backend_node_id {
+            option.Some(value__) -> encode__backend_node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectId", {
+          case object_id {
+            option.Some(value__) -> runtime.encode__remote_object_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_box_model_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_document(depth: option.Option(Int), pierce: option.Option(Bool)) {
-  todo
-  // TODO generate command body
+/// Returns the root DOM node (and optionally the subtree) to the caller.
+/// Implicitly enables the DOM domain events for the current target.
+pub fn get_document(
+  browser_subject,
+  depth: option.Option(Int),
+  pierce: option.Option(Bool),
+) {
+  chrome.call(
+    browser_subject,
+    "DOM.getDocument",
+    option.Some(
+      json.object([
+        #("depth", {
+          case depth {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("pierce", {
+          case pierce {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_document_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
+/// either returned or not.
 pub fn get_node_for_location(
+  browser_subject,
   x: Int,
   y: Int,
   include_user_agent_shadow_dom: option.Option(Bool),
   ignore_pointer_events_none: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.getNodeForLocation",
+    option.Some(
+      json.object([
+        #("x", json.int(x)),
+        #("y", json.int(y)),
+        #("includeUserAgentShadowDOM", {
+          case include_user_agent_shadow_dom {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("ignorePointerEventsNone", {
+          case ignore_pointer_events_none {
+            option.Some(value__) -> json.bool(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_node_for_location_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Returns node's HTML markup.
 pub fn get_outer_html(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.getOuterHTML",
+    option.Some(
+      json.object([
+        #("nodeId", {
+          case node_id {
+            option.Some(value__) -> encode__node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("backendNodeId", {
+          case backend_node_id {
+            option.Some(value__) -> encode__backend_node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectId", {
+          case object_id {
+            option.Some(value__) -> runtime.encode__remote_object_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_outer_html_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn hide_highlight() {
-  todo
-  // TODO generate command body
+/// Hides any highlight.
+pub fn hide_highlight(browser_subject) {
+  let _ = chrome.call(browser_subject, "DOM.hideHighlight", option.None, 10_000)
+  Nil
 }
 
-pub fn highlight_node() {
-  todo
-  // TODO generate command body
+/// Highlights DOM node.
+pub fn highlight_node(browser_subject) {
+  let _ = chrome.call(browser_subject, "DOM.highlightNode", option.None, 10_000)
+  Nil
 }
 
-pub fn highlight_rect() {
-  todo
-  // TODO generate command body
+/// Highlights given rectangle.
+pub fn highlight_rect(browser_subject) {
+  let _ = chrome.call(browser_subject, "DOM.highlightRect", option.None, 10_000)
+  Nil
 }
 
+/// Moves node into the new container, places it before the given anchor.
 pub fn move_to(
+  browser_subject,
   node_id: NodeId,
   target_node_id: NodeId,
   insert_before_node_id: option.Option(NodeId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.moveTo",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("targetNodeId", encode__node_id(target_node_id)),
+        #("insertBeforeNodeId", {
+          case insert_before_node_id {
+            option.Some(value__) -> encode__node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__move_to_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn query_selector(node_id: NodeId, selector: String) {
-  todo
-  // TODO generate command body
+/// Executes `querySelector` on a given node.
+pub fn query_selector(browser_subject, node_id: NodeId, selector: String) {
+  chrome.call(
+    browser_subject,
+    "DOM.querySelector",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("selector", json.string(selector)),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__query_selector_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn query_selector_all(node_id: NodeId, selector: String) {
-  todo
-  // TODO generate command body
+/// Executes `querySelectorAll` on a given node.
+pub fn query_selector_all(browser_subject, node_id: NodeId, selector: String) {
+  chrome.call(
+    browser_subject,
+    "DOM.querySelectorAll",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("selector", json.string(selector)),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__query_selector_all_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn remove_attribute(node_id: NodeId, name: String) {
-  todo
-  // TODO generate command body
+/// Removes attribute with given name from an element with given id.
+pub fn remove_attribute(browser_subject, node_id: NodeId, name: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.removeAttribute",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("name", json.string(name)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn remove_node(node_id: NodeId) {
-  todo
-  // TODO generate command body
+/// Removes node with given id.
+pub fn remove_node(browser_subject, node_id: NodeId) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.removeNode",
+      option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Requests that children of the node with given id are returned to the caller in form of
+/// `setChildNodes` events where not only immediate children are retrieved, but all children down to
+/// the specified depth.
 pub fn request_child_nodes(
+  browser_subject,
   node_id: NodeId,
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.requestChildNodes",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("depth", {
+            case depth {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("pierce", {
+            case pierce {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn request_node(object_id: runtime.RemoteObjectId) {
-  todo
-  // TODO generate command body
+/// Requests that the node is sent to the caller given the JavaScript node object reference. All
+/// nodes that form the path from the node to the root are also sent to the client as a series of
+/// `setChildNodes` notifications.
+pub fn request_node(browser_subject, object_id: runtime.RemoteObjectId) {
+  chrome.call(
+    browser_subject,
+    "DOM.requestNode",
+    option.Some(
+      json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__request_node_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
+/// Resolves the JavaScript node object for a given NodeId or BackendNodeId.
 pub fn resolve_node(
+  browser_subject,
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_group: option.Option(String),
   execution_context_id: option.Option(runtime.ExecutionContextId),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "DOM.resolveNode",
+    option.Some(
+      json.object([
+        #("nodeId", {
+          case node_id {
+            option.Some(value__) -> encode__node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("backendNodeId", {
+          case backend_node_id {
+            option.Some(value__) -> encode__backend_node_id(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("objectGroup", {
+          case object_group {
+            option.Some(value__) -> json.string(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("executionContextId", {
+          case execution_context_id {
+            option.Some(value__) ->
+              runtime.encode__execution_context_id(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__resolve_node_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_attribute_value(node_id: NodeId, name: String, value: String) {
-  todo
-  // TODO generate command body
+/// Sets attribute for an element with given id.
+pub fn set_attribute_value(
+  browser_subject,
+  node_id: NodeId,
+  name: String,
+  value: String,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.setAttributeValue",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("name", json.string(name)),
+          #("value", json.string(value)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Sets attributes on element with given id. This method is useful when user edits some existing
+/// attribute value and types in several attribute name/value pairs.
 pub fn set_attributes_as_text(
+  browser_subject,
   node_id: NodeId,
   text: String,
   name: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.setAttributesAsText",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("text", json.string(text)),
+          #("name", {
+            case name {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Sets files for the given file input element.
 pub fn set_file_input_files(
+  browser_subject,
   files: List(String),
   node_id: option.Option(NodeId),
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.setFileInputFiles",
+      option.Some(
+        json.object([
+          #("files", json.array(files, of: json.string)),
+          #("nodeId", {
+            case node_id {
+              option.Some(value__) -> encode__node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("backendNodeId", {
+            case backend_node_id {
+              option.Some(value__) -> encode__backend_node_id(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("objectId", {
+            case object_id {
+              option.Some(value__) -> runtime.encode__remote_object_id(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_node_name(node_id: NodeId, name: String) {
-  todo
-  // TODO generate command body
+/// Sets node name for a node with given id.
+pub fn set_node_name(browser_subject, node_id: NodeId, name: String) {
+  chrome.call(
+    browser_subject,
+    "DOM.setNodeName",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("name", json.string(name)),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__set_node_name_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_node_value(node_id: NodeId, value: String) {
-  todo
-  // TODO generate command body
+/// Sets node value for a node with given id.
+pub fn set_node_value(browser_subject, node_id: NodeId, value: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.setNodeValue",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("value", json.string(value)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_outer_html(node_id: NodeId, outer_html: String) {
-  todo
-  // TODO generate command body
+/// Sets node HTML markup, returns new node id.
+pub fn set_outer_html(browser_subject, node_id: NodeId, outer_html: String) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "DOM.setOuterHTML",
+      option.Some(
+        json.object([
+          #("nodeId", encode__node_id(node_id)),
+          #("outerHTML", json.string(outer_html)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }

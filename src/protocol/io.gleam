@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -66,21 +67,65 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
   Ok(ResolveBlobResponse(uuid: uuid))
 }
 
-pub fn close(handle: StreamHandle) {
-  todo
-  // TODO generate command body
+/// Close the stream, discard any temporary backing storage.
+pub fn close(browser_subject, handle: StreamHandle) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "IO.close",
+      option.Some(json.object([#("handle", encode__stream_handle(handle))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Read a chunk of the stream
 pub fn read(
+  browser_subject,
   handle: StreamHandle,
   offset: option.Option(Int),
   size: option.Option(Int),
 ) {
-  todo
-  // TODO generate command body
+  chrome.call(
+    browser_subject,
+    "IO.read",
+    option.Some(
+      json.object([
+        #("handle", encode__stream_handle(handle)),
+        #("offset", {
+          case offset {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+        #("size", {
+          case size {
+            option.Some(value__) -> json.int(value__)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__read_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn resolve_blob(object_id: runtime.RemoteObjectId) {
-  todo
-  // TODO generate command body
+/// Return UUID of Blob object specified by a remote object id.
+pub fn resolve_blob(browser_subject, object_id: runtime.RemoteObjectId) {
+  chrome.call(
+    browser_subject,
+    "IO.resolveBlob",
+    option.Some(
+      json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__resolve_blob_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }

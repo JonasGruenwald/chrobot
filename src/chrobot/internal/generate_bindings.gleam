@@ -34,6 +34,8 @@ import gleam/string_builder as sb
 import justin.{pascal_case, snake_case}
 import simplifile as file
 
+const call_timeout = "10_000"
+
 pub type Protocol {
   Protocol(version: Version, domains: List(Domain))
 }
@@ -1182,11 +1184,17 @@ fn gen_property_encoder(
 /// #("lives", int(cat.lives)),
 /// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
 /// The root name is just there to construct the function name of Enum encoders
-fn gen_object_property_encoder(root_name: String, prop_def: PropertyDefinition) {
+/// value_accessor should normally be `value__.`
+fn gen_object_property_encoder(
+  root_name: String,
+  prop_def: PropertyDefinition,
+  value_accessor: String,
+) {
   let attribute_name = safe_snake_case(prop_def.name)
   let encoder = case prop_def.optional {
     option.Some(True) ->
-      "{case value__."
+      "{case "
+      <> value_accessor
       <> attribute_name
       <> " {\n option.Some(value__) -> "
       <> gen_property_encoder(
@@ -1200,7 +1208,7 @@ fn gen_object_property_encoder(root_name: String, prop_def: PropertyDefinition) 
       gen_property_encoder(
         root_name,
         attribute_name,
-        "value__." <> attribute_name,
+        value_accessor <> attribute_name,
         prop_def.inner,
       )
   }
@@ -1237,7 +1245,7 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
     ObjectType(Some(properties)) -> {
       let property_encoders =
         list.map(properties, fn(p) {
-          gen_object_property_encoder(type_def.id, p)
+          gen_object_property_encoder(type_def.id, p, "value__.")
         })
         |> string.join("")
 
@@ -1443,28 +1451,86 @@ fn gen_command_parameters(command: Command) {
   }
 }
 
-fn gen_command_body(command: Command) {
-  "todo\n// TODO generate command body"
+fn gen_command_body(command: Command, domain: Domain) {
+  let encoder_part = {
+    case command.parameters {
+      None | Some([]) -> {
+        "chrome.call(browser_subject, \""
+        <> domain.domain
+        <> "."
+        <> command.name
+        <> "\", option.None, "
+        <> call_timeout
+        <> ")\n"
+      }
+      Some(properties) -> {
+        let property_encoders =
+          list.map(properties, fn(p) {
+            gen_object_property_encoder(command.name, p, "")
+          })
+        "chrome.call(browser_subject, \""
+        <> domain.domain
+        <> "."
+        <> command.name
+        <> "\", option.Some(json.object(["
+        <> string.join(property_encoders, "")
+        <> "])),"
+        <> call_timeout
+        <> ")\n"
+      }
+    }
+  }
+
+  let #(decoder_part, encoder_prefix) = {
+    case command.returns {
+      None | Some([]) -> #("Nil\n", "let _ =")
+      Some(_) -> {
+        #(
+          "\n|> result.try(fn(result__){\n"
+            <> get_decoder_name(pascal_case(command.name) <> "Response")
+            <> "(result__)"
+            <> "\n|> result.replace_error(chrome.ProtocolError)\n"
+            <> "})",
+          "",
+        )
+      }
+    }
+  }
+
+  encoder_prefix <> encoder_part <> decoder_part
 }
 
-fn gen_command_function(command: Command) {
+fn gen_command_function(command: Command, domain: Domain) {
   let #(param_definition, appendage) = gen_command_parameters(command)
   sb.new()
+  |> sb.append(
+    gen_attached_comment(option.unwrap(
+      command.description,
+      "This generated protocol command has no description",
+    )),
+  )
   |> sb.append("pub fn ")
   |> sb.append(safe_snake_case(command.name))
   |> sb.append("(\n")
+  |> sb.append("browser_subject,\n")
   |> sb.append(param_definition)
   |> sb.append("){\n")
-  |> sb.append(gen_command_body(command))
+  |> sb.append(gen_command_body(command, domain))
   |> sb.append("\n}\n")
   |> sb.append(appendage)
   |> sb.append("\n")
 }
 
-fn gen_commands(commands: List(Command)) {
+fn gen_commands(domain: Domain) {
   sb.new()
-  |> sb.append_builder(sb.concat(list.map(commands, gen_command_return_type)))
-  |> sb.append_builder(sb.concat(list.map(commands, gen_command_function)))
+  |> sb.append_builder(
+    sb.concat(list.map(domain.commands, gen_command_return_type)),
+  )
+  |> sb.append_builder(
+    sb.concat(
+      list.map(domain.commands, fn(c) { gen_command_function(c, domain) }),
+    ),
+  )
 }
 
 fn remove_import_if_unused(
@@ -1528,7 +1594,7 @@ pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
   |> sb.append(gen_preamble(protocol))
   |> sb.append_builder(gen_domain_module_header(protocol, domain))
   |> sb.append_builder(gen_type_definitions(domain))
-  |> sb.append_builder(gen_commands(domain.commands))
+  |> sb.append_builder(gen_commands(domain))
   |> remove_unused_imports()
   |> sb.to_string()
 }

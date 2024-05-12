@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dict
 import gleam/dynamic
 import gleam/json
@@ -1957,74 +1958,215 @@ pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
   Ok(GetRequestPostDataResponse(post_data: post_data))
 }
 
-pub fn clear_browser_cache() {
-  todo
-  // TODO generate command body
+/// Clears browser cache.
+pub fn clear_browser_cache(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.clearBrowserCache",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
-pub fn clear_browser_cookies() {
-  todo
-  // TODO generate command body
+/// Clears browser cookies.
+pub fn clear_browser_cookies(browser_subject) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.clearBrowserCookies",
+      option.None,
+      10_000,
+    )
+  Nil
 }
 
+/// Deletes browser cookies with matching name and url or domain/path/partitionKey pair.
 pub fn delete_cookies(
+  browser_subject,
   name: String,
   url: option.Option(String),
   domain: option.Option(String),
   path: option.Option(String),
   partition_key: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.deleteCookies",
+      option.Some(
+        json.object([
+          #("name", json.string(name)),
+          #("url", {
+            case url {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("domain", {
+            case domain {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("path", {
+            case path {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("partitionKey", {
+            case partition_key {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables network tracking, prevents network events from being sent to the client.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Network.disable", option.None, 10_000)
+  Nil
 }
 
+/// Activates emulation of network conditions.
 pub fn emulate_network_conditions(
+  browser_subject,
   offline: Bool,
   latency: Float,
   download_throughput: Float,
   upload_throughput: Float,
   connection_type: option.Option(ConnectionType),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.emulateNetworkConditions",
+      option.Some(
+        json.object([
+          #("offline", json.bool(offline)),
+          #("latency", json.float(latency)),
+          #("downloadThroughput", json.float(download_throughput)),
+          #("uploadThroughput", json.float(upload_throughput)),
+          #("connectionType", {
+            case connection_type {
+              option.Some(value__) -> encode__connection_type(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn enable(max_post_data_size: option.Option(Int)) {
-  todo
-  // TODO generate command body
+/// Enables network tracking, network events will now be delivered to the client.
+pub fn enable(browser_subject, max_post_data_size: option.Option(Int)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.enable",
+      option.Some(
+        json.object([
+          #("maxPostDataSize", {
+            case max_post_data_size {
+              option.Some(value__) -> json.int(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn get_cookies(urls: option.Option(List(String))) {
-  todo
-  // TODO generate command body
+/// Returns all browser cookies for the current URL. Depending on the backend support, will return
+/// detailed cookie information in the `cookies` field.
+pub fn get_cookies(browser_subject, urls: option.Option(List(String))) {
+  chrome.call(
+    browser_subject,
+    "Network.getCookies",
+    option.Some(
+      json.object([
+        #("urls", {
+          case urls {
+            option.Some(value__) -> json.array(value__, of: json.string)
+            option.None -> json.null()
+          }
+        }),
+      ]),
+    ),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_cookies_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_response_body(request_id: RequestId) {
-  todo
-  // TODO generate command body
+/// Returns content served for the given request.
+pub fn get_response_body(browser_subject, request_id: RequestId) {
+  chrome.call(
+    browser_subject,
+    "Network.getResponseBody",
+    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_response_body_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn get_request_post_data(request_id: RequestId) {
-  todo
-  // TODO generate command body
+/// Returns post data sent with the request. Returns an error when no data was sent with the request.
+pub fn get_request_post_data(browser_subject, request_id: RequestId) {
+  chrome.call(
+    browser_subject,
+    "Network.getRequestPostData",
+    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_request_post_data_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn set_bypass_service_worker(bypass: Bool) {
-  todo
-  // TODO generate command body
+/// Toggles ignoring of service worker for each request.
+pub fn set_bypass_service_worker(browser_subject, bypass: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setBypassServiceWorker",
+      option.Some(json.object([#("bypass", json.bool(bypass))])),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_cache_disabled(cache_disabled: Bool) {
-  todo
-  // TODO generate command body
+/// Toggles ignoring cache for each request. If `true`, cache will not be used.
+pub fn set_cache_disabled(browser_subject, cache_disabled: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setCacheDisabled",
+      option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 pub fn set_cookie(
+  browser_subject,
   name: String,
   value: String,
   url: option.Option(String),
@@ -2035,25 +2177,120 @@ pub fn set_cookie(
   same_site: option.Option(CookieSameSite),
   expires: option.Option(TimeSinceEpoch),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setCookie",
+      option.Some(
+        json.object([
+          #("name", json.string(name)),
+          #("value", json.string(value)),
+          #("url", {
+            case url {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("domain", {
+            case domain {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("path", {
+            case path {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("secure", {
+            case secure {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("httpOnly", {
+            case http_only {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("sameSite", {
+            case same_site {
+              option.Some(value__) -> encode__cookie_same_site(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("expires", {
+            case expires {
+              option.Some(value__) -> encode__time_since_epoch(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_cookies(cookies: List(CookieParam)) {
-  todo
-  // TODO generate command body
+/// Sets given cookies.
+pub fn set_cookies(browser_subject, cookies: List(CookieParam)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setCookies",
+      option.Some(
+        json.object([
+          #("cookies", json.array(cookies, of: encode__cookie_param)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn set_extra_http_headers(headers: Headers) {
-  todo
-  // TODO generate command body
+/// Specifies whether to always send extra HTTP headers with the requests from this page.
+pub fn set_extra_http_headers(browser_subject, headers: Headers) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setExtraHTTPHeaders",
+      option.Some(json.object([#("headers", encode__headers(headers))])),
+      10_000,
+    )
+  Nil
 }
 
+/// Allows overriding user agent with the given string.
 pub fn set_user_agent_override(
+  browser_subject,
   user_agent: String,
   accept_language: option.Option(String),
   platform: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Network.setUserAgentOverride",
+      option.Some(
+        json.object([
+          #("userAgent", json.string(user_agent)),
+          #("acceptLanguage", {
+            case accept_language {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("platform", {
+            case platform {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }

@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -332,25 +333,69 @@ pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
   Ok(TakeResponseBodyAsStreamResponse(stream: stream))
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables the fetch domain.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Fetch.disable", option.None, 10_000)
+  Nil
 }
 
+/// Enables issuing of requestPaused events. A request will be paused until client
+/// calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 pub fn enable(
+  browser_subject,
   patterns: option.Option(List(RequestPattern)),
   handle_auth_requests: option.Option(Bool),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Fetch.enable",
+      option.Some(
+        json.object([
+          #("patterns", {
+            case patterns {
+              option.Some(value__) ->
+                json.array(value__, of: encode__request_pattern)
+              option.None -> json.null()
+            }
+          }),
+          #("handleAuthRequests", {
+            case handle_auth_requests {
+              option.Some(value__) -> json.bool(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn fail_request(request_id: RequestId, error_reason: network.ErrorReason) {
-  todo
-  // TODO generate command body
+/// Causes the request to fail with specified reason.
+pub fn fail_request(
+  browser_subject,
+  request_id: RequestId,
+  error_reason: network.ErrorReason,
+) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Fetch.failRequest",
+      option.Some(
+        json.object([
+          #("requestId", encode__request_id(request_id)),
+          #("errorReason", network.encode__error_reason(error_reason)),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Provides response to the request.
 pub fn fulfill_request(
+  browser_subject,
   request_id: RequestId,
   response_code: Int,
   response_headers: option.Option(List(HeaderEntry)),
@@ -358,35 +403,160 @@ pub fn fulfill_request(
   body: option.Option(String),
   response_phrase: option.Option(String),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Fetch.fulfillRequest",
+      option.Some(
+        json.object([
+          #("requestId", encode__request_id(request_id)),
+          #("responseCode", json.int(response_code)),
+          #("responseHeaders", {
+            case response_headers {
+              option.Some(value__) ->
+                json.array(value__, of: encode__header_entry)
+              option.None -> json.null()
+            }
+          }),
+          #("binaryResponseHeaders", {
+            case binary_response_headers {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("body", {
+            case body {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("responsePhrase", {
+            case response_phrase {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Continues the request, optionally modifying some of its parameters.
 pub fn continue_request(
+  browser_subject,
   request_id: RequestId,
   url: option.Option(String),
   method: option.Option(String),
   post_data: option.Option(String),
   headers: option.Option(List(HeaderEntry)),
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Fetch.continueRequest",
+      option.Some(
+        json.object([
+          #("requestId", encode__request_id(request_id)),
+          #("url", {
+            case url {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("method", {
+            case method {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("postData", {
+            case post_data {
+              option.Some(value__) -> json.string(value__)
+              option.None -> json.null()
+            }
+          }),
+          #("headers", {
+            case headers {
+              option.Some(value__) ->
+                json.array(value__, of: encode__header_entry)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
+/// Continues a request supplying authChallengeResponse following authRequired event.
 pub fn continue_with_auth(
+  browser_subject,
   request_id: RequestId,
   auth_challenge_response: AuthChallengeResponse,
 ) {
-  todo
-  // TODO generate command body
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Fetch.continueWithAuth",
+      option.Some(
+        json.object([
+          #("requestId", encode__request_id(request_id)),
+          #(
+            "authChallengeResponse",
+            encode__auth_challenge_response(auth_challenge_response),
+          ),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
-pub fn get_response_body(request_id: RequestId) {
-  todo
-  // TODO generate command body
+/// Causes the body of the response to be received from the server and
+/// returned as a single string. May only be issued for a request that
+/// is paused in the Response stage and is mutually exclusive with
+/// takeResponseBodyForInterceptionAsStream. Calling other methods that
+/// affect the request or disabling fetch domain before body is received
+/// results in an undefined behavior.
+/// Note that the response body is not available for redirects. Requests
+/// paused in the _redirect received_ state may be differentiated by
+/// `responseCode` and presence of `location` response header, see
+/// comments to `requestPaused` for details.
+pub fn get_response_body(browser_subject, request_id: RequestId) {
+  chrome.call(
+    browser_subject,
+    "Fetch.getResponseBody",
+    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__get_response_body_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
 
-pub fn take_response_body_as_stream(request_id: RequestId) {
-  todo
-  // TODO generate command body
+/// Returns a handle to the stream representing the response body.
+/// The request must be paused in the HeadersReceived stage.
+/// Note that after this command the request can't be continued
+/// as is -- client either needs to cancel it or to provide the
+/// response body.
+/// The stream only supports sequential read, IO.read will fail if the position
+/// is specified.
+/// This method is mutually exclusive with getResponseBody.
+/// Calling other methods that affect the request or disabling fetch
+/// domain before body is received results in an undefined behavior.
+pub fn take_response_body_as_stream(browser_subject, request_id: RequestId) {
+  chrome.call(
+    browser_subject,
+    "Fetch.takeResponseBodyAsStream",
+    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    10_000,
+  )
+  |> result.try(fn(result__) {
+    decode__take_response_body_as_stream_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }

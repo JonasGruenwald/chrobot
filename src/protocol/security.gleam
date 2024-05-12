@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -215,17 +216,26 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
   }
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disables tracking security state changes.
+pub fn disable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Security.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable() {
-  todo
-  // TODO generate command body
+/// Enables tracking security state changes.
+pub fn enable(browser_subject) {
+  let _ = chrome.call(browser_subject, "Security.enable", option.None, 10_000)
+  Nil
 }
 
-pub fn set_ignore_certificate_errors(ignore: Bool) {
-  todo
-  // TODO generate command body
+/// Enable/disable whether all certificate errors should be ignored.
+pub fn set_ignore_certificate_errors(browser_subject, ignore: Bool) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Security.setIgnoreCertificateErrors",
+      option.Some(json.object([#("ignore", json.bool(ignore))])),
+      10_000,
+    )
+  Nil
 }

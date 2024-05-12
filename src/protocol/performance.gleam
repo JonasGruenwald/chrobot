@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -52,14 +53,32 @@ pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
   Ok(GetMetricsResponse(metrics: metrics))
 }
 
-pub fn disable() {
-  todo
-  // TODO generate command body
+/// Disable collecting and reporting metrics.
+pub fn disable(browser_subject) {
+  let _ =
+    chrome.call(browser_subject, "Performance.disable", option.None, 10_000)
+  Nil
 }
 
-pub fn enable(time_domain: option.Option(EnableTimeDomain)) {
-  todo
-  // TODO generate command body
+/// Enable collecting and reporting metrics.
+pub fn enable(browser_subject, time_domain: option.Option(EnableTimeDomain)) {
+  let _ =
+    chrome.call(
+      browser_subject,
+      "Performance.enable",
+      option.Some(
+        json.object([
+          #("timeDomain", {
+            case time_domain {
+              option.Some(value__) -> encode__enable_time_domain(value__)
+              option.None -> json.null()
+            }
+          }),
+        ]),
+      ),
+      10_000,
+    )
+  Nil
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -95,7 +114,11 @@ pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
   }
 }
 
-pub fn get_metrics() {
-  todo
-  // TODO generate command body
+/// Retrieve current values of run-time metrics.
+pub fn get_metrics(browser_subject) {
+  chrome.call(browser_subject, "Performance.getMetrics", option.None, 10_000)
+  |> result.try(fn(result__) {
+    decode__get_metrics_response(result__)
+    |> result.replace_error(chrome.ProtocolError)
+  })
 }
