@@ -496,7 +496,7 @@ fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
 /// The patches are hardcoded into the called functions.
 /// There will be note in the code where the patches are applied about what they do,
 /// and each patch application logs a line about being applied.
-fn apply_protocol_patches(protocol: Protocol) -> Protocol {
+pub fn apply_protocol_patches(protocol: Protocol) -> Protocol {
   Protocol(
     version: protocol.version,
     domains: list.map(protocol.domains, fn(domain) {
@@ -595,7 +595,7 @@ fn is_allowed(value: Option(Bool), rule: Bool) -> Bool {
   }
 }
 
-fn merge_protocols(left: Protocol, right: Protocol) -> Protocol {
+pub fn merge_protocols(left: Protocol, right: Protocol) -> Protocol {
   let assert True = left.version == right.version
   Protocol(
     version: left.version,
@@ -887,6 +887,7 @@ fn gen_imports(domain: Domain) {
     "import gleam/result\n",
     "import gleam/option\n",
     "import gleam/json\n",
+    "import chrobot/internal/utils\n",
     ..domain_imports
   ]
   |> string.join("")
@@ -1184,7 +1185,9 @@ fn gen_property_encoder(
 /// #("lives", int(cat.lives)),
 /// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
 /// The root name is just there to construct the function name of Enum encoders
-/// value_accessor should normally be `value__.`
+/// value_accessor is the path prefix under which to access the property, for encoder functions
+/// this is "value__." as the properties are all under the single parameter, for command functions
+/// there is no accessor as the properties are passed directly as parameters to the function, so "" will be passed
 fn gen_object_property_encoder(
   root_name: String,
   prop_def: PropertyDefinition,
@@ -1565,7 +1568,7 @@ fn remove_import_if_unused(
 /// in the generated code. Of course imports of protocol domain deps are not handled here.
 /// 
 /// It's a bit silly but it should work.
-/// would be nice to have this be a little more automated
+/// TODO move to automate this
 fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
   let full_string = sb.to_string(builder)
   builder
@@ -1580,6 +1583,9 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
     "Option", "Some", "None",
   ])
   |> remove_import_if_unused(full_string, "gleam/list", ["map"])
+  |> remove_import_if_unused(full_string, "chrobot/internal/utils", [
+    "add_optional",
+  ])
   |> remove_import_if_unused(full_string, "chrome", [
     "call", "send", "ProtocolError",
   ])

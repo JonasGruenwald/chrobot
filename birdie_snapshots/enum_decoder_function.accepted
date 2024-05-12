@@ -6,12 +6,12 @@ test_name: gen_enum_encoder_decoder_test
 ---
 @internal
 pub fn decode__certificate_transparency_compliance(
-raw_value: dynamic.Dynamic
+value__: dynamic.Dynamic
 ) {
-case dynamic.string(value){
+case dynamic.string(value__){
 Ok("unknown") -> Ok(CertificateTransparencyComplianceUnknown)
 Ok("not-compliant") -> Ok(CertificateTransparencyComplianceNotCompliant)
 Ok("compliant") -> Ok(CertificateTransparencyComplianceCompliant)
-_ -> Error(chrome.ProtocolError)
-}
+Error(error) -> Error(error)
+Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
 }

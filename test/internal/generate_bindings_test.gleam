@@ -1,5 +1,7 @@
 import birdie
-import chrobot/internal/generate_bindings.{parse_protocol}
+import chrobot/internal/generate_bindings.{
+  apply_protocol_patches, merge_protocols, parse_protocol, get_stable_protocol, gen_root_module, gen_domain_module
+}
 import gleam/list
 import gleam/option
 import gleeunit/should
@@ -76,4 +78,22 @@ pub fn gen_enum_encoder_decoder_test() {
   |> birdie.snap(title: "Enum encoder function")
   generate_bindings.gen_enum_decoder(enum_type_name, enum_values)
   |> birdie.snap(title: "Enum decoder function")
+}
+
+/// Just run all the functions, see if anything panics
+/// We could snapshot the output here, but then again the output is just the codegen
+/// that's written to `protocol/*` and committed to vcs so we already have snapshots of 
+/// it and would just duplicate those.
+pub fn general_bindings_gen_test() {
+  let assert Ok(browser_protocol) =
+    parse_protocol("./assets/browser_protocol.json")
+  let assert Ok(js_protocol) = parse_protocol("./assets/js_protocol.json")
+  let protocol =
+    merge_protocols(browser_protocol, js_protocol)
+    |> apply_protocol_patches()
+  let stable_protocol = get_stable_protocol(protocol, False, False)
+  gen_root_module(stable_protocol)
+  list.each(stable_protocol.domains, fn(domain) {
+      gen_domain_module(stable_protocol, domain)
+  })
 }
