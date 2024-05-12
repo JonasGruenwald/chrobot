@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -61,16 +62,12 @@ pub fn reset_permissions(
     chrome.call(
       browser_subject,
       "Browser.resetPermissions",
-      option.Some(
-        json.object([
-          #("browserContextId", {
-            case browser_context_id {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(browser_context_id, fn(inner_value__) {
+          #("browserContextId", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -64,19 +65,18 @@ pub type TargetInfo {
 
 @internal
 pub fn encode__target_info(value__: TargetInfo) {
-  json.object([
-    #("targetId", encode__target_id(value__.target_id)),
-    #("type", json.string(value__.type_)),
-    #("title", json.string(value__.title)),
-    #("url", json.string(value__.url)),
-    #("attached", json.bool(value__.attached)),
-    #("openerId", {
-      case value__.opener_id {
-        option.Some(value__) -> encode__target_id(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("targetId", encode__target_id(value__.target_id)),
+      #("type", json.string(value__.type_)),
+      #("title", json.string(value__.title)),
+      #("url", json.string(value__.url)),
+      #("attached", json.bool(value__.attached)),
+    ]
+    |> utils.add_optional(value__.opener_id, fn(inner_value__) {
+      #("openerId", encode__target_id(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -202,17 +202,12 @@ pub fn attach_to_target(
   chrome.call(
     browser_subject,
     "Target.attachToTarget",
-    option.Some(
-      json.object([
-        #("targetId", encode__target_id(target_id)),
-        #("flatten", {
-          case flatten {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("targetId", encode__target_id(target_id))]
+      |> utils.add_optional(flatten, fn(inner_value__) {
+        #("flatten", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -269,35 +264,21 @@ pub fn create_target(
   chrome.call(
     browser_subject,
     "Target.createTarget",
-    option.Some(
-      json.object([
-        #("url", json.string(url)),
-        #("width", {
-          case width {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("height", {
-          case height {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("newWindow", {
-          case new_window {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("background", {
-          case background {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("url", json.string(url))]
+      |> utils.add_optional(width, fn(inner_value__) {
+        #("width", json.int(inner_value__))
+      })
+      |> utils.add_optional(height, fn(inner_value__) {
+        #("height", json.int(inner_value__))
+      })
+      |> utils.add_optional(new_window, fn(inner_value__) {
+        #("newWindow", json.bool(inner_value__))
+      })
+      |> utils.add_optional(background, fn(inner_value__) {
+        #("background", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -312,16 +293,12 @@ pub fn detach_from_target(browser_subject, session_id: option.Option(SessionID))
     chrome.call(
       browser_subject,
       "Target.detachFromTarget",
-      option.Some(
-        json.object([
-          #("sessionId", {
-            case session_id {
-              option.Some(value__) -> encode__session_id(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(session_id, fn(inner_value__) {
+          #("sessionId", encode__session_id(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

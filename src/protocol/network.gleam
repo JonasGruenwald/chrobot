@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dict
 import gleam/dynamic
@@ -498,14 +499,12 @@ pub type PostDataEntry {
 
 @internal
 pub fn encode__post_data_entry(value__: PostDataEntry) {
-  json.object([
-    #("bytes", {
-      case value__.bytes {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    []
+    |> utils.add_optional(value__.bytes, fn(inner_value__) {
+      #("bytes", json.string(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -589,40 +588,30 @@ pub fn decode__request_referrer_policy(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__request(value__: Request) {
-  json.object([
-    #("url", json.string(value__.url)),
-    #("urlFragment", {
-      case value__.url_fragment {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("url", json.string(value__.url)),
+      #("method", json.string(value__.method)),
+      #("headers", encode__headers(value__.headers)),
+      #("initialPriority", encode__resource_priority(value__.initial_priority)),
+      #(
+        "referrerPolicy",
+        encode__request_referrer_policy(value__.referrer_policy),
+      ),
+    ]
+    |> utils.add_optional(value__.url_fragment, fn(inner_value__) {
+      #("urlFragment", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.has_post_data, fn(inner_value__) {
+      #("hasPostData", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.mixed_content_type, fn(inner_value__) {
+      #("mixedContentType", security.encode__mixed_content_type(inner_value__))
+    })
+    |> utils.add_optional(value__.is_link_preload, fn(inner_value__) {
+      #("isLinkPreload", json.bool(inner_value__))
     }),
-    #("method", json.string(value__.method)),
-    #("headers", encode__headers(value__.headers)),
-    #("hasPostData", {
-      case value__.has_post_data {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("mixedContentType", {
-      case value__.mixed_content_type {
-        option.Some(value__) -> security.encode__mixed_content_type(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("initialPriority", encode__resource_priority(value__.initial_priority)),
-    #(
-      "referrerPolicy",
-      encode__request_referrer_policy(value__.referrer_policy),
-    ),
-    #("isLinkPreload", {
-      case value__.is_link_preload {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -754,49 +743,45 @@ pub type SecurityDetails {
 
 @internal
 pub fn encode__security_details(value__: SecurityDetails) {
-  json.object([
-    #("protocol", json.string(value__.protocol)),
-    #("keyExchange", json.string(value__.key_exchange)),
-    #("keyExchangeGroup", {
-      case value__.key_exchange_group {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("cipher", json.string(value__.cipher)),
-    #("mac", {
-      case value__.mac {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("certificateId", security.encode__certificate_id(value__.certificate_id)),
-    #("subjectName", json.string(value__.subject_name)),
-    #("sanList", json.array(value__.san_list, of: json.string)),
-    #("issuer", json.string(value__.issuer)),
-    #("validFrom", encode__time_since_epoch(value__.valid_from)),
-    #("validTo", encode__time_since_epoch(value__.valid_to)),
-    #(
-      "signedCertificateTimestampList",
-      json.array(
-        value__.signed_certificate_timestamp_list,
-        of: encode__signed_certificate_timestamp,
+  json.object(
+    [
+      #("protocol", json.string(value__.protocol)),
+      #("keyExchange", json.string(value__.key_exchange)),
+      #("cipher", json.string(value__.cipher)),
+      #(
+        "certificateId",
+        security.encode__certificate_id(value__.certificate_id),
       ),
-    ),
-    #(
-      "certificateTransparencyCompliance",
-      encode__certificate_transparency_compliance(
-        value__.certificate_transparency_compliance,
+      #("subjectName", json.string(value__.subject_name)),
+      #("sanList", json.array(value__.san_list, of: json.string)),
+      #("issuer", json.string(value__.issuer)),
+      #("validFrom", encode__time_since_epoch(value__.valid_from)),
+      #("validTo", encode__time_since_epoch(value__.valid_to)),
+      #(
+        "signedCertificateTimestampList",
+        json.array(
+          value__.signed_certificate_timestamp_list,
+          of: encode__signed_certificate_timestamp,
+        ),
       ),
-    ),
-    #("serverSignatureAlgorithm", {
-      case value__.server_signature_algorithm {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
+      #(
+        "certificateTransparencyCompliance",
+        encode__certificate_transparency_compliance(
+          value__.certificate_transparency_compliance,
+        ),
+      ),
+      #("encryptedClientHello", json.bool(value__.encrypted_client_hello)),
+    ]
+    |> utils.add_optional(value__.key_exchange_group, fn(inner_value__) {
+      #("keyExchangeGroup", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.mac, fn(inner_value__) {
+      #("mac", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.server_signature_algorithm, fn(inner_value__) {
+      #("serverSignatureAlgorithm", json.int(inner_value__))
     }),
-    #("encryptedClientHello", json.bool(value__.encrypted_client_hello)),
-  ])
+  )
 }
 
 @internal
@@ -1269,96 +1254,68 @@ pub type Response {
 
 @internal
 pub fn encode__response(value__: Response) {
-  json.object([
-    #("url", json.string(value__.url)),
-    #("status", json.int(value__.status)),
-    #("statusText", json.string(value__.status_text)),
-    #("headers", encode__headers(value__.headers)),
-    #("mimeType", json.string(value__.mime_type)),
-    #("charset", json.string(value__.charset)),
-    #("requestHeaders", {
-      case value__.request_headers {
-        option.Some(value__) -> encode__headers(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("url", json.string(value__.url)),
+      #("status", json.int(value__.status)),
+      #("statusText", json.string(value__.status_text)),
+      #("headers", encode__headers(value__.headers)),
+      #("mimeType", json.string(value__.mime_type)),
+      #("charset", json.string(value__.charset)),
+      #("connectionReused", json.bool(value__.connection_reused)),
+      #("connectionId", json.float(value__.connection_id)),
+      #("encodedDataLength", json.float(value__.encoded_data_length)),
+      #(
+        "securityState",
+        security.encode__security_state(value__.security_state),
+      ),
+    ]
+    |> utils.add_optional(value__.request_headers, fn(inner_value__) {
+      #("requestHeaders", encode__headers(inner_value__))
+    })
+    |> utils.add_optional(value__.remote_ip_address, fn(inner_value__) {
+      #("remoteIPAddress", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.remote_port, fn(inner_value__) {
+      #("remotePort", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.from_disk_cache, fn(inner_value__) {
+      #("fromDiskCache", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.from_service_worker, fn(inner_value__) {
+      #("fromServiceWorker", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.from_prefetch_cache, fn(inner_value__) {
+      #("fromPrefetchCache", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.from_early_hints, fn(inner_value__) {
+      #("fromEarlyHints", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.timing, fn(inner_value__) {
+      #("timing", encode__resource_timing(inner_value__))
+    })
+    |> utils.add_optional(
+      value__.service_worker_response_source,
+      fn(inner_value__) {
+        #(
+          "serviceWorkerResponseSource",
+          encode__service_worker_response_source(inner_value__),
+        )
+      },
+    )
+    |> utils.add_optional(value__.response_time, fn(inner_value__) {
+      #("responseTime", encode__time_since_epoch(inner_value__))
+    })
+    |> utils.add_optional(value__.cache_storage_cache_name, fn(inner_value__) {
+      #("cacheStorageCacheName", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.protocol, fn(inner_value__) {
+      #("protocol", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.security_details, fn(inner_value__) {
+      #("securityDetails", encode__security_details(inner_value__))
     }),
-    #("connectionReused", json.bool(value__.connection_reused)),
-    #("connectionId", json.float(value__.connection_id)),
-    #("remoteIPAddress", {
-      case value__.remote_ip_address {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("remotePort", {
-      case value__.remote_port {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("fromDiskCache", {
-      case value__.from_disk_cache {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("fromServiceWorker", {
-      case value__.from_service_worker {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("fromPrefetchCache", {
-      case value__.from_prefetch_cache {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("fromEarlyHints", {
-      case value__.from_early_hints {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("encodedDataLength", json.float(value__.encoded_data_length)),
-    #("timing", {
-      case value__.timing {
-        option.Some(value__) -> encode__resource_timing(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("serviceWorkerResponseSource", {
-      case value__.service_worker_response_source {
-        option.Some(value__) -> encode__service_worker_response_source(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("responseTime", {
-      case value__.response_time {
-        option.Some(value__) -> encode__time_since_epoch(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("cacheStorageCacheName", {
-      case value__.cache_storage_cache_name {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("protocol", {
-      case value__.protocol {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("securityState", security.encode__security_state(value__.security_state)),
-    #("securityDetails", {
-      case value__.security_details {
-        option.Some(value__) -> encode__security_details(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1496,29 +1453,22 @@ pub type WebSocketResponse {
 
 @internal
 pub fn encode__web_socket_response(value__: WebSocketResponse) {
-  json.object([
-    #("status", json.int(value__.status)),
-    #("statusText", json.string(value__.status_text)),
-    #("headers", encode__headers(value__.headers)),
-    #("headersText", {
-      case value__.headers_text {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("status", json.int(value__.status)),
+      #("statusText", json.string(value__.status_text)),
+      #("headers", encode__headers(value__.headers)),
+    ]
+    |> utils.add_optional(value__.headers_text, fn(inner_value__) {
+      #("headersText", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.request_headers, fn(inner_value__) {
+      #("requestHeaders", encode__headers(inner_value__))
+    })
+    |> utils.add_optional(value__.request_headers_text, fn(inner_value__) {
+      #("requestHeadersText", json.string(inner_value__))
     }),
-    #("requestHeaders", {
-      case value__.request_headers {
-        option.Some(value__) -> encode__headers(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("requestHeadersText", {
-      case value__.request_headers_text {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1588,17 +1538,16 @@ pub type CachedResource {
 
 @internal
 pub fn encode__cached_resource(value__: CachedResource) {
-  json.object([
-    #("url", json.string(value__.url)),
-    #("type", encode__resource_type(value__.type_)),
-    #("response", {
-      case value__.response {
-        option.Some(value__) -> encode__response(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("url", json.string(value__.url)),
+      #("type", encode__resource_type(value__.type_)),
+      #("bodySize", json.float(value__.body_size)),
+    ]
+    |> utils.add_optional(value__.response, fn(inner_value__) {
+      #("response", encode__response(inner_value__))
     }),
-    #("bodySize", json.float(value__.body_size)),
-  ])
+  )
 }
 
 @internal
@@ -1678,39 +1627,24 @@ pub fn decode__initiator_type(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__initiator(value__: Initiator) {
-  json.object([
-    #("type", encode__initiator_type(value__.type_)),
-    #("stack", {
-      case value__.stack {
-        option.Some(value__) -> runtime.encode__stack_trace(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("type", encode__initiator_type(value__.type_))]
+    |> utils.add_optional(value__.stack, fn(inner_value__) {
+      #("stack", runtime.encode__stack_trace(inner_value__))
+    })
+    |> utils.add_optional(value__.url, fn(inner_value__) {
+      #("url", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.line_number, fn(inner_value__) {
+      #("lineNumber", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.column_number, fn(inner_value__) {
+      #("columnNumber", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.request_id, fn(inner_value__) {
+      #("requestId", encode__request_id(inner_value__))
     }),
-    #("url", {
-      case value__.url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("lineNumber", {
-      case value__.line_number {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("columnNumber", {
-      case value__.column_number {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("requestId", {
-      case value__.request_id {
-        option.Some(value__) -> encode__request_id(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1762,23 +1696,22 @@ pub type Cookie {
 
 @internal
 pub fn encode__cookie(value__: Cookie) {
-  json.object([
-    #("name", json.string(value__.name)),
-    #("value", json.string(value__.value)),
-    #("domain", json.string(value__.domain)),
-    #("path", json.string(value__.path)),
-    #("expires", json.float(value__.expires)),
-    #("size", json.int(value__.size)),
-    #("httpOnly", json.bool(value__.http_only)),
-    #("secure", json.bool(value__.secure)),
-    #("session", json.bool(value__.session)),
-    #("sameSite", {
-      case value__.same_site {
-        option.Some(value__) -> encode__cookie_same_site(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("name", json.string(value__.name)),
+      #("value", json.string(value__.value)),
+      #("domain", json.string(value__.domain)),
+      #("path", json.string(value__.path)),
+      #("expires", json.float(value__.expires)),
+      #("size", json.int(value__.size)),
+      #("httpOnly", json.bool(value__.http_only)),
+      #("secure", json.bool(value__.secure)),
+      #("session", json.bool(value__.session)),
+    ]
+    |> utils.add_optional(value__.same_site, fn(inner_value__) {
+      #("sameSite", encode__cookie_same_site(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -1828,52 +1761,33 @@ pub type CookieParam {
 
 @internal
 pub fn encode__cookie_param(value__: CookieParam) {
-  json.object([
-    #("name", json.string(value__.name)),
-    #("value", json.string(value__.value)),
-    #("url", {
-      case value__.url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("name", json.string(value__.name)),
+      #("value", json.string(value__.value)),
+    ]
+    |> utils.add_optional(value__.url, fn(inner_value__) {
+      #("url", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.domain, fn(inner_value__) {
+      #("domain", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.path, fn(inner_value__) {
+      #("path", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.secure, fn(inner_value__) {
+      #("secure", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.http_only, fn(inner_value__) {
+      #("httpOnly", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.same_site, fn(inner_value__) {
+      #("sameSite", encode__cookie_same_site(inner_value__))
+    })
+    |> utils.add_optional(value__.expires, fn(inner_value__) {
+      #("expires", encode__time_since_epoch(inner_value__))
     }),
-    #("domain", {
-      case value__.domain {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("path", {
-      case value__.path {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("secure", {
-      case value__.secure {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("httpOnly", {
-      case value__.http_only {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("sameSite", {
-      case value__.same_site {
-        option.Some(value__) -> encode__cookie_same_site(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("expires", {
-      case value__.expires {
-        option.Some(value__) -> encode__time_since_epoch(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1995,35 +1909,21 @@ pub fn delete_cookies(
     chrome.call(
       browser_subject,
       "Network.deleteCookies",
-      option.Some(
-        json.object([
-          #("name", json.string(name)),
-          #("url", {
-            case url {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("domain", {
-            case domain {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("path", {
-            case path {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("partitionKey", {
-            case partition_key {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("name", json.string(name))]
+        |> utils.add_optional(url, fn(inner_value__) {
+          #("url", json.string(inner_value__))
+        })
+        |> utils.add_optional(domain, fn(inner_value__) {
+          #("domain", json.string(inner_value__))
+        })
+        |> utils.add_optional(path, fn(inner_value__) {
+          #("path", json.string(inner_value__))
+        })
+        |> utils.add_optional(partition_key, fn(inner_value__) {
+          #("partitionKey", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -2048,20 +1948,17 @@ pub fn emulate_network_conditions(
     chrome.call(
       browser_subject,
       "Network.emulateNetworkConditions",
-      option.Some(
-        json.object([
+      option.Some(json.object(
+        [
           #("offline", json.bool(offline)),
           #("latency", json.float(latency)),
           #("downloadThroughput", json.float(download_throughput)),
           #("uploadThroughput", json.float(upload_throughput)),
-          #("connectionType", {
-            case connection_type {
-              option.Some(value__) -> encode__connection_type(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+        ]
+        |> utils.add_optional(connection_type, fn(inner_value__) {
+          #("connectionType", encode__connection_type(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -2073,16 +1970,12 @@ pub fn enable(browser_subject, max_post_data_size: option.Option(Int)) {
     chrome.call(
       browser_subject,
       "Network.enable",
-      option.Some(
-        json.object([
-          #("maxPostDataSize", {
-            case max_post_data_size {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(max_post_data_size, fn(inner_value__) {
+          #("maxPostDataSize", json.int(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -2094,16 +1987,12 @@ pub fn get_cookies(browser_subject, urls: option.Option(List(String))) {
   chrome.call(
     browser_subject,
     "Network.getCookies",
-    option.Some(
-      json.object([
-        #("urls", {
-          case urls {
-            option.Some(value__) -> json.array(value__, of: json.string)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(urls, fn(inner_value__) {
+        #("urls", json.array(inner_value__, of: json.string))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -2181,54 +2070,30 @@ pub fn set_cookie(
     chrome.call(
       browser_subject,
       "Network.setCookie",
-      option.Some(
-        json.object([
-          #("name", json.string(name)),
-          #("value", json.string(value)),
-          #("url", {
-            case url {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("domain", {
-            case domain {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("path", {
-            case path {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("secure", {
-            case secure {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("httpOnly", {
-            case http_only {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("sameSite", {
-            case same_site {
-              option.Some(value__) -> encode__cookie_same_site(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("expires", {
-            case expires {
-              option.Some(value__) -> encode__time_since_epoch(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("name", json.string(name)), #("value", json.string(value))]
+        |> utils.add_optional(url, fn(inner_value__) {
+          #("url", json.string(inner_value__))
+        })
+        |> utils.add_optional(domain, fn(inner_value__) {
+          #("domain", json.string(inner_value__))
+        })
+        |> utils.add_optional(path, fn(inner_value__) {
+          #("path", json.string(inner_value__))
+        })
+        |> utils.add_optional(secure, fn(inner_value__) {
+          #("secure", json.bool(inner_value__))
+        })
+        |> utils.add_optional(http_only, fn(inner_value__) {
+          #("httpOnly", json.bool(inner_value__))
+        })
+        |> utils.add_optional(same_site, fn(inner_value__) {
+          #("sameSite", encode__cookie_same_site(inner_value__))
+        })
+        |> utils.add_optional(expires, fn(inner_value__) {
+          #("expires", encode__time_since_epoch(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -2273,23 +2138,15 @@ pub fn set_user_agent_override(
     chrome.call(
       browser_subject,
       "Network.setUserAgentOverride",
-      option.Some(
-        json.object([
-          #("userAgent", json.string(user_agent)),
-          #("acceptLanguage", {
-            case accept_language {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("platform", {
-            case platform {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("userAgent", json.string(user_agent))]
+        |> utils.add_optional(accept_language, fn(inner_value__) {
+          #("acceptLanguage", json.string(inner_value__))
+        })
+        |> utils.add_optional(platform, fn(inner_value__) {
+          #("platform", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -32,35 +33,27 @@ pub type ProfileNode {
 
 @internal
 pub fn encode__profile_node(value__: ProfileNode) {
-  json.object([
-    #("id", json.int(value__.id)),
-    #("callFrame", runtime.encode__call_frame(value__.call_frame)),
-    #("hitCount", {
-      case value__.hit_count {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("id", json.int(value__.id)),
+      #("callFrame", runtime.encode__call_frame(value__.call_frame)),
+    ]
+    |> utils.add_optional(value__.hit_count, fn(inner_value__) {
+      #("hitCount", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.children, fn(inner_value__) {
+      #("children", json.array(inner_value__, of: json.int))
+    })
+    |> utils.add_optional(value__.deopt_reason, fn(inner_value__) {
+      #("deoptReason", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.position_ticks, fn(inner_value__) {
+      #(
+        "positionTicks",
+        json.array(inner_value__, of: encode__position_tick_info),
+      )
     }),
-    #("children", {
-      case value__.children {
-        option.Some(value__) -> json.array(value__, of: json.int)
-        option.None -> json.null()
-      }
-    }),
-    #("deoptReason", {
-      case value__.deopt_reason {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("positionTicks", {
-      case value__.position_ticks {
-        option.Some(value__) ->
-          json.array(value__, of: encode__position_tick_info)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -109,23 +102,19 @@ pub type Profile {
 
 @internal
 pub fn encode__profile(value__: Profile) {
-  json.object([
-    #("nodes", json.array(value__.nodes, of: encode__profile_node)),
-    #("startTime", json.float(value__.start_time)),
-    #("endTime", json.float(value__.end_time)),
-    #("samples", {
-      case value__.samples {
-        option.Some(value__) -> json.array(value__, of: json.int)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("nodes", json.array(value__.nodes, of: encode__profile_node)),
+      #("startTime", json.float(value__.start_time)),
+      #("endTime", json.float(value__.end_time)),
+    ]
+    |> utils.add_optional(value__.samples, fn(inner_value__) {
+      #("samples", json.array(inner_value__, of: json.int))
+    })
+    |> utils.add_optional(value__.time_deltas, fn(inner_value__) {
+      #("timeDeltas", json.array(inner_value__, of: json.int))
     }),
-    #("timeDeltas", {
-      case value__.time_deltas {
-        option.Some(value__) -> json.array(value__, of: json.int)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -394,28 +383,18 @@ pub fn start_precise_coverage(
   chrome.call(
     browser_subject,
     "Profiler.startPreciseCoverage",
-    option.Some(
-      json.object([
-        #("callCount", {
-          case call_count {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("detailed", {
-          case detailed {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("allowTriggeredUpdates", {
-          case allow_triggered_updates {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(call_count, fn(inner_value__) {
+        #("callCount", json.bool(inner_value__))
+      })
+      |> utils.add_optional(detailed, fn(inner_value__) {
+        #("detailed", json.bool(inner_value__))
+      })
+      |> utils.add_optional(allow_triggered_updates, fn(inner_value__) {
+        #("allowTriggeredUpdates", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {

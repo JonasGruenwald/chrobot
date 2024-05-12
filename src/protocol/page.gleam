@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -54,25 +55,21 @@ pub type Frame {
 
 @internal
 pub fn encode__frame(value__: Frame) {
-  json.object([
-    #("id", encode__frame_id(value__.id)),
-    #("parentId", {
-      case value__.parent_id {
-        option.Some(value__) -> encode__frame_id(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("id", encode__frame_id(value__.id)),
+      #("loaderId", network.encode__loader_id(value__.loader_id)),
+      #("url", json.string(value__.url)),
+      #("securityOrigin", json.string(value__.security_origin)),
+      #("mimeType", json.string(value__.mime_type)),
+    ]
+    |> utils.add_optional(value__.parent_id, fn(inner_value__) {
+      #("parentId", encode__frame_id(inner_value__))
+    })
+    |> utils.add_optional(value__.name, fn(inner_value__) {
+      #("name", json.string(inner_value__))
     }),
-    #("loaderId", network.encode__loader_id(value__.loader_id)),
-    #("name", {
-      case value__.name {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("url", json.string(value__.url)),
-    #("securityOrigin", json.string(value__.security_origin)),
-    #("mimeType", json.string(value__.mime_type)),
-  ])
+  )
 }
 
 @internal
@@ -112,15 +109,12 @@ pub type FrameTree {
 
 @internal
 pub fn encode__frame_tree(value__: FrameTree) {
-  json.object([
-    #("frame", encode__frame(value__.frame)),
-    #("childFrames", {
-      case value__.child_frames {
-        option.Some(value__) -> json.array(value__, of: encode__frame_tree)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("frame", encode__frame(value__.frame))]
+    |> utils.add_optional(value__.child_frames, fn(inner_value__) {
+      #("childFrames", json.array(inner_value__, of: encode__frame_tree))
     }),
-  ])
+  )
 }
 
 @internal
@@ -384,21 +378,20 @@ pub type VisualViewport {
 
 @internal
 pub fn encode__visual_viewport(value__: VisualViewport) {
-  json.object([
-    #("offsetX", json.float(value__.offset_x)),
-    #("offsetY", json.float(value__.offset_y)),
-    #("pageX", json.float(value__.page_x)),
-    #("pageY", json.float(value__.page_y)),
-    #("clientWidth", json.float(value__.client_width)),
-    #("clientHeight", json.float(value__.client_height)),
-    #("scale", json.float(value__.scale)),
-    #("zoom", {
-      case value__.zoom {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("offsetX", json.float(value__.offset_x)),
+      #("offsetY", json.float(value__.offset_y)),
+      #("pageX", json.float(value__.page_x)),
+      #("pageY", json.float(value__.page_y)),
+      #("clientWidth", json.float(value__.client_width)),
+      #("clientHeight", json.float(value__.client_height)),
+      #("scale", json.float(value__.scale)),
+    ]
+    |> utils.add_optional(value__.zoom, fn(inner_value__) {
+      #("zoom", json.float(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -666,28 +659,18 @@ pub fn capture_screenshot(
   chrome.call(
     browser_subject,
     "Page.captureScreenshot",
-    option.Some(
-      json.object([
-        #("format", {
-          case format {
-            option.Some(value__) -> encode__capture_screenshot_format(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("quality", {
-          case quality {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("clip", {
-          case clip {
-            option.Some(value__) -> encode__viewport(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(format, fn(inner_value__) {
+        #("format", encode__capture_screenshot_format(inner_value__))
+      })
+      |> utils.add_optional(quality, fn(inner_value__) {
+        #("quality", json.int(inner_value__))
+      })
+      |> utils.add_optional(clip, fn(inner_value__) {
+        #("clip", encode__viewport(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -742,23 +725,15 @@ pub fn create_isolated_world(
   chrome.call(
     browser_subject,
     "Page.createIsolatedWorld",
-    option.Some(
-      json.object([
-        #("frameId", encode__frame_id(frame_id)),
-        #("worldName", {
-          case world_name {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("grantUniveralAccess", {
-          case grant_univeral_access {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("frameId", encode__frame_id(frame_id))]
+      |> utils.add_optional(world_name, fn(inner_value__) {
+        #("worldName", json.string(inner_value__))
+      })
+      |> utils.add_optional(grant_univeral_access, fn(inner_value__) {
+        #("grantUniveralAccess", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -788,16 +763,12 @@ pub fn get_app_manifest(browser_subject, manifest_id: option.Option(String)) {
   chrome.call(
     browser_subject,
     "Page.getAppManifest",
-    option.Some(
-      json.object([
-        #("manifestId", {
-          case manifest_id {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(manifest_id, fn(inner_value__) {
+        #("manifestId", json.string(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -855,17 +826,12 @@ pub fn handle_java_script_dialog(
     chrome.call(
       browser_subject,
       "Page.handleJavaScriptDialog",
-      option.Some(
-        json.object([
-          #("accept", json.bool(accept)),
-          #("promptText", {
-            case prompt_text {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("accept", json.bool(accept))]
+        |> utils.add_optional(prompt_text, fn(inner_value__) {
+          #("promptText", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -882,29 +848,18 @@ pub fn navigate(
   chrome.call(
     browser_subject,
     "Page.navigate",
-    option.Some(
-      json.object([
-        #("url", json.string(url)),
-        #("referrer", {
-          case referrer {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("transitionType", {
-          case transition_type {
-            option.Some(value__) -> encode__transition_type(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("frameId", {
-          case frame_id {
-            option.Some(value__) -> encode__frame_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("url", json.string(url))]
+      |> utils.add_optional(referrer, fn(inner_value__) {
+        #("referrer", json.string(inner_value__))
+      })
+      |> utils.add_optional(transition_type, fn(inner_value__) {
+        #("transitionType", encode__transition_type(inner_value__))
+      })
+      |> utils.add_optional(frame_id, fn(inner_value__) {
+        #("frameId", encode__frame_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -946,94 +901,51 @@ pub fn print_to_pdf(
   chrome.call(
     browser_subject,
     "Page.printToPDF",
-    option.Some(
-      json.object([
-        #("landscape", {
-          case landscape {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("displayHeaderFooter", {
-          case display_header_footer {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("printBackground", {
-          case print_background {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("scale", {
-          case scale {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("paperWidth", {
-          case paper_width {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("paperHeight", {
-          case paper_height {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("marginTop", {
-          case margin_top {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("marginBottom", {
-          case margin_bottom {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("marginLeft", {
-          case margin_left {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("marginRight", {
-          case margin_right {
-            option.Some(value__) -> json.float(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("pageRanges", {
-          case page_ranges {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("headerTemplate", {
-          case header_template {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("footerTemplate", {
-          case footer_template {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("preferCSSPageSize", {
-          case prefer_css_page_size {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(landscape, fn(inner_value__) {
+        #("landscape", json.bool(inner_value__))
+      })
+      |> utils.add_optional(display_header_footer, fn(inner_value__) {
+        #("displayHeaderFooter", json.bool(inner_value__))
+      })
+      |> utils.add_optional(print_background, fn(inner_value__) {
+        #("printBackground", json.bool(inner_value__))
+      })
+      |> utils.add_optional(scale, fn(inner_value__) {
+        #("scale", json.float(inner_value__))
+      })
+      |> utils.add_optional(paper_width, fn(inner_value__) {
+        #("paperWidth", json.float(inner_value__))
+      })
+      |> utils.add_optional(paper_height, fn(inner_value__) {
+        #("paperHeight", json.float(inner_value__))
+      })
+      |> utils.add_optional(margin_top, fn(inner_value__) {
+        #("marginTop", json.float(inner_value__))
+      })
+      |> utils.add_optional(margin_bottom, fn(inner_value__) {
+        #("marginBottom", json.float(inner_value__))
+      })
+      |> utils.add_optional(margin_left, fn(inner_value__) {
+        #("marginLeft", json.float(inner_value__))
+      })
+      |> utils.add_optional(margin_right, fn(inner_value__) {
+        #("marginRight", json.float(inner_value__))
+      })
+      |> utils.add_optional(page_ranges, fn(inner_value__) {
+        #("pageRanges", json.string(inner_value__))
+      })
+      |> utils.add_optional(header_template, fn(inner_value__) {
+        #("headerTemplate", json.string(inner_value__))
+      })
+      |> utils.add_optional(footer_template, fn(inner_value__) {
+        #("footerTemplate", json.string(inner_value__))
+      })
+      |> utils.add_optional(prefer_css_page_size, fn(inner_value__) {
+        #("preferCSSPageSize", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1052,22 +964,15 @@ pub fn reload(
     chrome.call(
       browser_subject,
       "Page.reload",
-      option.Some(
-        json.object([
-          #("ignoreCache", {
-            case ignore_cache {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("scriptToEvaluateOnLoad", {
-            case script_to_evaluate_on_load {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(ignore_cache, fn(inner_value__) {
+          #("ignoreCache", json.bool(inner_value__))
+        })
+        |> utils.add_optional(script_to_evaluate_on_load, fn(inner_value__) {
+          #("scriptToEvaluateOnLoad", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -72,33 +73,26 @@ pub type EventListener {
 
 @internal
 pub fn encode__event_listener(value__: EventListener) {
-  json.object([
-    #("type", json.string(value__.type_)),
-    #("useCapture", json.bool(value__.use_capture)),
-    #("passive", json.bool(value__.passive)),
-    #("once", json.bool(value__.once)),
-    #("scriptId", runtime.encode__script_id(value__.script_id)),
-    #("lineNumber", json.int(value__.line_number)),
-    #("columnNumber", json.int(value__.column_number)),
-    #("handler", {
-      case value__.handler {
-        option.Some(value__) -> runtime.encode__remote_object(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("type", json.string(value__.type_)),
+      #("useCapture", json.bool(value__.use_capture)),
+      #("passive", json.bool(value__.passive)),
+      #("once", json.bool(value__.once)),
+      #("scriptId", runtime.encode__script_id(value__.script_id)),
+      #("lineNumber", json.int(value__.line_number)),
+      #("columnNumber", json.int(value__.column_number)),
+    ]
+    |> utils.add_optional(value__.handler, fn(inner_value__) {
+      #("handler", runtime.encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.original_handler, fn(inner_value__) {
+      #("originalHandler", runtime.encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.backend_node_id, fn(inner_value__) {
+      #("backendNodeId", dom.encode__backend_node_id(inner_value__))
     }),
-    #("originalHandler", {
-      case value__.original_handler {
-        option.Some(value__) -> runtime.encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("backendNodeId", {
-      case value__.backend_node_id {
-        option.Some(value__) -> dom.encode__backend_node_id(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -172,23 +166,15 @@ pub fn get_event_listeners(
   chrome.call(
     browser_subject,
     "DOMDebugger.getEventListeners",
-    option.Some(
-      json.object([
-        #("objectId", runtime.encode__remote_object_id(object_id)),
-        #("depth", {
-          case depth {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("pierce", {
-          case pierce {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("objectId", runtime.encode__remote_object_id(object_id))]
+      |> utils.add_optional(depth, fn(inner_value__) {
+        #("depth", json.int(inner_value__))
+      })
+      |> utils.add_optional(pierce, fn(inner_value__) {
+        #("pierce", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {

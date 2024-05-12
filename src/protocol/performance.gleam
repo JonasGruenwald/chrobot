@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -66,16 +67,12 @@ pub fn enable(browser_subject, time_domain: option.Option(EnableTimeDomain)) {
     chrome.call(
       browser_subject,
       "Performance.enable",
-      option.Some(
-        json.object([
-          #("timeDomain", {
-            case time_domain {
-              option.Some(value__) -> encode__enable_time_domain(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(time_domain, fn(inner_value__) {
+          #("timeDomain", encode__enable_time_domain(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

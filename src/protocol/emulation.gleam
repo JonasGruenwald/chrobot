@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -266,16 +267,12 @@ pub fn set_default_background_color_override(
     chrome.call(
       browser_subject,
       "Emulation.setDefaultBackgroundColorOverride",
-      option.Some(
-        json.object([
-          #("color", {
-            case color {
-              option.Some(value__) -> dom.encode__rgba(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(color, fn(inner_value__) {
+          #("color", dom.encode__rgba(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -296,20 +293,17 @@ pub fn set_device_metrics_override(
     chrome.call(
       browser_subject,
       "Emulation.setDeviceMetricsOverride",
-      option.Some(
-        json.object([
+      option.Some(json.object(
+        [
           #("width", json.int(width)),
           #("height", json.int(height)),
           #("deviceScaleFactor", json.float(device_scale_factor)),
           #("mobile", json.bool(mobile)),
-          #("screenOrientation", {
-            case screen_orientation {
-              option.Some(value__) -> encode__screen_orientation(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+        ]
+        |> utils.add_optional(screen_orientation, fn(inner_value__) {
+          #("screenOrientation", encode__screen_orientation(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -325,23 +319,15 @@ pub fn set_emulated_media(
     chrome.call(
       browser_subject,
       "Emulation.setEmulatedMedia",
-      option.Some(
-        json.object([
-          #("media", {
-            case media {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("features", {
-            case features {
-              option.Some(value__) ->
-                json.array(value__, of: encode__media_feature)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(media, fn(inner_value__) {
+          #("media", json.string(inner_value__))
+        })
+        |> utils.add_optional(features, fn(inner_value__) {
+          #("features", json.array(inner_value__, of: encode__media_feature))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -426,28 +412,18 @@ pub fn set_geolocation_override(
     chrome.call(
       browser_subject,
       "Emulation.setGeolocationOverride",
-      option.Some(
-        json.object([
-          #("latitude", {
-            case latitude {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("longitude", {
-            case longitude {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("accuracy", {
-            case accuracy {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(latitude, fn(inner_value__) {
+          #("latitude", json.float(inner_value__))
+        })
+        |> utils.add_optional(longitude, fn(inner_value__) {
+          #("longitude", json.float(inner_value__))
+        })
+        |> utils.add_optional(accuracy, fn(inner_value__) {
+          #("accuracy", json.float(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -508,17 +484,12 @@ pub fn set_touch_emulation_enabled(
     chrome.call(
       browser_subject,
       "Emulation.setTouchEmulationEnabled",
-      option.Some(
-        json.object([
-          #("enabled", json.bool(enabled)),
-          #("maxTouchPoints", {
-            case max_touch_points {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("enabled", json.bool(enabled))]
+        |> utils.add_optional(max_touch_points, fn(inner_value__) {
+          #("maxTouchPoints", json.int(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -548,23 +519,15 @@ pub fn set_user_agent_override(
     chrome.call(
       browser_subject,
       "Emulation.setUserAgentOverride",
-      option.Some(
-        json.object([
-          #("userAgent", json.string(user_agent)),
-          #("acceptLanguage", {
-            case accept_language {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("platform", {
-            case platform {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("userAgent", json.string(user_agent))]
+        |> utils.add_optional(accept_language, fn(inner_value__) {
+          #("acceptLanguage", json.string(inner_value__))
+        })
+        |> utils.add_optional(platform, fn(inner_value__) {
+          #("platform", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

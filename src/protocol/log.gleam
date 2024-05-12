@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -172,55 +173,35 @@ pub fn decode__log_entry_category(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__log_entry(value__: LogEntry) {
-  json.object([
-    #("source", encode__log_entry_source(value__.source)),
-    #("level", encode__log_entry_level(value__.level)),
-    #("text", json.string(value__.text)),
-    #("category", {
-      case value__.category {
-        option.Some(value__) -> encode__log_entry_category(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("source", encode__log_entry_source(value__.source)),
+      #("level", encode__log_entry_level(value__.level)),
+      #("text", json.string(value__.text)),
+      #("timestamp", runtime.encode__timestamp(value__.timestamp)),
+    ]
+    |> utils.add_optional(value__.category, fn(inner_value__) {
+      #("category", encode__log_entry_category(inner_value__))
+    })
+    |> utils.add_optional(value__.url, fn(inner_value__) {
+      #("url", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.line_number, fn(inner_value__) {
+      #("lineNumber", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.stack_trace, fn(inner_value__) {
+      #("stackTrace", runtime.encode__stack_trace(inner_value__))
+    })
+    |> utils.add_optional(value__.network_request_id, fn(inner_value__) {
+      #("networkRequestId", network.encode__request_id(inner_value__))
+    })
+    |> utils.add_optional(value__.worker_id, fn(inner_value__) {
+      #("workerId", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.args, fn(inner_value__) {
+      #("args", json.array(inner_value__, of: runtime.encode__remote_object))
     }),
-    #("timestamp", runtime.encode__timestamp(value__.timestamp)),
-    #("url", {
-      case value__.url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("lineNumber", {
-      case value__.line_number {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("stackTrace", {
-      case value__.stack_trace {
-        option.Some(value__) -> runtime.encode__stack_trace(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("networkRequestId", {
-      case value__.network_request_id {
-        option.Some(value__) -> network.encode__request_id(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("workerId", {
-      case value__.worker_id {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("args", {
-      case value__.args {
-        option.Some(value__) ->
-          json.array(value__, of: runtime.encode__remote_object)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal

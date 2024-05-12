@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -129,23 +130,22 @@ pub type SecurityStateExplanation {
 
 @internal
 pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
-  json.object([
-    #("securityState", encode__security_state(value__.security_state)),
-    #("title", json.string(value__.title)),
-    #("summary", json.string(value__.summary)),
-    #("description", json.string(value__.description)),
-    #(
-      "mixedContentType",
-      encode__mixed_content_type(value__.mixed_content_type),
-    ),
-    #("certificate", json.array(value__.certificate, of: json.string)),
-    #("recommendations", {
-      case value__.recommendations {
-        option.Some(value__) -> json.array(value__, of: json.string)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("securityState", encode__security_state(value__.security_state)),
+      #("title", json.string(value__.title)),
+      #("summary", json.string(value__.summary)),
+      #("description", json.string(value__.description)),
+      #(
+        "mixedContentType",
+        encode__mixed_content_type(value__.mixed_content_type),
+      ),
+      #("certificate", json.array(value__.certificate, of: json.string)),
+    ]
+    |> utils.add_optional(value__.recommendations, fn(inner_value__) {
+      #("recommendations", json.array(inner_value__, of: json.string))
     }),
-  ])
+  )
 }
 
 @internal

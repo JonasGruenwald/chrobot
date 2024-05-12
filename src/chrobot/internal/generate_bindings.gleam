@@ -1181,41 +1181,56 @@ fn gen_property_encoder(
 
 /// Generate an object property encoder tuple like:
 /// #("name", string(cat.name)),
-/// or
 /// #("lives", int(cat.lives)),
-/// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
+/// -> Returned as element 0 of the tuple
+/// 
+/// OR for optional properties, a pipe to a function like this:
+/// |> add_optional(cat.owner, fn(owner) { #("owner", json.string(owner)) })
+/// -> Returned as element 1 of the tuple
+/// 
 /// The root name is just there to construct the function name of Enum encoders
 /// value_accessor is the path prefix under which to access the property, for encoder functions
 /// this is "value__." as the properties are all under the single parameter, for command functions
 /// there is no accessor as the properties are passed directly as parameters to the function, so "" will be passed
+/// 
+/// The return tuple works lik
 fn gen_object_property_encoder(
   root_name: String,
   prop_def: PropertyDefinition,
   value_accessor: String,
 ) {
   let attribute_name = safe_snake_case(prop_def.name)
-  let encoder = case prop_def.optional {
-    option.Some(True) ->
-      "{case "
-      <> value_accessor
-      <> attribute_name
-      <> " {\n option.Some(value__) -> "
-      <> gen_property_encoder(
-        root_name,
-        attribute_name,
-        "value__",
-        prop_def.inner,
+  case prop_def.optional {
+    option.Some(True) -> {
+      let encoder =
+        gen_property_encoder(
+          root_name,
+          attribute_name,
+          "inner_value__",
+          prop_def.inner,
+        )
+      let wrapped_encoder = "#(\"" <> prop_def.name <> "\", " <> encoder <> ")"
+      #(
+        "",
+        "|> utils.add_optional("
+          <> value_accessor
+          <> attribute_name
+          <> ", fn(inner_value__){"
+          <> wrapped_encoder
+          <> "})\n",
       )
-      <> "\n option.None -> json.null()\n}}"
-    _ ->
-      gen_property_encoder(
-        root_name,
-        attribute_name,
-        value_accessor <> attribute_name,
-        prop_def.inner,
-      )
+    }
+    _ -> {
+      let encoder =
+        gen_property_encoder(
+          root_name,
+          attribute_name,
+          value_accessor <> attribute_name,
+          prop_def.inner,
+        )
+      #("#(\"" <> prop_def.name <> "\", " <> encoder <> "),\n", "")
+    }
   }
-  "#(\"" <> prop_def.name <> "\", " <> encoder <> "),\n"
 }
 
 fn gen_type_def_encoder(type_def: TypeDefinition) {
@@ -1246,16 +1261,20 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
       )
     }
     ObjectType(Some(properties)) -> {
-      let property_encoders =
+      let #(property_encoders, appendices) =
         list.map(properties, fn(p) {
           gen_object_property_encoder(type_def.id, p, "value__.")
         })
-        |> string.join("")
+        |> list.unzip()
 
       get_encoder_name(type_def.id)
       |> internal_fn(
         "value__: " <> type_def.id <> "\n",
-        "json.object([\n" <> property_encoders <> "])",
+        "json.object([\n"
+          <> string.join(property_encoders, "")
+          <> "]"
+          <> string.join(appendices, "")
+          <> ")",
       )
     }
     ObjectType(None) -> {
@@ -1467,17 +1486,20 @@ fn gen_command_body(command: Command, domain: Domain) {
         <> ")\n"
       }
       Some(properties) -> {
-        let property_encoders =
+        let #(property_encoders, appendices) =
           list.map(properties, fn(p) {
             gen_object_property_encoder(command.name, p, "")
           })
+          |> list.unzip()
         "chrome.call(browser_subject, \""
         <> domain.domain
         <> "."
         <> command.name
         <> "\", option.Some(json.object(["
         <> string.join(property_encoders, "")
-        <> "])),"
+        <> "]"
+        <> string.join(appendices, "")
+        <> ")),"
         <> call_timeout
         <> ")\n"
       }

@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -89,23 +90,15 @@ pub fn read(
   chrome.call(
     browser_subject,
     "IO.read",
-    option.Some(
-      json.object([
-        #("handle", encode__stream_handle(handle)),
-        #("offset", {
-          case offset {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("size", {
-          case size {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("handle", encode__stream_handle(handle))]
+      |> utils.add_optional(offset, fn(inner_value__) {
+        #("offset", json.int(inner_value__))
+      })
+      |> utils.add_optional(size, fn(inner_value__) {
+        #("size", json.int(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {

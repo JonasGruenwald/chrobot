@@ -11,6 +11,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -65,16 +66,15 @@ pub type Location {
 
 @internal
 pub fn encode__location(value__: Location) {
-  json.object([
-    #("scriptId", runtime.encode__script_id(value__.script_id)),
-    #("lineNumber", json.int(value__.line_number)),
-    #("columnNumber", {
-      case value__.column_number {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("scriptId", runtime.encode__script_id(value__.script_id)),
+      #("lineNumber", json.int(value__.line_number)),
+    ]
+    |> utils.add_optional(value__.column_number, fn(inner_value__) {
+      #("columnNumber", json.int(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -113,25 +113,21 @@ pub type CallFrame {
 
 @internal
 pub fn encode__call_frame(value__: CallFrame) {
-  json.object([
-    #("callFrameId", encode__call_frame_id(value__.call_frame_id)),
-    #("functionName", json.string(value__.function_name)),
-    #("functionLocation", {
-      case value__.function_location {
-        option.Some(value__) -> encode__location(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("callFrameId", encode__call_frame_id(value__.call_frame_id)),
+      #("functionName", json.string(value__.function_name)),
+      #("location", encode__location(value__.location)),
+      #("scopeChain", json.array(value__.scope_chain, of: encode__scope)),
+      #("this", runtime.encode__remote_object(value__.this)),
+    ]
+    |> utils.add_optional(value__.function_location, fn(inner_value__) {
+      #("functionLocation", encode__location(inner_value__))
+    })
+    |> utils.add_optional(value__.return_value, fn(inner_value__) {
+      #("returnValue", runtime.encode__remote_object(inner_value__))
     }),
-    #("location", encode__location(value__.location)),
-    #("scopeChain", json.array(value__.scope_chain, of: encode__scope)),
-    #("this", runtime.encode__remote_object(value__.this)),
-    #("returnValue", {
-      case value__.return_value {
-        option.Some(value__) -> runtime.encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -243,28 +239,21 @@ pub fn decode__scope_type(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__scope(value__: Scope) {
-  json.object([
-    #("type", encode__scope_type(value__.type_)),
-    #("object", runtime.encode__remote_object(value__.object)),
-    #("name", {
-      case value__.name {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("type", encode__scope_type(value__.type_)),
+      #("object", runtime.encode__remote_object(value__.object)),
+    ]
+    |> utils.add_optional(value__.name, fn(inner_value__) {
+      #("name", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.start_location, fn(inner_value__) {
+      #("startLocation", encode__location(inner_value__))
+    })
+    |> utils.add_optional(value__.end_location, fn(inner_value__) {
+      #("endLocation", encode__location(inner_value__))
     }),
-    #("startLocation", {
-      case value__.start_location {
-        option.Some(value__) -> encode__location(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("endLocation", {
-      case value__.end_location {
-        option.Some(value__) -> encode__location(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -365,22 +354,18 @@ pub fn decode__break_location_type(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__break_location(value__: BreakLocation) {
-  json.object([
-    #("scriptId", runtime.encode__script_id(value__.script_id)),
-    #("lineNumber", json.int(value__.line_number)),
-    #("columnNumber", {
-      case value__.column_number {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("scriptId", runtime.encode__script_id(value__.script_id)),
+      #("lineNumber", json.int(value__.line_number)),
+    ]
+    |> utils.add_optional(value__.column_number, fn(inner_value__) {
+      #("columnNumber", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.type_, fn(inner_value__) {
+      #("type", encode__break_location_type(inner_value__))
     }),
-    #("type", {
-      case value__.type_ {
-        option.Some(value__) -> encode__break_location_type(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -487,15 +472,12 @@ pub fn decode__debug_symbols_type(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__debug_symbols(value__: DebugSymbols) {
-  json.object([
-    #("type", encode__debug_symbols_type(value__.type_)),
-    #("externalURL", {
-      case value__.external_url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("type", encode__debug_symbols_type(value__.type_))]
+    |> utils.add_optional(value__.external_url, fn(inner_value__) {
+      #("externalURL", json.string(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -683,18 +665,15 @@ pub fn continue_to_location(
     chrome.call(
       browser_subject,
       "Debugger.continueToLocation",
-      option.Some(
-        json.object([
-          #("location", encode__location(location)),
-          #("targetCallFrames", {
-            case target_call_frames {
-              option.Some(value__) ->
-                encode__continue_to_location_target_call_frames(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("location", encode__location(location))]
+        |> utils.add_optional(target_call_frames, fn(inner_value__) {
+          #(
+            "targetCallFrames",
+            encode__continue_to_location_target_call_frames(inner_value__),
+          )
+        }),
+      )),
       10_000,
     )
   Nil
@@ -760,42 +739,27 @@ pub fn evaluate_on_call_frame(
   chrome.call(
     browser_subject,
     "Debugger.evaluateOnCallFrame",
-    option.Some(
-      json.object([
+    option.Some(json.object(
+      [
         #("callFrameId", encode__call_frame_id(call_frame_id)),
         #("expression", json.string(expression)),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("includeCommandLineAPI", {
-          case include_command_line_api {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("silent", {
-          case silent {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("returnByValue", {
-          case return_by_value {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("throwOnSideEffect", {
-          case throw_on_side_effect {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+      ]
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      })
+      |> utils.add_optional(include_command_line_api, fn(inner_value__) {
+        #("includeCommandLineAPI", json.bool(inner_value__))
+      })
+      |> utils.add_optional(silent, fn(inner_value__) {
+        #("silent", json.bool(inner_value__))
+      })
+      |> utils.add_optional(return_by_value, fn(inner_value__) {
+        #("returnByValue", json.bool(inner_value__))
+      })
+      |> utils.add_optional(throw_on_side_effect, fn(inner_value__) {
+        #("throwOnSideEffect", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -815,23 +779,15 @@ pub fn get_possible_breakpoints(
   chrome.call(
     browser_subject,
     "Debugger.getPossibleBreakpoints",
-    option.Some(
-      json.object([
-        #("start", encode__location(start)),
-        #("end", {
-          case end {
-            option.Some(value__) -> encode__location(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("restrictToFunction", {
-          case restrict_to_function {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("start", encode__location(start))]
+      |> utils.add_optional(end, fn(inner_value__) {
+        #("end", encode__location(inner_value__))
+      })
+      |> utils.add_optional(restrict_to_function, fn(inner_value__) {
+        #("restrictToFunction", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -908,16 +864,12 @@ pub fn resume(browser_subject, terminate_on_resume: option.Option(Bool)) {
     chrome.call(
       browser_subject,
       "Debugger.resume",
-      option.Some(
-        json.object([
-          #("terminateOnResume", {
-            case terminate_on_resume {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(terminate_on_resume, fn(inner_value__) {
+          #("terminateOnResume", json.bool(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -934,24 +886,18 @@ pub fn search_in_content(
   chrome.call(
     browser_subject,
     "Debugger.searchInContent",
-    option.Some(
-      json.object([
+    option.Some(json.object(
+      [
         #("scriptId", runtime.encode__script_id(script_id)),
         #("query", json.string(query)),
-        #("caseSensitive", {
-          case case_sensitive {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("isRegex", {
-          case is_regex {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+      ]
+      |> utils.add_optional(case_sensitive, fn(inner_value__) {
+        #("caseSensitive", json.bool(inner_value__))
+      })
+      |> utils.add_optional(is_regex, fn(inner_value__) {
+        #("isRegex", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -981,17 +927,12 @@ pub fn set_breakpoint(
   chrome.call(
     browser_subject,
     "Debugger.setBreakpoint",
-    option.Some(
-      json.object([
-        #("location", encode__location(location)),
-        #("condition", {
-          case condition {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("location", encode__location(location))]
+      |> utils.add_optional(condition, fn(inner_value__) {
+        #("condition", json.string(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1081,41 +1022,24 @@ pub fn set_breakpoint_by_url(
   chrome.call(
     browser_subject,
     "Debugger.setBreakpointByUrl",
-    option.Some(
-      json.object([
-        #("lineNumber", json.int(line_number)),
-        #("url", {
-          case url {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("urlRegex", {
-          case url_regex {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("scriptHash", {
-          case script_hash {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("columnNumber", {
-          case column_number {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("condition", {
-          case condition {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("lineNumber", json.int(line_number))]
+      |> utils.add_optional(url, fn(inner_value__) {
+        #("url", json.string(inner_value__))
+      })
+      |> utils.add_optional(url_regex, fn(inner_value__) {
+        #("urlRegex", json.string(inner_value__))
+      })
+      |> utils.add_optional(script_hash, fn(inner_value__) {
+        #("scriptHash", json.string(inner_value__))
+      })
+      |> utils.add_optional(column_number, fn(inner_value__) {
+        #("columnNumber", json.int(inner_value__))
+      })
+      |> utils.add_optional(condition, fn(inner_value__) {
+        #("condition", json.string(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1209,18 +1133,15 @@ pub fn set_script_source(
   chrome.call(
     browser_subject,
     "Debugger.setScriptSource",
-    option.Some(
-      json.object([
+    option.Some(json.object(
+      [
         #("scriptId", runtime.encode__script_id(script_id)),
         #("scriptSource", json.string(script_source)),
-        #("dryRun", {
-          case dry_run {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+      ]
+      |> utils.add_optional(dry_run, fn(inner_value__) {
+        #("dryRun", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {

@@ -16,6 +16,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -408,158 +409,88 @@ pub type Node {
 
 @internal
 pub fn encode__node(value__: Node) {
-  json.object([
-    #("nodeId", encode__node_id(value__.node_id)),
-    #("parentId", {
-      case value__.parent_id {
-        option.Some(value__) -> encode__node_id(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("nodeId", encode__node_id(value__.node_id)),
+      #("backendNodeId", encode__backend_node_id(value__.backend_node_id)),
+      #("nodeType", json.int(value__.node_type)),
+      #("nodeName", json.string(value__.node_name)),
+      #("localName", json.string(value__.local_name)),
+      #("nodeValue", json.string(value__.node_value)),
+    ]
+    |> utils.add_optional(value__.parent_id, fn(inner_value__) {
+      #("parentId", encode__node_id(inner_value__))
+    })
+    |> utils.add_optional(value__.child_node_count, fn(inner_value__) {
+      #("childNodeCount", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.children, fn(inner_value__) {
+      #("children", json.array(inner_value__, of: encode__node))
+    })
+    |> utils.add_optional(value__.attributes, fn(inner_value__) {
+      #("attributes", json.array(inner_value__, of: json.string))
+    })
+    |> utils.add_optional(value__.document_url, fn(inner_value__) {
+      #("documentURL", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.base_url, fn(inner_value__) {
+      #("baseURL", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.public_id, fn(inner_value__) {
+      #("publicId", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.system_id, fn(inner_value__) {
+      #("systemId", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.internal_subset, fn(inner_value__) {
+      #("internalSubset", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.xml_version, fn(inner_value__) {
+      #("xmlVersion", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.name, fn(inner_value__) {
+      #("name", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #("value", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.pseudo_type, fn(inner_value__) {
+      #("pseudoType", encode__pseudo_type(inner_value__))
+    })
+    |> utils.add_optional(value__.pseudo_identifier, fn(inner_value__) {
+      #("pseudoIdentifier", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.shadow_root_type, fn(inner_value__) {
+      #("shadowRootType", encode__shadow_root_type(inner_value__))
+    })
+    |> utils.add_optional(value__.frame_id, fn(inner_value__) {
+      #("frameId", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.content_document, fn(inner_value__) {
+      #("contentDocument", encode__node(inner_value__))
+    })
+    |> utils.add_optional(value__.shadow_roots, fn(inner_value__) {
+      #("shadowRoots", json.array(inner_value__, of: encode__node))
+    })
+    |> utils.add_optional(value__.template_content, fn(inner_value__) {
+      #("templateContent", encode__node(inner_value__))
+    })
+    |> utils.add_optional(value__.pseudo_elements, fn(inner_value__) {
+      #("pseudoElements", json.array(inner_value__, of: encode__node))
+    })
+    |> utils.add_optional(value__.distributed_nodes, fn(inner_value__) {
+      #("distributedNodes", json.array(inner_value__, of: encode__backend_node))
+    })
+    |> utils.add_optional(value__.is_svg, fn(inner_value__) {
+      #("isSVG", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.compatibility_mode, fn(inner_value__) {
+      #("compatibilityMode", encode__compatibility_mode(inner_value__))
+    })
+    |> utils.add_optional(value__.assigned_slot, fn(inner_value__) {
+      #("assignedSlot", encode__backend_node(inner_value__))
     }),
-    #("backendNodeId", encode__backend_node_id(value__.backend_node_id)),
-    #("nodeType", json.int(value__.node_type)),
-    #("nodeName", json.string(value__.node_name)),
-    #("localName", json.string(value__.local_name)),
-    #("nodeValue", json.string(value__.node_value)),
-    #("childNodeCount", {
-      case value__.child_node_count {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("children", {
-      case value__.children {
-        option.Some(value__) -> json.array(value__, of: encode__node)
-        option.None -> json.null()
-      }
-    }),
-    #("attributes", {
-      case value__.attributes {
-        option.Some(value__) -> json.array(value__, of: json.string)
-        option.None -> json.null()
-      }
-    }),
-    #("documentURL", {
-      case value__.document_url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("baseURL", {
-      case value__.base_url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("publicId", {
-      case value__.public_id {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("systemId", {
-      case value__.system_id {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("internalSubset", {
-      case value__.internal_subset {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("xmlVersion", {
-      case value__.xml_version {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("name", {
-      case value__.name {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("value", {
-      case value__.value {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("pseudoType", {
-      case value__.pseudo_type {
-        option.Some(value__) -> encode__pseudo_type(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("pseudoIdentifier", {
-      case value__.pseudo_identifier {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("shadowRootType", {
-      case value__.shadow_root_type {
-        option.Some(value__) -> encode__shadow_root_type(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("frameId", {
-      case value__.frame_id {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("contentDocument", {
-      case value__.content_document {
-        option.Some(value__) -> encode__node(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("shadowRoots", {
-      case value__.shadow_roots {
-        option.Some(value__) -> json.array(value__, of: encode__node)
-        option.None -> json.null()
-      }
-    }),
-    #("templateContent", {
-      case value__.template_content {
-        option.Some(value__) -> encode__node(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("pseudoElements", {
-      case value__.pseudo_elements {
-        option.Some(value__) -> json.array(value__, of: encode__node)
-        option.None -> json.null()
-      }
-    }),
-    #("distributedNodes", {
-      case value__.distributed_nodes {
-        option.Some(value__) -> json.array(value__, of: encode__backend_node)
-        option.None -> json.null()
-      }
-    }),
-    #("isSVG", {
-      case value__.is_svg {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("compatibilityMode", {
-      case value__.compatibility_mode {
-        option.Some(value__) -> encode__compatibility_mode(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("assignedSlot", {
-      case value__.assigned_slot {
-        option.Some(value__) -> encode__backend_node(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -706,17 +637,16 @@ pub type RGBA {
 
 @internal
 pub fn encode__rgba(value__: RGBA) {
-  json.object([
-    #("r", json.int(value__.r)),
-    #("g", json.int(value__.g)),
-    #("b", json.int(value__.b)),
-    #("a", {
-      case value__.a {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("r", json.int(value__.r)),
+      #("g", json.int(value__.g)),
+      #("b", json.int(value__.b)),
+    ]
+    |> utils.add_optional(value__.a, fn(inner_value__) {
+      #("a", json.float(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -762,20 +692,19 @@ pub type BoxModel {
 
 @internal
 pub fn encode__box_model(value__: BoxModel) {
-  json.object([
-    #("content", encode__quad(value__.content)),
-    #("padding", encode__quad(value__.padding)),
-    #("border", encode__quad(value__.border)),
-    #("margin", encode__quad(value__.margin)),
-    #("width", json.int(value__.width)),
-    #("height", json.int(value__.height)),
-    #("shapeOutside", {
-      case value__.shape_outside {
-        option.Some(value__) -> encode__shape_outside_info(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("content", encode__quad(value__.content)),
+      #("padding", encode__quad(value__.padding)),
+      #("border", encode__quad(value__.border)),
+      #("margin", encode__quad(value__.margin)),
+      #("width", json.int(value__.width)),
+      #("height", json.int(value__.height)),
+    ]
+    |> utils.add_optional(value__.shape_outside, fn(inner_value__) {
+      #("shapeOutside", encode__shape_outside_info(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -1082,40 +1011,24 @@ pub fn describe_node(
   chrome.call(
     browser_subject,
     "DOM.describeNode",
-    option.Some(
-      json.object([
-        #("nodeId", {
-          case node_id {
-            option.Some(value__) -> encode__node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("backendNodeId", {
-          case backend_node_id {
-            option.Some(value__) -> encode__backend_node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectId", {
-          case object_id {
-            option.Some(value__) -> runtime.encode__remote_object_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("depth", {
-          case depth {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("pierce", {
-          case pierce {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      })
+      |> utils.add_optional(depth, fn(inner_value__) {
+        #("depth", json.int(inner_value__))
+      })
+      |> utils.add_optional(pierce, fn(inner_value__) {
+        #("pierce", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1138,34 +1051,21 @@ pub fn scroll_into_view_if_needed(
     chrome.call(
       browser_subject,
       "DOM.scrollIntoViewIfNeeded",
-      option.Some(
-        json.object([
-          #("nodeId", {
-            case node_id {
-              option.Some(value__) -> encode__node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("backendNodeId", {
-            case backend_node_id {
-              option.Some(value__) -> encode__backend_node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("objectId", {
-            case object_id {
-              option.Some(value__) -> runtime.encode__remote_object_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("rect", {
-            case rect {
-              option.Some(value__) -> encode__rect(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(node_id, fn(inner_value__) {
+          #("nodeId", encode__node_id(inner_value__))
+        })
+        |> utils.add_optional(backend_node_id, fn(inner_value__) {
+          #("backendNodeId", encode__backend_node_id(inner_value__))
+        })
+        |> utils.add_optional(object_id, fn(inner_value__) {
+          #("objectId", runtime.encode__remote_object_id(inner_value__))
+        })
+        |> utils.add_optional(rect, fn(inner_value__) {
+          #("rect", encode__rect(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -1194,28 +1094,18 @@ pub fn focus(
     chrome.call(
       browser_subject,
       "DOM.focus",
-      option.Some(
-        json.object([
-          #("nodeId", {
-            case node_id {
-              option.Some(value__) -> encode__node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("backendNodeId", {
-            case backend_node_id {
-              option.Some(value__) -> encode__backend_node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("objectId", {
-            case object_id {
-              option.Some(value__) -> runtime.encode__remote_object_id(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(node_id, fn(inner_value__) {
+          #("nodeId", encode__node_id(inner_value__))
+        })
+        |> utils.add_optional(backend_node_id, fn(inner_value__) {
+          #("backendNodeId", encode__backend_node_id(inner_value__))
+        })
+        |> utils.add_optional(object_id, fn(inner_value__) {
+          #("objectId", runtime.encode__remote_object_id(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -1245,28 +1135,18 @@ pub fn get_box_model(
   chrome.call(
     browser_subject,
     "DOM.getBoxModel",
-    option.Some(
-      json.object([
-        #("nodeId", {
-          case node_id {
-            option.Some(value__) -> encode__node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("backendNodeId", {
-          case backend_node_id {
-            option.Some(value__) -> encode__backend_node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectId", {
-          case object_id {
-            option.Some(value__) -> runtime.encode__remote_object_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1285,22 +1165,15 @@ pub fn get_document(
   chrome.call(
     browser_subject,
     "DOM.getDocument",
-    option.Some(
-      json.object([
-        #("depth", {
-          case depth {
-            option.Some(value__) -> json.int(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("pierce", {
-          case pierce {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(depth, fn(inner_value__) {
+        #("depth", json.int(inner_value__))
+      })
+      |> utils.add_optional(pierce, fn(inner_value__) {
+        #("pierce", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1321,24 +1194,15 @@ pub fn get_node_for_location(
   chrome.call(
     browser_subject,
     "DOM.getNodeForLocation",
-    option.Some(
-      json.object([
-        #("x", json.int(x)),
-        #("y", json.int(y)),
-        #("includeUserAgentShadowDOM", {
-          case include_user_agent_shadow_dom {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("ignorePointerEventsNone", {
-          case ignore_pointer_events_none {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("x", json.int(x)), #("y", json.int(y))]
+      |> utils.add_optional(include_user_agent_shadow_dom, fn(inner_value__) {
+        #("includeUserAgentShadowDOM", json.bool(inner_value__))
+      })
+      |> utils.add_optional(ignore_pointer_events_none, fn(inner_value__) {
+        #("ignorePointerEventsNone", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1357,28 +1221,18 @@ pub fn get_outer_html(
   chrome.call(
     browser_subject,
     "DOM.getOuterHTML",
-    option.Some(
-      json.object([
-        #("nodeId", {
-          case node_id {
-            option.Some(value__) -> encode__node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("backendNodeId", {
-          case backend_node_id {
-            option.Some(value__) -> encode__backend_node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectId", {
-          case object_id {
-            option.Some(value__) -> runtime.encode__remote_object_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1415,18 +1269,15 @@ pub fn move_to(
   chrome.call(
     browser_subject,
     "DOM.moveTo",
-    option.Some(
-      json.object([
+    option.Some(json.object(
+      [
         #("nodeId", encode__node_id(node_id)),
         #("targetNodeId", encode__node_id(target_node_id)),
-        #("insertBeforeNodeId", {
-          case insert_before_node_id {
-            option.Some(value__) -> encode__node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+      ]
+      |> utils.add_optional(insert_before_node_id, fn(inner_value__) {
+        #("insertBeforeNodeId", encode__node_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1515,23 +1366,15 @@ pub fn request_child_nodes(
     chrome.call(
       browser_subject,
       "DOM.requestChildNodes",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("depth", {
-            case depth {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("pierce", {
-            case pierce {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("nodeId", encode__node_id(node_id))]
+        |> utils.add_optional(depth, fn(inner_value__) {
+          #("depth", json.int(inner_value__))
+        })
+        |> utils.add_optional(pierce, fn(inner_value__) {
+          #("pierce", json.bool(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -1566,35 +1409,24 @@ pub fn resolve_node(
   chrome.call(
     browser_subject,
     "DOM.resolveNode",
-    option.Some(
-      json.object([
-        #("nodeId", {
-          case node_id {
-            option.Some(value__) -> encode__node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("backendNodeId", {
-          case backend_node_id {
-            option.Some(value__) -> encode__backend_node_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("executionContextId", {
-          case execution_context_id {
-            option.Some(value__) ->
-              runtime.encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      })
+      |> utils.add_optional(execution_context_id, fn(inner_value__) {
+        #(
+          "executionContextId",
+          runtime.encode__execution_context_id(inner_value__),
+        )
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1638,18 +1470,12 @@ pub fn set_attributes_as_text(
     chrome.call(
       browser_subject,
       "DOM.setAttributesAsText",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("text", json.string(text)),
-          #("name", {
-            case name {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("nodeId", encode__node_id(node_id)), #("text", json.string(text))]
+        |> utils.add_optional(name, fn(inner_value__) {
+          #("name", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -1667,29 +1493,18 @@ pub fn set_file_input_files(
     chrome.call(
       browser_subject,
       "DOM.setFileInputFiles",
-      option.Some(
-        json.object([
-          #("files", json.array(files, of: json.string)),
-          #("nodeId", {
-            case node_id {
-              option.Some(value__) -> encode__node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("backendNodeId", {
-            case backend_node_id {
-              option.Some(value__) -> encode__backend_node_id(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("objectId", {
-            case object_id {
-              option.Some(value__) -> runtime.encode__remote_object_id(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("files", json.array(files, of: json.string))]
+        |> utils.add_optional(node_id, fn(inner_value__) {
+          #("nodeId", encode__node_id(inner_value__))
+        })
+        |> utils.add_optional(backend_node_id, fn(inner_value__) {
+          #("backendNodeId", encode__backend_node_id(inner_value__))
+        })
+        |> utils.add_optional(object_id, fn(inner_value__) {
+          #("objectId", runtime.encode__remote_object_id(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

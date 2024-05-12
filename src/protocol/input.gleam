@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -32,52 +33,30 @@ pub type TouchPoint {
 
 @internal
 pub fn encode__touch_point(value__: TouchPoint) {
-  json.object([
-    #("x", json.float(value__.x)),
-    #("y", json.float(value__.y)),
-    #("radiusX", {
-      case value__.radius_x {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("x", json.float(value__.x)), #("y", json.float(value__.y))]
+    |> utils.add_optional(value__.radius_x, fn(inner_value__) {
+      #("radiusX", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.radius_y, fn(inner_value__) {
+      #("radiusY", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.rotation_angle, fn(inner_value__) {
+      #("rotationAngle", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.force, fn(inner_value__) {
+      #("force", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.tilt_x, fn(inner_value__) {
+      #("tiltX", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.tilt_y, fn(inner_value__) {
+      #("tiltY", json.float(inner_value__))
+    })
+    |> utils.add_optional(value__.id, fn(inner_value__) {
+      #("id", json.float(inner_value__))
     }),
-    #("radiusY", {
-      case value__.radius_y {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("rotationAngle", {
-      case value__.rotation_angle {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("force", {
-      case value__.force {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("tiltX", {
-      case value__.tilt_x {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("tiltY", {
-      case value__.tilt_y {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("id", {
-      case value__.id {
-        option.Some(value__) -> json.float(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -201,89 +180,48 @@ pub fn dispatch_key_event(
     chrome.call(
       browser_subject,
       "Input.dispatchKeyEvent",
-      option.Some(
-        json.object([
-          #("type", encode__dispatch_key_event_type(type_)),
-          #("modifiers", {
-            case modifiers {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("timestamp", {
-            case timestamp {
-              option.Some(value__) -> encode__time_since_epoch(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("text", {
-            case text {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("unmodifiedText", {
-            case unmodified_text {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("keyIdentifier", {
-            case key_identifier {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("code", {
-            case code {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("key", {
-            case key {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("windowsVirtualKeyCode", {
-            case windows_virtual_key_code {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("nativeVirtualKeyCode", {
-            case native_virtual_key_code {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("autoRepeat", {
-            case auto_repeat {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("isKeypad", {
-            case is_keypad {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("isSystemKey", {
-            case is_system_key {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("location", {
-            case location {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("type", encode__dispatch_key_event_type(type_))]
+        |> utils.add_optional(modifiers, fn(inner_value__) {
+          #("modifiers", json.int(inner_value__))
+        })
+        |> utils.add_optional(timestamp, fn(inner_value__) {
+          #("timestamp", encode__time_since_epoch(inner_value__))
+        })
+        |> utils.add_optional(text, fn(inner_value__) {
+          #("text", json.string(inner_value__))
+        })
+        |> utils.add_optional(unmodified_text, fn(inner_value__) {
+          #("unmodifiedText", json.string(inner_value__))
+        })
+        |> utils.add_optional(key_identifier, fn(inner_value__) {
+          #("keyIdentifier", json.string(inner_value__))
+        })
+        |> utils.add_optional(code, fn(inner_value__) {
+          #("code", json.string(inner_value__))
+        })
+        |> utils.add_optional(key, fn(inner_value__) {
+          #("key", json.string(inner_value__))
+        })
+        |> utils.add_optional(windows_virtual_key_code, fn(inner_value__) {
+          #("windowsVirtualKeyCode", json.int(inner_value__))
+        })
+        |> utils.add_optional(native_virtual_key_code, fn(inner_value__) {
+          #("nativeVirtualKeyCode", json.int(inner_value__))
+        })
+        |> utils.add_optional(auto_repeat, fn(inner_value__) {
+          #("autoRepeat", json.bool(inner_value__))
+        })
+        |> utils.add_optional(is_keypad, fn(inner_value__) {
+          #("isKeypad", json.bool(inner_value__))
+        })
+        |> utils.add_optional(is_system_key, fn(inner_value__) {
+          #("isSystemKey", json.bool(inner_value__))
+        })
+        |> utils.add_optional(location, fn(inner_value__) {
+          #("location", json.int(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -349,74 +287,46 @@ pub fn dispatch_mouse_event(
     chrome.call(
       browser_subject,
       "Input.dispatchMouseEvent",
-      option.Some(
-        json.object([
+      option.Some(json.object(
+        [
           #("type", encode__dispatch_mouse_event_type(type_)),
           #("x", json.float(x)),
           #("y", json.float(y)),
-          #("modifiers", {
-            case modifiers {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("timestamp", {
-            case timestamp {
-              option.Some(value__) -> encode__time_since_epoch(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("button", {
-            case button {
-              option.Some(value__) -> encode__mouse_button(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("buttons", {
-            case buttons {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("clickCount", {
-            case click_count {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("tiltX", {
-            case tilt_x {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("tiltY", {
-            case tilt_y {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("deltaX", {
-            case delta_x {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("deltaY", {
-            case delta_y {
-              option.Some(value__) -> json.float(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("pointerType", {
-            case pointer_type {
-              option.Some(value__) ->
-                encode__dispatch_mouse_event_pointer_type(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+        ]
+        |> utils.add_optional(modifiers, fn(inner_value__) {
+          #("modifiers", json.int(inner_value__))
+        })
+        |> utils.add_optional(timestamp, fn(inner_value__) {
+          #("timestamp", encode__time_since_epoch(inner_value__))
+        })
+        |> utils.add_optional(button, fn(inner_value__) {
+          #("button", encode__mouse_button(inner_value__))
+        })
+        |> utils.add_optional(buttons, fn(inner_value__) {
+          #("buttons", json.int(inner_value__))
+        })
+        |> utils.add_optional(click_count, fn(inner_value__) {
+          #("clickCount", json.int(inner_value__))
+        })
+        |> utils.add_optional(tilt_x, fn(inner_value__) {
+          #("tiltX", json.float(inner_value__))
+        })
+        |> utils.add_optional(tilt_y, fn(inner_value__) {
+          #("tiltY", json.float(inner_value__))
+        })
+        |> utils.add_optional(delta_x, fn(inner_value__) {
+          #("deltaX", json.float(inner_value__))
+        })
+        |> utils.add_optional(delta_y, fn(inner_value__) {
+          #("deltaY", json.float(inner_value__))
+        })
+        |> utils.add_optional(pointer_type, fn(inner_value__) {
+          #(
+            "pointerType",
+            encode__dispatch_mouse_event_pointer_type(inner_value__),
+          )
+        }),
+      )),
       10_000,
     )
   Nil
@@ -506,24 +416,18 @@ pub fn dispatch_touch_event(
     chrome.call(
       browser_subject,
       "Input.dispatchTouchEvent",
-      option.Some(
-        json.object([
+      option.Some(json.object(
+        [
           #("type", encode__dispatch_touch_event_type(type_)),
           #("touchPoints", json.array(touch_points, of: encode__touch_point)),
-          #("modifiers", {
-            case modifiers {
-              option.Some(value__) -> json.int(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("timestamp", {
-            case timestamp {
-              option.Some(value__) -> encode__time_since_epoch(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+        ]
+        |> utils.add_optional(modifiers, fn(inner_value__) {
+          #("modifiers", json.int(inner_value__))
+        })
+        |> utils.add_optional(timestamp, fn(inner_value__) {
+          #("timestamp", encode__time_since_epoch(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil

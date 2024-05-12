@@ -10,6 +10,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dynamic
 import gleam/json
@@ -81,26 +82,18 @@ pub type RequestPattern {
 
 @internal
 pub fn encode__request_pattern(value__: RequestPattern) {
-  json.object([
-    #("urlPattern", {
-      case value__.url_pattern {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    []
+    |> utils.add_optional(value__.url_pattern, fn(inner_value__) {
+      #("urlPattern", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.resource_type, fn(inner_value__) {
+      #("resourceType", network.encode__resource_type(inner_value__))
+    })
+    |> utils.add_optional(value__.request_stage, fn(inner_value__) {
+      #("requestStage", encode__request_stage(inner_value__))
     }),
-    #("resourceType", {
-      case value__.resource_type {
-        option.Some(value__) -> network.encode__resource_type(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("requestStage", {
-      case value__.request_stage {
-        option.Some(value__) -> encode__request_stage(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -191,17 +184,16 @@ pub fn decode__auth_challenge_source(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__auth_challenge(value__: AuthChallenge) {
-  json.object([
-    #("source", {
-      case value__.source {
-        option.Some(value__) -> encode__auth_challenge_source(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("origin", json.string(value__.origin)),
+      #("scheme", json.string(value__.scheme)),
+      #("realm", json.string(value__.realm)),
+    ]
+    |> utils.add_optional(value__.source, fn(inner_value__) {
+      #("source", encode__auth_challenge_source(inner_value__))
     }),
-    #("origin", json.string(value__.origin)),
-    #("scheme", json.string(value__.scheme)),
-    #("realm", json.string(value__.realm)),
-  ])
+  )
 }
 
 @internal
@@ -265,21 +257,15 @@ pub fn decode__auth_challenge_response_response(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
-  json.object([
-    #("response", encode__auth_challenge_response_response(value__.response)),
-    #("username", {
-      case value__.username {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("response", encode__auth_challenge_response_response(value__.response))]
+    |> utils.add_optional(value__.username, fn(inner_value__) {
+      #("username", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.password, fn(inner_value__) {
+      #("password", json.string(inner_value__))
     }),
-    #("password", {
-      case value__.password {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -350,23 +336,15 @@ pub fn enable(
     chrome.call(
       browser_subject,
       "Fetch.enable",
-      option.Some(
-        json.object([
-          #("patterns", {
-            case patterns {
-              option.Some(value__) ->
-                json.array(value__, of: encode__request_pattern)
-              option.None -> json.null()
-            }
-          }),
-          #("handleAuthRequests", {
-            case handle_auth_requests {
-              option.Some(value__) -> json.bool(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        []
+        |> utils.add_optional(patterns, fn(inner_value__) {
+          #("patterns", json.array(inner_value__, of: encode__request_pattern))
+        })
+        |> utils.add_optional(handle_auth_requests, fn(inner_value__) {
+          #("handleAuthRequests", json.bool(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -407,37 +385,27 @@ pub fn fulfill_request(
     chrome.call(
       browser_subject,
       "Fetch.fulfillRequest",
-      option.Some(
-        json.object([
+      option.Some(json.object(
+        [
           #("requestId", encode__request_id(request_id)),
           #("responseCode", json.int(response_code)),
-          #("responseHeaders", {
-            case response_headers {
-              option.Some(value__) ->
-                json.array(value__, of: encode__header_entry)
-              option.None -> json.null()
-            }
-          }),
-          #("binaryResponseHeaders", {
-            case binary_response_headers {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("body", {
-            case body {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("responsePhrase", {
-            case response_phrase {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+        ]
+        |> utils.add_optional(response_headers, fn(inner_value__) {
+          #(
+            "responseHeaders",
+            json.array(inner_value__, of: encode__header_entry),
+          )
+        })
+        |> utils.add_optional(binary_response_headers, fn(inner_value__) {
+          #("binaryResponseHeaders", json.string(inner_value__))
+        })
+        |> utils.add_optional(body, fn(inner_value__) {
+          #("body", json.string(inner_value__))
+        })
+        |> utils.add_optional(response_phrase, fn(inner_value__) {
+          #("responsePhrase", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
@@ -456,36 +424,21 @@ pub fn continue_request(
     chrome.call(
       browser_subject,
       "Fetch.continueRequest",
-      option.Some(
-        json.object([
-          #("requestId", encode__request_id(request_id)),
-          #("url", {
-            case url {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("method", {
-            case method {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("postData", {
-            case post_data {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-          #("headers", {
-            case headers {
-              option.Some(value__) ->
-                json.array(value__, of: encode__header_entry)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("requestId", encode__request_id(request_id))]
+        |> utils.add_optional(url, fn(inner_value__) {
+          #("url", json.string(inner_value__))
+        })
+        |> utils.add_optional(method, fn(inner_value__) {
+          #("method", json.string(inner_value__))
+        })
+        |> utils.add_optional(post_data, fn(inner_value__) {
+          #("postData", json.string(inner_value__))
+        })
+        |> utils.add_optional(headers, fn(inner_value__) {
+          #("headers", json.array(inner_value__, of: encode__header_entry))
+        }),
+      )),
       10_000,
     )
   Nil

@@ -14,6 +14,7 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/internal/utils
 import chrome
 import gleam/dict
 import gleam/dynamic
@@ -87,27 +88,25 @@ pub fn decode__serialization_options_serialization(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__serialization_options(value__: SerializationOptions) {
-  json.object([
-    #(
-      "serialization",
-      encode__serialization_options_serialization(value__.serialization),
-    ),
-    #("maxDepth", {
-      case value__.max_depth {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("additionalParameters", {
-      case value__.additional_parameters {
-        option.Some(value__) ->
-          dict.to_list(value__)
+  json.object(
+    [
+      #(
+        "serialization",
+        encode__serialization_options_serialization(value__.serialization),
+      ),
+    ]
+    |> utils.add_optional(value__.max_depth, fn(inner_value__) {
+      #("maxDepth", json.int(inner_value__))
+    })
+    |> utils.add_optional(value__.additional_parameters, fn(inner_value__) {
+      #(
+        "additionalParameters",
+        dict.to_list(inner_value__)
           |> list.map(fn(i) { #(i.0, json.string(i.1)) })
-          |> json.object
-        option.None -> json.null()
-      }
+          |> json.object,
+      )
     }),
-  ])
+  )
 }
 
 @internal
@@ -242,30 +241,25 @@ pub fn decode__deep_serialized_value_type(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__deep_serialized_value(value__: DeepSerializedValue) {
-  json.object([
-    #("type", encode__deep_serialized_value_type(value__.type_)),
-    #("value", {
-      case value__.value {
-        option.Some(value__) ->
-          // dynamic values cannot be encoded!
-          json.null()
-
-        option.None -> json.null()
-      }
-    }),
-    #("objectId", {
-      case value__.object_id {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("weakLocalObjectReference", {
-      case value__.weak_local_object_reference {
-        option.Some(value__) -> json.int(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  json.object(
+    [#("type", encode__deep_serialized_value_type(value__.type_))]
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #(
+        "value",
+        // dynamic values cannot be encoded!
+        json.null(),
+      )
+    })
+    |> utils.add_optional(value__.object_id, fn(inner_value__) {
+      #("objectId", json.string(inner_value__))
+    })
+    |> utils.add_optional(
+      value__.weak_local_object_reference,
+      fn(inner_value__) {
+        #("weakLocalObjectReference", json.int(inner_value__))
+      },
+    ),
+  )
 }
 
 @internal
@@ -480,48 +474,31 @@ pub fn decode__remote_object_subtype(value__: dynamic.Dynamic) {
 
 @internal
 pub fn encode__remote_object(value__: RemoteObject) {
-  json.object([
-    #("type", encode__remote_object_type(value__.type_)),
-    #("subtype", {
-      case value__.subtype {
-        option.Some(value__) -> encode__remote_object_subtype(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("type", encode__remote_object_type(value__.type_))]
+    |> utils.add_optional(value__.subtype, fn(inner_value__) {
+      #("subtype", encode__remote_object_subtype(inner_value__))
+    })
+    |> utils.add_optional(value__.class_name, fn(inner_value__) {
+      #("className", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #(
+        "value",
+        // dynamic values cannot be encoded!
+        json.null(),
+      )
+    })
+    |> utils.add_optional(value__.unserializable_value, fn(inner_value__) {
+      #("unserializableValue", encode__unserializable_value(inner_value__))
+    })
+    |> utils.add_optional(value__.description, fn(inner_value__) {
+      #("description", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.object_id, fn(inner_value__) {
+      #("objectId", encode__remote_object_id(inner_value__))
     }),
-    #("className", {
-      case value__.class_name {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("value", {
-      case value__.value {
-        option.Some(value__) ->
-          // dynamic values cannot be encoded!
-          json.null()
-
-        option.None -> json.null()
-      }
-    }),
-    #("unserializableValue", {
-      case value__.unserializable_value {
-        option.Some(value__) -> encode__unserializable_value(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("description", {
-      case value__.description {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("objectId", {
-      case value__.object_id {
-        option.Some(value__) -> encode__remote_object_id(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -582,53 +559,34 @@ pub type PropertyDescriptor {
 
 @internal
 pub fn encode__property_descriptor(value__: PropertyDescriptor) {
-  json.object([
-    #("name", json.string(value__.name)),
-    #("value", {
-      case value__.value {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("name", json.string(value__.name)),
+      #("configurable", json.bool(value__.configurable)),
+      #("enumerable", json.bool(value__.enumerable)),
+    ]
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #("value", encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.writable, fn(inner_value__) {
+      #("writable", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.get, fn(inner_value__) {
+      #("get", encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.set, fn(inner_value__) {
+      #("set", encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.was_thrown, fn(inner_value__) {
+      #("wasThrown", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.is_own, fn(inner_value__) {
+      #("isOwn", json.bool(inner_value__))
+    })
+    |> utils.add_optional(value__.symbol, fn(inner_value__) {
+      #("symbol", encode__remote_object(inner_value__))
     }),
-    #("writable", {
-      case value__.writable {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("get", {
-      case value__.get {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("set", {
-      case value__.set {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("configurable", json.bool(value__.configurable)),
-    #("enumerable", json.bool(value__.enumerable)),
-    #("wasThrown", {
-      case value__.was_thrown {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("isOwn", {
-      case value__.is_own {
-        option.Some(value__) -> json.bool(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("symbol", {
-      case value__.symbol {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -684,15 +642,12 @@ pub type InternalPropertyDescriptor {
 
 @internal
 pub fn encode__internal_property_descriptor(value__: InternalPropertyDescriptor) {
-  json.object([
-    #("name", json.string(value__.name)),
-    #("value", {
-      case value__.value {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("name", json.string(value__.name))]
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #("value", encode__remote_object(inner_value__))
     }),
-  ])
+  )
 }
 
 @internal
@@ -717,29 +672,22 @@ pub type CallArgument {
 
 @internal
 pub fn encode__call_argument(value__: CallArgument) {
-  json.object([
-    #("value", {
-      case value__.value {
-        option.Some(value__) ->
-          // dynamic values cannot be encoded!
-          json.null()
-
-        option.None -> json.null()
-      }
+  json.object(
+    []
+    |> utils.add_optional(value__.value, fn(inner_value__) {
+      #(
+        "value",
+        // dynamic values cannot be encoded!
+        json.null(),
+      )
+    })
+    |> utils.add_optional(value__.unserializable_value, fn(inner_value__) {
+      #("unserializableValue", encode__unserializable_value(inner_value__))
+    })
+    |> utils.add_optional(value__.object_id, fn(inner_value__) {
+      #("objectId", encode__remote_object_id(inner_value__))
     }),
-    #("unserializableValue", {
-      case value__.unserializable_value {
-        option.Some(value__) -> encode__unserializable_value(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("objectId", {
-      case value__.object_id {
-        option.Some(value__) -> encode__remote_object_id(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -793,20 +741,21 @@ pub type ExecutionContextDescription {
 
 @internal
 pub fn encode__execution_context_description(value__: ExecutionContextDescription) {
-  json.object([
-    #("id", encode__execution_context_id(value__.id)),
-    #("origin", json.string(value__.origin)),
-    #("name", json.string(value__.name)),
-    #("auxData", {
-      case value__.aux_data {
-        option.Some(value__) ->
-          dict.to_list(value__)
+  json.object(
+    [
+      #("id", encode__execution_context_id(value__.id)),
+      #("origin", json.string(value__.origin)),
+      #("name", json.string(value__.name)),
+    ]
+    |> utils.add_optional(value__.aux_data, fn(inner_value__) {
+      #(
+        "auxData",
+        dict.to_list(inner_value__)
           |> list.map(fn(i) { #(i.0, json.string(i.1)) })
-          |> json.object
-        option.None -> json.null()
-      }
+          |> json.object,
+      )
     }),
-  ])
+  )
 }
 
 @internal
@@ -847,42 +796,29 @@ pub type ExceptionDetails {
 
 @internal
 pub fn encode__exception_details(value__: ExceptionDetails) {
-  json.object([
-    #("exceptionId", json.int(value__.exception_id)),
-    #("text", json.string(value__.text)),
-    #("lineNumber", json.int(value__.line_number)),
-    #("columnNumber", json.int(value__.column_number)),
-    #("scriptId", {
-      case value__.script_id {
-        option.Some(value__) -> encode__script_id(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [
+      #("exceptionId", json.int(value__.exception_id)),
+      #("text", json.string(value__.text)),
+      #("lineNumber", json.int(value__.line_number)),
+      #("columnNumber", json.int(value__.column_number)),
+    ]
+    |> utils.add_optional(value__.script_id, fn(inner_value__) {
+      #("scriptId", encode__script_id(inner_value__))
+    })
+    |> utils.add_optional(value__.url, fn(inner_value__) {
+      #("url", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.stack_trace, fn(inner_value__) {
+      #("stackTrace", encode__stack_trace(inner_value__))
+    })
+    |> utils.add_optional(value__.exception, fn(inner_value__) {
+      #("exception", encode__remote_object(inner_value__))
+    })
+    |> utils.add_optional(value__.execution_context_id, fn(inner_value__) {
+      #("executionContextId", encode__execution_context_id(inner_value__))
     }),
-    #("url", {
-      case value__.url {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("stackTrace", {
-      case value__.stack_trace {
-        option.Some(value__) -> encode__stack_trace(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("exception", {
-      case value__.exception {
-        option.Some(value__) -> encode__remote_object(value__)
-        option.None -> json.null()
-      }
-    }),
-    #("executionContextId", {
-      case value__.execution_context_id {
-        option.Some(value__) -> encode__execution_context_id(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1022,21 +958,15 @@ pub type StackTrace {
 
 @internal
 pub fn encode__stack_trace(value__: StackTrace) {
-  json.object([
-    #("description", {
-      case value__.description {
-        option.Some(value__) -> json.string(value__)
-        option.None -> json.null()
-      }
+  json.object(
+    [#("callFrames", json.array(value__.call_frames, of: encode__call_frame))]
+    |> utils.add_optional(value__.description, fn(inner_value__) {
+      #("description", json.string(inner_value__))
+    })
+    |> utils.add_optional(value__.parent, fn(inner_value__) {
+      #("parent", encode__stack_trace(inner_value__))
     }),
-    #("callFrames", json.array(value__.call_frames, of: encode__call_frame)),
-    #("parent", {
-      case value__.parent {
-        option.Some(value__) -> encode__stack_trace(value__)
-        option.None -> json.null()
-      }
-    }),
-  ])
+  )
 }
 
 @internal
@@ -1249,23 +1179,15 @@ pub fn await_promise(
   chrome.call(
     browser_subject,
     "Runtime.awaitPromise",
-    option.Some(
-      json.object([
-        #("promiseObjectId", encode__remote_object_id(promise_object_id)),
-        #("returnByValue", {
-          case return_by_value {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("generatePreview", {
-          case generate_preview {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("promiseObjectId", encode__remote_object_id(promise_object_id))]
+      |> utils.add_optional(return_by_value, fn(inner_value__) {
+        #("returnByValue", json.bool(inner_value__))
+      })
+      |> utils.add_optional(generate_preview, fn(inner_value__) {
+        #("generatePreview", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1291,60 +1213,33 @@ pub fn call_function_on(
   chrome.call(
     browser_subject,
     "Runtime.callFunctionOn",
-    option.Some(
-      json.object([
-        #("functionDeclaration", json.string(function_declaration)),
-        #("objectId", {
-          case object_id {
-            option.Some(value__) -> encode__remote_object_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("arguments", {
-          case arguments {
-            option.Some(value__) ->
-              json.array(value__, of: encode__call_argument)
-            option.None -> json.null()
-          }
-        }),
-        #("silent", {
-          case silent {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("returnByValue", {
-          case return_by_value {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("userGesture", {
-          case user_gesture {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("awaitPromise", {
-          case await_promise {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("executionContextId", {
-          case execution_context_id {
-            option.Some(value__) -> encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("functionDeclaration", json.string(function_declaration))]
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", encode__remote_object_id(inner_value__))
+      })
+      |> utils.add_optional(arguments, fn(inner_value__) {
+        #("arguments", json.array(inner_value__, of: encode__call_argument))
+      })
+      |> utils.add_optional(silent, fn(inner_value__) {
+        #("silent", json.bool(inner_value__))
+      })
+      |> utils.add_optional(return_by_value, fn(inner_value__) {
+        #("returnByValue", json.bool(inner_value__))
+      })
+      |> utils.add_optional(user_gesture, fn(inner_value__) {
+        #("userGesture", json.bool(inner_value__))
+      })
+      |> utils.add_optional(await_promise, fn(inner_value__) {
+        #("awaitPromise", json.bool(inner_value__))
+      })
+      |> utils.add_optional(execution_context_id, fn(inner_value__) {
+        #("executionContextId", encode__execution_context_id(inner_value__))
+      })
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1364,19 +1259,16 @@ pub fn compile_script(
   chrome.call(
     browser_subject,
     "Runtime.compileScript",
-    option.Some(
-      json.object([
+    option.Some(json.object(
+      [
         #("expression", json.string(expression)),
         #("sourceURL", json.string(source_url)),
         #("persistScript", json.bool(persist_script)),
-        #("executionContextId", {
-          case execution_context_id {
-            option.Some(value__) -> encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+      ]
+      |> utils.add_optional(execution_context_id, fn(inner_value__) {
+        #("executionContextId", encode__execution_context_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1426,53 +1318,30 @@ pub fn evaluate(
   chrome.call(
     browser_subject,
     "Runtime.evaluate",
-    option.Some(
-      json.object([
-        #("expression", json.string(expression)),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("includeCommandLineAPI", {
-          case include_command_line_api {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("silent", {
-          case silent {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("contextId", {
-          case context_id {
-            option.Some(value__) -> encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("returnByValue", {
-          case return_by_value {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("userGesture", {
-          case user_gesture {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("awaitPromise", {
-          case await_promise {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("expression", json.string(expression))]
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      })
+      |> utils.add_optional(include_command_line_api, fn(inner_value__) {
+        #("includeCommandLineAPI", json.bool(inner_value__))
+      })
+      |> utils.add_optional(silent, fn(inner_value__) {
+        #("silent", json.bool(inner_value__))
+      })
+      |> utils.add_optional(context_id, fn(inner_value__) {
+        #("contextId", encode__execution_context_id(inner_value__))
+      })
+      |> utils.add_optional(return_by_value, fn(inner_value__) {
+        #("returnByValue", json.bool(inner_value__))
+      })
+      |> utils.add_optional(user_gesture, fn(inner_value__) {
+        #("userGesture", json.bool(inner_value__))
+      })
+      |> utils.add_optional(await_promise, fn(inner_value__) {
+        #("awaitPromise", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1491,17 +1360,12 @@ pub fn get_properties(
   chrome.call(
     browser_subject,
     "Runtime.getProperties",
-    option.Some(
-      json.object([
-        #("objectId", encode__remote_object_id(object_id)),
-        #("ownProperties", {
-          case own_properties {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("objectId", encode__remote_object_id(object_id))]
+      |> utils.add_optional(own_properties, fn(inner_value__) {
+        #("ownProperties", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1518,16 +1382,12 @@ pub fn global_lexical_scope_names(
   chrome.call(
     browser_subject,
     "Runtime.globalLexicalScopeNames",
-    option.Some(
-      json.object([
-        #("executionContextId", {
-          case execution_context_id {
-            option.Some(value__) -> encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      []
+      |> utils.add_optional(execution_context_id, fn(inner_value__) {
+        #("executionContextId", encode__execution_context_id(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1545,17 +1405,12 @@ pub fn query_objects(
   chrome.call(
     browser_subject,
     "Runtime.queryObjects",
-    option.Some(
-      json.object([
-        #("prototypeObjectId", encode__remote_object_id(prototype_object_id)),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("prototypeObjectId", encode__remote_object_id(prototype_object_id))]
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1617,53 +1472,30 @@ pub fn run_script(
   chrome.call(
     browser_subject,
     "Runtime.runScript",
-    option.Some(
-      json.object([
-        #("scriptId", encode__script_id(script_id)),
-        #("executionContextId", {
-          case execution_context_id {
-            option.Some(value__) -> encode__execution_context_id(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("objectGroup", {
-          case object_group {
-            option.Some(value__) -> json.string(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("silent", {
-          case silent {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("includeCommandLineAPI", {
-          case include_command_line_api {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("returnByValue", {
-          case return_by_value {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("generatePreview", {
-          case generate_preview {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-        #("awaitPromise", {
-          case await_promise {
-            option.Some(value__) -> json.bool(value__)
-            option.None -> json.null()
-          }
-        }),
-      ]),
-    ),
+    option.Some(json.object(
+      [#("scriptId", encode__script_id(script_id))]
+      |> utils.add_optional(execution_context_id, fn(inner_value__) {
+        #("executionContextId", encode__execution_context_id(inner_value__))
+      })
+      |> utils.add_optional(object_group, fn(inner_value__) {
+        #("objectGroup", json.string(inner_value__))
+      })
+      |> utils.add_optional(silent, fn(inner_value__) {
+        #("silent", json.bool(inner_value__))
+      })
+      |> utils.add_optional(include_command_line_api, fn(inner_value__) {
+        #("includeCommandLineAPI", json.bool(inner_value__))
+      })
+      |> utils.add_optional(return_by_value, fn(inner_value__) {
+        #("returnByValue", json.bool(inner_value__))
+      })
+      |> utils.add_optional(generate_preview, fn(inner_value__) {
+        #("generatePreview", json.bool(inner_value__))
+      })
+      |> utils.add_optional(await_promise, fn(inner_value__) {
+        #("awaitPromise", json.bool(inner_value__))
+      }),
+    )),
     10_000,
   )
   |> result.try(fn(result__) {
@@ -1699,17 +1531,12 @@ pub fn add_binding(
     chrome.call(
       browser_subject,
       "Runtime.addBinding",
-      option.Some(
-        json.object([
-          #("name", json.string(name)),
-          #("executionContextName", {
-            case execution_context_name {
-              option.Some(value__) -> json.string(value__)
-              option.None -> json.null()
-            }
-          }),
-        ]),
-      ),
+      option.Some(json.object(
+        [#("name", json.string(name))]
+        |> utils.add_optional(execution_context_name, fn(inner_value__) {
+          #("executionContextName", json.string(inner_value__))
+        }),
+      )),
       10_000,
     )
   Nil
