@@ -1,8 +1,8 @@
 import chrome
 import gleam/erlang/os
-import gleam/erlang/process
-import gleam/io
+import gleam/json
 import gleam/list
+import gleam/option
 import gleeunit/should
 import utils
 
@@ -394,4 +394,37 @@ pub fn launch_with_config_test() {
   let browser_subject = should.be_ok(chrome.launch_with_config(config))
   should.be_ok(chrome.get_version(browser_subject))
   should.be_ok(chrome.quit(browser_subject))
+}
+
+// Ensure the call function correctly handles errors sent by the browser
+pub fn handle_protocol_error_test() {
+  let browser_path = utils.get_browser_path()
+  let config =
+    chrome.BrowserConfig(
+      path: browser_path,
+      args: chrome.get_default_chrome_args(),
+      start_timeout: 5000,
+    )
+  let browser_subject = should.be_ok(chrome.launch_with_config(config))
+  let invalid_payload =
+    option.Some(
+      json.object([
+        #("url", json.string("http://example.com")),
+        #("width", json.string("Should be an int!")),
+      ]),
+    )
+
+  let res =
+    chrome.call(browser_subject, "Target.createTarget", invalid_payload, 5000)
+
+  case res {
+    Error(chrome.BrowserError(code, message, _data)) -> {
+      message
+      |> should.equal("Invalid parameters")
+      code
+      |> should.equal(-32_602)
+    }
+    Ok(_) -> panic as "didn't receive error from call with invalid payload"
+    _ -> panic as "didn't receive correct error from call with invalid payload"
+  }
 }

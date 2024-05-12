@@ -12,7 +12,7 @@
 //// which perform additional checks and validations.
 //// 
 
-// TODO: would be nice to trap exits and shut down the browser gracefully
+// TODO: Doesn't handle events yet
 
 import filepath as path
 import gleam/dynamic as d
@@ -50,6 +50,8 @@ pub type RequestError {
   // The ProtocolError variant is used by `/protocol` domains 
   // to return a homogeneous error type for all requests.
   ProtocolError
+  // This is an error response from the browser itself
+  BrowserError(code: Int, message: String, data: String)
 }
 
 pub type BrowserConfig {
@@ -528,20 +530,8 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
   ))
 }
 
-// Browser response can either be a response to a request or an event
-// Response to a request has an 'id' and a 'result' field
-// Event has a 'method' and 'params' field
-type BrowserResponse {
-  BrowserResponse(
-    id: Option(Int),
-    result: Option(d.Dynamic),
-    method: Option(String),
-    params: Option(d.Dynamic),
-  )
-}
-
 /// Find the pending request in the state and send the response data to the client.
-/// Failure to find the associated request will log an error and ignore the response
+/// Failure to find the associated request will silently discard the response
 fn answer_request(
   state: BrowserState,
   id: Int,
@@ -569,7 +559,58 @@ fn answer_request(
   }
 }
 
-/// Handele a message from the browser, delivered via the port.
+/// Find the pending request in the state and send the error data to the client.
+/// Failure to find the associated request will log an error
+fn answer_failed_request(
+  state: BrowserState,
+  id: Int,
+  data: RawBrowserError,
+) -> List(PendingRequest) {
+  // Request is selected from the list and removed based on id
+  let found_request =
+    list.pop_map(state.unanswered_requests, fn(req) {
+      case req.id == id {
+        True -> Ok(req)
+        False -> Error(Nil)
+      }
+    })
+  case found_request {
+    Ok(#(req, rest)) -> {
+      process.send(
+        req.reply_with,
+        Error(BrowserError(data.code, data.message, data.data)),
+      )
+      rest
+    }
+    Error(Nil) -> {
+      log(
+        state.instance,
+        "An error arrived from the browser but could not be associated with a request: "
+          <> string.inspect(data),
+      )
+      state.unanswered_requests
+    }
+  }
+}
+
+// Browser response can either be a response to a request or an event
+// Response to a request has an 'id' and a 'result' field
+// Event has a 'method' and 'params' field
+type BrowserResponse {
+  BrowserResponse(
+    id: Option(Int),
+    result: Option(d.Dynamic),
+    method: Option(String),
+    params: Option(d.Dynamic),
+    error: Option(RawBrowserError),
+  )
+}
+
+type RawBrowserError {
+  RawBrowserError(code: Int, message: String, data: String)
+}
+
+/// Handle a message from the browser, delivered via the port.
 /// The message can be a response to a request or an event
 fn handle_port_response(
   state: BrowserState,
@@ -578,17 +619,25 @@ fn handle_port_response(
   // The response is expected to be a JSON string, with a null byte at the end
   // we need to remove the null byte before decoding
   let response = string.drop_right(raw_response, 1)
+  let error_decoder =
+    d.decode3(
+      RawBrowserError,
+      d.field("code", d.int),
+      d.field("message", d.string),
+      d.field("data", d.string),
+    )
   // The decoder contains all possible fields of the response, event or request response
   let response_decoder =
-    d.decode4(
+    d.decode5(
       BrowserResponse,
       d.optional_field("id", d.int),
       d.optional_field("result", d.dynamic),
       d.optional_field("method", d.string),
       d.optional_field("params", d.dynamic),
+      d.optional_field("error", error_decoder),
     )
   case json.decode(response, response_decoder) {
-    Ok(BrowserResponse(Some(id), Some(result), None, None)) -> {
+    Ok(BrowserResponse(Some(id), Some(result), None, None, None)) -> {
       // A response to a request -> should be sent to the client
       actor.continue(BrowserState(
         instance: state.instance,
@@ -597,7 +646,16 @@ fn handle_port_response(
         shutdown_request: state.shutdown_request,
       ))
     }
-    Ok(BrowserResponse(None, None, Some(method), Some(params))) -> {
+    Ok(BrowserResponse(Some(id), _, _, _, Some(raw_error))) -> {
+      // A response to a request that resulted in an error
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: state.next_id,
+        unanswered_requests: answer_failed_request(state, id, raw_error),
+        shutdown_request: state.shutdown_request,
+      ))
+    }
+    Ok(BrowserResponse(None, None, Some(method), Some(params), None)) -> {
       // TODO An event from the browser
       log(
         state.instance,
