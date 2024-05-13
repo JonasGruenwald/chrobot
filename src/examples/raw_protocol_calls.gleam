@@ -1,5 +1,5 @@
 //
-//  Run this example with `gleam run -m chrobot/examples/basic`
+//  Run this example with `gleam run -m chrobot/examples/raw_protocol_calls`
 // 
 
 import chrobot
@@ -39,10 +39,20 @@ pub fn main() {
   ))
   let assert target.AttachToTargetResponse(target.SessionID(session_id)) =
     attach_response
+
   process.sleep(2000)
 
   let assert Ok(res) =
     dom.get_document(browser_subject, o.Some(session_id), o.None, o.None)
 
-    io.debug(res)
+  let assert Ok(res) =
+    dom.get_outer_html(
+      browser_subject,
+      o.Some(session_id),
+      o.Some(res.root.node_id),
+      o.None,
+      o.None,
+    )
+
+  io.debug(res.outer_html)
 }

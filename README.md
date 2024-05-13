@@ -29,6 +29,8 @@ You could use it for
 * Web archiving
 * Browser integration tests
 
+> 🦝 The generated protocol bindings are largely untested and experimental, use at your own peril
+
 ## Setup
 
 ### Browser

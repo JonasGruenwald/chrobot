@@ -5,10 +5,10 @@
 -module(chrobot_ffi).
 -export([open_browser_port/2, send_to_port/2]).
 
-% The port is openened with the option "nouse_stdio"
+% The port is opened with the option "nouse_stdio"
 % which makes it use file descriptors 3 and 4 for stdin and stdout
 % This is what chrome expects when started with --remote-debugging-pipe.
-% A nice side effect of this is that chrome should will quit when the pipe is closed,
+% A nice side effect of this is that chrome should quit when the pipe is closed,
 % avoiding the commmon port-related problem of zombie processes.
 open_browser_port(Command, Args) ->
     PortName = {spawn_executable, Command},

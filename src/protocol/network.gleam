@@ -1872,15 +1872,8 @@ pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
 }
 
 /// Clears browser cache.
-pub fn clear_browser_cache(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Network.clearBrowserCache",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn clear_browser_cache(callback) {
+  let _ = callback("Network.clearBrowserCache", option.None)
   Nil
 }
 
