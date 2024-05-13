@@ -666,11 +666,11 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
     }
     Ok(BrowserResponse(None, None, Some(method), Some(params), None)) -> {
       // TODO An event from the browser
-      log(
-        state.instance,
-        "Received an event, event forwarding is not implemented yet",
-      )
-      io.debug(#(method, params))
+      // log(
+      //   state.instance,
+      //   "Received an event, event forwarding is not implemented yet",
+      // )
+      // io.debug(#(method, params))
       state
     }
     Ok(_) -> {

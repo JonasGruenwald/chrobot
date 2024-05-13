@@ -24,16 +24,22 @@
 import chrome
 import gleam/erlang/process.{type Subject}
 import gleam/io
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
+import protocol/dom
 import protocol/target
 
-/// This type abstracts some 
+/// Holds information about the current page,
+/// as well as the desired timeout in milliseconds
+/// to use when waiting for browser responses.
 pub type Page {
   Page(
     browser: Subject(chrome.Message),
+    time_out: Int,
     target_id: target.TargetID,
     session_id: target.SessionID,
+    root_node: dom.Node,
   )
 }
 
@@ -64,6 +70,65 @@ pub fn launch() {
       launch_result
     }
     other -> other
+  }
+}
+
+pub fn open(
+  browser_subject: Subject(chrome.Message),
+  url: String,
+  time_out: Int,
+) -> Result(Page, chrome.RequestError) {
+  use target_response <- result.try(target.create_target(
+    fn(method, params) {
+      chrome.call(browser_subject, method, params, None, time_out)
+    },
+    url,
+    None,
+    None,
+    None,
+    None,
+  ))
+
+  use session_response <- result.try(target.attach_to_target(
+    fn(method, params) {
+      chrome.call(browser_subject, method, params, None, time_out)
+    },
+    target_response.target_id,
+    Some(True),
+  ))
+
+  // Wait until document resolves
+  let poll_result =
+    poll(
+      fn() {
+        dom.get_document(
+          fn(method, params) {
+            chrome.call(
+              browser_subject,
+              method,
+              params,
+              pass_session(session_response.session_id),
+              time_out,
+            )
+          },
+          None,
+          None,
+        )
+      },
+      time_out,
+    )
+
+  // Return document or last poll error before timeout
+  case poll_result {
+    Ok(document) ->
+      Ok(Page(
+        browser: browser_subject,
+        session_id: session_response.session_id,
+        target_id: target_response.target_id,
+        time_out: time_out,
+        root_node: document.root,
+      ))
+    Error(any) -> Error(any)
   }
 }
 
@@ -124,4 +189,29 @@ pub fn quit(browser: Subject(chrome.Message)) {
 pub fn defer_quit(browser: Subject(chrome.Message), body) {
   body()
   chrome.quit(browser)
+}
+
+// ---- UTILS
+const poll_interval = 100
+
+/// Periodically try to call the function until it returns a 
+/// result instead of an error.
+/// Note: doesn't handle elapsed time during function call attempt yet
+fn poll(callback: fn() -> Result(a, b), remaining_time: Int) -> Result(a, b) {
+  case callback() {
+    Ok(a) -> Ok(a)
+    Error(b) if poll_interval <= 0 -> {
+      Error(b)
+    }
+    Error(_) -> {
+      process.sleep(poll_interval)
+      poll(callback, remaining_time - poll_interval)
+    }
+  }
+}
+
+fn pass_session(session_id: target.SessionID) -> Option(String) {
+  case session_id {
+    target.SessionID(value) -> Some(value)
+  }
 }
