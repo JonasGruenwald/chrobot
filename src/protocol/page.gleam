@@ -628,17 +628,10 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
 }
 
 /// Evaluates given script in every frame upon creation (before loading frame's scripts).
-pub fn add_script_to_evaluate_on_new_document(
-  browser_subject__,
-  session_id__,
-  source: String,
-) {
-  chrome.call(
-    browser_subject__,
+pub fn add_script_to_evaluate_on_new_document(callback__, source: String) {
+  callback__(
     "Page.addScriptToEvaluateOnNewDocument",
     option.Some(json.object([#("source", json.string(source))])),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__add_script_to_evaluate_on_new_document_response(result__)
@@ -647,28 +640,19 @@ pub fn add_script_to_evaluate_on_new_document(
 }
 
 /// Brings page to front (activates tab).
-pub fn bring_to_front(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.bringToFront",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn bring_to_front(callback__) {
+  let _ = callback__("Page.bringToFront", option.None)
   Nil
 }
 
 /// Capture page screenshot.
 pub fn capture_screenshot(
-  browser_subject__,
-  session_id__,
+  callback__,
   format: option.Option(CaptureScreenshotFormat),
   quality: option.Option(Int),
   clip: option.Option(Viewport),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Page.captureScreenshot",
     option.Some(json.object(
       []
@@ -682,8 +666,6 @@ pub fn capture_screenshot(
         #("clip", encode__viewport(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__capture_screenshot_response(result__)
@@ -729,14 +711,12 @@ pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
 
 /// Creates an isolated world for the given frame.
 pub fn create_isolated_world(
-  browser_subject__,
-  session_id__,
+  callback__,
   frame_id: FrameId,
   world_name: option.Option(String),
   grant_univeral_access: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Page.createIsolatedWorld",
     option.Some(json.object(
       [#("frameId", encode__frame_id(frame_id))]
@@ -747,8 +727,6 @@ pub fn create_isolated_world(
         #("grantUniveralAccess", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__create_isolated_world_response(result__)
@@ -757,28 +735,14 @@ pub fn create_isolated_world(
 }
 
 /// Disables page domain notifications.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Page.disable", option.None)
   Nil
 }
 
 /// Enables page domain notifications.
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Page.enable", option.None)
   Nil
 }
 
@@ -787,13 +751,8 @@ pub fn enable(browser_subject__, session_id__) {
 ///   If manifestId is provided, and it does not match the manifest of the
 ///     current document, this API errors out.
 ///   If there is not a loaded page, this API errors out immediately.
-pub fn get_app_manifest(
-  browser_subject__,
-  session_id__,
-  manifest_id: option.Option(String),
-) {
-  chrome.call(
-    browser_subject__,
+pub fn get_app_manifest(callback__, manifest_id: option.Option(String)) {
+  callback__(
     "Page.getAppManifest",
     option.Some(json.object(
       []
@@ -801,8 +760,6 @@ pub fn get_app_manifest(
         #("manifestId", json.string(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_app_manifest_response(result__)
@@ -811,14 +768,8 @@ pub fn get_app_manifest(
 }
 
 /// Returns present frame tree structure.
-pub fn get_frame_tree(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Page.getFrameTree",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_frame_tree(callback__) {
+  callback__("Page.getFrameTree", option.None)
   |> result.try(fn(result__) {
     decode__get_frame_tree_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -826,14 +777,8 @@ pub fn get_frame_tree(browser_subject__, session_id__) {
 }
 
 /// Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
-pub fn get_layout_metrics(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Page.getLayoutMetrics",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_layout_metrics(callback__) {
+  callback__("Page.getLayoutMetrics", option.None)
   |> result.try(fn(result__) {
     decode__get_layout_metrics_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -841,14 +786,8 @@ pub fn get_layout_metrics(browser_subject__, session_id__) {
 }
 
 /// Returns navigation history for the current page.
-pub fn get_navigation_history(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Page.getNavigationHistory",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_navigation_history(callback__) {
+  callback__("Page.getNavigationHistory", option.None)
   |> result.try(fn(result__) {
     decode__get_navigation_history_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -856,28 +795,19 @@ pub fn get_navigation_history(browser_subject__, session_id__) {
 }
 
 /// Resets navigation history for the current page.
-pub fn reset_navigation_history(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.resetNavigationHistory",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn reset_navigation_history(callback__) {
+  let _ = callback__("Page.resetNavigationHistory", option.None)
   Nil
 }
 
 /// Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 pub fn handle_java_script_dialog(
-  browser_subject__,
-  session_id__,
+  callback__,
   accept: Bool,
   prompt_text: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.handleJavaScriptDialog",
       option.Some(json.object(
         [#("accept", json.bool(accept))]
@@ -885,23 +815,19 @@ pub fn handle_java_script_dialog(
           #("promptText", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Navigates current page to the given URL.
 pub fn navigate(
-  browser_subject__,
-  session_id__,
+  callback__,
   url: String,
   referrer: option.Option(String),
   transition_type: option.Option(TransitionType),
   frame_id: option.Option(FrameId),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Page.navigate",
     option.Some(json.object(
       [#("url", json.string(url))]
@@ -915,8 +841,6 @@ pub fn navigate(
         #("frameId", encode__frame_id(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__navigate_response(result__)
@@ -925,22 +849,18 @@ pub fn navigate(
 }
 
 /// Navigates current page to the given history entry.
-pub fn navigate_to_history_entry(browser_subject__, session_id__, entry_id: Int) {
+pub fn navigate_to_history_entry(callback__, entry_id: Int) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.navigateToHistoryEntry",
       option.Some(json.object([#("entryId", json.int(entry_id))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Print page as PDF.
 pub fn print_to_pdf(
-  browser_subject__,
-  session_id__,
+  callback__,
   landscape: option.Option(Bool),
   display_header_footer: option.Option(Bool),
   print_background: option.Option(Bool),
@@ -956,8 +876,7 @@ pub fn print_to_pdf(
   footer_template: option.Option(String),
   prefer_css_page_size: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Page.printToPDF",
     option.Some(json.object(
       []
@@ -1004,8 +923,6 @@ pub fn print_to_pdf(
         #("preferCSSPageSize", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__print_to_pdf_response(result__)
@@ -1015,14 +932,12 @@ pub fn print_to_pdf(
 
 /// Reloads given page optionally ignoring the cache.
 pub fn reload(
-  browser_subject__,
-  session_id__,
+  callback__,
   ignore_cache: option.Option(Bool),
   script_to_evaluate_on_load: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.reload",
       option.Some(json.object(
         []
@@ -1033,54 +948,39 @@ pub fn reload(
           #("scriptToEvaluateOnLoad", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Removes given script from the list.
 pub fn remove_script_to_evaluate_on_new_document(
-  browser_subject__,
-  session_id__,
+  callback__,
   identifier: ScriptIdentifier,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.removeScriptToEvaluateOnNewDocument",
       option.Some(
         json.object([#("identifier", encode__script_identifier(identifier))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Enable page Content Security Policy by-passing.
-pub fn set_bypass_csp(browser_subject__, session_id__, enabled: Bool) {
+pub fn set_bypass_csp(callback__, enabled: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.setBypassCSP",
       option.Some(json.object([#("enabled", json.bool(enabled))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets given markup as the document's HTML.
-pub fn set_document_content(
-  browser_subject__,
-  session_id__,
-  frame_id: FrameId,
-  html: String,
-) {
+pub fn set_document_content(callback__, frame_id: FrameId, html: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.setDocumentContent",
       option.Some(
         json.object([
@@ -1088,70 +988,40 @@ pub fn set_document_content(
           #("html", json.string(html)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Controls whether page will emit lifecycle events.
-pub fn set_lifecycle_events_enabled(
-  browser_subject__,
-  session_id__,
-  enabled: Bool,
-) {
+pub fn set_lifecycle_events_enabled(callback__, enabled: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.setLifecycleEventsEnabled",
       option.Some(json.object([#("enabled", json.bool(enabled))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Force the page stop all navigations and pending resource fetches.
-pub fn stop_loading(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.stopLoading",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn stop_loading(callback__) {
+  let _ = callback__("Page.stopLoading", option.None)
   Nil
 }
 
 /// Tries to close page, running its beforeunload hooks, if any.
-pub fn close(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Page.close",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn close(callback__) {
+  let _ = callback__("Page.close", option.None)
   Nil
 }
 
 /// Intercept file chooser requests and transfer control to protocol clients.
 /// When file chooser interception is enabled, native file chooser dialog is not shown.
 /// Instead, a protocol event `Page.fileChooserOpened` is emitted.
-pub fn set_intercept_file_chooser_dialog(
-  browser_subject__,
-  session_id__,
-  enabled: Bool,
-) {
+pub fn set_intercept_file_chooser_dialog(callback__, enabled: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Page.setInterceptFileChooserDialog",
       option.Some(json.object([#("enabled", json.bool(enabled))])),
-      session_id__,
-      10_000,
     )
   Nil
 }

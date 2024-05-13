@@ -11,7 +11,6 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -217,44 +216,23 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
 }
 
 /// Disables tracking security state changes.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Security.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Security.disable", option.None)
   Nil
 }
 
 /// Enables tracking security state changes.
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Security.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Security.enable", option.None)
   Nil
 }
 
 /// Enable/disable whether all certificate errors should be ignored.
-pub fn set_ignore_certificate_errors(
-  browser_subject__,
-  session_id__,
-  ignore: Bool,
-) {
+pub fn set_ignore_certificate_errors(callback__, ignore: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Security.setIgnoreCertificateErrors",
       option.Some(json.object([#("ignore", json.bool(ignore))])),
-      session_id__,
-      10_000,
     )
   Nil
 }

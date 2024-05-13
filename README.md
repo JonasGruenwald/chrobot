@@ -29,7 +29,7 @@ You could use it for
 * Web archiving
 * Browser integration tests
 
-> 🦝 The generated protocol bindings are largely untested and experimental, use at your own peril
+> 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril
 
 ## Setup
 
@@ -56,6 +56,14 @@ Install as a Gleam package
 gleam add chrobot
 ```
 
+## Documentation
+
+The full documentation can be found at <https://hexdocs.pm/chrobot>.
+
+To learn about the high level abstractions, look at the `chrobot` module documentation.
+
+To learn how to use the protocol bindings directly, look at the `protocol` module documentation.
+
 ## Examples
 
 TODO
@@ -63,7 +71,3 @@ TODO
 ## Guide
 
 TODO
-
-## Documentation
-
-The full documentation can be found at <https://hexdocs.pm/chrobot>.

@@ -11,7 +11,6 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option
@@ -329,75 +328,40 @@ pub fn decode__violation_setting(value__: dynamic.Dynamic) {
 }
 
 /// Clears the log.
-pub fn clear(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Log.clear",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn clear(callback__) {
+  let _ = callback__("Log.clear", option.None)
   Nil
 }
 
 /// Disables log domain, prevents further log entries from being reported to the client.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Log.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Log.disable", option.None)
   Nil
 }
 
 /// Enables log domain, sends the entries collected so far to the client by means of the
 /// `entryAdded` notification.
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Log.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Log.enable", option.None)
   Nil
 }
 
 /// start violation reporting.
-pub fn start_violations_report(
-  browser_subject__,
-  session_id__,
-  config: List(ViolationSetting),
-) {
+pub fn start_violations_report(callback__, config: List(ViolationSetting)) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Log.startViolationsReport",
       option.Some(
         json.object([
           #("config", json.array(config, of: encode__violation_setting)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Stop violation reporting.
-pub fn stop_violations_report(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Log.stopViolationsReport",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn stop_violations_report(callback__) {
+  let _ = callback__("Log.stopViolationsReport", option.None)
   Nil
 }

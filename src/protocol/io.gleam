@@ -69,28 +69,23 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
 }
 
 /// Close the stream, discard any temporary backing storage.
-pub fn close(browser_subject__, session_id__, handle: StreamHandle) {
+pub fn close(callback__, handle: StreamHandle) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "IO.close",
       option.Some(json.object([#("handle", encode__stream_handle(handle))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Read a chunk of the stream
 pub fn read(
-  browser_subject__,
-  session_id__,
+  callback__,
   handle: StreamHandle,
   offset: option.Option(Int),
   size: option.Option(Int),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "IO.read",
     option.Some(json.object(
       [#("handle", encode__stream_handle(handle))]
@@ -101,8 +96,6 @@ pub fn read(
         #("size", json.int(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__read_response(result__)
@@ -111,19 +104,12 @@ pub fn read(
 }
 
 /// Return UUID of Blob object specified by a remote object id.
-pub fn resolve_blob(
-  browser_subject__,
-  session_id__,
-  object_id: runtime.RemoteObjectId,
-) {
-  chrome.call(
-    browser_subject__,
+pub fn resolve_blob(callback__, object_id: runtime.RemoteObjectId) {
+  callback__(
     "IO.resolveBlob",
     option.Some(
       json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
     ),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__resolve_blob_response(result__)

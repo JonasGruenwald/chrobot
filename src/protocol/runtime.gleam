@@ -1171,14 +1171,12 @@ pub fn decode__run_script_response(value__: dynamic.Dynamic) {
 
 /// Add handler to promise with given promise object id.
 pub fn await_promise(
-  browser_subject__,
-  session_id__,
+  callback__,
   promise_object_id: RemoteObjectId,
   return_by_value: option.Option(Bool),
   generate_preview: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.awaitPromise",
     option.Some(json.object(
       [#("promiseObjectId", encode__remote_object_id(promise_object_id))]
@@ -1189,8 +1187,6 @@ pub fn await_promise(
         #("generatePreview", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__await_promise_response(result__)
@@ -1201,8 +1197,7 @@ pub fn await_promise(
 /// Calls function with given declaration on the given object. Object group of the result is
 /// inherited from the target object.
 pub fn call_function_on(
-  browser_subject__,
-  session_id__,
+  callback__,
   function_declaration: String,
   object_id: option.Option(RemoteObjectId),
   arguments: option.Option(List(CallArgument)),
@@ -1213,8 +1208,7 @@ pub fn call_function_on(
   execution_context_id: option.Option(ExecutionContextId),
   object_group: option.Option(String),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.callFunctionOn",
     option.Some(json.object(
       [#("functionDeclaration", json.string(function_declaration))]
@@ -1243,8 +1237,6 @@ pub fn call_function_on(
         #("objectGroup", json.string(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__call_function_on_response(result__)
@@ -1254,15 +1246,13 @@ pub fn call_function_on(
 
 /// Compiles expression.
 pub fn compile_script(
-  browser_subject__,
-  session_id__,
+  callback__,
   expression: String,
   source_url: String,
   persist_script: Bool,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.compileScript",
     option.Some(json.object(
       [
@@ -1274,8 +1264,6 @@ pub fn compile_script(
         #("executionContextId", encode__execution_context_id(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__compile_script_response(result__)
@@ -1284,50 +1272,28 @@ pub fn compile_script(
 }
 
 /// Disables reporting of execution contexts creation.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Runtime.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Runtime.disable", option.None)
   Nil
 }
 
 /// Discards collected exceptions and console API calls.
-pub fn discard_console_entries(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Runtime.discardConsoleEntries",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn discard_console_entries(callback__) {
+  let _ = callback__("Runtime.discardConsoleEntries", option.None)
   Nil
 }
 
 /// Enables reporting of execution contexts creation by means of `executionContextCreated` event.
 /// When the reporting gets enabled the event will be sent immediately for each existing execution
 /// context.
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Runtime.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Runtime.enable", option.None)
   Nil
 }
 
 /// Evaluates expression on global object.
 pub fn evaluate(
-  browser_subject__,
-  session_id__,
+  callback__,
   expression: String,
   object_group: option.Option(String),
   include_command_line_api: option.Option(Bool),
@@ -1337,8 +1303,7 @@ pub fn evaluate(
   user_gesture: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.evaluate",
     option.Some(json.object(
       [#("expression", json.string(expression))]
@@ -1364,8 +1329,6 @@ pub fn evaluate(
         #("awaitPromise", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__evaluate_response(result__)
@@ -1376,13 +1339,11 @@ pub fn evaluate(
 /// Returns properties of a given object. Object group of the result is inherited from the target
 /// object.
 pub fn get_properties(
-  browser_subject__,
-  session_id__,
+  callback__,
   object_id: RemoteObjectId,
   own_properties: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.getProperties",
     option.Some(json.object(
       [#("objectId", encode__remote_object_id(object_id))]
@@ -1390,8 +1351,6 @@ pub fn get_properties(
         #("ownProperties", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_properties_response(result__)
@@ -1401,12 +1360,10 @@ pub fn get_properties(
 
 /// Returns all let, const and class variables from global scope.
 pub fn global_lexical_scope_names(
-  browser_subject__,
-  session_id__,
+  callback__,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.globalLexicalScopeNames",
     option.Some(json.object(
       []
@@ -1414,8 +1371,6 @@ pub fn global_lexical_scope_names(
         #("executionContextId", encode__execution_context_id(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__global_lexical_scope_names_response(result__)
@@ -1425,13 +1380,11 @@ pub fn global_lexical_scope_names(
 
 /// This generated protocol command has no description
 pub fn query_objects(
-  browser_subject__,
-  session_id__,
+  callback__,
   prototype_object_id: RemoteObjectId,
   object_group: option.Option(String),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.queryObjects",
     option.Some(json.object(
       [#("prototypeObjectId", encode__remote_object_id(prototype_object_id))]
@@ -1439,8 +1392,6 @@ pub fn query_objects(
         #("objectGroup", json.string(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__query_objects_response(result__)
@@ -1449,58 +1400,36 @@ pub fn query_objects(
 }
 
 /// Releases remote object with given id.
-pub fn release_object(
-  browser_subject__,
-  session_id__,
-  object_id: RemoteObjectId,
-) {
+pub fn release_object(callback__, object_id: RemoteObjectId) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Runtime.releaseObject",
       option.Some(
         json.object([#("objectId", encode__remote_object_id(object_id))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Releases all remote objects that belong to a given group.
-pub fn release_object_group(
-  browser_subject__,
-  session_id__,
-  object_group: String,
-) {
+pub fn release_object_group(callback__, object_group: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Runtime.releaseObjectGroup",
       option.Some(json.object([#("objectGroup", json.string(object_group))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Tells inspected instance to run if it was waiting for debugger to attach.
-pub fn run_if_waiting_for_debugger(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Runtime.runIfWaitingForDebugger",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn run_if_waiting_for_debugger(callback__) {
+  let _ = callback__("Runtime.runIfWaitingForDebugger", option.None)
   Nil
 }
 
 /// Runs script with given id in a given context.
 pub fn run_script(
-  browser_subject__,
-  session_id__,
+  callback__,
   script_id: ScriptId,
   execution_context_id: option.Option(ExecutionContextId),
   object_group: option.Option(String),
@@ -1510,8 +1439,7 @@ pub fn run_script(
   generate_preview: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Runtime.runScript",
     option.Some(json.object(
       [#("scriptId", encode__script_id(script_id))]
@@ -1537,8 +1465,6 @@ pub fn run_script(
         #("awaitPromise", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__run_script_response(result__)
@@ -1547,18 +1473,11 @@ pub fn run_script(
 }
 
 /// Enables or disables async call stacks tracking.
-pub fn set_async_call_stack_depth(
-  browser_subject__,
-  session_id__,
-  max_depth: Int,
-) {
+pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Runtime.setAsyncCallStackDepth",
       option.Some(json.object([#("maxDepth", json.int(max_depth))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -1570,14 +1489,12 @@ pub fn set_async_call_stack_depth(
 /// in case of any other input, function throws an exception.
 /// Each binding function call produces Runtime.bindingCalled notification.
 pub fn add_binding(
-  browser_subject__,
-  session_id__,
+  callback__,
   name: String,
   execution_context_name: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Runtime.addBinding",
       option.Some(json.object(
         [#("name", json.string(name))]
@@ -1585,22 +1502,17 @@ pub fn add_binding(
           #("executionContextName", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// This method does not remove binding function from global object but
 /// unsubscribes current runtime agent from Runtime.bindingCalled notifications.
-pub fn remove_binding(browser_subject__, session_id__, name: String) {
+pub fn remove_binding(callback__, name: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Runtime.removeBinding",
       option.Some(json.object([#("name", json.string(name))])),
-      session_id__,
-      10_000,
     )
   Nil
 }

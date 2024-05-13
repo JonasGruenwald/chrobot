@@ -20,7 +20,7 @@
 //// - A module is generated for each domain in the protocol under `src/protocol/`
 //// - Generated files should be put through `gleam format` before committing
 //// 
-//// This script will panic if anything goes wrong, do not import this module anywere
+//// This script will panic if anything goes wrong, do not import this module anywere except for tests
 
 import gleam/dynamic.{field, optional_field} as d
 import gleam/int
@@ -35,7 +35,66 @@ import gleam/string_builder as sb
 import justin.{pascal_case, snake_case}
 import simplifile as file
 
-const call_timeout = "10_000"
+const root_module_comment = "
+This is the protocol definition entrypoint, it contains an overview of the protocol structure,
+and a function to retrieve the version of the protocol used to generate the current bindings.  
+The protocol version is also displayed in the box above, which appears on every generated module.  
+
+## Structure
+
+Each domain in the protocol is represented as a module under `protocol/`. 
+
+In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol), 
+however there are some adjustments that need to be made to be made to make the protocol schema usable, mainly due to
+what I believe are bugs in the protocol.  
+To see these changes, check the `apply_protocol_patches` function in `chrobot/internal/generate_bindings`.
+
+Domains may depend on the types of other domains, these dependencies are mirrored in the generated bindings where possible.
+In some case, type references to other modules have been replaced by the respective inner type, because the references would
+create a circular dependency.
+
+## Types 
+
+The generated bindings include a mirror of the type defitions of each type in the protocol spec,
+alongside with an `encode__` function to encode the type into JSON in order to send it to the browser
+and a `decode__` function in order to decode the type out of a payload sent from the browser.
+
+Exceptions:  
+- Some object properties in the protocol have the type `any`, in this case the value is considered as dynamic
+by decoders, and encoders will not encode it, setting it to `null` instead in the payload
+- Object types that don't specify any properties are treated as a `Dict(String,String)` 
+
+Additional type definitions and encoders / decoders are generated, 
+for any enumerable property in the protocol, as well as the return values of commands.  
+These special type definitions are marked with a comment to indicate 
+the fact that they are not part of the protocol spec, but rather generated dynamically to support the bindings.
+
+
+## Commands
+
+A function is generated for each command, named after the command (in snake case), the function
+handles both encoding the parameters to sent to the browser via the protocol, and decoding the response.
+A `ProtocolError` error is returned if the decoding fails, this would mean there is a bug in the protocol
+or the generated bindings.
+
+The first parameter to the command function is always a `callback` of the form
+
+```gleam
+fn(method: String, parameters: Option(Json)) -> Result(Dynamic, RequestError)
+```
+
+By using this callback you can take advantage of the generated protocol encoders/decoders 
+while also passing in your browser subject to direct the command to, and passing along additional
+arguments, like the `sessionId` which is required for some operations.
+
+
+## Events
+
+Events are not implemented yet!
+
+"
+
+// TODO commands should not swallow errors :((()))
 
 pub type Protocol {
   Protocol(version: Version, domains: List(Domain))
@@ -505,7 +564,9 @@ pub fn apply_protocol_patches(protocol: Protocol) -> Protocol {
         domain: domain.domain,
         experimental: {
           case domain.domain {
-            // Mark the tracing domain as experimental so it gets filetred out
+            // Mark the tracing domain as experimental so it gets filtered out
+            // It's not included in the stable protocol as listed in the CDP docs
+            // and it's also not necessary as far as I can tell
             "Tracing" -> {
               io.println(
                 "[PATCHING PROTOCOL] Marking 'Tracing' domain as experimental because it is not included in stable 1.3",
@@ -518,7 +579,7 @@ pub fn apply_protocol_patches(protocol: Protocol) -> Protocol {
         deprecated: domain.deprecated,
         dependencies: {
           case domain.domain, domain.dependencies {
-            // IO domain references Runtime.RemoteObjectId but doesn't declare the dependency
+            // IO domain references Runtime.RemoteObjectId but doesn't declare the dependency to Runtime
             "IO", None
             -> {
               io.println(
@@ -842,16 +903,15 @@ fn gen_attached_comment(content: String) {
   "/// " <> string.replace(content, "\n", "\n/// ") <> "\n"
 }
 
+fn gen_module_comment(content: String) {
+  "//// " <> string.replace(content, "\n", "\n//// ") <> "\n"
+}
+
 /// Generate the root module for the protocol bindings
 /// This is just an entrypoint with some documentation, and the version number
 pub fn gen_root_module(protocol: Protocol) {
   sb.new()
   |> sb.append(gen_preamble(protocol))
-  |> sb.append(
-    "////
-//// This is the protocol definition entrypoint, which contains protocol version information.  
-//// Each domain in the protocol is represented as a submodule under `/protocol`.  \n////\n",
-  )
   |> sb.append(
     "//// For reference: [See the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/",
   )
@@ -860,6 +920,7 @@ pub fn gen_root_module(protocol: Protocol) {
   |> sb.append(protocol.version.minor)
   |> sb.append("/")
   |> sb.append(")\n\n")
+  |> sb.append(gen_module_comment(root_module_comment))
   |> sb.append("const version_major = \"" <> protocol.version.major <> "\"\n")
   |> sb.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
   |> sb.append(gen_attached_comment(
@@ -1478,12 +1539,11 @@ fn gen_command_body(command: Command, domain: Domain) {
   let encoder_part = {
     case command.parameters {
       None | Some([]) -> {
-        "chrome.call(browser_subject__, \""
+        "callback__(\""
         <> domain.domain
         <> "."
         <> command.name
-        <> "\", option.None, session_id__,"
-        <> call_timeout
+        <> "\", option.None,"
         <> ")\n"
       }
       Some(properties) -> {
@@ -1492,7 +1552,7 @@ fn gen_command_body(command: Command, domain: Domain) {
             gen_object_property_encoder(command.name, p, "")
           })
           |> list.unzip()
-        "chrome.call(browser_subject__,\""
+        "callback__(\""
         <> domain.domain
         <> "."
         <> command.name
@@ -1500,9 +1560,7 @@ fn gen_command_body(command: Command, domain: Domain) {
         <> string.join(property_encoders, "")
         <> "]"
         <> string.join(appendices, "")
-        <> ")), session_id__,"
-        <> call_timeout
-        <> ")\n"
+        <> ")))\n"
       }
     }
   }
@@ -1538,7 +1596,7 @@ fn gen_command_function(command: Command, domain: Domain) {
   |> sb.append("pub fn ")
   |> sb.append(safe_snake_case(command.name))
   |> sb.append("(\n")
-  |> sb.append("browser_subject__, session_id__, \n")
+  |> sb.append("callback__, \n")
   |> sb.append(param_definition)
   |> sb.append("){\n")
   |> sb.append(gen_command_body(command, domain))

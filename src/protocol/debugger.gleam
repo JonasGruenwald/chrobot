@@ -657,14 +657,12 @@ pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
 
 /// Continues execution until specific location is reached.
 pub fn continue_to_location(
-  browser_subject__,
-  session_id__,
+  callback__,
   location: Location,
   target_call_frames: option.Option(ContinueToLocationTargetCallFrames),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.continueToLocation",
       option.Some(json.object(
         [#("location", encode__location(location))]
@@ -675,8 +673,6 @@ pub fn continue_to_location(
           )
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -715,36 +711,21 @@ pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic)
 }
 
 /// Disables debugger for given page.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Debugger.disable", option.None)
   Nil
 }
 
 /// Enables debugger for the given page. Clients should not assume that the debugging has been
 /// enabled until the result for this command is received.
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Debugger.enable", option.None)
   Nil
 }
 
 /// Evaluates expression on a given call frame.
 pub fn evaluate_on_call_frame(
-  browser_subject__,
-  session_id__,
+  callback__,
   call_frame_id: CallFrameId,
   expression: String,
   object_group: option.Option(String),
@@ -753,8 +734,7 @@ pub fn evaluate_on_call_frame(
   return_by_value: option.Option(Bool),
   throw_on_side_effect: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.evaluateOnCallFrame",
     option.Some(json.object(
       [
@@ -777,8 +757,6 @@ pub fn evaluate_on_call_frame(
         #("throwOnSideEffect", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__evaluate_on_call_frame_response(result__)
@@ -789,14 +767,12 @@ pub fn evaluate_on_call_frame(
 /// Returns possible locations for breakpoint. scriptId in start and end range locations should be
 /// the same.
 pub fn get_possible_breakpoints(
-  browser_subject__,
-  session_id__,
+  callback__,
   start: Location,
   end: option.Option(Location),
   restrict_to_function: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.getPossibleBreakpoints",
     option.Some(json.object(
       [#("start", encode__location(start))]
@@ -807,8 +783,6 @@ pub fn get_possible_breakpoints(
         #("restrictToFunction", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_possible_breakpoints_response(result__)
@@ -817,19 +791,12 @@ pub fn get_possible_breakpoints(
 }
 
 /// Returns source for the script with given id.
-pub fn get_script_source(
-  browser_subject__,
-  session_id__,
-  script_id: runtime.ScriptId,
-) {
-  chrome.call(
-    browser_subject__,
+pub fn get_script_source(callback__, script_id: runtime.ScriptId) {
+  callback__(
     "Debugger.getScriptSource",
     option.Some(
       json.object([#("scriptId", runtime.encode__script_id(script_id))]),
     ),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_script_source_response(result__)
@@ -838,33 +805,19 @@ pub fn get_script_source(
 }
 
 /// Stops on the next JavaScript statement.
-pub fn pause(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.pause",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn pause(callback__) {
+  let _ = callback__("Debugger.pause", option.None)
   Nil
 }
 
 /// Removes JavaScript breakpoint.
-pub fn remove_breakpoint(
-  browser_subject__,
-  session_id__,
-  breakpoint_id: BreakpointId,
-) {
+pub fn remove_breakpoint(callback__, breakpoint_id: BreakpointId) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.removeBreakpoint",
       option.Some(
         json.object([#("breakpointId", encode__breakpoint_id(breakpoint_id))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -882,33 +835,21 @@ pub fn remove_breakpoint(
 /// The various return values are deprecated and `callFrames` is always empty.
 /// Use the call frames from the `Debugger#paused` events instead, that fires
 /// once V8 pauses at the beginning of the restarted function.
-pub fn restart_frame(
-  browser_subject__,
-  session_id__,
-  call_frame_id: CallFrameId,
-) {
+pub fn restart_frame(callback__, call_frame_id: CallFrameId) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.restartFrame",
       option.Some(
         json.object([#("callFrameId", encode__call_frame_id(call_frame_id))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Resumes JavaScript execution.
-pub fn resume(
-  browser_subject__,
-  session_id__,
-  terminate_on_resume: option.Option(Bool),
-) {
+pub fn resume(callback__, terminate_on_resume: option.Option(Bool)) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.resume",
       option.Some(json.object(
         []
@@ -916,23 +857,19 @@ pub fn resume(
           #("terminateOnResume", json.bool(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Searches for given string in script content.
 pub fn search_in_content(
-  browser_subject__,
-  session_id__,
+  callback__,
   script_id: runtime.ScriptId,
   query: String,
   case_sensitive: option.Option(Bool),
   is_regex: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.searchInContent",
     option.Some(json.object(
       [
@@ -946,8 +883,6 @@ pub fn search_in_content(
         #("isRegex", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__search_in_content_response(result__)
@@ -956,31 +891,22 @@ pub fn search_in_content(
 }
 
 /// Enables or disables async call stacks tracking.
-pub fn set_async_call_stack_depth(
-  browser_subject__,
-  session_id__,
-  max_depth: Int,
-) {
+pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.setAsyncCallStackDepth",
       option.Some(json.object([#("maxDepth", json.int(max_depth))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets JavaScript breakpoint at a given location.
 pub fn set_breakpoint(
-  browser_subject__,
-  session_id__,
+  callback__,
   location: Location,
   condition: option.Option(String),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.setBreakpoint",
     option.Some(json.object(
       [#("location", encode__location(location))]
@@ -988,8 +914,6 @@ pub fn set_breakpoint(
         #("condition", json.string(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__set_breakpoint_response(result__)
@@ -999,12 +923,10 @@ pub fn set_breakpoint(
 
 /// Sets instrumentation breakpoint.
 pub fn set_instrumentation_breakpoint(
-  browser_subject__,
-  session_id__,
+  callback__,
   instrumentation: SetInstrumentationBreakpointInstrumentation,
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.setInstrumentationBreakpoint",
     option.Some(
       json.object([
@@ -1016,8 +938,6 @@ pub fn set_instrumentation_breakpoint(
         ),
       ]),
     ),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__set_instrumentation_breakpoint_response(result__)
@@ -1069,8 +989,7 @@ pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.D
 /// `locations` property. Further matching script parsing will result in subsequent
 /// `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
 pub fn set_breakpoint_by_url(
-  browser_subject__,
-  session_id__,
+  callback__,
   line_number: Int,
   url: option.Option(String),
   url_regex: option.Option(String),
@@ -1078,8 +997,7 @@ pub fn set_breakpoint_by_url(
   column_number: option.Option(Int),
   condition: option.Option(String),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.setBreakpointByUrl",
     option.Some(json.object(
       [#("lineNumber", json.int(line_number))]
@@ -1099,8 +1017,6 @@ pub fn set_breakpoint_by_url(
         #("condition", json.string(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__set_breakpoint_by_url_response(result__)
@@ -1109,34 +1025,24 @@ pub fn set_breakpoint_by_url(
 }
 
 /// Activates / deactivates all breakpoints on the page.
-pub fn set_breakpoints_active(browser_subject__, session_id__, active: Bool) {
+pub fn set_breakpoints_active(callback__, active: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.setBreakpointsActive",
       option.Some(json.object([#("active", json.bool(active))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
 /// or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
-pub fn set_pause_on_exceptions(
-  browser_subject__,
-  session_id__,
-  state: SetPauseOnExceptionsState,
-) {
+pub fn set_pause_on_exceptions(callback__, state: SetPauseOnExceptionsState) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.setPauseOnExceptions",
       option.Some(
         json.object([#("state", encode__set_pause_on_exceptions_state(state))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -1188,14 +1094,12 @@ pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
 /// the live edit will be successful and a `Debugger.restartFrame` for the
 /// top-most function is automatically triggered.
 pub fn set_script_source(
-  browser_subject__,
-  session_id__,
+  callback__,
   script_id: runtime.ScriptId,
   script_source: String,
   dry_run: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Debugger.setScriptSource",
     option.Some(json.object(
       [
@@ -1206,8 +1110,6 @@ pub fn set_script_source(
         #("dryRun", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__set_script_source_response(result__)
@@ -1216,14 +1118,11 @@ pub fn set_script_source(
 }
 
 /// Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
-pub fn set_skip_all_pauses(browser_subject__, session_id__, skip: Bool) {
+pub fn set_skip_all_pauses(callback__, skip: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.setSkipAllPauses",
       option.Some(json.object([#("skip", json.bool(skip))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -1231,16 +1130,14 @@ pub fn set_skip_all_pauses(browser_subject__, session_id__, skip: Bool) {
 /// Changes value of variable in a callframe. Object-based scopes are not supported and must be
 /// mutated manually.
 pub fn set_variable_value(
-  browser_subject__,
-  session_id__,
+  callback__,
   scope_number: Int,
   variable_name: String,
   new_value: runtime.CallArgument,
   call_frame_id: CallFrameId,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Debugger.setVariableValue",
       option.Some(
         json.object([
@@ -1250,47 +1147,24 @@ pub fn set_variable_value(
           #("callFrameId", encode__call_frame_id(call_frame_id)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Steps into the function call.
-pub fn step_into(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.stepInto",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn step_into(callback__) {
+  let _ = callback__("Debugger.stepInto", option.None)
   Nil
 }
 
 /// Steps out of the function call.
-pub fn step_out(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.stepOut",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn step_out(callback__) {
+  let _ = callback__("Debugger.stepOut", option.None)
   Nil
 }
 
 /// Steps over the statement.
-pub fn step_over(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Debugger.stepOver",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn step_over(callback__) {
+  let _ = callback__("Debugger.stepOver", option.None)
   Nil
 }

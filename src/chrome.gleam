@@ -142,19 +142,6 @@ pub fn quit(browser: Subject(Message)) {
   process.try_call(browser, Shutdown(_), default_message_timeout)
 }
 
-/// Convenience function that lets you defer quitting the browser after you are done with it,
-/// it's meant for a `use` expression like this:
-/// 
-/// ```gleam
-/// let assert Ok(browser_subject) = browser.launch()
-/// use <- browser.defer_quit(browser_subject)
-/// // do stuff with the browser
-/// ```
-pub fn defer_quit(browser: Subject(Message), block) {
-  block()
-  quit(browser)
-}
-
 /// Issue a protocol call to the browser and expect a response
 pub fn call(
   browser: Subject(Message),

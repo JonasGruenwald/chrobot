@@ -1872,28 +1872,20 @@ pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
 }
 
 /// Clears browser cache.
-pub fn clear_browser_cache(callback) {
-  let _ = callback("Network.clearBrowserCache", option.None)
+pub fn clear_browser_cache(callback__) {
+  let _ = callback__("Network.clearBrowserCache", option.None)
   Nil
 }
 
 /// Clears browser cookies.
-pub fn clear_browser_cookies(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Network.clearBrowserCookies",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn clear_browser_cookies(callback__) {
+  let _ = callback__("Network.clearBrowserCookies", option.None)
   Nil
 }
 
 /// Deletes browser cookies with matching name and url or domain/path/partitionKey pair.
 pub fn delete_cookies(
-  browser_subject__,
-  session_id__,
+  callback__,
   name: String,
   url: option.Option(String),
   domain: option.Option(String),
@@ -1901,8 +1893,7 @@ pub fn delete_cookies(
   partition_key: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.deleteCookies",
       option.Some(json.object(
         [#("name", json.string(name))]
@@ -1919,29 +1910,19 @@ pub fn delete_cookies(
           #("partitionKey", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Disables network tracking, prevents network events from being sent to the client.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Network.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Network.disable", option.None)
   Nil
 }
 
 /// Activates emulation of network conditions.
 pub fn emulate_network_conditions(
-  browser_subject__,
-  session_id__,
+  callback__,
   offline: Bool,
   latency: Float,
   download_throughput: Float,
@@ -1949,8 +1930,7 @@ pub fn emulate_network_conditions(
   connection_type: option.Option(ConnectionType),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.emulateNetworkConditions",
       option.Some(json.object(
         [
@@ -1963,21 +1943,14 @@ pub fn emulate_network_conditions(
           #("connectionType", encode__connection_type(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Enables network tracking, network events will now be delivered to the client.
-pub fn enable(
-  browser_subject__,
-  session_id__,
-  max_post_data_size: option.Option(Int),
-) {
+pub fn enable(callback__, max_post_data_size: option.Option(Int)) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.enable",
       option.Some(json.object(
         []
@@ -1985,21 +1958,14 @@ pub fn enable(
           #("maxPostDataSize", json.int(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Returns all browser cookies for the current URL. Depending on the backend support, will return
 /// detailed cookie information in the `cookies` field.
-pub fn get_cookies(
-  browser_subject__,
-  session_id__,
-  urls: option.Option(List(String)),
-) {
-  chrome.call(
-    browser_subject__,
+pub fn get_cookies(callback__, urls: option.Option(List(String))) {
+  callback__(
     "Network.getCookies",
     option.Some(json.object(
       []
@@ -2007,8 +1973,6 @@ pub fn get_cookies(
         #("urls", json.array(inner_value__, of: json.string))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_cookies_response(result__)
@@ -2017,13 +1981,10 @@ pub fn get_cookies(
 }
 
 /// Returns content served for the given request.
-pub fn get_response_body(browser_subject__, session_id__, request_id: RequestId) {
-  chrome.call(
-    browser_subject__,
+pub fn get_response_body(callback__, request_id: RequestId) {
+  callback__(
     "Network.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_response_body_response(result__)
@@ -2032,17 +1993,10 @@ pub fn get_response_body(browser_subject__, session_id__, request_id: RequestId)
 }
 
 /// Returns post data sent with the request. Returns an error when no data was sent with the request.
-pub fn get_request_post_data(
-  browser_subject__,
-  session_id__,
-  request_id: RequestId,
-) {
-  chrome.call(
-    browser_subject__,
+pub fn get_request_post_data(callback__, request_id: RequestId) {
+  callback__(
     "Network.getRequestPostData",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_request_post_data_response(result__)
@@ -2051,35 +2005,28 @@ pub fn get_request_post_data(
 }
 
 /// Toggles ignoring of service worker for each request.
-pub fn set_bypass_service_worker(browser_subject__, session_id__, bypass: Bool) {
+pub fn set_bypass_service_worker(callback__, bypass: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setBypassServiceWorker",
       option.Some(json.object([#("bypass", json.bool(bypass))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Toggles ignoring cache for each request. If `true`, cache will not be used.
-pub fn set_cache_disabled(browser_subject__, session_id__, cache_disabled: Bool) {
+pub fn set_cache_disabled(callback__, cache_disabled: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setCacheDisabled",
       option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 pub fn set_cookie(
-  browser_subject__,
-  session_id__,
+  callback__,
   name: String,
   value: String,
   url: option.Option(String),
@@ -2091,8 +2038,7 @@ pub fn set_cookie(
   expires: option.Option(TimeSinceEpoch),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setCookie",
       option.Some(json.object(
         [#("name", json.string(name)), #("value", json.string(value))]
@@ -2118,53 +2064,43 @@ pub fn set_cookie(
           #("expires", encode__time_since_epoch(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets given cookies.
-pub fn set_cookies(browser_subject__, session_id__, cookies: List(CookieParam)) {
+pub fn set_cookies(callback__, cookies: List(CookieParam)) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setCookies",
       option.Some(
         json.object([
           #("cookies", json.array(cookies, of: encode__cookie_param)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Specifies whether to always send extra HTTP headers with the requests from this page.
-pub fn set_extra_http_headers(browser_subject__, session_id__, headers: Headers) {
+pub fn set_extra_http_headers(callback__, headers: Headers) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setExtraHTTPHeaders",
       option.Some(json.object([#("headers", encode__headers(headers))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Allows overriding user agent with the given string.
 pub fn set_user_agent_override(
-  browser_subject__,
-  session_id__,
+  callback__,
   user_agent: String,
   accept_language: option.Option(String),
   platform: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Network.setUserAgentOverride",
       option.Some(json.object(
         [#("userAgent", json.string(user_agent))]
@@ -2175,8 +2111,6 @@ pub fn set_user_agent_override(
           #("platform", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }

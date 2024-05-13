@@ -1,8 +1,41 @@
+//// Welcome to Chrobot! 🤖
+//// This module exposes high level functions for browser automation.
+//// 
+//// Some basic concepts:
+//// 
+//// 1. You want to `launch` an instance of the browser and receive a `Subject` which allows
+//// you to send messages to the browser (actor)
+//// 2. You can `open` a `Page`, which makes the browser browse to a website  
+//// -> Hold on to the returned `Page`, most useful operations will require it as a parameter
+//// 3. When you are done with the browser, you should call `quit` to shut it down gracefully
+//// 
+//// The rest should hopefully be self-evident from the documentation of this module's functions.
+//// 
+//// A brief explanation of the abstractions in this module, in case you need to make raw protocol calls:  
+//// In CDP the way to interact with websites is by creating a target and attaching to it, which spawns
+//// a session with a `sessionId`. It's only possible to interact with domains like the dom domain,
+//// if you pass this `sessionId` with your protocol call.  
+//// Confusingly, if you forget to provide a `sessionId` to a method like `DOM.getDocument`, the error response 
+//// will tell you that no such method exists - it does though, you just need to provide a `sessionId` when calling it.
+//// When you call `open` in this module, the steps of creating a target and session are taken for you, 
+//// and stored in the returned `Page` type along with the browser subject.
+//// When you make raw protocol calls, be sure to provide a `sessionId`!
+
 import chrome
 import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/result
 import protocol
+import protocol/target
+
+/// This type abstracts some 
+pub type Page {
+  Page(
+    browser: Subject(chrome.Message),
+    target_id: target.TargetID,
+    session_id: target.SessionID,
+  )
+}
 
 /// Try to find a chrome installation and launch it with default arguments.
 /// 
@@ -73,4 +106,22 @@ fn validate_launch(
         actual_version.protocol_version,
       ))
   }
+}
+
+/// Quit the browser (alias for `chrome.quit`)
+pub fn quit(browser: Subject(chrome.Message)) {
+  chrome.quit(browser)
+}
+
+/// Convenience function that lets you defer quitting the browser after you are done with it,
+/// it's meant for a `use` expression like this:
+/// 
+/// ```gleam
+/// let assert Ok(browser_subject) = browser.launch()
+/// use <- browser.defer_quit(browser_subject)
+/// // do stuff with the browser
+/// ```
+pub fn defer_quit(browser: Subject(chrome.Message), body) {
+  body()
+  chrome.quit(browser)
 }

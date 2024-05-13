@@ -182,27 +182,22 @@ pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
 }
 
 /// Activates (focuses) the target.
-pub fn activate_target(browser_subject__, session_id__, target_id: TargetID) {
+pub fn activate_target(callback__, target_id: TargetID) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.activateTarget",
       option.Some(json.object([#("targetId", encode__target_id(target_id))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Attaches to the target with given id.
 pub fn attach_to_target(
-  browser_subject__,
-  session_id__,
+  callback__,
   target_id: TargetID,
   flatten: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Target.attachToTarget",
     option.Some(json.object(
       [#("targetId", encode__target_id(target_id))]
@@ -210,8 +205,6 @@ pub fn attach_to_target(
         #("flatten", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__attach_to_target_response(result__)
@@ -220,28 +213,19 @@ pub fn attach_to_target(
 }
 
 /// Closes the target. If the target is a page that gets closed too.
-pub fn close_target(browser_subject__, session_id__, target_id: TargetID) {
+pub fn close_target(callback__, target_id: TargetID) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.closeTarget",
       option.Some(json.object([#("targetId", encode__target_id(target_id))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
 /// one.
-pub fn create_browser_context(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Target.createBrowserContext",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn create_browser_context(callback__) {
+  callback__("Target.createBrowserContext", option.None)
   |> result.try(fn(result__) {
     decode__create_browser_context_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -249,14 +233,8 @@ pub fn create_browser_context(browser_subject__, session_id__) {
 }
 
 /// Returns all browser contexts created with `Target.createBrowserContext` method.
-pub fn get_browser_contexts(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Target.getBrowserContexts",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_browser_contexts(callback__) {
+  callback__("Target.getBrowserContexts", option.None)
   |> result.try(fn(result__) {
     decode__get_browser_contexts_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -265,16 +243,14 @@ pub fn get_browser_contexts(browser_subject__, session_id__) {
 
 /// Creates a new page.
 pub fn create_target(
-  browser_subject__,
-  session_id__,
+  callback__,
   url: String,
   width: option.Option(Int),
   height: option.Option(Int),
   new_window: option.Option(Bool),
   background: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Target.createTarget",
     option.Some(json.object(
       [#("url", json.string(url))]
@@ -291,8 +267,6 @@ pub fn create_target(
         #("background", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__create_target_response(result__)
@@ -301,14 +275,9 @@ pub fn create_target(
 }
 
 /// Detaches session with given id.
-pub fn detach_from_target(
-  browser_subject__,
-  session_id__,
-  session_id: option.Option(SessionID),
-) {
+pub fn detach_from_target(callback__, session_id: option.Option(SessionID)) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.detachFromTarget",
       option.Some(json.object(
         []
@@ -316,41 +285,26 @@ pub fn detach_from_target(
           #("sessionId", encode__session_id(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Deletes a BrowserContext. All the belonging pages will be closed without calling their
 /// beforeunload hooks.
-pub fn dispose_browser_context(
-  browser_subject__,
-  session_id__,
-  browser_context_id: String,
-) {
+pub fn dispose_browser_context(callback__, browser_context_id: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.disposeBrowserContext",
       option.Some(
         json.object([#("browserContextId", json.string(browser_context_id))]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Retrieves a list of available targets.
-pub fn get_targets(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Target.getTargets",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_targets(callback__) {
+  callback__("Target.getTargets", option.None)
   |> result.try(fn(result__) {
     decode__get_targets_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -363,14 +317,12 @@ pub fn get_targets(browser_subject__, session_id__) {
 /// This also clears all targets added by `autoAttachRelated` from the list of targets to watch
 /// for creation of related targets.
 pub fn set_auto_attach(
-  browser_subject__,
-  session_id__,
+  callback__,
   auto_attach: Bool,
   wait_for_debugger_on_start: Bool,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.setAutoAttach",
       option.Some(
         json.object([
@@ -378,22 +330,17 @@ pub fn set_auto_attach(
           #("waitForDebuggerOnStart", json.bool(wait_for_debugger_on_start)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Controls whether to discover available targets and notify via
 /// `targetCreated/targetInfoChanged/targetDestroyed` events.
-pub fn set_discover_targets(browser_subject__, session_id__, discover: Bool) {
+pub fn set_discover_targets(callback__, discover: Bool) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Target.setDiscoverTargets",
       option.Some(json.object([#("discover", json.bool(discover))])),
-      session_id__,
-      10_000,
     )
   Nil
 }

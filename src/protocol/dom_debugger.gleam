@@ -158,14 +158,12 @@ pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
 
 /// Returns event listeners of the given object.
 pub fn get_event_listeners(
-  browser_subject__,
-  session_id__,
+  callback__,
   object_id: runtime.RemoteObjectId,
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "DOMDebugger.getEventListeners",
     option.Some(json.object(
       [#("objectId", runtime.encode__remote_object_id(object_id))]
@@ -176,8 +174,6 @@ pub fn get_event_listeners(
         #("pierce", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_event_listeners_response(result__)
@@ -187,14 +183,12 @@ pub fn get_event_listeners(
 
 /// Removes DOM breakpoint that was set using `setDOMBreakpoint`.
 pub fn remove_dom_breakpoint(
-  browser_subject__,
-  session_id__,
+  callback__,
   node_id: dom.NodeId,
   type_: DOMBreakpointType,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.removeDOMBreakpoint",
       option.Some(
         json.object([
@@ -202,52 +196,38 @@ pub fn remove_dom_breakpoint(
           #("type", encode__dom_breakpoint_type(type_)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Removes breakpoint on particular DOM event.
-pub fn remove_event_listener_breakpoint(
-  browser_subject__,
-  session_id__,
-  event_name: String,
-) {
+pub fn remove_event_listener_breakpoint(callback__, event_name: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.removeEventListenerBreakpoint",
       option.Some(json.object([#("eventName", json.string(event_name))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Removes breakpoint from XMLHttpRequest.
-pub fn remove_xhr_breakpoint(browser_subject__, session_id__, url: String) {
+pub fn remove_xhr_breakpoint(callback__, url: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.removeXHRBreakpoint",
       option.Some(json.object([#("url", json.string(url))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets breakpoint on particular operation with DOM.
 pub fn set_dom_breakpoint(
-  browser_subject__,
-  session_id__,
+  callback__,
   node_id: dom.NodeId,
   type_: DOMBreakpointType,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.setDOMBreakpoint",
       option.Some(
         json.object([
@@ -255,38 +235,26 @@ pub fn set_dom_breakpoint(
           #("type", encode__dom_breakpoint_type(type_)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets breakpoint on particular DOM event.
-pub fn set_event_listener_breakpoint(
-  browser_subject__,
-  session_id__,
-  event_name: String,
-) {
+pub fn set_event_listener_breakpoint(callback__, event_name: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.setEventListenerBreakpoint",
       option.Some(json.object([#("eventName", json.string(event_name))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Sets breakpoint on XMLHttpRequest.
-pub fn set_xhr_breakpoint(browser_subject__, session_id__, url: String) {
+pub fn set_xhr_breakpoint(callback__, url: String) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "DOMDebugger.setXHRBreakpoint",
       option.Some(json.object([#("url", json.string(url))])),
-      session_id__,
-      10_000,
     )
   Nil
 }

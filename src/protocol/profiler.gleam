@@ -326,41 +326,21 @@ pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
 }
 
 /// This generated protocol command has no description
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Profiler.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Profiler.disable", option.None)
   Nil
 }
 
 /// This generated protocol command has no description
-pub fn enable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Profiler.enable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn enable(callback__) {
+  let _ = callback__("Profiler.enable", option.None)
   Nil
 }
 
 /// Collect coverage data for the current isolate. The coverage data may be incomplete due to
 /// garbage collection.
-pub fn get_best_effort_coverage(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Profiler.getBestEffortCoverage",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn get_best_effort_coverage(callback__) {
+  callback__("Profiler.getBestEffortCoverage", option.None)
   |> result.try(fn(result__) {
     decode__get_best_effort_coverage_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -368,28 +348,18 @@ pub fn get_best_effort_coverage(browser_subject__, session_id__) {
 }
 
 /// Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
-pub fn set_sampling_interval(browser_subject__, session_id__, interval: Int) {
+pub fn set_sampling_interval(callback__, interval: Int) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Profiler.setSamplingInterval",
       option.Some(json.object([#("interval", json.int(interval))])),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// This generated protocol command has no description
-pub fn start(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Profiler.start",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn start(callback__) {
+  let _ = callback__("Profiler.start", option.None)
   Nil
 }
 
@@ -397,14 +367,12 @@ pub fn start(browser_subject__, session_id__) {
 /// coverage may be incomplete. Enabling prevents running optimized code and resets execution
 /// counters.
 pub fn start_precise_coverage(
-  browser_subject__,
-  session_id__,
+  callback__,
   call_count: option.Option(Bool),
   detailed: option.Option(Bool),
   allow_triggered_updates: option.Option(Bool),
 ) {
-  chrome.call(
-    browser_subject__,
+  callback__(
     "Profiler.startPreciseCoverage",
     option.Some(json.object(
       []
@@ -418,8 +386,6 @@ pub fn start_precise_coverage(
         #("allowTriggeredUpdates", json.bool(inner_value__))
       }),
     )),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__start_precise_coverage_response(result__)
@@ -428,14 +394,8 @@ pub fn start_precise_coverage(
 }
 
 /// This generated protocol command has no description
-pub fn stop(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Profiler.stop",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn stop(callback__) {
+  callback__("Profiler.stop", option.None)
   |> result.try(fn(result__) {
     decode__stop_response(result__)
     |> result.replace_error(chrome.ProtocolError)
@@ -444,28 +404,15 @@ pub fn stop(browser_subject__, session_id__) {
 
 /// Disable precise code coverage. Disabling releases unnecessary execution count records and allows
 /// executing optimized code.
-pub fn stop_precise_coverage(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Profiler.stopPreciseCoverage",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn stop_precise_coverage(callback__) {
+  let _ = callback__("Profiler.stopPreciseCoverage", option.None)
   Nil
 }
 
 /// Collect coverage data for the current isolate, and resets execution counters. Precise code
 /// coverage needs to have started.
-pub fn take_precise_coverage(browser_subject__, session_id__) {
-  chrome.call(
-    browser_subject__,
-    "Profiler.takePreciseCoverage",
-    option.None,
-    session_id__,
-    10_000,
-  )
+pub fn take_precise_coverage(callback__) {
+  callback__("Profiler.takePreciseCoverage", option.None)
   |> result.try(fn(result__) {
     decode__take_precise_coverage_response(result__)
     |> result.replace_error(chrome.ProtocolError)

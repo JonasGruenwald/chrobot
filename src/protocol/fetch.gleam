@@ -319,29 +319,20 @@ pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
 }
 
 /// Disables the fetch domain.
-pub fn disable(browser_subject__, session_id__) {
-  let _ =
-    chrome.call(
-      browser_subject__,
-      "Fetch.disable",
-      option.None,
-      session_id__,
-      10_000,
-    )
+pub fn disable(callback__) {
+  let _ = callback__("Fetch.disable", option.None)
   Nil
 }
 
 /// Enables issuing of requestPaused events. A request will be paused until client
 /// calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 pub fn enable(
-  browser_subject__,
-  session_id__,
+  callback__,
   patterns: option.Option(List(RequestPattern)),
   handle_auth_requests: option.Option(Bool),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Fetch.enable",
       option.Some(json.object(
         []
@@ -352,22 +343,18 @@ pub fn enable(
           #("handleAuthRequests", json.bool(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Causes the request to fail with specified reason.
 pub fn fail_request(
-  browser_subject__,
-  session_id__,
+  callback__,
   request_id: RequestId,
   error_reason: network.ErrorReason,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Fetch.failRequest",
       option.Some(
         json.object([
@@ -375,16 +362,13 @@ pub fn fail_request(
           #("errorReason", network.encode__error_reason(error_reason)),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Provides response to the request.
 pub fn fulfill_request(
-  browser_subject__,
-  session_id__,
+  callback__,
   request_id: RequestId,
   response_code: Int,
   response_headers: option.Option(List(HeaderEntry)),
@@ -393,8 +377,7 @@ pub fn fulfill_request(
   response_phrase: option.Option(String),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Fetch.fulfillRequest",
       option.Some(json.object(
         [
@@ -417,16 +400,13 @@ pub fn fulfill_request(
           #("responsePhrase", json.string(inner_value__))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Continues the request, optionally modifying some of its parameters.
 pub fn continue_request(
-  browser_subject__,
-  session_id__,
+  callback__,
   request_id: RequestId,
   url: option.Option(String),
   method: option.Option(String),
@@ -434,8 +414,7 @@ pub fn continue_request(
   headers: option.Option(List(HeaderEntry)),
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Fetch.continueRequest",
       option.Some(json.object(
         [#("requestId", encode__request_id(request_id))]
@@ -452,22 +431,18 @@ pub fn continue_request(
           #("headers", json.array(inner_value__, of: encode__header_entry))
         }),
       )),
-      session_id__,
-      10_000,
     )
   Nil
 }
 
 /// Continues a request supplying authChallengeResponse following authRequired event.
 pub fn continue_with_auth(
-  browser_subject__,
-  session_id__,
+  callback__,
   request_id: RequestId,
   auth_challenge_response: AuthChallengeResponse,
 ) {
   let _ =
-    chrome.call(
-      browser_subject__,
+    callback__(
       "Fetch.continueWithAuth",
       option.Some(
         json.object([
@@ -478,8 +453,6 @@ pub fn continue_with_auth(
           ),
         ]),
       ),
-      session_id__,
-      10_000,
     )
   Nil
 }
@@ -494,13 +467,10 @@ pub fn continue_with_auth(
 /// paused in the _redirect received_ state may be differentiated by
 /// `responseCode` and presence of `location` response header, see
 /// comments to `requestPaused` for details.
-pub fn get_response_body(browser_subject__, session_id__, request_id: RequestId) {
-  chrome.call(
-    browser_subject__,
+pub fn get_response_body(callback__, request_id: RequestId) {
+  callback__(
     "Fetch.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__get_response_body_response(result__)
@@ -518,17 +488,10 @@ pub fn get_response_body(browser_subject__, session_id__, request_id: RequestId)
 /// This method is mutually exclusive with getResponseBody.
 /// Calling other methods that affect the request or disabling fetch
 /// domain before body is received results in an undefined behavior.
-pub fn take_response_body_as_stream(
-  browser_subject__,
-  session_id__,
-  request_id: RequestId,
-) {
-  chrome.call(
-    browser_subject__,
+pub fn take_response_body_as_stream(callback__, request_id: RequestId) {
+  callback__(
     "Fetch.takeResponseBodyAsStream",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-    session_id__,
-    10_000,
   )
   |> result.try(fn(result__) {
     decode__take_response_body_as_stream_response(result__)
