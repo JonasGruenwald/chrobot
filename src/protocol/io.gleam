@@ -70,12 +70,10 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
 
 /// Close the stream, discard any temporary backing storage.
 pub fn close(callback__, handle: StreamHandle) {
-  let _ =
-    callback__(
-      "IO.close",
-      option.Some(json.object([#("handle", encode__stream_handle(handle))])),
-    )
-  Nil
+  callback__(
+    "IO.close",
+    option.Some(json.object([#("handle", encode__stream_handle(handle))])),
+  )
 }
 
 /// Read a chunk of the stream
@@ -85,7 +83,7 @@ pub fn read(
   offset: option.Option(Int),
   size: option.Option(Int),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "IO.read",
     option.Some(json.object(
       [#("handle", encode__stream_handle(handle))]
@@ -96,23 +94,21 @@ pub fn read(
         #("size", json.int(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__read_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__read_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Return UUID of Blob object specified by a remote object id.
 pub fn resolve_blob(callback__, object_id: runtime.RemoteObjectId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "IO.resolveBlob",
     option.Some(
       json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__resolve_blob_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__resolve_blob_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }

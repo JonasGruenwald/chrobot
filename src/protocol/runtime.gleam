@@ -1176,7 +1176,7 @@ pub fn await_promise(
   return_by_value: option.Option(Bool),
   generate_preview: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.awaitPromise",
     option.Some(json.object(
       [#("promiseObjectId", encode__remote_object_id(promise_object_id))]
@@ -1187,11 +1187,10 @@ pub fn await_promise(
         #("generatePreview", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__await_promise_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__await_promise_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Calls function with given declaration on the given object. Object group of the result is
@@ -1208,7 +1207,7 @@ pub fn call_function_on(
   execution_context_id: option.Option(ExecutionContextId),
   object_group: option.Option(String),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.callFunctionOn",
     option.Some(json.object(
       [#("functionDeclaration", json.string(function_declaration))]
@@ -1237,11 +1236,10 @@ pub fn call_function_on(
         #("objectGroup", json.string(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__call_function_on_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__call_function_on_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Compiles expression.
@@ -1252,7 +1250,7 @@ pub fn compile_script(
   persist_script: Bool,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.compileScript",
     option.Some(json.object(
       [
@@ -1264,31 +1262,27 @@ pub fn compile_script(
         #("executionContextId", encode__execution_context_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__compile_script_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__compile_script_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Disables reporting of execution contexts creation.
 pub fn disable(callback__) {
-  let _ = callback__("Runtime.disable", option.None)
-  Nil
+  callback__("Runtime.disable", option.None)
 }
 
 /// Discards collected exceptions and console API calls.
 pub fn discard_console_entries(callback__) {
-  let _ = callback__("Runtime.discardConsoleEntries", option.None)
-  Nil
+  callback__("Runtime.discardConsoleEntries", option.None)
 }
 
 /// Enables reporting of execution contexts creation by means of `executionContextCreated` event.
 /// When the reporting gets enabled the event will be sent immediately for each existing execution
 /// context.
 pub fn enable(callback__) {
-  let _ = callback__("Runtime.enable", option.None)
-  Nil
+  callback__("Runtime.enable", option.None)
 }
 
 /// Evaluates expression on global object.
@@ -1303,7 +1297,7 @@ pub fn evaluate(
   user_gesture: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.evaluate",
     option.Some(json.object(
       [#("expression", json.string(expression))]
@@ -1329,11 +1323,10 @@ pub fn evaluate(
         #("awaitPromise", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__evaluate_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__evaluate_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns properties of a given object. Object group of the result is inherited from the target
@@ -1343,7 +1336,7 @@ pub fn get_properties(
   object_id: RemoteObjectId,
   own_properties: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.getProperties",
     option.Some(json.object(
       [#("objectId", encode__remote_object_id(object_id))]
@@ -1351,11 +1344,10 @@ pub fn get_properties(
         #("ownProperties", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_properties_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_properties_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns all let, const and class variables from global scope.
@@ -1363,7 +1355,7 @@ pub fn global_lexical_scope_names(
   callback__,
   execution_context_id: option.Option(ExecutionContextId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.globalLexicalScopeNames",
     option.Some(json.object(
       []
@@ -1371,11 +1363,10 @@ pub fn global_lexical_scope_names(
         #("executionContextId", encode__execution_context_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__global_lexical_scope_names_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__global_lexical_scope_names_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// This generated protocol command has no description
@@ -1384,7 +1375,7 @@ pub fn query_objects(
   prototype_object_id: RemoteObjectId,
   object_group: option.Option(String),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.queryObjects",
     option.Some(json.object(
       [#("prototypeObjectId", encode__remote_object_id(prototype_object_id))]
@@ -1392,39 +1383,33 @@ pub fn query_objects(
         #("objectGroup", json.string(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__query_objects_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__query_objects_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Releases remote object with given id.
 pub fn release_object(callback__, object_id: RemoteObjectId) {
-  let _ =
-    callback__(
-      "Runtime.releaseObject",
-      option.Some(
-        json.object([#("objectId", encode__remote_object_id(object_id))]),
-      ),
-    )
-  Nil
+  callback__(
+    "Runtime.releaseObject",
+    option.Some(
+      json.object([#("objectId", encode__remote_object_id(object_id))]),
+    ),
+  )
 }
 
 /// Releases all remote objects that belong to a given group.
 pub fn release_object_group(callback__, object_group: String) {
-  let _ =
-    callback__(
-      "Runtime.releaseObjectGroup",
-      option.Some(json.object([#("objectGroup", json.string(object_group))])),
-    )
-  Nil
+  callback__(
+    "Runtime.releaseObjectGroup",
+    option.Some(json.object([#("objectGroup", json.string(object_group))])),
+  )
 }
 
 /// Tells inspected instance to run if it was waiting for debugger to attach.
 pub fn run_if_waiting_for_debugger(callback__) {
-  let _ = callback__("Runtime.runIfWaitingForDebugger", option.None)
-  Nil
+  callback__("Runtime.runIfWaitingForDebugger", option.None)
 }
 
 /// Runs script with given id in a given context.
@@ -1439,7 +1424,7 @@ pub fn run_script(
   generate_preview: option.Option(Bool),
   await_promise: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Runtime.runScript",
     option.Some(json.object(
       [#("scriptId", encode__script_id(script_id))]
@@ -1465,21 +1450,18 @@ pub fn run_script(
         #("awaitPromise", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__run_script_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__run_script_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Enables or disables async call stacks tracking.
 pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
-  let _ =
-    callback__(
-      "Runtime.setAsyncCallStackDepth",
-      option.Some(json.object([#("maxDepth", json.int(max_depth))])),
-    )
-  Nil
+  callback__(
+    "Runtime.setAsyncCallStackDepth",
+    option.Some(json.object([#("maxDepth", json.int(max_depth))])),
+  )
 }
 
 /// If executionContextId is empty, adds binding with the given name on the
@@ -1493,26 +1475,22 @@ pub fn add_binding(
   name: String,
   execution_context_name: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Runtime.addBinding",
-      option.Some(json.object(
-        [#("name", json.string(name))]
-        |> utils.add_optional(execution_context_name, fn(inner_value__) {
-          #("executionContextName", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Runtime.addBinding",
+    option.Some(json.object(
+      [#("name", json.string(name))]
+      |> utils.add_optional(execution_context_name, fn(inner_value__) {
+        #("executionContextName", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// This method does not remove binding function from global object but
 /// unsubscribes current runtime agent from Runtime.bindingCalled notifications.
 pub fn remove_binding(callback__, name: String) {
-  let _ =
-    callback__(
-      "Runtime.removeBinding",
-      option.Some(json.object([#("name", json.string(name))])),
-    )
-  Nil
+  callback__(
+    "Runtime.removeBinding",
+    option.Some(json.object([#("name", json.string(name))])),
+  )
 }

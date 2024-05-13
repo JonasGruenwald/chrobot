@@ -217,22 +217,18 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
 
 /// Disables tracking security state changes.
 pub fn disable(callback__) {
-  let _ = callback__("Security.disable", option.None)
-  Nil
+  callback__("Security.disable", option.None)
 }
 
 /// Enables tracking security state changes.
 pub fn enable(callback__) {
-  let _ = callback__("Security.enable", option.None)
-  Nil
+  callback__("Security.enable", option.None)
 }
 
 /// Enable/disable whether all certificate errors should be ignored.
 pub fn set_ignore_certificate_errors(callback__, ignore: Bool) {
-  let _ =
-    callback__(
-      "Security.setIgnoreCertificateErrors",
-      option.Some(json.object([#("ignore", json.bool(ignore))])),
-    )
-  Nil
+  callback__(
+    "Security.setIgnoreCertificateErrors",
+    option.Some(json.object([#("ignore", json.bool(ignore))])),
+  )
 }

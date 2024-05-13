@@ -55,41 +55,35 @@ pub fn decode__get_version_response(value__: dynamic.Dynamic) {
 
 /// Reset all permission management for all origins.
 pub fn reset_permissions(callback__, browser_context_id: option.Option(String)) {
-  let _ =
-    callback__(
-      "Browser.resetPermissions",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(browser_context_id, fn(inner_value__) {
-          #("browserContextId", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Browser.resetPermissions",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(browser_context_id, fn(inner_value__) {
+        #("browserContextId", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Close browser gracefully.
 pub fn close(callback__) {
-  let _ = callback__("Browser.close", option.None)
-  Nil
+  callback__("Browser.close", option.None)
 }
 
 /// Returns version information.
 pub fn get_version(callback__) {
-  callback__("Browser.getVersion", option.None)
-  |> result.try(fn(result__) {
-    decode__get_version_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__("Browser.getVersion", option.None))
+
+  decode__get_version_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Allows a site to use privacy sandbox features that require enrollment
 /// without the site actually being enrolled. Only supported on page targets.
 pub fn add_privacy_sandbox_enrollment_override(callback__, url: String) {
-  let _ =
-    callback__(
-      "Browser.addPrivacySandboxEnrollmentOverride",
-      option.Some(json.object([#("url", json.string(url))])),
-    )
-  Nil
+  callback__(
+    "Browser.addPrivacySandboxEnrollmentOverride",
+    option.Some(json.object([#("url", json.string(url))])),
+  )
 }

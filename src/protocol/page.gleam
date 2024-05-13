@@ -629,20 +629,18 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
 
 /// Evaluates given script in every frame upon creation (before loading frame's scripts).
 pub fn add_script_to_evaluate_on_new_document(callback__, source: String) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.addScriptToEvaluateOnNewDocument",
     option.Some(json.object([#("source", json.string(source))])),
-  )
-  |> result.try(fn(result__) {
-    decode__add_script_to_evaluate_on_new_document_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__add_script_to_evaluate_on_new_document_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Brings page to front (activates tab).
 pub fn bring_to_front(callback__) {
-  let _ = callback__("Page.bringToFront", option.None)
-  Nil
+  callback__("Page.bringToFront", option.None)
 }
 
 /// Capture page screenshot.
@@ -652,7 +650,7 @@ pub fn capture_screenshot(
   quality: option.Option(Int),
   clip: option.Option(Viewport),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.captureScreenshot",
     option.Some(json.object(
       []
@@ -666,11 +664,10 @@ pub fn capture_screenshot(
         #("clip", encode__viewport(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__capture_screenshot_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__capture_screenshot_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -716,7 +713,7 @@ pub fn create_isolated_world(
   world_name: option.Option(String),
   grant_univeral_access: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.createIsolatedWorld",
     option.Some(json.object(
       [#("frameId", encode__frame_id(frame_id))]
@@ -727,23 +724,20 @@ pub fn create_isolated_world(
         #("grantUniveralAccess", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__create_isolated_world_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__create_isolated_world_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Disables page domain notifications.
 pub fn disable(callback__) {
-  let _ = callback__("Page.disable", option.None)
-  Nil
+  callback__("Page.disable", option.None)
 }
 
 /// Enables page domain notifications.
 pub fn enable(callback__) {
-  let _ = callback__("Page.enable", option.None)
-  Nil
+  callback__("Page.enable", option.None)
 }
 
 /// Gets the processed manifest for this current document.
@@ -752,7 +746,7 @@ pub fn enable(callback__) {
 ///     current document, this API errors out.
 ///   If there is not a loaded page, this API errors out immediately.
 pub fn get_app_manifest(callback__, manifest_id: option.Option(String)) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.getAppManifest",
     option.Some(json.object(
       []
@@ -760,44 +754,42 @@ pub fn get_app_manifest(callback__, manifest_id: option.Option(String)) {
         #("manifestId", json.string(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_app_manifest_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_app_manifest_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns present frame tree structure.
 pub fn get_frame_tree(callback__) {
-  callback__("Page.getFrameTree", option.None)
-  |> result.try(fn(result__) {
-    decode__get_frame_tree_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__("Page.getFrameTree", option.None))
+
+  decode__get_frame_tree_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
 pub fn get_layout_metrics(callback__) {
-  callback__("Page.getLayoutMetrics", option.None)
-  |> result.try(fn(result__) {
-    decode__get_layout_metrics_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__("Page.getLayoutMetrics", option.None))
+
+  decode__get_layout_metrics_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns navigation history for the current page.
 pub fn get_navigation_history(callback__) {
-  callback__("Page.getNavigationHistory", option.None)
-  |> result.try(fn(result__) {
-    decode__get_navigation_history_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__(
+    "Page.getNavigationHistory",
+    option.None,
+  ))
+
+  decode__get_navigation_history_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Resets navigation history for the current page.
 pub fn reset_navigation_history(callback__) {
-  let _ = callback__("Page.resetNavigationHistory", option.None)
-  Nil
+  callback__("Page.resetNavigationHistory", option.None)
 }
 
 /// Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
@@ -806,17 +798,15 @@ pub fn handle_java_script_dialog(
   accept: Bool,
   prompt_text: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Page.handleJavaScriptDialog",
-      option.Some(json.object(
-        [#("accept", json.bool(accept))]
-        |> utils.add_optional(prompt_text, fn(inner_value__) {
-          #("promptText", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Page.handleJavaScriptDialog",
+    option.Some(json.object(
+      [#("accept", json.bool(accept))]
+      |> utils.add_optional(prompt_text, fn(inner_value__) {
+        #("promptText", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Navigates current page to the given URL.
@@ -827,7 +817,7 @@ pub fn navigate(
   transition_type: option.Option(TransitionType),
   frame_id: option.Option(FrameId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.navigate",
     option.Some(json.object(
       [#("url", json.string(url))]
@@ -841,21 +831,18 @@ pub fn navigate(
         #("frameId", encode__frame_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__navigate_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__navigate_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Navigates current page to the given history entry.
 pub fn navigate_to_history_entry(callback__, entry_id: Int) {
-  let _ =
-    callback__(
-      "Page.navigateToHistoryEntry",
-      option.Some(json.object([#("entryId", json.int(entry_id))])),
-    )
-  Nil
+  callback__(
+    "Page.navigateToHistoryEntry",
+    option.Some(json.object([#("entryId", json.int(entry_id))])),
+  )
 }
 
 /// Print page as PDF.
@@ -876,7 +863,7 @@ pub fn print_to_pdf(
   footer_template: option.Option(String),
   prefer_css_page_size: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Page.printToPDF",
     option.Some(json.object(
       []
@@ -923,11 +910,10 @@ pub fn print_to_pdf(
         #("preferCSSPageSize", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__print_to_pdf_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__print_to_pdf_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Reloads given page optionally ignoring the cache.
@@ -936,20 +922,18 @@ pub fn reload(
   ignore_cache: option.Option(Bool),
   script_to_evaluate_on_load: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Page.reload",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(ignore_cache, fn(inner_value__) {
-          #("ignoreCache", json.bool(inner_value__))
-        })
-        |> utils.add_optional(script_to_evaluate_on_load, fn(inner_value__) {
-          #("scriptToEvaluateOnLoad", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Page.reload",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(ignore_cache, fn(inner_value__) {
+        #("ignoreCache", json.bool(inner_value__))
+      })
+      |> utils.add_optional(script_to_evaluate_on_load, fn(inner_value__) {
+        #("scriptToEvaluateOnLoad", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Removes given script from the list.
@@ -957,71 +941,59 @@ pub fn remove_script_to_evaluate_on_new_document(
   callback__,
   identifier: ScriptIdentifier,
 ) {
-  let _ =
-    callback__(
-      "Page.removeScriptToEvaluateOnNewDocument",
-      option.Some(
-        json.object([#("identifier", encode__script_identifier(identifier))]),
-      ),
-    )
-  Nil
+  callback__(
+    "Page.removeScriptToEvaluateOnNewDocument",
+    option.Some(
+      json.object([#("identifier", encode__script_identifier(identifier))]),
+    ),
+  )
 }
 
 /// Enable page Content Security Policy by-passing.
 pub fn set_bypass_csp(callback__, enabled: Bool) {
-  let _ =
-    callback__(
-      "Page.setBypassCSP",
-      option.Some(json.object([#("enabled", json.bool(enabled))])),
-    )
-  Nil
+  callback__(
+    "Page.setBypassCSP",
+    option.Some(json.object([#("enabled", json.bool(enabled))])),
+  )
 }
 
 /// Sets given markup as the document's HTML.
 pub fn set_document_content(callback__, frame_id: FrameId, html: String) {
-  let _ =
-    callback__(
-      "Page.setDocumentContent",
-      option.Some(
-        json.object([
-          #("frameId", encode__frame_id(frame_id)),
-          #("html", json.string(html)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Page.setDocumentContent",
+    option.Some(
+      json.object([
+        #("frameId", encode__frame_id(frame_id)),
+        #("html", json.string(html)),
+      ]),
+    ),
+  )
 }
 
 /// Controls whether page will emit lifecycle events.
 pub fn set_lifecycle_events_enabled(callback__, enabled: Bool) {
-  let _ =
-    callback__(
-      "Page.setLifecycleEventsEnabled",
-      option.Some(json.object([#("enabled", json.bool(enabled))])),
-    )
-  Nil
+  callback__(
+    "Page.setLifecycleEventsEnabled",
+    option.Some(json.object([#("enabled", json.bool(enabled))])),
+  )
 }
 
 /// Force the page stop all navigations and pending resource fetches.
 pub fn stop_loading(callback__) {
-  let _ = callback__("Page.stopLoading", option.None)
-  Nil
+  callback__("Page.stopLoading", option.None)
 }
 
 /// Tries to close page, running its beforeunload hooks, if any.
 pub fn close(callback__) {
-  let _ = callback__("Page.close", option.None)
-  Nil
+  callback__("Page.close", option.None)
 }
 
 /// Intercept file chooser requests and transfer control to protocol clients.
 /// When file chooser interception is enabled, native file chooser dialog is not shown.
 /// Instead, a protocol event `Page.fileChooserOpened` is emitted.
 pub fn set_intercept_file_chooser_dialog(callback__, enabled: Bool) {
-  let _ =
-    callback__(
-      "Page.setInterceptFileChooserDialog",
-      option.Some(json.object([#("enabled", json.bool(enabled))])),
-    )
-  Nil
+  callback__(
+    "Page.setInterceptFileChooserDialog",
+    option.Some(json.object([#("enabled", json.bool(enabled))])),
+  )
 }

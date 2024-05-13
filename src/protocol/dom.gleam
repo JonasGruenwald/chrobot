@@ -1008,7 +1008,7 @@ pub fn describe_node(
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.describeNode",
     option.Some(json.object(
       []
@@ -1028,11 +1028,10 @@ pub fn describe_node(
         #("pierce", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__describe_node_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__describe_node_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Scrolls the specified rect of the given node into view if not already visible.
@@ -1045,38 +1044,34 @@ pub fn scroll_into_view_if_needed(
   object_id: option.Option(runtime.RemoteObjectId),
   rect: option.Option(Rect),
 ) {
-  let _ =
-    callback__(
-      "DOM.scrollIntoViewIfNeeded",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(node_id, fn(inner_value__) {
-          #("nodeId", encode__node_id(inner_value__))
-        })
-        |> utils.add_optional(backend_node_id, fn(inner_value__) {
-          #("backendNodeId", encode__backend_node_id(inner_value__))
-        })
-        |> utils.add_optional(object_id, fn(inner_value__) {
-          #("objectId", runtime.encode__remote_object_id(inner_value__))
-        })
-        |> utils.add_optional(rect, fn(inner_value__) {
-          #("rect", encode__rect(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "DOM.scrollIntoViewIfNeeded",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      })
+      |> utils.add_optional(rect, fn(inner_value__) {
+        #("rect", encode__rect(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Disables DOM agent for the given page.
 pub fn disable(callback__) {
-  let _ = callback__("DOM.disable", option.None)
-  Nil
+  callback__("DOM.disable", option.None)
 }
 
 /// Enables DOM agent for the given page.
 pub fn enable(callback__) {
-  let _ = callback__("DOM.enable", option.None)
-  Nil
+  callback__("DOM.enable", option.None)
 }
 
 /// Focuses the given element.
@@ -1086,35 +1081,32 @@ pub fn focus(
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  let _ =
-    callback__(
-      "DOM.focus",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(node_id, fn(inner_value__) {
-          #("nodeId", encode__node_id(inner_value__))
-        })
-        |> utils.add_optional(backend_node_id, fn(inner_value__) {
-          #("backendNodeId", encode__backend_node_id(inner_value__))
-        })
-        |> utils.add_optional(object_id, fn(inner_value__) {
-          #("objectId", runtime.encode__remote_object_id(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "DOM.focus",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Returns attributes for the specified node.
 pub fn get_attributes(callback__, node_id: NodeId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.getAttributes",
     option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
-  )
-  |> result.try(fn(result__) {
-    decode__get_attributes_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_attributes_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns boxes for the given node.
@@ -1124,7 +1116,7 @@ pub fn get_box_model(
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.getBoxModel",
     option.Some(json.object(
       []
@@ -1138,11 +1130,10 @@ pub fn get_box_model(
         #("objectId", runtime.encode__remote_object_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_box_model_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_box_model_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns the root DOM node (and optionally the subtree) to the caller.
@@ -1152,7 +1143,7 @@ pub fn get_document(
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.getDocument",
     option.Some(json.object(
       []
@@ -1163,11 +1154,10 @@ pub fn get_document(
         #("pierce", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_document_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_document_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
@@ -1179,7 +1169,7 @@ pub fn get_node_for_location(
   include_user_agent_shadow_dom: option.Option(Bool),
   ignore_pointer_events_none: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.getNodeForLocation",
     option.Some(json.object(
       [#("x", json.int(x)), #("y", json.int(y))]
@@ -1190,11 +1180,10 @@ pub fn get_node_for_location(
         #("ignorePointerEventsNone", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_node_for_location_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_node_for_location_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns node's HTML markup.
@@ -1204,7 +1193,7 @@ pub fn get_outer_html(
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.getOuterHTML",
     option.Some(json.object(
       []
@@ -1218,29 +1207,25 @@ pub fn get_outer_html(
         #("objectId", runtime.encode__remote_object_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_outer_html_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_outer_html_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Hides any highlight.
 pub fn hide_highlight(callback__) {
-  let _ = callback__("DOM.hideHighlight", option.None)
-  Nil
+  callback__("DOM.hideHighlight", option.None)
 }
 
 /// Highlights DOM node.
 pub fn highlight_node(callback__) {
-  let _ = callback__("DOM.highlightNode", option.None)
-  Nil
+  callback__("DOM.highlightNode", option.None)
 }
 
 /// Highlights given rectangle.
 pub fn highlight_rect(callback__) {
-  let _ = callback__("DOM.highlightRect", option.None)
-  Nil
+  callback__("DOM.highlightRect", option.None)
 }
 
 /// Moves node into the new container, places it before the given anchor.
@@ -1250,7 +1235,7 @@ pub fn move_to(
   target_node_id: NodeId,
   insert_before_node_id: option.Option(NodeId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.moveTo",
     option.Some(json.object(
       [
@@ -1261,16 +1246,15 @@ pub fn move_to(
         #("insertBeforeNodeId", encode__node_id(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__move_to_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__move_to_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Executes `querySelector` on a given node.
 pub fn query_selector(callback__, node_id: NodeId, selector: String) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.querySelector",
     option.Some(
       json.object([
@@ -1278,16 +1262,15 @@ pub fn query_selector(callback__, node_id: NodeId, selector: String) {
         #("selector", json.string(selector)),
       ]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__query_selector_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__query_selector_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Executes `querySelectorAll` on a given node.
 pub fn query_selector_all(callback__, node_id: NodeId, selector: String) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.querySelectorAll",
     option.Some(
       json.object([
@@ -1295,36 +1278,31 @@ pub fn query_selector_all(callback__, node_id: NodeId, selector: String) {
         #("selector", json.string(selector)),
       ]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__query_selector_all_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__query_selector_all_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Removes attribute with given name from an element with given id.
 pub fn remove_attribute(callback__, node_id: NodeId, name: String) {
-  let _ =
-    callback__(
-      "DOM.removeAttribute",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("name", json.string(name)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "DOM.removeAttribute",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("name", json.string(name)),
+      ]),
+    ),
+  )
 }
 
 /// Removes node with given id.
 pub fn remove_node(callback__, node_id: NodeId) {
-  let _ =
-    callback__(
-      "DOM.removeNode",
-      option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
-    )
-  Nil
+  callback__(
+    "DOM.removeNode",
+    option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+  )
 }
 
 /// Requests that children of the node with given id are returned to the caller in form of
@@ -1336,36 +1314,33 @@ pub fn request_child_nodes(
   depth: option.Option(Int),
   pierce: option.Option(Bool),
 ) {
-  let _ =
-    callback__(
-      "DOM.requestChildNodes",
-      option.Some(json.object(
-        [#("nodeId", encode__node_id(node_id))]
-        |> utils.add_optional(depth, fn(inner_value__) {
-          #("depth", json.int(inner_value__))
-        })
-        |> utils.add_optional(pierce, fn(inner_value__) {
-          #("pierce", json.bool(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "DOM.requestChildNodes",
+    option.Some(json.object(
+      [#("nodeId", encode__node_id(node_id))]
+      |> utils.add_optional(depth, fn(inner_value__) {
+        #("depth", json.int(inner_value__))
+      })
+      |> utils.add_optional(pierce, fn(inner_value__) {
+        #("pierce", json.bool(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Requests that the node is sent to the caller given the JavaScript node object reference. All
 /// nodes that form the path from the node to the root are also sent to the client as a series of
 /// `setChildNodes` notifications.
 pub fn request_node(callback__, object_id: runtime.RemoteObjectId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.requestNode",
     option.Some(
       json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__request_node_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__request_node_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Resolves the JavaScript node object for a given NodeId or BackendNodeId.
@@ -1376,7 +1351,7 @@ pub fn resolve_node(
   object_group: option.Option(String),
   execution_context_id: option.Option(runtime.ExecutionContextId),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.resolveNode",
     option.Some(json.object(
       []
@@ -1396,11 +1371,10 @@ pub fn resolve_node(
         )
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__resolve_node_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__resolve_node_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Sets attribute for an element with given id.
@@ -1410,18 +1384,16 @@ pub fn set_attribute_value(
   name: String,
   value: String,
 ) {
-  let _ =
-    callback__(
-      "DOM.setAttributeValue",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("name", json.string(name)),
-          #("value", json.string(value)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "DOM.setAttributeValue",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("name", json.string(name)),
+        #("value", json.string(value)),
+      ]),
+    ),
+  )
 }
 
 /// Sets attributes on element with given id. This method is useful when user edits some existing
@@ -1432,17 +1404,15 @@ pub fn set_attributes_as_text(
   text: String,
   name: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "DOM.setAttributesAsText",
-      option.Some(json.object(
-        [#("nodeId", encode__node_id(node_id)), #("text", json.string(text))]
-        |> utils.add_optional(name, fn(inner_value__) {
-          #("name", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "DOM.setAttributesAsText",
+    option.Some(json.object(
+      [#("nodeId", encode__node_id(node_id)), #("text", json.string(text))]
+      |> utils.add_optional(name, fn(inner_value__) {
+        #("name", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Sets files for the given file input element.
@@ -1453,28 +1423,26 @@ pub fn set_file_input_files(
   backend_node_id: option.Option(BackendNodeId),
   object_id: option.Option(runtime.RemoteObjectId),
 ) {
-  let _ =
-    callback__(
-      "DOM.setFileInputFiles",
-      option.Some(json.object(
-        [#("files", json.array(files, of: json.string))]
-        |> utils.add_optional(node_id, fn(inner_value__) {
-          #("nodeId", encode__node_id(inner_value__))
-        })
-        |> utils.add_optional(backend_node_id, fn(inner_value__) {
-          #("backendNodeId", encode__backend_node_id(inner_value__))
-        })
-        |> utils.add_optional(object_id, fn(inner_value__) {
-          #("objectId", runtime.encode__remote_object_id(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "DOM.setFileInputFiles",
+    option.Some(json.object(
+      [#("files", json.array(files, of: json.string))]
+      |> utils.add_optional(node_id, fn(inner_value__) {
+        #("nodeId", encode__node_id(inner_value__))
+      })
+      |> utils.add_optional(backend_node_id, fn(inner_value__) {
+        #("backendNodeId", encode__backend_node_id(inner_value__))
+      })
+      |> utils.add_optional(object_id, fn(inner_value__) {
+        #("objectId", runtime.encode__remote_object_id(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Sets node name for a node with given id.
 pub fn set_node_name(callback__, node_id: NodeId, name: String) {
-  callback__(
+  use result__ <- result.try(callback__(
     "DOM.setNodeName",
     option.Some(
       json.object([
@@ -1482,39 +1450,34 @@ pub fn set_node_name(callback__, node_id: NodeId, name: String) {
         #("name", json.string(name)),
       ]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__set_node_name_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__set_node_name_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Sets node value for a node with given id.
 pub fn set_node_value(callback__, node_id: NodeId, value: String) {
-  let _ =
-    callback__(
-      "DOM.setNodeValue",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("value", json.string(value)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "DOM.setNodeValue",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("value", json.string(value)),
+      ]),
+    ),
+  )
 }
 
 /// Sets node HTML markup, returns new node id.
 pub fn set_outer_html(callback__, node_id: NodeId, outer_html: String) {
-  let _ =
-    callback__(
-      "DOM.setOuterHTML",
-      option.Some(
-        json.object([
-          #("nodeId", encode__node_id(node_id)),
-          #("outerHTML", json.string(outer_html)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "DOM.setOuterHTML",
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+        #("outerHTML", json.string(outer_html)),
+      ]),
+    ),
+  )
 }

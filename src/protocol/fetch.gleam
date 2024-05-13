@@ -320,8 +320,7 @@ pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
 
 /// Disables the fetch domain.
 pub fn disable(callback__) {
-  let _ = callback__("Fetch.disable", option.None)
-  Nil
+  callback__("Fetch.disable", option.None)
 }
 
 /// Enables issuing of requestPaused events. A request will be paused until client
@@ -331,20 +330,18 @@ pub fn enable(
   patterns: option.Option(List(RequestPattern)),
   handle_auth_requests: option.Option(Bool),
 ) {
-  let _ =
-    callback__(
-      "Fetch.enable",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(patterns, fn(inner_value__) {
-          #("patterns", json.array(inner_value__, of: encode__request_pattern))
-        })
-        |> utils.add_optional(handle_auth_requests, fn(inner_value__) {
-          #("handleAuthRequests", json.bool(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Fetch.enable",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(patterns, fn(inner_value__) {
+        #("patterns", json.array(inner_value__, of: encode__request_pattern))
+      })
+      |> utils.add_optional(handle_auth_requests, fn(inner_value__) {
+        #("handleAuthRequests", json.bool(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Causes the request to fail with specified reason.
@@ -353,17 +350,15 @@ pub fn fail_request(
   request_id: RequestId,
   error_reason: network.ErrorReason,
 ) {
-  let _ =
-    callback__(
-      "Fetch.failRequest",
-      option.Some(
-        json.object([
-          #("requestId", encode__request_id(request_id)),
-          #("errorReason", network.encode__error_reason(error_reason)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Fetch.failRequest",
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+        #("errorReason", network.encode__error_reason(error_reason)),
+      ]),
+    ),
+  )
 }
 
 /// Provides response to the request.
@@ -376,32 +371,30 @@ pub fn fulfill_request(
   body: option.Option(String),
   response_phrase: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Fetch.fulfillRequest",
-      option.Some(json.object(
-        [
-          #("requestId", encode__request_id(request_id)),
-          #("responseCode", json.int(response_code)),
-        ]
-        |> utils.add_optional(response_headers, fn(inner_value__) {
-          #(
-            "responseHeaders",
-            json.array(inner_value__, of: encode__header_entry),
-          )
-        })
-        |> utils.add_optional(binary_response_headers, fn(inner_value__) {
-          #("binaryResponseHeaders", json.string(inner_value__))
-        })
-        |> utils.add_optional(body, fn(inner_value__) {
-          #("body", json.string(inner_value__))
-        })
-        |> utils.add_optional(response_phrase, fn(inner_value__) {
-          #("responsePhrase", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Fetch.fulfillRequest",
+    option.Some(json.object(
+      [
+        #("requestId", encode__request_id(request_id)),
+        #("responseCode", json.int(response_code)),
+      ]
+      |> utils.add_optional(response_headers, fn(inner_value__) {
+        #(
+          "responseHeaders",
+          json.array(inner_value__, of: encode__header_entry),
+        )
+      })
+      |> utils.add_optional(binary_response_headers, fn(inner_value__) {
+        #("binaryResponseHeaders", json.string(inner_value__))
+      })
+      |> utils.add_optional(body, fn(inner_value__) {
+        #("body", json.string(inner_value__))
+      })
+      |> utils.add_optional(response_phrase, fn(inner_value__) {
+        #("responsePhrase", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Continues the request, optionally modifying some of its parameters.
@@ -413,26 +406,24 @@ pub fn continue_request(
   post_data: option.Option(String),
   headers: option.Option(List(HeaderEntry)),
 ) {
-  let _ =
-    callback__(
-      "Fetch.continueRequest",
-      option.Some(json.object(
-        [#("requestId", encode__request_id(request_id))]
-        |> utils.add_optional(url, fn(inner_value__) {
-          #("url", json.string(inner_value__))
-        })
-        |> utils.add_optional(method, fn(inner_value__) {
-          #("method", json.string(inner_value__))
-        })
-        |> utils.add_optional(post_data, fn(inner_value__) {
-          #("postData", json.string(inner_value__))
-        })
-        |> utils.add_optional(headers, fn(inner_value__) {
-          #("headers", json.array(inner_value__, of: encode__header_entry))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Fetch.continueRequest",
+    option.Some(json.object(
+      [#("requestId", encode__request_id(request_id))]
+      |> utils.add_optional(url, fn(inner_value__) {
+        #("url", json.string(inner_value__))
+      })
+      |> utils.add_optional(method, fn(inner_value__) {
+        #("method", json.string(inner_value__))
+      })
+      |> utils.add_optional(post_data, fn(inner_value__) {
+        #("postData", json.string(inner_value__))
+      })
+      |> utils.add_optional(headers, fn(inner_value__) {
+        #("headers", json.array(inner_value__, of: encode__header_entry))
+      }),
+    )),
+  )
 }
 
 /// Continues a request supplying authChallengeResponse following authRequired event.
@@ -441,20 +432,18 @@ pub fn continue_with_auth(
   request_id: RequestId,
   auth_challenge_response: AuthChallengeResponse,
 ) {
-  let _ =
-    callback__(
-      "Fetch.continueWithAuth",
-      option.Some(
-        json.object([
-          #("requestId", encode__request_id(request_id)),
-          #(
-            "authChallengeResponse",
-            encode__auth_challenge_response(auth_challenge_response),
-          ),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Fetch.continueWithAuth",
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+        #(
+          "authChallengeResponse",
+          encode__auth_challenge_response(auth_challenge_response),
+        ),
+      ]),
+    ),
+  )
 }
 
 /// Causes the body of the response to be received from the server and
@@ -468,14 +457,13 @@ pub fn continue_with_auth(
 /// `responseCode` and presence of `location` response header, see
 /// comments to `requestPaused` for details.
 pub fn get_response_body(callback__, request_id: RequestId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Fetch.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-  )
-  |> result.try(fn(result__) {
-    decode__get_response_body_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_response_body_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns a handle to the stream representing the response body.
@@ -489,12 +477,11 @@ pub fn get_response_body(callback__, request_id: RequestId) {
 /// Calling other methods that affect the request or disabling fetch
 /// domain before body is received results in an undefined behavior.
 pub fn take_response_body_as_stream(callback__, request_id: RequestId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Fetch.takeResponseBodyAsStream",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-  )
-  |> result.try(fn(result__) {
-    decode__take_response_body_as_stream_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__take_response_body_as_stream_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }

@@ -329,39 +329,33 @@ pub fn decode__violation_setting(value__: dynamic.Dynamic) {
 
 /// Clears the log.
 pub fn clear(callback__) {
-  let _ = callback__("Log.clear", option.None)
-  Nil
+  callback__("Log.clear", option.None)
 }
 
 /// Disables log domain, prevents further log entries from being reported to the client.
 pub fn disable(callback__) {
-  let _ = callback__("Log.disable", option.None)
-  Nil
+  callback__("Log.disable", option.None)
 }
 
 /// Enables log domain, sends the entries collected so far to the client by means of the
 /// `entryAdded` notification.
 pub fn enable(callback__) {
-  let _ = callback__("Log.enable", option.None)
-  Nil
+  callback__("Log.enable", option.None)
 }
 
 /// start violation reporting.
 pub fn start_violations_report(callback__, config: List(ViolationSetting)) {
-  let _ =
-    callback__(
-      "Log.startViolationsReport",
-      option.Some(
-        json.object([
-          #("config", json.array(config, of: encode__violation_setting)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Log.startViolationsReport",
+    option.Some(
+      json.object([
+        #("config", json.array(config, of: encode__violation_setting)),
+      ]),
+    ),
+  )
 }
 
 /// Stop violation reporting.
 pub fn stop_violations_report(callback__) {
-  let _ = callback__("Log.stopViolationsReport", option.None)
-  Nil
+  callback__("Log.stopViolationsReport", option.None)
 }

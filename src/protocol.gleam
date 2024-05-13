@@ -8,9 +8,15 @@
 //// ## Structure
 //// 
 //// Each domain in the protocol is represented as a module under `protocol/`. 
+//// 
+//// In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol), 
+//// however there are some adjustments that need to be made to be made to make the protocol schema usable, mainly due to
+//// what I believe are bugs in the protocol.  
+//// To see these changes, check the `apply_protocol_patches` function in `chrobot/internal/generate_bindings`.
+//// 
 //// Domains may depend on the types of other domains, these dependencies are mirrored in the generated bindings where possible.
 //// In some case, type references to other modules have been replaced by the respective inner type, because the references would
-//// create a circular dependency. See the patch functions in `chrobot/internal/generate_bindings` for more information on this.
+//// create a circular dependency.
 //// 
 //// ## Types 
 //// 

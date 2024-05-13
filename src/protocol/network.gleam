@@ -1873,14 +1873,12 @@ pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
 
 /// Clears browser cache.
 pub fn clear_browser_cache(callback__) {
-  let _ = callback__("Network.clearBrowserCache", option.None)
-  Nil
+  callback__("Network.clearBrowserCache", option.None)
 }
 
 /// Clears browser cookies.
 pub fn clear_browser_cookies(callback__) {
-  let _ = callback__("Network.clearBrowserCookies", option.None)
-  Nil
+  callback__("Network.clearBrowserCookies", option.None)
 }
 
 /// Deletes browser cookies with matching name and url or domain/path/partitionKey pair.
@@ -1892,32 +1890,29 @@ pub fn delete_cookies(
   path: option.Option(String),
   partition_key: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Network.deleteCookies",
-      option.Some(json.object(
-        [#("name", json.string(name))]
-        |> utils.add_optional(url, fn(inner_value__) {
-          #("url", json.string(inner_value__))
-        })
-        |> utils.add_optional(domain, fn(inner_value__) {
-          #("domain", json.string(inner_value__))
-        })
-        |> utils.add_optional(path, fn(inner_value__) {
-          #("path", json.string(inner_value__))
-        })
-        |> utils.add_optional(partition_key, fn(inner_value__) {
-          #("partitionKey", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Network.deleteCookies",
+    option.Some(json.object(
+      [#("name", json.string(name))]
+      |> utils.add_optional(url, fn(inner_value__) {
+        #("url", json.string(inner_value__))
+      })
+      |> utils.add_optional(domain, fn(inner_value__) {
+        #("domain", json.string(inner_value__))
+      })
+      |> utils.add_optional(path, fn(inner_value__) {
+        #("path", json.string(inner_value__))
+      })
+      |> utils.add_optional(partition_key, fn(inner_value__) {
+        #("partitionKey", json.string(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Disables network tracking, prevents network events from being sent to the client.
 pub fn disable(callback__) {
-  let _ = callback__("Network.disable", option.None)
-  Nil
+  callback__("Network.disable", option.None)
 }
 
 /// Activates emulation of network conditions.
@@ -1929,43 +1924,39 @@ pub fn emulate_network_conditions(
   upload_throughput: Float,
   connection_type: option.Option(ConnectionType),
 ) {
-  let _ =
-    callback__(
-      "Network.emulateNetworkConditions",
-      option.Some(json.object(
-        [
-          #("offline", json.bool(offline)),
-          #("latency", json.float(latency)),
-          #("downloadThroughput", json.float(download_throughput)),
-          #("uploadThroughput", json.float(upload_throughput)),
-        ]
-        |> utils.add_optional(connection_type, fn(inner_value__) {
-          #("connectionType", encode__connection_type(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Network.emulateNetworkConditions",
+    option.Some(json.object(
+      [
+        #("offline", json.bool(offline)),
+        #("latency", json.float(latency)),
+        #("downloadThroughput", json.float(download_throughput)),
+        #("uploadThroughput", json.float(upload_throughput)),
+      ]
+      |> utils.add_optional(connection_type, fn(inner_value__) {
+        #("connectionType", encode__connection_type(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Enables network tracking, network events will now be delivered to the client.
 pub fn enable(callback__, max_post_data_size: option.Option(Int)) {
-  let _ =
-    callback__(
-      "Network.enable",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(max_post_data_size, fn(inner_value__) {
-          #("maxPostDataSize", json.int(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Network.enable",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(max_post_data_size, fn(inner_value__) {
+        #("maxPostDataSize", json.int(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Returns all browser cookies for the current URL. Depending on the backend support, will return
 /// detailed cookie information in the `cookies` field.
 pub fn get_cookies(callback__, urls: option.Option(List(String))) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Network.getCookies",
     option.Some(json.object(
       []
@@ -1973,55 +1964,48 @@ pub fn get_cookies(callback__, urls: option.Option(List(String))) {
         #("urls", json.array(inner_value__, of: json.string))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_cookies_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_cookies_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns content served for the given request.
 pub fn get_response_body(callback__, request_id: RequestId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Network.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-  )
-  |> result.try(fn(result__) {
-    decode__get_response_body_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_response_body_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns post data sent with the request. Returns an error when no data was sent with the request.
 pub fn get_request_post_data(callback__, request_id: RequestId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Network.getRequestPostData",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
-  )
-  |> result.try(fn(result__) {
-    decode__get_request_post_data_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_request_post_data_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Toggles ignoring of service worker for each request.
 pub fn set_bypass_service_worker(callback__, bypass: Bool) {
-  let _ =
-    callback__(
-      "Network.setBypassServiceWorker",
-      option.Some(json.object([#("bypass", json.bool(bypass))])),
-    )
-  Nil
+  callback__(
+    "Network.setBypassServiceWorker",
+    option.Some(json.object([#("bypass", json.bool(bypass))])),
+  )
 }
 
 /// Toggles ignoring cache for each request. If `true`, cache will not be used.
 pub fn set_cache_disabled(callback__, cache_disabled: Bool) {
-  let _ =
-    callback__(
-      "Network.setCacheDisabled",
-      option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
-    )
-  Nil
+  callback__(
+    "Network.setCacheDisabled",
+    option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
+  )
 }
 
 /// Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
@@ -2037,59 +2021,51 @@ pub fn set_cookie(
   same_site: option.Option(CookieSameSite),
   expires: option.Option(TimeSinceEpoch),
 ) {
-  let _ =
-    callback__(
-      "Network.setCookie",
-      option.Some(json.object(
-        [#("name", json.string(name)), #("value", json.string(value))]
-        |> utils.add_optional(url, fn(inner_value__) {
-          #("url", json.string(inner_value__))
-        })
-        |> utils.add_optional(domain, fn(inner_value__) {
-          #("domain", json.string(inner_value__))
-        })
-        |> utils.add_optional(path, fn(inner_value__) {
-          #("path", json.string(inner_value__))
-        })
-        |> utils.add_optional(secure, fn(inner_value__) {
-          #("secure", json.bool(inner_value__))
-        })
-        |> utils.add_optional(http_only, fn(inner_value__) {
-          #("httpOnly", json.bool(inner_value__))
-        })
-        |> utils.add_optional(same_site, fn(inner_value__) {
-          #("sameSite", encode__cookie_same_site(inner_value__))
-        })
-        |> utils.add_optional(expires, fn(inner_value__) {
-          #("expires", encode__time_since_epoch(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Network.setCookie",
+    option.Some(json.object(
+      [#("name", json.string(name)), #("value", json.string(value))]
+      |> utils.add_optional(url, fn(inner_value__) {
+        #("url", json.string(inner_value__))
+      })
+      |> utils.add_optional(domain, fn(inner_value__) {
+        #("domain", json.string(inner_value__))
+      })
+      |> utils.add_optional(path, fn(inner_value__) {
+        #("path", json.string(inner_value__))
+      })
+      |> utils.add_optional(secure, fn(inner_value__) {
+        #("secure", json.bool(inner_value__))
+      })
+      |> utils.add_optional(http_only, fn(inner_value__) {
+        #("httpOnly", json.bool(inner_value__))
+      })
+      |> utils.add_optional(same_site, fn(inner_value__) {
+        #("sameSite", encode__cookie_same_site(inner_value__))
+      })
+      |> utils.add_optional(expires, fn(inner_value__) {
+        #("expires", encode__time_since_epoch(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Sets given cookies.
 pub fn set_cookies(callback__, cookies: List(CookieParam)) {
-  let _ =
-    callback__(
-      "Network.setCookies",
-      option.Some(
-        json.object([
-          #("cookies", json.array(cookies, of: encode__cookie_param)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Network.setCookies",
+    option.Some(
+      json.object([#("cookies", json.array(cookies, of: encode__cookie_param))]),
+    ),
+  )
 }
 
 /// Specifies whether to always send extra HTTP headers with the requests from this page.
 pub fn set_extra_http_headers(callback__, headers: Headers) {
-  let _ =
-    callback__(
-      "Network.setExtraHTTPHeaders",
-      option.Some(json.object([#("headers", encode__headers(headers))])),
-    )
-  Nil
+  callback__(
+    "Network.setExtraHTTPHeaders",
+    option.Some(json.object([#("headers", encode__headers(headers))])),
+  )
 }
 
 /// Allows overriding user agent with the given string.
@@ -2099,18 +2075,16 @@ pub fn set_user_agent_override(
   accept_language: option.Option(String),
   platform: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Network.setUserAgentOverride",
-      option.Some(json.object(
-        [#("userAgent", json.string(user_agent))]
-        |> utils.add_optional(accept_language, fn(inner_value__) {
-          #("acceptLanguage", json.string(inner_value__))
-        })
-        |> utils.add_optional(platform, fn(inner_value__) {
-          #("platform", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Network.setUserAgentOverride",
+    option.Some(json.object(
+      [#("userAgent", json.string(user_agent))]
+      |> utils.add_optional(accept_language, fn(inner_value__) {
+        #("acceptLanguage", json.string(inner_value__))
+      })
+      |> utils.add_optional(platform, fn(inner_value__) {
+        #("platform", json.string(inner_value__))
+      }),
+    )),
+  )
 }

@@ -327,40 +327,37 @@ pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
 
 /// This generated protocol command has no description
 pub fn disable(callback__) {
-  let _ = callback__("Profiler.disable", option.None)
-  Nil
+  callback__("Profiler.disable", option.None)
 }
 
 /// This generated protocol command has no description
 pub fn enable(callback__) {
-  let _ = callback__("Profiler.enable", option.None)
-  Nil
+  callback__("Profiler.enable", option.None)
 }
 
 /// Collect coverage data for the current isolate. The coverage data may be incomplete due to
 /// garbage collection.
 pub fn get_best_effort_coverage(callback__) {
-  callback__("Profiler.getBestEffortCoverage", option.None)
-  |> result.try(fn(result__) {
-    decode__get_best_effort_coverage_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__(
+    "Profiler.getBestEffortCoverage",
+    option.None,
+  ))
+
+  decode__get_best_effort_coverage_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
 pub fn set_sampling_interval(callback__, interval: Int) {
-  let _ =
-    callback__(
-      "Profiler.setSamplingInterval",
-      option.Some(json.object([#("interval", json.int(interval))])),
-    )
-  Nil
+  callback__(
+    "Profiler.setSamplingInterval",
+    option.Some(json.object([#("interval", json.int(interval))])),
+  )
 }
 
 /// This generated protocol command has no description
 pub fn start(callback__) {
-  let _ = callback__("Profiler.start", option.None)
-  Nil
+  callback__("Profiler.start", option.None)
 }
 
 /// Enable precise code coverage. Coverage data for JavaScript executed before enabling precise code
@@ -372,7 +369,7 @@ pub fn start_precise_coverage(
   detailed: option.Option(Bool),
   allow_triggered_updates: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Profiler.startPreciseCoverage",
     option.Some(json.object(
       []
@@ -386,35 +383,34 @@ pub fn start_precise_coverage(
         #("allowTriggeredUpdates", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__start_precise_coverage_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__start_precise_coverage_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// This generated protocol command has no description
 pub fn stop(callback__) {
-  callback__("Profiler.stop", option.None)
-  |> result.try(fn(result__) {
-    decode__stop_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__("Profiler.stop", option.None))
+
+  decode__stop_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Disable precise code coverage. Disabling releases unnecessary execution count records and allows
 /// executing optimized code.
 pub fn stop_precise_coverage(callback__) {
-  let _ = callback__("Profiler.stopPreciseCoverage", option.None)
-  Nil
+  callback__("Profiler.stopPreciseCoverage", option.None)
 }
 
 /// Collect coverage data for the current isolate, and resets execution counters. Precise code
 /// coverage needs to have started.
 pub fn take_precise_coverage(callback__) {
-  callback__("Profiler.takePreciseCoverage", option.None)
-  |> result.try(fn(result__) {
-    decode__take_precise_coverage_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__(
+    "Profiler.takePreciseCoverage",
+    option.None,
+  ))
+
+  decode__take_precise_coverage_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }

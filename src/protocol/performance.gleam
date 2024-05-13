@@ -56,23 +56,20 @@ pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
 
 /// Disable collecting and reporting metrics.
 pub fn disable(callback__) {
-  let _ = callback__("Performance.disable", option.None)
-  Nil
+  callback__("Performance.disable", option.None)
 }
 
 /// Enable collecting and reporting metrics.
 pub fn enable(callback__, time_domain: option.Option(EnableTimeDomain)) {
-  let _ =
-    callback__(
-      "Performance.enable",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(time_domain, fn(inner_value__) {
-          #("timeDomain", encode__enable_time_domain(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Performance.enable",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(time_domain, fn(inner_value__) {
+        #("timeDomain", encode__enable_time_domain(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -110,9 +107,8 @@ pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
 
 /// Retrieve current values of run-time metrics.
 pub fn get_metrics(callback__) {
-  callback__("Performance.getMetrics", option.None)
-  |> result.try(fn(result__) {
-    decode__get_metrics_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  use result__ <- result.try(callback__("Performance.getMetrics", option.None))
+
+  decode__get_metrics_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }

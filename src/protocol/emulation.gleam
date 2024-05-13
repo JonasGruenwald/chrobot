@@ -220,24 +220,20 @@ pub fn decode__media_feature(value__: dynamic.Dynamic) {
 
 /// Clears the overridden device metrics.
 pub fn clear_device_metrics_override(callback__) {
-  let _ = callback__("Emulation.clearDeviceMetricsOverride", option.None)
-  Nil
+  callback__("Emulation.clearDeviceMetricsOverride", option.None)
 }
 
 /// Clears the overridden Geolocation Position and Error.
 pub fn clear_geolocation_override(callback__) {
-  let _ = callback__("Emulation.clearGeolocationOverride", option.None)
-  Nil
+  callback__("Emulation.clearGeolocationOverride", option.None)
 }
 
 /// Enables CPU throttling to emulate slow CPUs.
 pub fn set_cpu_throttling_rate(callback__, rate: Float) {
-  let _ =
-    callback__(
-      "Emulation.setCPUThrottlingRate",
-      option.Some(json.object([#("rate", json.float(rate))])),
-    )
-  Nil
+  callback__(
+    "Emulation.setCPUThrottlingRate",
+    option.Some(json.object([#("rate", json.float(rate))])),
+  )
 }
 
 /// Sets or clears an override of the default background color of the frame. This override is used
@@ -246,17 +242,15 @@ pub fn set_default_background_color_override(
   callback__,
   color: option.Option(dom.RGBA),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setDefaultBackgroundColorOverride",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(color, fn(inner_value__) {
-          #("color", dom.encode__rgba(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setDefaultBackgroundColorOverride",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(color, fn(inner_value__) {
+        #("color", dom.encode__rgba(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
@@ -270,22 +264,20 @@ pub fn set_device_metrics_override(
   mobile: Bool,
   screen_orientation: option.Option(ScreenOrientation),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setDeviceMetricsOverride",
-      option.Some(json.object(
-        [
-          #("width", json.int(width)),
-          #("height", json.int(height)),
-          #("deviceScaleFactor", json.float(device_scale_factor)),
-          #("mobile", json.bool(mobile)),
-        ]
-        |> utils.add_optional(screen_orientation, fn(inner_value__) {
-          #("screenOrientation", encode__screen_orientation(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setDeviceMetricsOverride",
+    option.Some(json.object(
+      [
+        #("width", json.int(width)),
+        #("height", json.int(height)),
+        #("deviceScaleFactor", json.float(device_scale_factor)),
+        #("mobile", json.bool(mobile)),
+      ]
+      |> utils.add_optional(screen_orientation, fn(inner_value__) {
+        #("screenOrientation", encode__screen_orientation(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Emulates the given media type or media feature for CSS media queries.
@@ -294,20 +286,18 @@ pub fn set_emulated_media(
   media: option.Option(String),
   features: option.Option(List(MediaFeature)),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setEmulatedMedia",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(media, fn(inner_value__) {
-          #("media", json.string(inner_value__))
-        })
-        |> utils.add_optional(features, fn(inner_value__) {
-          #("features", json.array(inner_value__, of: encode__media_feature))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setEmulatedMedia",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(media, fn(inner_value__) {
+        #("media", json.string(inner_value__))
+      })
+      |> utils.add_optional(features, fn(inner_value__) {
+        #("features", json.array(inner_value__, of: encode__media_feature))
+      }),
+    )),
+  )
 }
 
 /// Emulates the given vision deficiency.
@@ -315,16 +305,14 @@ pub fn set_emulated_vision_deficiency(
   callback__,
   type_: SetEmulatedVisionDeficiencyType,
 ) {
-  let _ =
-    callback__(
-      "Emulation.setEmulatedVisionDeficiency",
-      option.Some(
-        json.object([
-          #("type", encode__set_emulated_vision_deficiency_type(type_)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Emulation.setEmulatedVisionDeficiency",
+    option.Some(
+      json.object([
+        #("type", encode__set_emulated_vision_deficiency_type(type_)),
+      ]),
+    ),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -383,23 +371,21 @@ pub fn set_geolocation_override(
   longitude: option.Option(Float),
   accuracy: option.Option(Float),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setGeolocationOverride",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(latitude, fn(inner_value__) {
-          #("latitude", json.float(inner_value__))
-        })
-        |> utils.add_optional(longitude, fn(inner_value__) {
-          #("longitude", json.float(inner_value__))
-        })
-        |> utils.add_optional(accuracy, fn(inner_value__) {
-          #("accuracy", json.float(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setGeolocationOverride",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(latitude, fn(inner_value__) {
+        #("latitude", json.float(inner_value__))
+      })
+      |> utils.add_optional(longitude, fn(inner_value__) {
+        #("longitude", json.float(inner_value__))
+      })
+      |> utils.add_optional(accuracy, fn(inner_value__) {
+        #("accuracy", json.float(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Overrides the Idle state.
@@ -408,33 +394,28 @@ pub fn set_idle_override(
   is_user_active: Bool,
   is_screen_unlocked: Bool,
 ) {
-  let _ =
-    callback__(
-      "Emulation.setIdleOverride",
-      option.Some(
-        json.object([
-          #("isUserActive", json.bool(is_user_active)),
-          #("isScreenUnlocked", json.bool(is_screen_unlocked)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Emulation.setIdleOverride",
+    option.Some(
+      json.object([
+        #("isUserActive", json.bool(is_user_active)),
+        #("isScreenUnlocked", json.bool(is_screen_unlocked)),
+      ]),
+    ),
+  )
 }
 
 /// Clears Idle state overrides.
 pub fn clear_idle_override(callback__) {
-  let _ = callback__("Emulation.clearIdleOverride", option.None)
-  Nil
+  callback__("Emulation.clearIdleOverride", option.None)
 }
 
 /// Switches script execution in the page.
 pub fn set_script_execution_disabled(callback__, value: Bool) {
-  let _ =
-    callback__(
-      "Emulation.setScriptExecutionDisabled",
-      option.Some(json.object([#("value", json.bool(value))])),
-    )
-  Nil
+  callback__(
+    "Emulation.setScriptExecutionDisabled",
+    option.Some(json.object([#("value", json.bool(value))])),
+  )
 }
 
 /// Enables touch on platforms which do not support them.
@@ -443,27 +424,23 @@ pub fn set_touch_emulation_enabled(
   enabled: Bool,
   max_touch_points: option.Option(Int),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setTouchEmulationEnabled",
-      option.Some(json.object(
-        [#("enabled", json.bool(enabled))]
-        |> utils.add_optional(max_touch_points, fn(inner_value__) {
-          #("maxTouchPoints", json.int(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setTouchEmulationEnabled",
+    option.Some(json.object(
+      [#("enabled", json.bool(enabled))]
+      |> utils.add_optional(max_touch_points, fn(inner_value__) {
+        #("maxTouchPoints", json.int(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Overrides default host system timezone with the specified one.
 pub fn set_timezone_override(callback__, timezone_id: String) {
-  let _ =
-    callback__(
-      "Emulation.setTimezoneOverride",
-      option.Some(json.object([#("timezoneId", json.string(timezone_id))])),
-    )
-  Nil
+  callback__(
+    "Emulation.setTimezoneOverride",
+    option.Some(json.object([#("timezoneId", json.string(timezone_id))])),
+  )
 }
 
 /// Allows overriding user agent with the given string.
@@ -474,18 +451,16 @@ pub fn set_user_agent_override(
   accept_language: option.Option(String),
   platform: option.Option(String),
 ) {
-  let _ =
-    callback__(
-      "Emulation.setUserAgentOverride",
-      option.Some(json.object(
-        [#("userAgent", json.string(user_agent))]
-        |> utils.add_optional(accept_language, fn(inner_value__) {
-          #("acceptLanguage", json.string(inner_value__))
-        })
-        |> utils.add_optional(platform, fn(inner_value__) {
-          #("platform", json.string(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Emulation.setUserAgentOverride",
+    option.Some(json.object(
+      [#("userAgent", json.string(user_agent))]
+      |> utils.add_optional(accept_language, fn(inner_value__) {
+        #("acceptLanguage", json.string(inner_value__))
+      })
+      |> utils.add_optional(platform, fn(inner_value__) {
+        #("platform", json.string(inner_value__))
+      }),
+    )),
+  )
 }

@@ -661,20 +661,18 @@ pub fn continue_to_location(
   location: Location,
   target_call_frames: option.Option(ContinueToLocationTargetCallFrames),
 ) {
-  let _ =
-    callback__(
-      "Debugger.continueToLocation",
-      option.Some(json.object(
-        [#("location", encode__location(location))]
-        |> utils.add_optional(target_call_frames, fn(inner_value__) {
-          #(
-            "targetCallFrames",
-            encode__continue_to_location_target_call_frames(inner_value__),
-          )
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Debugger.continueToLocation",
+    option.Some(json.object(
+      [#("location", encode__location(location))]
+      |> utils.add_optional(target_call_frames, fn(inner_value__) {
+        #(
+          "targetCallFrames",
+          encode__continue_to_location_target_call_frames(inner_value__),
+        )
+      }),
+    )),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -712,15 +710,13 @@ pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic)
 
 /// Disables debugger for given page.
 pub fn disable(callback__) {
-  let _ = callback__("Debugger.disable", option.None)
-  Nil
+  callback__("Debugger.disable", option.None)
 }
 
 /// Enables debugger for the given page. Clients should not assume that the debugging has been
 /// enabled until the result for this command is received.
 pub fn enable(callback__) {
-  let _ = callback__("Debugger.enable", option.None)
-  Nil
+  callback__("Debugger.enable", option.None)
 }
 
 /// Evaluates expression on a given call frame.
@@ -734,7 +730,7 @@ pub fn evaluate_on_call_frame(
   return_by_value: option.Option(Bool),
   throw_on_side_effect: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.evaluateOnCallFrame",
     option.Some(json.object(
       [
@@ -757,11 +753,10 @@ pub fn evaluate_on_call_frame(
         #("throwOnSideEffect", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__evaluate_on_call_frame_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__evaluate_on_call_frame_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns possible locations for breakpoint. scriptId in start and end range locations should be
@@ -772,7 +767,7 @@ pub fn get_possible_breakpoints(
   end: option.Option(Location),
   restrict_to_function: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.getPossibleBreakpoints",
     option.Some(json.object(
       [#("start", encode__location(start))]
@@ -783,43 +778,38 @@ pub fn get_possible_breakpoints(
         #("restrictToFunction", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__get_possible_breakpoints_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_possible_breakpoints_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Returns source for the script with given id.
 pub fn get_script_source(callback__, script_id: runtime.ScriptId) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.getScriptSource",
     option.Some(
       json.object([#("scriptId", runtime.encode__script_id(script_id))]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__get_script_source_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__get_script_source_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Stops on the next JavaScript statement.
 pub fn pause(callback__) {
-  let _ = callback__("Debugger.pause", option.None)
-  Nil
+  callback__("Debugger.pause", option.None)
 }
 
 /// Removes JavaScript breakpoint.
 pub fn remove_breakpoint(callback__, breakpoint_id: BreakpointId) {
-  let _ =
-    callback__(
-      "Debugger.removeBreakpoint",
-      option.Some(
-        json.object([#("breakpointId", encode__breakpoint_id(breakpoint_id))]),
-      ),
-    )
-  Nil
+  callback__(
+    "Debugger.removeBreakpoint",
+    option.Some(
+      json.object([#("breakpointId", encode__breakpoint_id(breakpoint_id))]),
+    ),
+  )
 }
 
 /// Restarts particular call frame from the beginning. The old, deprecated
@@ -836,29 +826,25 @@ pub fn remove_breakpoint(callback__, breakpoint_id: BreakpointId) {
 /// Use the call frames from the `Debugger#paused` events instead, that fires
 /// once V8 pauses at the beginning of the restarted function.
 pub fn restart_frame(callback__, call_frame_id: CallFrameId) {
-  let _ =
-    callback__(
-      "Debugger.restartFrame",
-      option.Some(
-        json.object([#("callFrameId", encode__call_frame_id(call_frame_id))]),
-      ),
-    )
-  Nil
+  callback__(
+    "Debugger.restartFrame",
+    option.Some(
+      json.object([#("callFrameId", encode__call_frame_id(call_frame_id))]),
+    ),
+  )
 }
 
 /// Resumes JavaScript execution.
 pub fn resume(callback__, terminate_on_resume: option.Option(Bool)) {
-  let _ =
-    callback__(
-      "Debugger.resume",
-      option.Some(json.object(
-        []
-        |> utils.add_optional(terminate_on_resume, fn(inner_value__) {
-          #("terminateOnResume", json.bool(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Debugger.resume",
+    option.Some(json.object(
+      []
+      |> utils.add_optional(terminate_on_resume, fn(inner_value__) {
+        #("terminateOnResume", json.bool(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// Searches for given string in script content.
@@ -869,7 +855,7 @@ pub fn search_in_content(
   case_sensitive: option.Option(Bool),
   is_regex: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.searchInContent",
     option.Some(json.object(
       [
@@ -883,21 +869,18 @@ pub fn search_in_content(
         #("isRegex", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__search_in_content_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__search_in_content_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Enables or disables async call stacks tracking.
 pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
-  let _ =
-    callback__(
-      "Debugger.setAsyncCallStackDepth",
-      option.Some(json.object([#("maxDepth", json.int(max_depth))])),
-    )
-  Nil
+  callback__(
+    "Debugger.setAsyncCallStackDepth",
+    option.Some(json.object([#("maxDepth", json.int(max_depth))])),
+  )
 }
 
 /// Sets JavaScript breakpoint at a given location.
@@ -906,7 +889,7 @@ pub fn set_breakpoint(
   location: Location,
   condition: option.Option(String),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.setBreakpoint",
     option.Some(json.object(
       [#("location", encode__location(location))]
@@ -914,11 +897,10 @@ pub fn set_breakpoint(
         #("condition", json.string(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__set_breakpoint_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__set_breakpoint_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Sets instrumentation breakpoint.
@@ -926,7 +908,7 @@ pub fn set_instrumentation_breakpoint(
   callback__,
   instrumentation: SetInstrumentationBreakpointInstrumentation,
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.setInstrumentationBreakpoint",
     option.Some(
       json.object([
@@ -938,11 +920,10 @@ pub fn set_instrumentation_breakpoint(
         ),
       ]),
     ),
-  )
-  |> result.try(fn(result__) {
-    decode__set_instrumentation_breakpoint_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__set_instrumentation_breakpoint_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -997,7 +978,7 @@ pub fn set_breakpoint_by_url(
   column_number: option.Option(Int),
   condition: option.Option(String),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.setBreakpointByUrl",
     option.Some(json.object(
       [#("lineNumber", json.int(line_number))]
@@ -1017,34 +998,29 @@ pub fn set_breakpoint_by_url(
         #("condition", json.string(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__set_breakpoint_by_url_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__set_breakpoint_by_url_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Activates / deactivates all breakpoints on the page.
 pub fn set_breakpoints_active(callback__, active: Bool) {
-  let _ =
-    callback__(
-      "Debugger.setBreakpointsActive",
-      option.Some(json.object([#("active", json.bool(active))])),
-    )
-  Nil
+  callback__(
+    "Debugger.setBreakpointsActive",
+    option.Some(json.object([#("active", json.bool(active))])),
+  )
 }
 
 /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
 /// or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
 pub fn set_pause_on_exceptions(callback__, state: SetPauseOnExceptionsState) {
-  let _ =
-    callback__(
-      "Debugger.setPauseOnExceptions",
-      option.Some(
-        json.object([#("state", encode__set_pause_on_exceptions_state(state))]),
-      ),
-    )
-  Nil
+  callback__(
+    "Debugger.setPauseOnExceptions",
+    option.Some(
+      json.object([#("state", encode__set_pause_on_exceptions_state(state))]),
+    ),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -1099,7 +1075,7 @@ pub fn set_script_source(
   script_source: String,
   dry_run: option.Option(Bool),
 ) {
-  callback__(
+  use result__ <- result.try(callback__(
     "Debugger.setScriptSource",
     option.Some(json.object(
       [
@@ -1110,21 +1086,18 @@ pub fn set_script_source(
         #("dryRun", json.bool(inner_value__))
       }),
     )),
-  )
-  |> result.try(fn(result__) {
-    decode__set_script_source_response(result__)
-    |> result.replace_error(chrome.ProtocolError)
-  })
+  ))
+
+  decode__set_script_source_response(result__)
+  |> result.replace_error(chrome.ProtocolError)
 }
 
 /// Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
 pub fn set_skip_all_pauses(callback__, skip: Bool) {
-  let _ =
-    callback__(
-      "Debugger.setSkipAllPauses",
-      option.Some(json.object([#("skip", json.bool(skip))])),
-    )
-  Nil
+  callback__(
+    "Debugger.setSkipAllPauses",
+    option.Some(json.object([#("skip", json.bool(skip))])),
+  )
 }
 
 /// Changes value of variable in a callframe. Object-based scopes are not supported and must be
@@ -1136,35 +1109,30 @@ pub fn set_variable_value(
   new_value: runtime.CallArgument,
   call_frame_id: CallFrameId,
 ) {
-  let _ =
-    callback__(
-      "Debugger.setVariableValue",
-      option.Some(
-        json.object([
-          #("scopeNumber", json.int(scope_number)),
-          #("variableName", json.string(variable_name)),
-          #("newValue", runtime.encode__call_argument(new_value)),
-          #("callFrameId", encode__call_frame_id(call_frame_id)),
-        ]),
-      ),
-    )
-  Nil
+  callback__(
+    "Debugger.setVariableValue",
+    option.Some(
+      json.object([
+        #("scopeNumber", json.int(scope_number)),
+        #("variableName", json.string(variable_name)),
+        #("newValue", runtime.encode__call_argument(new_value)),
+        #("callFrameId", encode__call_frame_id(call_frame_id)),
+      ]),
+    ),
+  )
 }
 
 /// Steps into the function call.
 pub fn step_into(callback__) {
-  let _ = callback__("Debugger.stepInto", option.None)
-  Nil
+  callback__("Debugger.stepInto", option.None)
 }
 
 /// Steps out of the function call.
 pub fn step_out(callback__) {
-  let _ = callback__("Debugger.stepOut", option.None)
-  Nil
+  callback__("Debugger.stepOut", option.None)
 }
 
 /// Steps over the statement.
 pub fn step_over(callback__) {
-  let _ = callback__("Debugger.stepOver", option.None)
-  Nil
+  callback__("Debugger.stepOver", option.None)
 }

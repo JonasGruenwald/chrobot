@@ -175,53 +175,51 @@ pub fn dispatch_key_event(
   is_system_key: option.Option(Bool),
   location: option.Option(Int),
 ) {
-  let _ =
-    callback__(
-      "Input.dispatchKeyEvent",
-      option.Some(json.object(
-        [#("type", encode__dispatch_key_event_type(type_))]
-        |> utils.add_optional(modifiers, fn(inner_value__) {
-          #("modifiers", json.int(inner_value__))
-        })
-        |> utils.add_optional(timestamp, fn(inner_value__) {
-          #("timestamp", encode__time_since_epoch(inner_value__))
-        })
-        |> utils.add_optional(text, fn(inner_value__) {
-          #("text", json.string(inner_value__))
-        })
-        |> utils.add_optional(unmodified_text, fn(inner_value__) {
-          #("unmodifiedText", json.string(inner_value__))
-        })
-        |> utils.add_optional(key_identifier, fn(inner_value__) {
-          #("keyIdentifier", json.string(inner_value__))
-        })
-        |> utils.add_optional(code, fn(inner_value__) {
-          #("code", json.string(inner_value__))
-        })
-        |> utils.add_optional(key, fn(inner_value__) {
-          #("key", json.string(inner_value__))
-        })
-        |> utils.add_optional(windows_virtual_key_code, fn(inner_value__) {
-          #("windowsVirtualKeyCode", json.int(inner_value__))
-        })
-        |> utils.add_optional(native_virtual_key_code, fn(inner_value__) {
-          #("nativeVirtualKeyCode", json.int(inner_value__))
-        })
-        |> utils.add_optional(auto_repeat, fn(inner_value__) {
-          #("autoRepeat", json.bool(inner_value__))
-        })
-        |> utils.add_optional(is_keypad, fn(inner_value__) {
-          #("isKeypad", json.bool(inner_value__))
-        })
-        |> utils.add_optional(is_system_key, fn(inner_value__) {
-          #("isSystemKey", json.bool(inner_value__))
-        })
-        |> utils.add_optional(location, fn(inner_value__) {
-          #("location", json.int(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Input.dispatchKeyEvent",
+    option.Some(json.object(
+      [#("type", encode__dispatch_key_event_type(type_))]
+      |> utils.add_optional(modifiers, fn(inner_value__) {
+        #("modifiers", json.int(inner_value__))
+      })
+      |> utils.add_optional(timestamp, fn(inner_value__) {
+        #("timestamp", encode__time_since_epoch(inner_value__))
+      })
+      |> utils.add_optional(text, fn(inner_value__) {
+        #("text", json.string(inner_value__))
+      })
+      |> utils.add_optional(unmodified_text, fn(inner_value__) {
+        #("unmodifiedText", json.string(inner_value__))
+      })
+      |> utils.add_optional(key_identifier, fn(inner_value__) {
+        #("keyIdentifier", json.string(inner_value__))
+      })
+      |> utils.add_optional(code, fn(inner_value__) {
+        #("code", json.string(inner_value__))
+      })
+      |> utils.add_optional(key, fn(inner_value__) {
+        #("key", json.string(inner_value__))
+      })
+      |> utils.add_optional(windows_virtual_key_code, fn(inner_value__) {
+        #("windowsVirtualKeyCode", json.int(inner_value__))
+      })
+      |> utils.add_optional(native_virtual_key_code, fn(inner_value__) {
+        #("nativeVirtualKeyCode", json.int(inner_value__))
+      })
+      |> utils.add_optional(auto_repeat, fn(inner_value__) {
+        #("autoRepeat", json.bool(inner_value__))
+      })
+      |> utils.add_optional(is_keypad, fn(inner_value__) {
+        #("isKeypad", json.bool(inner_value__))
+      })
+      |> utils.add_optional(is_system_key, fn(inner_value__) {
+        #("isSystemKey", json.bool(inner_value__))
+      })
+      |> utils.add_optional(location, fn(inner_value__) {
+        #("location", json.int(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -280,51 +278,49 @@ pub fn dispatch_mouse_event(
   delta_y: option.Option(Float),
   pointer_type: option.Option(DispatchMouseEventPointerType),
 ) {
-  let _ =
-    callback__(
-      "Input.dispatchMouseEvent",
-      option.Some(json.object(
-        [
-          #("type", encode__dispatch_mouse_event_type(type_)),
-          #("x", json.float(x)),
-          #("y", json.float(y)),
-        ]
-        |> utils.add_optional(modifiers, fn(inner_value__) {
-          #("modifiers", json.int(inner_value__))
-        })
-        |> utils.add_optional(timestamp, fn(inner_value__) {
-          #("timestamp", encode__time_since_epoch(inner_value__))
-        })
-        |> utils.add_optional(button, fn(inner_value__) {
-          #("button", encode__mouse_button(inner_value__))
-        })
-        |> utils.add_optional(buttons, fn(inner_value__) {
-          #("buttons", json.int(inner_value__))
-        })
-        |> utils.add_optional(click_count, fn(inner_value__) {
-          #("clickCount", json.int(inner_value__))
-        })
-        |> utils.add_optional(tilt_x, fn(inner_value__) {
-          #("tiltX", json.float(inner_value__))
-        })
-        |> utils.add_optional(tilt_y, fn(inner_value__) {
-          #("tiltY", json.float(inner_value__))
-        })
-        |> utils.add_optional(delta_x, fn(inner_value__) {
-          #("deltaX", json.float(inner_value__))
-        })
-        |> utils.add_optional(delta_y, fn(inner_value__) {
-          #("deltaY", json.float(inner_value__))
-        })
-        |> utils.add_optional(pointer_type, fn(inner_value__) {
-          #(
-            "pointerType",
-            encode__dispatch_mouse_event_pointer_type(inner_value__),
-          )
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Input.dispatchMouseEvent",
+    option.Some(json.object(
+      [
+        #("type", encode__dispatch_mouse_event_type(type_)),
+        #("x", json.float(x)),
+        #("y", json.float(y)),
+      ]
+      |> utils.add_optional(modifiers, fn(inner_value__) {
+        #("modifiers", json.int(inner_value__))
+      })
+      |> utils.add_optional(timestamp, fn(inner_value__) {
+        #("timestamp", encode__time_since_epoch(inner_value__))
+      })
+      |> utils.add_optional(button, fn(inner_value__) {
+        #("button", encode__mouse_button(inner_value__))
+      })
+      |> utils.add_optional(buttons, fn(inner_value__) {
+        #("buttons", json.int(inner_value__))
+      })
+      |> utils.add_optional(click_count, fn(inner_value__) {
+        #("clickCount", json.int(inner_value__))
+      })
+      |> utils.add_optional(tilt_x, fn(inner_value__) {
+        #("tiltX", json.float(inner_value__))
+      })
+      |> utils.add_optional(tilt_y, fn(inner_value__) {
+        #("tiltY", json.float(inner_value__))
+      })
+      |> utils.add_optional(delta_x, fn(inner_value__) {
+        #("deltaX", json.float(inner_value__))
+      })
+      |> utils.add_optional(delta_y, fn(inner_value__) {
+        #("deltaY", json.float(inner_value__))
+      })
+      |> utils.add_optional(pointer_type, fn(inner_value__) {
+        #(
+          "pointerType",
+          encode__dispatch_mouse_event_pointer_type(inner_value__),
+        )
+      }),
+    )),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -407,23 +403,21 @@ pub fn dispatch_touch_event(
   modifiers: option.Option(Int),
   timestamp: option.Option(TimeSinceEpoch),
 ) {
-  let _ =
-    callback__(
-      "Input.dispatchTouchEvent",
-      option.Some(json.object(
-        [
-          #("type", encode__dispatch_touch_event_type(type_)),
-          #("touchPoints", json.array(touch_points, of: encode__touch_point)),
-        ]
-        |> utils.add_optional(modifiers, fn(inner_value__) {
-          #("modifiers", json.int(inner_value__))
-        })
-        |> utils.add_optional(timestamp, fn(inner_value__) {
-          #("timestamp", encode__time_since_epoch(inner_value__))
-        }),
-      )),
-    )
-  Nil
+  callback__(
+    "Input.dispatchTouchEvent",
+    option.Some(json.object(
+      [
+        #("type", encode__dispatch_touch_event_type(type_)),
+        #("touchPoints", json.array(touch_points, of: encode__touch_point)),
+      ]
+      |> utils.add_optional(modifiers, fn(inner_value__) {
+        #("modifiers", json.int(inner_value__))
+      })
+      |> utils.add_optional(timestamp, fn(inner_value__) {
+        #("timestamp", encode__time_since_epoch(inner_value__))
+      }),
+    )),
+  )
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically 
@@ -467,16 +461,13 @@ pub fn decode__dispatch_touch_event_type(value__: dynamic.Dynamic) {
 
 /// Cancels any active dragging in the page.
 pub fn cancel_dragging(callback__) {
-  let _ = callback__("Input.cancelDragging", option.None)
-  Nil
+  callback__("Input.cancelDragging", option.None)
 }
 
 /// Ignores input events (useful while auditing page).
 pub fn set_ignore_input_events(callback__, ignore: Bool) {
-  let _ =
-    callback__(
-      "Input.setIgnoreInputEvents",
-      option.Some(json.object([#("ignore", json.bool(ignore))])),
-    )
-  Nil
+  callback__(
+    "Input.setIgnoreInputEvents",
+    option.Some(json.object([#("ignore", json.bool(ignore))])),
+  )
 }

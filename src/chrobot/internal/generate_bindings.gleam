@@ -93,9 +93,6 @@ arguments, like the `sessionId` which is required for some operations.
 Events are not implemented yet!
 
 "
-
-// TODO commands should not swallow errors :((()))
-
 pub type Protocol {
   Protocol(version: Version, domains: List(Domain))
 }
@@ -1536,7 +1533,7 @@ fn gen_command_parameters(command: Command) {
 }
 
 fn gen_command_body(command: Command, domain: Domain) {
-  let encoder_part = {
+  let base_encoder_part = {
     case command.parameters {
       None | Some([]) -> {
         "callback__(\""
@@ -1546,6 +1543,7 @@ fn gen_command_body(command: Command, domain: Domain) {
         <> "\", option.None,"
         <> ")\n"
       }
+
       Some(properties) -> {
         let #(property_encoders, appendices) =
           list.map(properties, fn(p) {
@@ -1565,23 +1563,22 @@ fn gen_command_body(command: Command, domain: Domain) {
     }
   }
 
-  let #(decoder_part, encoder_prefix) = {
+  let #(decoder_part, final_encoder_part) = {
     case command.returns {
-      None | Some([]) -> #("Nil\n", "let _ =")
+      None | Some([]) -> #("", base_encoder_part <> "\n")
       Some(_) -> {
         #(
-          "\n|> result.try(fn(result__){\n"
+          "\n"
             <> get_decoder_name(pascal_case(command.name) <> "Response")
             <> "(result__)"
-            <> "\n|> result.replace_error(chrome.ProtocolError)\n"
-            <> "})",
-          "",
+            <> "\n|> result.replace_error(chrome.ProtocolError)\n",
+          "use result__ <- result.try(" <> base_encoder_part <> ")\n",
         )
       }
     }
   }
 
-  encoder_prefix <> encoder_part <> decoder_part
+  final_encoder_part <> decoder_part
 }
 
 fn gen_command_function(command: Command, domain: Domain) {
