@@ -9,6 +9,7 @@ import gleam/io
 import gleam/json
 import gleam/option as o
 import protocol/dom
+import protocol/page
 import protocol/target
 
 pub fn main() {
@@ -41,7 +42,10 @@ pub fn main() {
     chrome.call(browser_subject, method, params, o.Some(session_id), 1000)
   }
 
-  process.sleep(2000)
+  let assert Ok(_) = page.enable(session_caller)
+
+  let assert Ok(res) =
+    chrome.listen_once(browser_subject, "Page.loadEventFired", 1000)
 
   let assert Ok(res) = dom.get_document(session_caller, o.None, o.None)
 

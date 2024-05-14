@@ -12,7 +12,11 @@
 //// which perform additional checks and validations.
 //// 
 
-// TODO: Doesn't handle events yet
+// TODO: Port messages are not properly handeled yet
+// Port messages can be **partial**, if they are not terminated with a null byte
+// This is rare but can be the case for large data transfers
+// we need to implement a buffer in the browser state!
+
 
 import chrobot/internal/utils
 import filepath as path
@@ -34,6 +38,24 @@ const default_message_timeout: Int = 5000
 
 // --- PUBLIC API ---
 
+pub type BrowserConfig {
+  BrowserConfig(path: String, args: List(String), start_timeout: Int)
+}
+
+pub type BrowserInstance {
+  BrowserInstance(port: Port)
+}
+
+pub type BrowserVersion {
+  BrowserVersion(
+    protocol_version: String,
+    product: String,
+    revision: String,
+    user_agent: String,
+    js_version: String,
+  )
+}
+
 /// Errors that may occur during launch of the browser instance
 pub type LaunchError {
   UnknowOperatingSystem
@@ -51,6 +73,7 @@ pub type LaunchError {
 
 /// Errors that may occur when a protocol request is made
 pub type RequestError {
+  // Port communication failed
   PortError
   /// OTP actor timeout
   ChromeAgentTimeout
@@ -64,24 +87,6 @@ pub type RequestError {
 
   /// This is an error response from the browser itself
   BrowserError(code: Int, message: String, data: String)
-}
-
-pub type BrowserConfig {
-  BrowserConfig(path: String, args: List(String), start_timeout: Int)
-}
-
-pub type BrowserInstance {
-  BrowserInstance(port: Port)
-}
-
-pub type BrowserVersion {
-  BrowserVersion(
-    protocol_version: String,
-    product: String,
-    revision: String,
-    user_agent: String,
-    js_version: String,
-  )
 }
 
 /// Launch a browser with the given configuration,
@@ -159,12 +164,26 @@ pub fn call(
   session_id: Option(String),
   time_out,
 ) -> Result(d.Dynamic, RequestError) {
-  case
-    process.try_call(browser, Call(_, method, params, session_id), time_out)
-  {
-    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
+  process.try_call(browser, Call(_, method, params, session_id), time_out)
+  |> transform_call_response()
+}
+
+/// A blocking call that waits for a specified event to arrive once,
+/// and then resolves, removing the event listener.
+pub fn listen_once(browser: Subject(Message), method: String, time_out) {
+  let event_subject = process.new_subject()
+  let call_response =
+    utils.try_call_with_subject(
+      browser,
+      AddListener(_, method),
+      event_subject,
+      time_out,
+    )
+  process.send(browser, RemoveListener(event_subject))
+  case call_response {
+    Ok(res) -> Ok(res)
     Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
-    Ok(nested_result) -> nested_result
+    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
   }
 }
 
@@ -324,7 +343,7 @@ fn create_init_fn(cfg: BrowserConfig) {
         let instance = BrowserInstance(port)
         log(instance, "Started")
         actor.Ready(
-          BrowserState(instance, 0, [], None),
+          BrowserState(instance, 0, [], [], None),
           process.new_selector()
             |> process.selecting_record2(port, map_port_message),
         )
@@ -375,22 +394,34 @@ type BrowserState {
     instance: BrowserInstance,
     next_id: Int,
     unanswered_requests: List(PendingRequest),
+    event_listeners: List(#(String, Subject(d.Dynamic))),
     shutdown_request: Option(Subject(Nil)),
   )
 }
 
 pub type Message {
+  /// Initiate graceful shutdown of the browser
   Shutdown(reply_with: Subject(Nil))
+  /// Kill by shutting down actor
   Kill
+  /// Make a protocol call and receive response
   Call(
     reply_with: Subject(Result(d.Dynamic, RequestError)),
     method: String,
     params: Option(Json),
     session_id: Option(String),
   )
+  /// Make a protocol call and ignore response
   Send(method: String, params: Option(Json))
+  // Add an event listener
+  AddListener(listener: Subject(d.Dynamic), method: String)
+  // Remove an event listener
+  RemoveListener(listener: Subject(d.Dynamic))
+  /// (From Port) Message that could not be matched
   UnexpectedPortMessage(d.Dynamic)
+  /// (From Port) Protocol Message
   PortResponse(String)
+  /// (From Port) Port has exited
   PortExit(Int)
 }
 
@@ -415,6 +446,35 @@ fn loop(message: Message, state: BrowserState) {
     }
     Send(method, params) -> {
       handle_send(state, method, params)
+    }
+    AddListener(client, method) -> {
+      let updated_listeners = [#(method, client), ..state.event_listeners]
+      log(
+        state.instance,
+        "Event listeners: " <> string.inspect(updated_listeners),
+      )
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: state.next_id,
+        unanswered_requests: state.unanswered_requests,
+        event_listeners: updated_listeners,
+        shutdown_request: state.shutdown_request,
+      ))
+    }
+    RemoveListener(client) -> {
+      let updated_listeners =
+        list.filter(state.event_listeners, fn(l) { l.1 != client })
+      log(
+        state.instance,
+        "Event listeners: " <> string.inspect(updated_listeners),
+      )
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: state.next_id,
+        unanswered_requests: state.unanswered_requests,
+        event_listeners: updated_listeners,
+        shutdown_request: state.shutdown_request,
+      ))
     }
     PortResponse(data) -> {
       // There may be more than one JSON payload!
@@ -448,6 +508,7 @@ fn loop(message: Message, state: BrowserState) {
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: state.unanswered_requests,
+        event_listeners: state.event_listeners,
         shutdown_request: Some(client),
       ))
     }
@@ -500,12 +561,12 @@ fn handle_call(
   case send_to_browser(state.instance, payload) {
     Error(_) -> {
       log(state.instance, "Request call to browser was unsuccessful!")
-      io.debug(#(client, payload))
       process.send(client, Error(PortError))
       actor.continue(BrowserState(
         instance: state.instance,
         next_id: request_id + 1,
         unanswered_requests: state.unanswered_requests,
+        event_listeners: state.event_listeners,
         shutdown_request: state.shutdown_request,
       ))
     }
@@ -514,6 +575,7 @@ fn handle_call(
         instance: state.instance,
         next_id: request_id + 1,
         unanswered_requests: [request_memo, ..state.unanswered_requests],
+        event_listeners: state.event_listeners,
         shutdown_request: state.shutdown_request,
       ))
     }
@@ -543,6 +605,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
     instance: state.instance,
     next_id: request_id + 1,
     unanswered_requests: state.unanswered_requests,
+    event_listeners: state.event_listeners,
     shutdown_request: state.shutdown_request,
   ))
 }
@@ -662,6 +725,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: answer_request(state, id, result),
+        event_listeners: state.event_listeners,
         shutdown_request: state.shutdown_request,
       )
     }
@@ -671,16 +735,23 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         instance: state.instance,
         next_id: state.next_id,
         unanswered_requests: answer_failed_request(state, id, raw_error),
+        event_listeners: state.event_listeners,
         shutdown_request: state.shutdown_request,
       )
     }
     Ok(BrowserResponse(None, None, Some(method), Some(params), None)) -> {
-      // TODO An event from the browser
-      // log(
-      //   state.instance,
-      //   "Received an event, event forwarding is not implemented yet",
-      // )
-      // io.debug(#(method, params))
+      // An event from the browser
+      // -> forward to any listeners
+      list.each(state.event_listeners, fn(l) {
+        case l.0 == method {
+          True -> process.send(l.1, params)
+          False -> {
+            // An event without a listener is dropped
+            log(state.instance, "Ignored Event: " <> string.inspect(params))
+            Nil
+          }
+        }
+      })
       state
     }
     Ok(_) -> {
@@ -729,6 +800,14 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
 
 fn log(instance: BrowserInstance, message: String) {
   io.println(string.inspect(instance) <> ": " <> message)
+}
+
+fn transform_call_response(call_response) {
+  case call_response {
+    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
+    Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
+    Ok(nested_result) -> nested_result
+  }
 }
 
 // --- EXTERNALS ---

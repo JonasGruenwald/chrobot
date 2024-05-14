@@ -13,13 +13,16 @@
 //// 
 
 import chrome
+import gleam/bit_array
 import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
 import protocol/dom
+import protocol/page
 import protocol/target
+import simplifile as file
 
 /// Holds information about the current page,
 /// as well as the desired timeout in milliseconds
@@ -30,8 +33,11 @@ pub type Page {
     time_out: Int,
     target_id: target.TargetID,
     session_id: target.SessionID,
-    root_node: dom.Node,
   )
+}
+
+pub type Screenshot {
+  Screenshot(data: String)
 }
 
 /// Try to find a chrome installation and launch it with default arguments.
@@ -91,66 +97,64 @@ pub fn open(
     Some(True),
   ))
 
-  // TODO we need to wait until the DOM is ready here somehow
+  // Enable Page domain to receive events like ` Page.loadEventFired`
+  use _ <- result.try(
+    page.enable(fn(method, params) {
+      chrome.call(
+        browser_subject,
+        method,
+        params,
+        pass_session(session_response.session_id),
+        time_out,
+      )
+    }),
+  )
 
-  // Wait until document resolves
-  let poll_result =
-    poll(
-      fn() {
-        // TODO NO!!! we can't poll get_document because it will make the browser node IDs change which will cause a ton of issues
-        // I think we should first wait for this:  Page.loadEventFired # 
-        dom.get_document(
-          fn(method, params) {
-            chrome.call(
-              browser_subject,
-              method,
-              params,
-              pass_session(session_response.session_id),
-              time_out,
-            )
-          },
-          None,
-          None,
-        )
-      },
-      time_out,
-    )
-
-  // Return document or last poll error before timeout
-  case poll_result {
-    Ok(document) ->
-      Ok(Page(
-        browser: browser_subject,
-        session_id: session_response.session_id,
-        target_id: target_response.target_id,
-        time_out: time_out,
-        root_node: document.root,
-      ))
-    Error(any) -> Error(any)
-  }
-}
-
-/// Run a query selector on document node of the current page
-/// and return the first result
-pub fn select(
-  page: Page,
-  selector: String,
-) -> Result(dom.NodeId, chrome.RequestError) {
-  use result <- result.try(dom.query_selector(
-    page_caller(page),
-    page.root_node.node_id,
-    selector,
+  // Wait for the load event to fire
+  use _ <- result.try(chrome.listen_once(
+    browser_subject,
+    "Page.loadEventFired",
+    time_out,
   ))
-  Ok(result.node_id)
+
+  // Return the page
+  Ok(Page(
+    browser: browser_subject,
+    session_id: session_response.session_id,
+    target_id: target_response.target_id,
+    time_out: time_out,
+  ))
 }
 
-pub fn select_all(page: Page) {
-  todo
+/// Capture a screenshot of the current page and return it as a base64 encoded string
+pub fn screenshot(page: Page) -> Result(Screenshot, chrome.RequestError) {
+  use response <- result.try(page.capture_screenshot(
+    page_caller(page),
+    format: Some(page.CaptureScreenshotFormatPng),
+    quality: None,
+    clip: None,
+  ))
+
+  Ok(Screenshot(response.data))
+}
+
+// Write a captured screenshot to a file.
+// Will return a FileError from the `simplifile` package if not successfull
+pub fn to_file(
+  screenshot: Screenshot,
+  path: String,
+) -> Result(Nil, file.FileError) {
+  let res =
+    bit_array.base64_decode(screenshot.data)
+    |> result.replace_error(file.Unknown)
+
+  use binary <- result.try(res)
+  file.write_bits(to: path, bits: binary)
 }
 
 /// Return an updated `Page` with the desired timeout to apply, in milliseconds
 pub fn with_timeout(page: Page, time_out) {
-  Page(page.browser, time_out, page.target_id, page.session_id, page.root_node)
+  Page(page.browser, time_out, page.target_id, page.session_id)
 }
 
 /// Launch a browser with the given configuration,
