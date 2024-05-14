@@ -187,6 +187,16 @@ pub fn listen_once(browser: Subject(Message), method: String, time_out) {
   }
 }
 
+pub fn add_listener(browser, method: String) {
+  let event_subject = process.new_subject()
+  process.send(browser, AddListener(event_subject, method))
+  event_subject
+}
+
+pub fn remove_listener(browser, listener: Subject(d.Dynamic)){
+  process.send(browser, RemoveListener(listener))
+}
+
 /// Issue a protocol call to the browser without waiting for a response,
 /// when the response arrives, it will be discarded.
 /// It's probably best to not use this and instead just use `call` and discard unneeded responses.
@@ -502,6 +512,12 @@ fn loop(message: Message, state: BrowserState) {
       let #(chunks, buffer) =
         process_port_message(data, [], state.message_buffer)
 
+      // For debugging
+      case sb.is_empty(buffer) {
+        False -> log(state.instance, "buffering browser message!")
+        True -> Nil
+      }
+
       let updated_state =
         chunks
         |> list.fold(state, fn(acc, curr) { handle_port_response(acc, curr) })
@@ -781,7 +797,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
           True -> process.send(l.1, params)
           False -> {
             // An event without a listener is dropped
-            log(state.instance, "Ignored Event: " <> string.inspect(params))
+            // log(state.instance, "Ignored Event: " <> string.inspect(params))
             Nil
           }
         }

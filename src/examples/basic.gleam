@@ -10,11 +10,11 @@ pub fn main() {
   let assert Ok(browser) = chrobot.launch()
   let assert Ok(page) =
     browser
-    |> chrobot.open("https://gleam.run", 10_000)
+    |> chrobot.open("https://example.com", 60_000)
 
-  process.sleep(500)
+  process.sleep(1000)
 
-  let assert Ok(screenshot) = chrobot.screenshot(page)
-  let assert Ok(_) = chrobot.to_file(screenshot, "test_screnshot.png")
+  let assert Ok(file) = chrobot.pdf(page)
+  let assert Ok(_) = chrobot.to_file(file, "test_print")
   let assert Ok(_) = chrobot.quit(browser)
 }

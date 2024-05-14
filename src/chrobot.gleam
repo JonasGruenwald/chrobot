@@ -3,13 +3,13 @@
 //// 
 //// Some basic concepts:
 //// 
-//// 1. You want to `launch` an instance of the browser and receive a `Subject` which allows
+//// - You'll first want to `launch` an instance of the browser and receive a `Subject` which allows
 //// you to send messages to the browser (actor)
-//// 2. You can `open` a `Page`, which makes the browser browse to a website  
-//// -> Hold on to the returned `Page`, most useful operations will require it as a parameter
-//// 3. When you are done with the browser, you should call `quit` to shut it down gracefully
+//// - You can `open` a `Page`, which makes the browser browse to a website, hold on to the returned `Page`, and pass it to functions in this module
+//// - If you want to make raw protocol calls, you can use `page_caller`, to create a callback to pass to protocol commands from your `Page`
+//// - When you are done with the browser, you should call `quit` to shut it down gracefully
 //// 
-//// The rest should hopefully be self-evident from the documentation of this module's functions.
+//// 
 //// 
 
 import chrome
@@ -19,7 +19,6 @@ import gleam/io
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
-import protocol/dom
 import protocol/page
 import protocol/target
 import simplifile as file
@@ -36,8 +35,8 @@ pub type Page {
   )
 }
 
-pub type Screenshot {
-  Screenshot(data: String)
+pub type EncodedFile {
+  EncodedFile(data: String, extension: String)
 }
 
 /// Try to find a chrome installation and launch it with default arguments.
@@ -70,6 +69,25 @@ pub fn launch() {
   }
 }
 
+/// Launch a browser with the given configuration,
+/// to populate the arguments, use `browser.get_default_chrome_args`.
+/// This function will validate that the browser launched successfully, and the 
+/// protocol version matches the one supported by this library.
+/// 
+/// ## Example
+/// ```gleam
+/// let config =
+/// browser.BrowserConfig(
+///   path: "chrome/linux-116.0.5793.0/chrome-linux64/chrome",
+///   args: chrome.get_default_chrome_args(),
+///   start_timeout: 5000,
+/// )
+/// let assert Ok(browser_subject) = launch_with_config(config)
+/// ```
+pub fn launch_with_config(config: chrome.BrowserConfig) {
+  validate_launch(chrome.launch_with_config(config))
+}
+
 /// Open a page and wait for the document to resolve.  
 /// Note that the timeout can't be considered strict in the current implementation,  
 /// this call specifically may take longer than the specified timeout.
@@ -83,8 +101,8 @@ pub fn open(
       chrome.call(browser_subject, method, params, None, time_out)
     },
     url,
-    None,
-    None,
+    Some(1920),
+    Some(1080),
     None,
     None,
   ))
@@ -126,8 +144,16 @@ pub fn open(
   ))
 }
 
+/// Return an updated `Page` with the desired timeout to apply, in milliseconds
+pub fn with_timeout(page: Page, time_out) {
+  Page(page.browser, time_out, page.target_id, page.session_id)
+}
+
 /// Capture a screenshot of the current page and return it as a base64 encoded string
-pub fn screenshot(page: Page) -> Result(Screenshot, chrome.RequestError) {
+/// The Ok(result) of this function can be passed to `to_file`  
+///   
+/// If you want to customize the settings of the output image, use `capture_screenshot` from `protocol/page` directly
+pub fn screenshot(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   use response <- result.try(page.capture_screenshot(
     page_caller(page),
     format: Some(page.CaptureScreenshotFormatPng),
@@ -135,67 +161,49 @@ pub fn screenshot(page: Page) -> Result(Screenshot, chrome.RequestError) {
     clip: None,
   ))
 
-  Ok(Screenshot(response.data))
+  Ok(EncodedFile(data: response.data, extension: "png"))
 }
 
-// Write a captured screenshot to a file.
+/// Export the current page as PDF and return it as a base64 encoded string.  
+/// Transferring the encoded file from the browser to the chrome agent can take a pretty long time,
+/// depending on the document size.  
+/// Consider setting a larger timeout, you can use `with_timeout` on your existing `Page` to do this.
+/// The Ok(result) of this function can be passed to `to_file`  
+///   
+/// If you want to customize the settings of the output document, use `print_to_pdf` from `protocol/page` directly
+pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
+  use response <- result.try(page.print_to_pdf(
+    page_caller(page),
+    landscape: Some(False),
+    display_header_footer: Some(False),
+    // use the defaults for everything
+    print_background: None,
+    scale: None,
+    paper_width: None,
+    paper_height: None,
+    margin_top: None,
+    margin_bottom: None,
+    margin_left: None,
+    margin_right: None,
+    page_ranges: None,
+    header_template: None,
+    footer_template: None,
+    prefer_css_page_size: None,
+  ))
+
+  Ok(EncodedFile(data: response.data, extension: "pdf"))
+}
+
+// Write an file returned from `screenshot` of `pdf` to a file.
+// File path should not include the file extension, it will be appended automatically.
 // Will return a FileError from the `simplifile` package if not successfull
-pub fn to_file(
-  screenshot: Screenshot,
-  path: String,
-) -> Result(Nil, file.FileError) {
+pub fn to_file(input: EncodedFile, path: String) -> Result(Nil, file.FileError) {
   let res =
-    bit_array.base64_decode(screenshot.data)
+    bit_array.base64_decode(input.data)
     |> result.replace_error(file.Unknown)
 
   use binary <- result.try(res)
-  file.write_bits(to: path, bits: binary)
-}
-
-/// Return an updated `Page` with the desired timeout to apply, in milliseconds
-pub fn with_timeout(page: Page, time_out) {
-  Page(page.browser, time_out, page.target_id, page.session_id)
-}
-
-/// Launch a browser with the given configuration,
-/// to populate the arguments, use `browser.get_default_chrome_args`.
-/// This function will validate that the browser launched successfully, and the 
-/// protocol version matches the one supported by this library.
-/// 
-/// ## Example
-/// ```gleam
-/// let config =
-/// browser.BrowserConfig(
-///   path: "chrome/linux-116.0.5793.0/chrome-linux64/chrome",
-///   args: chrome.get_default_chrome_args(),
-///   start_timeout: 5000,
-/// )
-/// let assert Ok(browser_subject) = launch_with_config(config)
-/// ```
-pub fn launch_with_config(config: chrome.BrowserConfig) {
-  validate_launch(chrome.launch_with_config(config))
-}
-
-/// Validate that the browser responds to protocol messages, 
-/// and that the protocol version matches the one supported by this library.
-fn validate_launch(
-  launch_result: Result(Subject(chrome.Message), chrome.LaunchError),
-) {
-  use instance <- result.try(launch_result)
-  let #(major, minor) = protocol.version()
-  let target_protocol_version = major <> "." <> minor
-  let version_response =
-    chrome.get_version(instance)
-    |> result.replace_error(chrome.UnresponsiveAfterStart)
-  use actual_version <- result.try(version_response)
-  case target_protocol_version == actual_version.protocol_version {
-    True -> Ok(instance)
-    False ->
-      Error(chrome.ProtocolVersionMismatch(
-        target_protocol_version,
-        actual_version.protocol_version,
-      ))
-  }
+  file.write_bits(to: path <> "." <> input.extension, bits: binary)
 }
 
 /// Quit the browser (alias for `chrome.quit`)
@@ -254,5 +262,27 @@ pub fn page_caller(page: Page) {
       pass_session(page.session_id),
       page.time_out,
     )
+  }
+}
+
+/// Validate that the browser responds to protocol messages, 
+/// and that the protocol version matches the one supported by this library.
+fn validate_launch(
+  launch_result: Result(Subject(chrome.Message), chrome.LaunchError),
+) {
+  use instance <- result.try(launch_result)
+  let #(major, minor) = protocol.version()
+  let target_protocol_version = major <> "." <> minor
+  let version_response =
+    chrome.get_version(instance)
+    |> result.replace_error(chrome.UnresponsiveAfterStart)
+  use actual_version <- result.try(version_response)
+  case target_protocol_version == actual_version.protocol_version {
+    True -> Ok(instance)
+    False ->
+      Error(chrome.ProtocolVersionMismatch(
+        target_protocol_version,
+        actual_version.protocol_version,
+      ))
   }
 }
