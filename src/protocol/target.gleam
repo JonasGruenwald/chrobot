@@ -182,7 +182,7 @@ pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
 }
 
 /// Activates (focuses) the target.
-pub fn activate_target(callback__, target_id: TargetID) {
+pub fn activate_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.activateTarget",
     option.Some(json.object([#("targetId", encode__target_id(target_id))])),
@@ -192,8 +192,8 @@ pub fn activate_target(callback__, target_id: TargetID) {
 /// Attaches to the target with given id.
 pub fn attach_to_target(
   callback__,
-  target_id: TargetID,
-  flatten: option.Option(Bool),
+  target_id target_id: TargetID,
+  flatten flatten: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Target.attachToTarget",
@@ -210,7 +210,7 @@ pub fn attach_to_target(
 }
 
 /// Closes the target. If the target is a page that gets closed too.
-pub fn close_target(callback__, target_id: TargetID) {
+pub fn close_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.closeTarget",
     option.Some(json.object([#("targetId", encode__target_id(target_id))])),
@@ -243,11 +243,11 @@ pub fn get_browser_contexts(callback__) {
 /// Creates a new page.
 pub fn create_target(
   callback__,
-  url: String,
-  width: option.Option(Int),
-  height: option.Option(Int),
-  new_window: option.Option(Bool),
-  background: option.Option(Bool),
+  url url: String,
+  width width: option.Option(Int),
+  height height: option.Option(Int),
+  new_window new_window: option.Option(Bool),
+  background background: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Target.createTarget",
@@ -273,7 +273,10 @@ pub fn create_target(
 }
 
 /// Detaches session with given id.
-pub fn detach_from_target(callback__, session_id: option.Option(SessionID)) {
+pub fn detach_from_target(
+  callback__,
+  session_id session_id: option.Option(SessionID),
+) {
   callback__(
     "Target.detachFromTarget",
     option.Some(json.object(
@@ -287,7 +290,10 @@ pub fn detach_from_target(callback__, session_id: option.Option(SessionID)) {
 
 /// Deletes a BrowserContext. All the belonging pages will be closed without calling their
 /// beforeunload hooks.
-pub fn dispose_browser_context(callback__, browser_context_id: String) {
+pub fn dispose_browser_context(
+  callback__,
+  browser_context_id browser_context_id: String,
+) {
   callback__(
     "Target.disposeBrowserContext",
     option.Some(
@@ -311,8 +317,8 @@ pub fn get_targets(callback__) {
 /// for creation of related targets.
 pub fn set_auto_attach(
   callback__,
-  auto_attach: Bool,
-  wait_for_debugger_on_start: Bool,
+  auto_attach auto_attach: Bool,
+  wait_for_debugger_on_start wait_for_debugger_on_start: Bool,
 ) {
   callback__(
     "Target.setAutoAttach",
@@ -327,7 +333,7 @@ pub fn set_auto_attach(
 
 /// Controls whether to discover available targets and notify via
 /// `targetCreated/targetInfoChanged/targetDestroyed` events.
-pub fn set_discover_targets(callback__, discover: Bool) {
+pub fn set_discover_targets(callback__, discover discover: Bool) {
   callback__(
     "Target.setDiscoverTargets",
     option.Some(json.object([#("discover", json.bool(discover))])),

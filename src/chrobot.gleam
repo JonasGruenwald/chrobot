@@ -73,6 +73,9 @@ pub fn launch() {
   }
 }
 
+/// Open a page and wait for the document to resolve.  
+/// Note that the timeout can't be considered strict in the current implementation,  
+/// this call specifically may take longer than the specified timeout.
 pub fn open(
   browser_subject: Subject(chrome.Message),
   url: String,
@@ -97,10 +100,14 @@ pub fn open(
     Some(True),
   ))
 
+  // TODO we need to wait until the DOM is ready here somehow
+
   // Wait until document resolves
   let poll_result =
     poll(
       fn() {
+        // TODO NO!!! we can't poll get_document because it will make the browser node IDs change which will cause a ton of issues
+        // I think we should first wait for this:  Page.loadEventFired # 
         dom.get_document(
           fn(method, params) {
             chrome.call(
@@ -130,6 +137,29 @@ pub fn open(
       ))
     Error(any) -> Error(any)
   }
+}
+
+/// Run a query selector on document node of the current page
+/// and return the first result
+pub fn select(
+  page: Page,
+  selector: String,
+) -> Result(dom.NodeId, chrome.RequestError) {
+  use result <- result.try(dom.query_selector(
+    page_caller(page),
+    page.root_node.node_id,
+    selector,
+  ))
+  Ok(result.node_id)
+}
+
+pub fn select_all(page: Page) {
+  todo
+}
+
+/// Return an updated `Page` with the desired timeout to apply, in milliseconds
+pub fn with_timeout(page: Page, time_out) {
+  Page(page.browser, time_out, page.target_id, page.session_id, page.root_node)
 }
 
 /// Launch a browser with the given configuration,
@@ -197,6 +227,7 @@ const poll_interval = 100
 /// Periodically try to call the function until it returns a 
 /// result instead of an error.
 /// Note: doesn't handle elapsed time during function call attempt yet
+/// TODO measure time elapsed during function call and take it into account
 fn poll(callback: fn() -> Result(a, b), remaining_time: Int) -> Result(a, b) {
   case callback() {
     Ok(a) -> Ok(a)
@@ -210,8 +241,23 @@ fn poll(callback: fn() -> Result(a, b), remaining_time: Int) -> Result(a, b) {
   }
 }
 
+/// Cast a session in the target.SessionID type to the 
+/// string expected by the `chrome` module
 fn pass_session(session_id: target.SessionID) -> Option(String) {
   case session_id {
     target.SessionID(value) -> Some(value)
+  }
+}
+
+/// Create callback to pass to protocol commands from a `Page` 
+pub fn page_caller(page: Page) {
+  fn(method, params) {
+    chrome.call(
+      page.browser,
+      method,
+      params,
+      pass_session(page.session_id),
+      page.time_out,
+    )
   }
 }

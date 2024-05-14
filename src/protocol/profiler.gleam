@@ -348,7 +348,7 @@ pub fn get_best_effort_coverage(callback__) {
 }
 
 /// Changes CPU profiler sampling interval. Must be called before CPU profiles recording started.
-pub fn set_sampling_interval(callback__, interval: Int) {
+pub fn set_sampling_interval(callback__, interval interval: Int) {
   callback__(
     "Profiler.setSamplingInterval",
     option.Some(json.object([#("interval", json.int(interval))])),
@@ -365,9 +365,9 @@ pub fn start(callback__) {
 /// counters.
 pub fn start_precise_coverage(
   callback__,
-  call_count: option.Option(Bool),
-  detailed: option.Option(Bool),
-  allow_triggered_updates: option.Option(Bool),
+  call_count call_count: option.Option(Bool),
+  detailed detailed: option.Option(Bool),
+  allow_triggered_updates allow_triggered_updates: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Profiler.startPreciseCoverage",

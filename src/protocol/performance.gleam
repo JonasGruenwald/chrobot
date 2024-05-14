@@ -60,7 +60,10 @@ pub fn disable(callback__) {
 }
 
 /// Enable collecting and reporting metrics.
-pub fn enable(callback__, time_domain: option.Option(EnableTimeDomain)) {
+pub fn enable(
+  callback__,
+  time_domain time_domain: option.Option(EnableTimeDomain),
+) {
   callback__(
     "Performance.enable",
     option.Some(json.object(

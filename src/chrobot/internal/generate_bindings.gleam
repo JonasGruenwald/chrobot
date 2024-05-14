@@ -92,7 +92,15 @@ arguments, like the `sessionId` which is required for some operations.
 
 Events are not implemented yet!
 
+
+## Important Notes
+
+It's best never to work with Node IDs from the DOM domain for automation, an explanation of why can be found here:  
+https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749
+
+Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
 "
+
 pub type Protocol {
   Protocol(version: Version, domains: List(Domain))
 }
@@ -1512,6 +1520,7 @@ to represent the response to the command `"
   }
 }
 
+/// Generate command parameters and supportin definitions
 fn gen_command_parameters(command: Command) {
   case command.parameters {
     Some(params) -> {
@@ -1526,6 +1535,15 @@ fn gen_command_parameters(command: Command) {
         })
       let #(param_definitions, extra_definitions) =
         list.unzip(param_gen_results)
+
+      // Duplicate the param name to create a label
+      let param_definitions =
+        list.map(param_definitions, fn(d) {
+          let assert Ok(#(parameter_name, _)) =
+            list.pop(string.split(d, ":"), fn(_) { True })
+          parameter_name <> " " <> d
+        })
+
       #(string.join(param_definitions, ""), string.join(extra_definitions, ""))
     }
     None -> #("", "")

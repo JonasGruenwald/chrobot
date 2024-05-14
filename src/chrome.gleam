@@ -487,6 +487,7 @@ fn handle_call(
         #("sessionId", json.string(some_session_id))
       }),
     )
+
   case send_to_browser(state.instance, payload) {
     Error(_) -> {
       log(state.instance, "Request call to browser was unsuccessful!")
@@ -697,6 +698,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
 /// This function appends a null byte to the end of the message,
 /// which is used by the browser to detect when a message ends.
 fn send_to_browser(instance: BrowserInstance, data: Json) {
+  io.debug(json.to_string(data))
   send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
 }
 

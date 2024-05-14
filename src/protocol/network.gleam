@@ -1884,11 +1884,11 @@ pub fn clear_browser_cookies(callback__) {
 /// Deletes browser cookies with matching name and url or domain/path/partitionKey pair.
 pub fn delete_cookies(
   callback__,
-  name: String,
-  url: option.Option(String),
-  domain: option.Option(String),
-  path: option.Option(String),
-  partition_key: option.Option(String),
+  name name: String,
+  url url: option.Option(String),
+  domain domain: option.Option(String),
+  path path: option.Option(String),
+  partition_key partition_key: option.Option(String),
 ) {
   callback__(
     "Network.deleteCookies",
@@ -1918,11 +1918,11 @@ pub fn disable(callback__) {
 /// Activates emulation of network conditions.
 pub fn emulate_network_conditions(
   callback__,
-  offline: Bool,
-  latency: Float,
-  download_throughput: Float,
-  upload_throughput: Float,
-  connection_type: option.Option(ConnectionType),
+  offline offline: Bool,
+  latency latency: Float,
+  download_throughput download_throughput: Float,
+  upload_throughput upload_throughput: Float,
+  connection_type connection_type: option.Option(ConnectionType),
 ) {
   callback__(
     "Network.emulateNetworkConditions",
@@ -1941,7 +1941,10 @@ pub fn emulate_network_conditions(
 }
 
 /// Enables network tracking, network events will now be delivered to the client.
-pub fn enable(callback__, max_post_data_size: option.Option(Int)) {
+pub fn enable(
+  callback__,
+  max_post_data_size max_post_data_size: option.Option(Int),
+) {
   callback__(
     "Network.enable",
     option.Some(json.object(
@@ -1955,7 +1958,7 @@ pub fn enable(callback__, max_post_data_size: option.Option(Int)) {
 
 /// Returns all browser cookies for the current URL. Depending on the backend support, will return
 /// detailed cookie information in the `cookies` field.
-pub fn get_cookies(callback__, urls: option.Option(List(String))) {
+pub fn get_cookies(callback__, urls urls: option.Option(List(String))) {
   use result__ <- result.try(callback__(
     "Network.getCookies",
     option.Some(json.object(
@@ -1971,7 +1974,7 @@ pub fn get_cookies(callback__, urls: option.Option(List(String))) {
 }
 
 /// Returns content served for the given request.
-pub fn get_response_body(callback__, request_id: RequestId) {
+pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
@@ -1982,7 +1985,7 @@ pub fn get_response_body(callback__, request_id: RequestId) {
 }
 
 /// Returns post data sent with the request. Returns an error when no data was sent with the request.
-pub fn get_request_post_data(callback__, request_id: RequestId) {
+pub fn get_request_post_data(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getRequestPostData",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
@@ -1993,7 +1996,7 @@ pub fn get_request_post_data(callback__, request_id: RequestId) {
 }
 
 /// Toggles ignoring of service worker for each request.
-pub fn set_bypass_service_worker(callback__, bypass: Bool) {
+pub fn set_bypass_service_worker(callback__, bypass bypass: Bool) {
   callback__(
     "Network.setBypassServiceWorker",
     option.Some(json.object([#("bypass", json.bool(bypass))])),
@@ -2001,7 +2004,7 @@ pub fn set_bypass_service_worker(callback__, bypass: Bool) {
 }
 
 /// Toggles ignoring cache for each request. If `true`, cache will not be used.
-pub fn set_cache_disabled(callback__, cache_disabled: Bool) {
+pub fn set_cache_disabled(callback__, cache_disabled cache_disabled: Bool) {
   callback__(
     "Network.setCacheDisabled",
     option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
@@ -2011,15 +2014,15 @@ pub fn set_cache_disabled(callback__, cache_disabled: Bool) {
 /// Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 pub fn set_cookie(
   callback__,
-  name: String,
-  value: String,
-  url: option.Option(String),
-  domain: option.Option(String),
-  path: option.Option(String),
-  secure: option.Option(Bool),
-  http_only: option.Option(Bool),
-  same_site: option.Option(CookieSameSite),
-  expires: option.Option(TimeSinceEpoch),
+  name name: String,
+  value value: String,
+  url url: option.Option(String),
+  domain domain: option.Option(String),
+  path path: option.Option(String),
+  secure secure: option.Option(Bool),
+  http_only http_only: option.Option(Bool),
+  same_site same_site: option.Option(CookieSameSite),
+  expires expires: option.Option(TimeSinceEpoch),
 ) {
   callback__(
     "Network.setCookie",
@@ -2051,7 +2054,7 @@ pub fn set_cookie(
 }
 
 /// Sets given cookies.
-pub fn set_cookies(callback__, cookies: List(CookieParam)) {
+pub fn set_cookies(callback__, cookies cookies: List(CookieParam)) {
   callback__(
     "Network.setCookies",
     option.Some(
@@ -2061,7 +2064,7 @@ pub fn set_cookies(callback__, cookies: List(CookieParam)) {
 }
 
 /// Specifies whether to always send extra HTTP headers with the requests from this page.
-pub fn set_extra_http_headers(callback__, headers: Headers) {
+pub fn set_extra_http_headers(callback__, headers headers: Headers) {
   callback__(
     "Network.setExtraHTTPHeaders",
     option.Some(json.object([#("headers", encode__headers(headers))])),
@@ -2071,9 +2074,9 @@ pub fn set_extra_http_headers(callback__, headers: Headers) {
 /// Allows overriding user agent with the given string.
 pub fn set_user_agent_override(
   callback__,
-  user_agent: String,
-  accept_language: option.Option(String),
-  platform: option.Option(String),
+  user_agent user_agent: String,
+  accept_language accept_language: option.Option(String),
+  platform platform: option.Option(String),
 ) {
   callback__(
     "Network.setUserAgentOverride",

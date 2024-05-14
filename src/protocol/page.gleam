@@ -628,7 +628,7 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
 }
 
 /// Evaluates given script in every frame upon creation (before loading frame's scripts).
-pub fn add_script_to_evaluate_on_new_document(callback__, source: String) {
+pub fn add_script_to_evaluate_on_new_document(callback__, source source: String) {
   use result__ <- result.try(callback__(
     "Page.addScriptToEvaluateOnNewDocument",
     option.Some(json.object([#("source", json.string(source))])),
@@ -646,9 +646,9 @@ pub fn bring_to_front(callback__) {
 /// Capture page screenshot.
 pub fn capture_screenshot(
   callback__,
-  format: option.Option(CaptureScreenshotFormat),
-  quality: option.Option(Int),
-  clip: option.Option(Viewport),
+  format format: option.Option(CaptureScreenshotFormat),
+  quality quality: option.Option(Int),
+  clip clip: option.Option(Viewport),
 ) {
   use result__ <- result.try(callback__(
     "Page.captureScreenshot",
@@ -709,9 +709,9 @@ pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
 /// Creates an isolated world for the given frame.
 pub fn create_isolated_world(
   callback__,
-  frame_id: FrameId,
-  world_name: option.Option(String),
-  grant_univeral_access: option.Option(Bool),
+  frame_id frame_id: FrameId,
+  world_name world_name: option.Option(String),
+  grant_univeral_access grant_univeral_access: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Page.createIsolatedWorld",
@@ -745,7 +745,10 @@ pub fn enable(callback__) {
 ///   If manifestId is provided, and it does not match the manifest of the
 ///     current document, this API errors out.
 ///   If there is not a loaded page, this API errors out immediately.
-pub fn get_app_manifest(callback__, manifest_id: option.Option(String)) {
+pub fn get_app_manifest(
+  callback__,
+  manifest_id manifest_id: option.Option(String),
+) {
   use result__ <- result.try(callback__(
     "Page.getAppManifest",
     option.Some(json.object(
@@ -795,8 +798,8 @@ pub fn reset_navigation_history(callback__) {
 /// Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 pub fn handle_java_script_dialog(
   callback__,
-  accept: Bool,
-  prompt_text: option.Option(String),
+  accept accept: Bool,
+  prompt_text prompt_text: option.Option(String),
 ) {
   callback__(
     "Page.handleJavaScriptDialog",
@@ -812,10 +815,10 @@ pub fn handle_java_script_dialog(
 /// Navigates current page to the given URL.
 pub fn navigate(
   callback__,
-  url: String,
-  referrer: option.Option(String),
-  transition_type: option.Option(TransitionType),
-  frame_id: option.Option(FrameId),
+  url url: String,
+  referrer referrer: option.Option(String),
+  transition_type transition_type: option.Option(TransitionType),
+  frame_id frame_id: option.Option(FrameId),
 ) {
   use result__ <- result.try(callback__(
     "Page.navigate",
@@ -838,7 +841,7 @@ pub fn navigate(
 }
 
 /// Navigates current page to the given history entry.
-pub fn navigate_to_history_entry(callback__, entry_id: Int) {
+pub fn navigate_to_history_entry(callback__, entry_id entry_id: Int) {
   callback__(
     "Page.navigateToHistoryEntry",
     option.Some(json.object([#("entryId", json.int(entry_id))])),
@@ -848,20 +851,20 @@ pub fn navigate_to_history_entry(callback__, entry_id: Int) {
 /// Print page as PDF.
 pub fn print_to_pdf(
   callback__,
-  landscape: option.Option(Bool),
-  display_header_footer: option.Option(Bool),
-  print_background: option.Option(Bool),
-  scale: option.Option(Float),
-  paper_width: option.Option(Float),
-  paper_height: option.Option(Float),
-  margin_top: option.Option(Float),
-  margin_bottom: option.Option(Float),
-  margin_left: option.Option(Float),
-  margin_right: option.Option(Float),
-  page_ranges: option.Option(String),
-  header_template: option.Option(String),
-  footer_template: option.Option(String),
-  prefer_css_page_size: option.Option(Bool),
+  landscape landscape: option.Option(Bool),
+  display_header_footer display_header_footer: option.Option(Bool),
+  print_background print_background: option.Option(Bool),
+  scale scale: option.Option(Float),
+  paper_width paper_width: option.Option(Float),
+  paper_height paper_height: option.Option(Float),
+  margin_top margin_top: option.Option(Float),
+  margin_bottom margin_bottom: option.Option(Float),
+  margin_left margin_left: option.Option(Float),
+  margin_right margin_right: option.Option(Float),
+  page_ranges page_ranges: option.Option(String),
+  header_template header_template: option.Option(String),
+  footer_template footer_template: option.Option(String),
+  prefer_css_page_size prefer_css_page_size: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Page.printToPDF",
@@ -919,8 +922,8 @@ pub fn print_to_pdf(
 /// Reloads given page optionally ignoring the cache.
 pub fn reload(
   callback__,
-  ignore_cache: option.Option(Bool),
-  script_to_evaluate_on_load: option.Option(String),
+  ignore_cache ignore_cache: option.Option(Bool),
+  script_to_evaluate_on_load script_to_evaluate_on_load: option.Option(String),
 ) {
   callback__(
     "Page.reload",
@@ -939,7 +942,7 @@ pub fn reload(
 /// Removes given script from the list.
 pub fn remove_script_to_evaluate_on_new_document(
   callback__,
-  identifier: ScriptIdentifier,
+  identifier identifier: ScriptIdentifier,
 ) {
   callback__(
     "Page.removeScriptToEvaluateOnNewDocument",
@@ -950,7 +953,7 @@ pub fn remove_script_to_evaluate_on_new_document(
 }
 
 /// Enable page Content Security Policy by-passing.
-pub fn set_bypass_csp(callback__, enabled: Bool) {
+pub fn set_bypass_csp(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setBypassCSP",
     option.Some(json.object([#("enabled", json.bool(enabled))])),
@@ -958,7 +961,11 @@ pub fn set_bypass_csp(callback__, enabled: Bool) {
 }
 
 /// Sets given markup as the document's HTML.
-pub fn set_document_content(callback__, frame_id: FrameId, html: String) {
+pub fn set_document_content(
+  callback__,
+  frame_id frame_id: FrameId,
+  html html: String,
+) {
   callback__(
     "Page.setDocumentContent",
     option.Some(
@@ -971,7 +978,7 @@ pub fn set_document_content(callback__, frame_id: FrameId, html: String) {
 }
 
 /// Controls whether page will emit lifecycle events.
-pub fn set_lifecycle_events_enabled(callback__, enabled: Bool) {
+pub fn set_lifecycle_events_enabled(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setLifecycleEventsEnabled",
     option.Some(json.object([#("enabled", json.bool(enabled))])),
@@ -991,7 +998,7 @@ pub fn close(callback__) {
 /// Intercept file chooser requests and transfer control to protocol clients.
 /// When file chooser interception is enabled, native file chooser dialog is not shown.
 /// Instead, a protocol event `Page.fileChooserOpened` is emitted.
-pub fn set_intercept_file_chooser_dialog(callback__, enabled: Bool) {
+pub fn set_intercept_file_chooser_dialog(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setInterceptFileChooserDialog",
     option.Some(json.object([#("enabled", json.bool(enabled))])),

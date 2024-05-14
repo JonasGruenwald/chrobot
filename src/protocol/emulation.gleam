@@ -229,7 +229,7 @@ pub fn clear_geolocation_override(callback__) {
 }
 
 /// Enables CPU throttling to emulate slow CPUs.
-pub fn set_cpu_throttling_rate(callback__, rate: Float) {
+pub fn set_cpu_throttling_rate(callback__, rate rate: Float) {
   callback__(
     "Emulation.setCPUThrottlingRate",
     option.Some(json.object([#("rate", json.float(rate))])),
@@ -240,7 +240,7 @@ pub fn set_cpu_throttling_rate(callback__, rate: Float) {
 /// if the content does not specify one.
 pub fn set_default_background_color_override(
   callback__,
-  color: option.Option(dom.RGBA),
+  color color: option.Option(dom.RGBA),
 ) {
   callback__(
     "Emulation.setDefaultBackgroundColorOverride",
@@ -258,11 +258,11 @@ pub fn set_default_background_color_override(
 /// query results).
 pub fn set_device_metrics_override(
   callback__,
-  width: Int,
-  height: Int,
-  device_scale_factor: Float,
-  mobile: Bool,
-  screen_orientation: option.Option(ScreenOrientation),
+  width width: Int,
+  height height: Int,
+  device_scale_factor device_scale_factor: Float,
+  mobile mobile: Bool,
+  screen_orientation screen_orientation: option.Option(ScreenOrientation),
 ) {
   callback__(
     "Emulation.setDeviceMetricsOverride",
@@ -283,8 +283,8 @@ pub fn set_device_metrics_override(
 /// Emulates the given media type or media feature for CSS media queries.
 pub fn set_emulated_media(
   callback__,
-  media: option.Option(String),
-  features: option.Option(List(MediaFeature)),
+  media media: option.Option(String),
+  features features: option.Option(List(MediaFeature)),
 ) {
   callback__(
     "Emulation.setEmulatedMedia",
@@ -303,7 +303,7 @@ pub fn set_emulated_media(
 /// Emulates the given vision deficiency.
 pub fn set_emulated_vision_deficiency(
   callback__,
-  type_: SetEmulatedVisionDeficiencyType,
+  type_ type_: SetEmulatedVisionDeficiencyType,
 ) {
   callback__(
     "Emulation.setEmulatedVisionDeficiency",
@@ -367,9 +367,9 @@ pub fn decode__set_emulated_vision_deficiency_type(value__: dynamic.Dynamic) {
 /// unavailable.
 pub fn set_geolocation_override(
   callback__,
-  latitude: option.Option(Float),
-  longitude: option.Option(Float),
-  accuracy: option.Option(Float),
+  latitude latitude: option.Option(Float),
+  longitude longitude: option.Option(Float),
+  accuracy accuracy: option.Option(Float),
 ) {
   callback__(
     "Emulation.setGeolocationOverride",
@@ -391,8 +391,8 @@ pub fn set_geolocation_override(
 /// Overrides the Idle state.
 pub fn set_idle_override(
   callback__,
-  is_user_active: Bool,
-  is_screen_unlocked: Bool,
+  is_user_active is_user_active: Bool,
+  is_screen_unlocked is_screen_unlocked: Bool,
 ) {
   callback__(
     "Emulation.setIdleOverride",
@@ -411,7 +411,7 @@ pub fn clear_idle_override(callback__) {
 }
 
 /// Switches script execution in the page.
-pub fn set_script_execution_disabled(callback__, value: Bool) {
+pub fn set_script_execution_disabled(callback__, value value: Bool) {
   callback__(
     "Emulation.setScriptExecutionDisabled",
     option.Some(json.object([#("value", json.bool(value))])),
@@ -421,8 +421,8 @@ pub fn set_script_execution_disabled(callback__, value: Bool) {
 /// Enables touch on platforms which do not support them.
 pub fn set_touch_emulation_enabled(
   callback__,
-  enabled: Bool,
-  max_touch_points: option.Option(Int),
+  enabled enabled: Bool,
+  max_touch_points max_touch_points: option.Option(Int),
 ) {
   callback__(
     "Emulation.setTouchEmulationEnabled",
@@ -436,7 +436,7 @@ pub fn set_touch_emulation_enabled(
 }
 
 /// Overrides default host system timezone with the specified one.
-pub fn set_timezone_override(callback__, timezone_id: String) {
+pub fn set_timezone_override(callback__, timezone_id timezone_id: String) {
   callback__(
     "Emulation.setTimezoneOverride",
     option.Some(json.object([#("timezoneId", json.string(timezone_id))])),
@@ -447,9 +447,9 @@ pub fn set_timezone_override(callback__, timezone_id: String) {
 /// `userAgentMetadata` must be set for Client Hint headers to be sent.
 pub fn set_user_agent_override(
   callback__,
-  user_agent: String,
-  accept_language: option.Option(String),
-  platform: option.Option(String),
+  user_agent user_agent: String,
+  accept_language accept_language: option.Option(String),
+  platform platform: option.Option(String),
 ) {
   callback__(
     "Emulation.setUserAgentOverride",

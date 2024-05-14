@@ -160,20 +160,20 @@ pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
 /// Dispatches a key event to the page.
 pub fn dispatch_key_event(
   callback__,
-  type_: DispatchKeyEventType,
-  modifiers: option.Option(Int),
-  timestamp: option.Option(TimeSinceEpoch),
-  text: option.Option(String),
-  unmodified_text: option.Option(String),
-  key_identifier: option.Option(String),
-  code: option.Option(String),
-  key: option.Option(String),
-  windows_virtual_key_code: option.Option(Int),
-  native_virtual_key_code: option.Option(Int),
-  auto_repeat: option.Option(Bool),
-  is_keypad: option.Option(Bool),
-  is_system_key: option.Option(Bool),
-  location: option.Option(Int),
+  type_ type_: DispatchKeyEventType,
+  modifiers modifiers: option.Option(Int),
+  timestamp timestamp: option.Option(TimeSinceEpoch),
+  text text: option.Option(String),
+  unmodified_text unmodified_text: option.Option(String),
+  key_identifier key_identifier: option.Option(String),
+  code code: option.Option(String),
+  key key: option.Option(String),
+  windows_virtual_key_code windows_virtual_key_code: option.Option(Int),
+  native_virtual_key_code native_virtual_key_code: option.Option(Int),
+  auto_repeat auto_repeat: option.Option(Bool),
+  is_keypad is_keypad: option.Option(Bool),
+  is_system_key is_system_key: option.Option(Bool),
+  location location: option.Option(Int),
 ) {
   callback__(
     "Input.dispatchKeyEvent",
@@ -264,19 +264,19 @@ pub fn decode__dispatch_key_event_type(value__: dynamic.Dynamic) {
 /// Dispatches a mouse event to the page.
 pub fn dispatch_mouse_event(
   callback__,
-  type_: DispatchMouseEventType,
-  x: Float,
-  y: Float,
-  modifiers: option.Option(Int),
-  timestamp: option.Option(TimeSinceEpoch),
-  button: option.Option(MouseButton),
-  buttons: option.Option(Int),
-  click_count: option.Option(Int),
-  tilt_x: option.Option(Float),
-  tilt_y: option.Option(Float),
-  delta_x: option.Option(Float),
-  delta_y: option.Option(Float),
-  pointer_type: option.Option(DispatchMouseEventPointerType),
+  type_ type_: DispatchMouseEventType,
+  x x: Float,
+  y y: Float,
+  modifiers modifiers: option.Option(Int),
+  timestamp timestamp: option.Option(TimeSinceEpoch),
+  button button: option.Option(MouseButton),
+  buttons buttons: option.Option(Int),
+  click_count click_count: option.Option(Int),
+  tilt_x tilt_x: option.Option(Float),
+  tilt_y tilt_y: option.Option(Float),
+  delta_x delta_x: option.Option(Float),
+  delta_y delta_y: option.Option(Float),
+  pointer_type pointer_type: option.Option(DispatchMouseEventPointerType),
 ) {
   callback__(
     "Input.dispatchMouseEvent",
@@ -398,10 +398,10 @@ pub fn decode__dispatch_mouse_event_pointer_type(value__: dynamic.Dynamic) {
 /// Dispatches a touch event to the page.
 pub fn dispatch_touch_event(
   callback__,
-  type_: DispatchTouchEventType,
-  touch_points: List(TouchPoint),
-  modifiers: option.Option(Int),
-  timestamp: option.Option(TimeSinceEpoch),
+  type_ type_: DispatchTouchEventType,
+  touch_points touch_points: List(TouchPoint),
+  modifiers modifiers: option.Option(Int),
+  timestamp timestamp: option.Option(TimeSinceEpoch),
 ) {
   callback__(
     "Input.dispatchTouchEvent",
@@ -465,7 +465,7 @@ pub fn cancel_dragging(callback__) {
 }
 
 /// Ignores input events (useful while auditing page).
-pub fn set_ignore_input_events(callback__, ignore: Bool) {
+pub fn set_ignore_input_events(callback__, ignore ignore: Bool) {
   callback__(
     "Input.setIgnoreInputEvents",
     option.Some(json.object([#("ignore", json.bool(ignore))])),

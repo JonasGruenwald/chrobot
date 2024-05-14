@@ -658,8 +658,10 @@ pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
 /// Continues execution until specific location is reached.
 pub fn continue_to_location(
   callback__,
-  location: Location,
-  target_call_frames: option.Option(ContinueToLocationTargetCallFrames),
+  location location: Location,
+  target_call_frames target_call_frames: option.Option(
+    ContinueToLocationTargetCallFrames,
+  ),
 ) {
   callback__(
     "Debugger.continueToLocation",
@@ -722,13 +724,13 @@ pub fn enable(callback__) {
 /// Evaluates expression on a given call frame.
 pub fn evaluate_on_call_frame(
   callback__,
-  call_frame_id: CallFrameId,
-  expression: String,
-  object_group: option.Option(String),
-  include_command_line_api: option.Option(Bool),
-  silent: option.Option(Bool),
-  return_by_value: option.Option(Bool),
-  throw_on_side_effect: option.Option(Bool),
+  call_frame_id call_frame_id: CallFrameId,
+  expression expression: String,
+  object_group object_group: option.Option(String),
+  include_command_line_api include_command_line_api: option.Option(Bool),
+  silent silent: option.Option(Bool),
+  return_by_value return_by_value: option.Option(Bool),
+  throw_on_side_effect throw_on_side_effect: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.evaluateOnCallFrame",
@@ -763,9 +765,9 @@ pub fn evaluate_on_call_frame(
 /// the same.
 pub fn get_possible_breakpoints(
   callback__,
-  start: Location,
-  end: option.Option(Location),
-  restrict_to_function: option.Option(Bool),
+  start start: Location,
+  end end: option.Option(Location),
+  restrict_to_function restrict_to_function: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.getPossibleBreakpoints",
@@ -785,7 +787,7 @@ pub fn get_possible_breakpoints(
 }
 
 /// Returns source for the script with given id.
-pub fn get_script_source(callback__, script_id: runtime.ScriptId) {
+pub fn get_script_source(callback__, script_id script_id: runtime.ScriptId) {
   use result__ <- result.try(callback__(
     "Debugger.getScriptSource",
     option.Some(
@@ -803,7 +805,7 @@ pub fn pause(callback__) {
 }
 
 /// Removes JavaScript breakpoint.
-pub fn remove_breakpoint(callback__, breakpoint_id: BreakpointId) {
+pub fn remove_breakpoint(callback__, breakpoint_id breakpoint_id: BreakpointId) {
   callback__(
     "Debugger.removeBreakpoint",
     option.Some(
@@ -825,7 +827,7 @@ pub fn remove_breakpoint(callback__, breakpoint_id: BreakpointId) {
 /// The various return values are deprecated and `callFrames` is always empty.
 /// Use the call frames from the `Debugger#paused` events instead, that fires
 /// once V8 pauses at the beginning of the restarted function.
-pub fn restart_frame(callback__, call_frame_id: CallFrameId) {
+pub fn restart_frame(callback__, call_frame_id call_frame_id: CallFrameId) {
   callback__(
     "Debugger.restartFrame",
     option.Some(
@@ -835,7 +837,10 @@ pub fn restart_frame(callback__, call_frame_id: CallFrameId) {
 }
 
 /// Resumes JavaScript execution.
-pub fn resume(callback__, terminate_on_resume: option.Option(Bool)) {
+pub fn resume(
+  callback__,
+  terminate_on_resume terminate_on_resume: option.Option(Bool),
+) {
   callback__(
     "Debugger.resume",
     option.Some(json.object(
@@ -850,10 +855,10 @@ pub fn resume(callback__, terminate_on_resume: option.Option(Bool)) {
 /// Searches for given string in script content.
 pub fn search_in_content(
   callback__,
-  script_id: runtime.ScriptId,
-  query: String,
-  case_sensitive: option.Option(Bool),
-  is_regex: option.Option(Bool),
+  script_id script_id: runtime.ScriptId,
+  query query: String,
+  case_sensitive case_sensitive: option.Option(Bool),
+  is_regex is_regex: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.searchInContent",
@@ -876,7 +881,7 @@ pub fn search_in_content(
 }
 
 /// Enables or disables async call stacks tracking.
-pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
+pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
   callback__(
     "Debugger.setAsyncCallStackDepth",
     option.Some(json.object([#("maxDepth", json.int(max_depth))])),
@@ -886,8 +891,8 @@ pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
 /// Sets JavaScript breakpoint at a given location.
 pub fn set_breakpoint(
   callback__,
-  location: Location,
-  condition: option.Option(String),
+  location location: Location,
+  condition condition: option.Option(String),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.setBreakpoint",
@@ -906,7 +911,7 @@ pub fn set_breakpoint(
 /// Sets instrumentation breakpoint.
 pub fn set_instrumentation_breakpoint(
   callback__,
-  instrumentation: SetInstrumentationBreakpointInstrumentation,
+  instrumentation instrumentation: SetInstrumentationBreakpointInstrumentation,
 ) {
   use result__ <- result.try(callback__(
     "Debugger.setInstrumentationBreakpoint",
@@ -971,12 +976,12 @@ pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.D
 /// `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
 pub fn set_breakpoint_by_url(
   callback__,
-  line_number: Int,
-  url: option.Option(String),
-  url_regex: option.Option(String),
-  script_hash: option.Option(String),
-  column_number: option.Option(Int),
-  condition: option.Option(String),
+  line_number line_number: Int,
+  url url: option.Option(String),
+  url_regex url_regex: option.Option(String),
+  script_hash script_hash: option.Option(String),
+  column_number column_number: option.Option(Int),
+  condition condition: option.Option(String),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.setBreakpointByUrl",
@@ -1005,7 +1010,7 @@ pub fn set_breakpoint_by_url(
 }
 
 /// Activates / deactivates all breakpoints on the page.
-pub fn set_breakpoints_active(callback__, active: Bool) {
+pub fn set_breakpoints_active(callback__, active active: Bool) {
   callback__(
     "Debugger.setBreakpointsActive",
     option.Some(json.object([#("active", json.bool(active))])),
@@ -1014,7 +1019,10 @@ pub fn set_breakpoints_active(callback__, active: Bool) {
 
 /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
 /// or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
-pub fn set_pause_on_exceptions(callback__, state: SetPauseOnExceptionsState) {
+pub fn set_pause_on_exceptions(
+  callback__,
+  state state: SetPauseOnExceptionsState,
+) {
   callback__(
     "Debugger.setPauseOnExceptions",
     option.Some(
@@ -1071,9 +1079,9 @@ pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
 /// top-most function is automatically triggered.
 pub fn set_script_source(
   callback__,
-  script_id: runtime.ScriptId,
-  script_source: String,
-  dry_run: option.Option(Bool),
+  script_id script_id: runtime.ScriptId,
+  script_source script_source: String,
+  dry_run dry_run: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Debugger.setScriptSource",
@@ -1093,7 +1101,7 @@ pub fn set_script_source(
 }
 
 /// Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
-pub fn set_skip_all_pauses(callback__, skip: Bool) {
+pub fn set_skip_all_pauses(callback__, skip skip: Bool) {
   callback__(
     "Debugger.setSkipAllPauses",
     option.Some(json.object([#("skip", json.bool(skip))])),
@@ -1104,10 +1112,10 @@ pub fn set_skip_all_pauses(callback__, skip: Bool) {
 /// mutated manually.
 pub fn set_variable_value(
   callback__,
-  scope_number: Int,
-  variable_name: String,
-  new_value: runtime.CallArgument,
-  call_frame_id: CallFrameId,
+  scope_number scope_number: Int,
+  variable_name variable_name: String,
+  new_value new_value: runtime.CallArgument,
+  call_frame_id call_frame_id: CallFrameId,
 ) {
   callback__(
     "Debugger.setVariableValue",

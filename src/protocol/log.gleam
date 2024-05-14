@@ -344,7 +344,10 @@ pub fn enable(callback__) {
 }
 
 /// start violation reporting.
-pub fn start_violations_report(callback__, config: List(ViolationSetting)) {
+pub fn start_violations_report(
+  callback__,
+  config config: List(ViolationSetting),
+) {
   callback__(
     "Log.startViolationsReport",
     option.Some(

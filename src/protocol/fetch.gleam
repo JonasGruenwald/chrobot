@@ -327,8 +327,8 @@ pub fn disable(callback__) {
 /// calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
 pub fn enable(
   callback__,
-  patterns: option.Option(List(RequestPattern)),
-  handle_auth_requests: option.Option(Bool),
+  patterns patterns: option.Option(List(RequestPattern)),
+  handle_auth_requests handle_auth_requests: option.Option(Bool),
 ) {
   callback__(
     "Fetch.enable",
@@ -347,8 +347,8 @@ pub fn enable(
 /// Causes the request to fail with specified reason.
 pub fn fail_request(
   callback__,
-  request_id: RequestId,
-  error_reason: network.ErrorReason,
+  request_id request_id: RequestId,
+  error_reason error_reason: network.ErrorReason,
 ) {
   callback__(
     "Fetch.failRequest",
@@ -364,12 +364,12 @@ pub fn fail_request(
 /// Provides response to the request.
 pub fn fulfill_request(
   callback__,
-  request_id: RequestId,
-  response_code: Int,
-  response_headers: option.Option(List(HeaderEntry)),
-  binary_response_headers: option.Option(String),
-  body: option.Option(String),
-  response_phrase: option.Option(String),
+  request_id request_id: RequestId,
+  response_code response_code: Int,
+  response_headers response_headers: option.Option(List(HeaderEntry)),
+  binary_response_headers binary_response_headers: option.Option(String),
+  body body: option.Option(String),
+  response_phrase response_phrase: option.Option(String),
 ) {
   callback__(
     "Fetch.fulfillRequest",
@@ -400,11 +400,11 @@ pub fn fulfill_request(
 /// Continues the request, optionally modifying some of its parameters.
 pub fn continue_request(
   callback__,
-  request_id: RequestId,
-  url: option.Option(String),
-  method: option.Option(String),
-  post_data: option.Option(String),
-  headers: option.Option(List(HeaderEntry)),
+  request_id request_id: RequestId,
+  url url: option.Option(String),
+  method method: option.Option(String),
+  post_data post_data: option.Option(String),
+  headers headers: option.Option(List(HeaderEntry)),
 ) {
   callback__(
     "Fetch.continueRequest",
@@ -429,8 +429,8 @@ pub fn continue_request(
 /// Continues a request supplying authChallengeResponse following authRequired event.
 pub fn continue_with_auth(
   callback__,
-  request_id: RequestId,
-  auth_challenge_response: AuthChallengeResponse,
+  request_id request_id: RequestId,
+  auth_challenge_response auth_challenge_response: AuthChallengeResponse,
 ) {
   callback__(
     "Fetch.continueWithAuth",
@@ -456,7 +456,7 @@ pub fn continue_with_auth(
 /// paused in the _redirect received_ state may be differentiated by
 /// `responseCode` and presence of `location` response header, see
 /// comments to `requestPaused` for details.
-pub fn get_response_body(callback__, request_id: RequestId) {
+pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Fetch.getResponseBody",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),
@@ -476,7 +476,10 @@ pub fn get_response_body(callback__, request_id: RequestId) {
 /// This method is mutually exclusive with getResponseBody.
 /// Calling other methods that affect the request or disabling fetch
 /// domain before body is received results in an undefined behavior.
-pub fn take_response_body_as_stream(callback__, request_id: RequestId) {
+pub fn take_response_body_as_stream(
+  callback__,
+  request_id request_id: RequestId,
+) {
   use result__ <- result.try(callback__(
     "Fetch.takeResponseBodyAsStream",
     option.Some(json.object([#("requestId", encode__request_id(request_id))])),

@@ -1172,9 +1172,9 @@ pub fn decode__run_script_response(value__: dynamic.Dynamic) {
 /// Add handler to promise with given promise object id.
 pub fn await_promise(
   callback__,
-  promise_object_id: RemoteObjectId,
-  return_by_value: option.Option(Bool),
-  generate_preview: option.Option(Bool),
+  promise_object_id promise_object_id: RemoteObjectId,
+  return_by_value return_by_value: option.Option(Bool),
+  generate_preview generate_preview: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.awaitPromise",
@@ -1197,15 +1197,15 @@ pub fn await_promise(
 /// inherited from the target object.
 pub fn call_function_on(
   callback__,
-  function_declaration: String,
-  object_id: option.Option(RemoteObjectId),
-  arguments: option.Option(List(CallArgument)),
-  silent: option.Option(Bool),
-  return_by_value: option.Option(Bool),
-  user_gesture: option.Option(Bool),
-  await_promise: option.Option(Bool),
-  execution_context_id: option.Option(ExecutionContextId),
-  object_group: option.Option(String),
+  function_declaration function_declaration: String,
+  object_id object_id: option.Option(RemoteObjectId),
+  arguments arguments: option.Option(List(CallArgument)),
+  silent silent: option.Option(Bool),
+  return_by_value return_by_value: option.Option(Bool),
+  user_gesture user_gesture: option.Option(Bool),
+  await_promise await_promise: option.Option(Bool),
+  execution_context_id execution_context_id: option.Option(ExecutionContextId),
+  object_group object_group: option.Option(String),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.callFunctionOn",
@@ -1245,10 +1245,10 @@ pub fn call_function_on(
 /// Compiles expression.
 pub fn compile_script(
   callback__,
-  expression: String,
-  source_url: String,
-  persist_script: Bool,
-  execution_context_id: option.Option(ExecutionContextId),
+  expression expression: String,
+  source_url source_url: String,
+  persist_script persist_script: Bool,
+  execution_context_id execution_context_id: option.Option(ExecutionContextId),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.compileScript",
@@ -1288,14 +1288,14 @@ pub fn enable(callback__) {
 /// Evaluates expression on global object.
 pub fn evaluate(
   callback__,
-  expression: String,
-  object_group: option.Option(String),
-  include_command_line_api: option.Option(Bool),
-  silent: option.Option(Bool),
-  context_id: option.Option(ExecutionContextId),
-  return_by_value: option.Option(Bool),
-  user_gesture: option.Option(Bool),
-  await_promise: option.Option(Bool),
+  expression expression: String,
+  object_group object_group: option.Option(String),
+  include_command_line_api include_command_line_api: option.Option(Bool),
+  silent silent: option.Option(Bool),
+  context_id context_id: option.Option(ExecutionContextId),
+  return_by_value return_by_value: option.Option(Bool),
+  user_gesture user_gesture: option.Option(Bool),
+  await_promise await_promise: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.evaluate",
@@ -1333,8 +1333,8 @@ pub fn evaluate(
 /// object.
 pub fn get_properties(
   callback__,
-  object_id: RemoteObjectId,
-  own_properties: option.Option(Bool),
+  object_id object_id: RemoteObjectId,
+  own_properties own_properties: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.getProperties",
@@ -1353,7 +1353,7 @@ pub fn get_properties(
 /// Returns all let, const and class variables from global scope.
 pub fn global_lexical_scope_names(
   callback__,
-  execution_context_id: option.Option(ExecutionContextId),
+  execution_context_id execution_context_id: option.Option(ExecutionContextId),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.globalLexicalScopeNames",
@@ -1372,8 +1372,8 @@ pub fn global_lexical_scope_names(
 /// This generated protocol command has no description
 pub fn query_objects(
   callback__,
-  prototype_object_id: RemoteObjectId,
-  object_group: option.Option(String),
+  prototype_object_id prototype_object_id: RemoteObjectId,
+  object_group object_group: option.Option(String),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.queryObjects",
@@ -1390,7 +1390,7 @@ pub fn query_objects(
 }
 
 /// Releases remote object with given id.
-pub fn release_object(callback__, object_id: RemoteObjectId) {
+pub fn release_object(callback__, object_id object_id: RemoteObjectId) {
   callback__(
     "Runtime.releaseObject",
     option.Some(
@@ -1400,7 +1400,7 @@ pub fn release_object(callback__, object_id: RemoteObjectId) {
 }
 
 /// Releases all remote objects that belong to a given group.
-pub fn release_object_group(callback__, object_group: String) {
+pub fn release_object_group(callback__, object_group object_group: String) {
   callback__(
     "Runtime.releaseObjectGroup",
     option.Some(json.object([#("objectGroup", json.string(object_group))])),
@@ -1415,14 +1415,14 @@ pub fn run_if_waiting_for_debugger(callback__) {
 /// Runs script with given id in a given context.
 pub fn run_script(
   callback__,
-  script_id: ScriptId,
-  execution_context_id: option.Option(ExecutionContextId),
-  object_group: option.Option(String),
-  silent: option.Option(Bool),
-  include_command_line_api: option.Option(Bool),
-  return_by_value: option.Option(Bool),
-  generate_preview: option.Option(Bool),
-  await_promise: option.Option(Bool),
+  script_id script_id: ScriptId,
+  execution_context_id execution_context_id: option.Option(ExecutionContextId),
+  object_group object_group: option.Option(String),
+  silent silent: option.Option(Bool),
+  include_command_line_api include_command_line_api: option.Option(Bool),
+  return_by_value return_by_value: option.Option(Bool),
+  generate_preview generate_preview: option.Option(Bool),
+  await_promise await_promise: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "Runtime.runScript",
@@ -1457,7 +1457,7 @@ pub fn run_script(
 }
 
 /// Enables or disables async call stacks tracking.
-pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
+pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
   callback__(
     "Runtime.setAsyncCallStackDepth",
     option.Some(json.object([#("maxDepth", json.int(max_depth))])),
@@ -1472,8 +1472,8 @@ pub fn set_async_call_stack_depth(callback__, max_depth: Int) {
 /// Each binding function call produces Runtime.bindingCalled notification.
 pub fn add_binding(
   callback__,
-  name: String,
-  execution_context_name: option.Option(String),
+  name name: String,
+  execution_context_name execution_context_name: option.Option(String),
 ) {
   callback__(
     "Runtime.addBinding",
@@ -1488,7 +1488,7 @@ pub fn add_binding(
 
 /// This method does not remove binding function from global object but
 /// unsubscribes current runtime agent from Runtime.bindingCalled notifications.
-pub fn remove_binding(callback__, name: String) {
+pub fn remove_binding(callback__, name name: String) {
   callback__(
     "Runtime.removeBinding",
     option.Some(json.object([#("name", json.string(name))])),

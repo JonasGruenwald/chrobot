@@ -159,9 +159,9 @@ pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
 /// Returns event listeners of the given object.
 pub fn get_event_listeners(
   callback__,
-  object_id: runtime.RemoteObjectId,
-  depth: option.Option(Int),
-  pierce: option.Option(Bool),
+  object_id object_id: runtime.RemoteObjectId,
+  depth depth: option.Option(Int),
+  pierce pierce: option.Option(Bool),
 ) {
   use result__ <- result.try(callback__(
     "DOMDebugger.getEventListeners",
@@ -183,8 +183,8 @@ pub fn get_event_listeners(
 /// Removes DOM breakpoint that was set using `setDOMBreakpoint`.
 pub fn remove_dom_breakpoint(
   callback__,
-  node_id: dom.NodeId,
-  type_: DOMBreakpointType,
+  node_id node_id: dom.NodeId,
+  type_ type_: DOMBreakpointType,
 ) {
   callback__(
     "DOMDebugger.removeDOMBreakpoint",
@@ -198,7 +198,10 @@ pub fn remove_dom_breakpoint(
 }
 
 /// Removes breakpoint on particular DOM event.
-pub fn remove_event_listener_breakpoint(callback__, event_name: String) {
+pub fn remove_event_listener_breakpoint(
+  callback__,
+  event_name event_name: String,
+) {
   callback__(
     "DOMDebugger.removeEventListenerBreakpoint",
     option.Some(json.object([#("eventName", json.string(event_name))])),
@@ -206,7 +209,7 @@ pub fn remove_event_listener_breakpoint(callback__, event_name: String) {
 }
 
 /// Removes breakpoint from XMLHttpRequest.
-pub fn remove_xhr_breakpoint(callback__, url: String) {
+pub fn remove_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.removeXHRBreakpoint",
     option.Some(json.object([#("url", json.string(url))])),
@@ -216,8 +219,8 @@ pub fn remove_xhr_breakpoint(callback__, url: String) {
 /// Sets breakpoint on particular operation with DOM.
 pub fn set_dom_breakpoint(
   callback__,
-  node_id: dom.NodeId,
-  type_: DOMBreakpointType,
+  node_id node_id: dom.NodeId,
+  type_ type_: DOMBreakpointType,
 ) {
   callback__(
     "DOMDebugger.setDOMBreakpoint",
@@ -231,7 +234,7 @@ pub fn set_dom_breakpoint(
 }
 
 /// Sets breakpoint on particular DOM event.
-pub fn set_event_listener_breakpoint(callback__, event_name: String) {
+pub fn set_event_listener_breakpoint(callback__, event_name event_name: String) {
   callback__(
     "DOMDebugger.setEventListenerBreakpoint",
     option.Some(json.object([#("eventName", json.string(event_name))])),
@@ -239,7 +242,7 @@ pub fn set_event_listener_breakpoint(callback__, event_name: String) {
 }
 
 /// Sets breakpoint on XMLHttpRequest.
-pub fn set_xhr_breakpoint(callback__, url: String) {
+pub fn set_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.setXHRBreakpoint",
     option.Some(json.object([#("url", json.string(url))])),

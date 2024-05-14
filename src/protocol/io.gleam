@@ -69,7 +69,7 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
 }
 
 /// Close the stream, discard any temporary backing storage.
-pub fn close(callback__, handle: StreamHandle) {
+pub fn close(callback__, handle handle: StreamHandle) {
   callback__(
     "IO.close",
     option.Some(json.object([#("handle", encode__stream_handle(handle))])),
@@ -79,9 +79,9 @@ pub fn close(callback__, handle: StreamHandle) {
 /// Read a chunk of the stream
 pub fn read(
   callback__,
-  handle: StreamHandle,
-  offset: option.Option(Int),
-  size: option.Option(Int),
+  handle handle: StreamHandle,
+  offset offset: option.Option(Int),
+  size size: option.Option(Int),
 ) {
   use result__ <- result.try(callback__(
     "IO.read",
@@ -101,7 +101,7 @@ pub fn read(
 }
 
 /// Return UUID of Blob object specified by a remote object id.
-pub fn resolve_blob(callback__, object_id: runtime.RemoteObjectId) {
+pub fn resolve_blob(callback__, object_id object_id: runtime.RemoteObjectId) {
   use result__ <- result.try(callback__(
     "IO.resolveBlob",
     option.Some(

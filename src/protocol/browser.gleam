@@ -54,7 +54,10 @@ pub fn decode__get_version_response(value__: dynamic.Dynamic) {
 }
 
 /// Reset all permission management for all origins.
-pub fn reset_permissions(callback__, browser_context_id: option.Option(String)) {
+pub fn reset_permissions(
+  callback__,
+  browser_context_id browser_context_id: option.Option(String),
+) {
   callback__(
     "Browser.resetPermissions",
     option.Some(json.object(
@@ -81,7 +84,7 @@ pub fn get_version(callback__) {
 
 /// Allows a site to use privacy sandbox features that require enrollment
 /// without the site actually being enrolled. Only supported on page targets.
-pub fn add_privacy_sandbox_enrollment_override(callback__, url: String) {
+pub fn add_privacy_sandbox_enrollment_override(callback__, url url: String) {
   callback__(
     "Browser.addPrivacySandboxEnrollmentOverride",
     option.Some(json.object([#("url", json.string(url))])),

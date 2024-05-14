@@ -226,7 +226,7 @@ pub fn enable(callback__) {
 }
 
 /// Enable/disable whether all certificate errors should be ignored.
-pub fn set_ignore_certificate_errors(callback__, ignore: Bool) {
+pub fn set_ignore_certificate_errors(callback__, ignore ignore: Bool) {
   callback__(
     "Security.setIgnoreCertificateErrors",
     option.Some(json.object([#("ignore", json.bool(ignore))])),
