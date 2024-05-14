@@ -23,17 +23,22 @@ pub type GetVersionResponse {
   GetVersionResponse(
     protocol_version: String,
     /// Protocol version.
+    /// 
     product: String,
     /// Product name.
+    /// 
     revision: String,
     /// Product revision.
+    /// 
     user_agent: String,
     /// User-Agent.
+    /// 
     js_version: String,
   )
 }
 
 /// V8 version.
+/// 
 @internal
 pub fn decode__get_version_response(value__: dynamic.Dynamic) {
   use protocol_version <- result.try(dynamic.field(

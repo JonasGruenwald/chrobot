@@ -18,7 +18,7 @@
 
 ## About
 
-Chrobot provides a set of strongly typed bindings to the stable version of the [Chrome Devtools Protocol](https://chromedevtools.github.io/devtools-protocol/), based on its published JSON specification.
+Chrobot provides a set of typed bindings to the stable version of the [Chrome Devtools Protocol](https://chromedevtools.github.io/devtools-protocol/), based on its published JSON specification.
 
 It also exposes some handy high level abstractions for browser automation, and handles starting a browser instance and communicating with it for you.
 
@@ -46,8 +46,6 @@ npx @puppeteer/browsers install chrome
 
 The `chrobot.launch` / `chrome.launch` commands will attempt to find a local chrome installation like this, and prioritize it over your system installation.
 
-Of course the most consistent way to launch a specific browser would be to pass a config with a browser path.
-
 ### Package
 
 Install as a Gleam package
@@ -56,18 +54,87 @@ Install as a Gleam package
 gleam add chrobot
 ```
 
-## Documentation
+## Examples
+
+### Take a screenshot of a website
+
+```gleam
+import chrobot
+
+pub fn main() {
+  // Open the browser and navigate to the gleam homepage
+  let assert Ok(browser) = chrobot.launch()
+  let assert Ok(page) =
+    browser
+    |> chrobot.open("https://gleam.run", 10_000)
+
+  // Take a screeshot and save it as 'hi_lucy.png'
+  let assert Ok(screenshot) = chrobot.screenshot(page)
+  let assert Ok(_) = chrobot.to_file(screenshot, "hi_lucy")
+  let assert Ok(_) = chrobot.quit(browser)
+}
+
+```
+
+### Generate a PDF document with [lustre](http://lustre.build/)
+
+```gleam
+import chrobot
+import gleam/io
+import lustre/element.{text}
+import lustre/element/html
+
+fn build_page() {
+  html.body([], [
+    html.h1([], [text("Spanakorizo")]),
+    html.h2([], [text("Ingredients")]),
+    html.ul([], [
+      html.li([], [text("1 onion")]),
+      html.li([], [text("1 clove(s) of garlic")]),
+      html.li([], [text("70 g olive oil")]),
+      html.li([], [text("salt")]),
+      html.li([], [text("pepper")]),
+      html.li([], [text("2 spring onions")]),
+      html.li([], [text("1/2 bunch dill")]),
+      html.li([], [text("250 g round grain rice")]),
+      html.li([], [text("150 g white wine")]),
+      html.li([], [text("1 liter vegetable stock")]),
+      html.li([], [text("1 kilo spinach")]),
+      html.li([], [text("lemon zest, of 2 lemons")]),
+      html.li([], [text("lemon juice, of 2 lemons")]),
+    ]),
+    html.h2([], [text("To serve")]),
+    html.ul([], [
+      html.li([], [text("1 lemon")]),
+      html.li([], [text("feta cheese")]),
+      html.li([], [text("olive oil")]),
+      html.li([], [text("pepper")]),
+      html.li([], [text("oregano")]),
+    ]),
+  ])
+  |> element.to_document_string()
+}
+
+pub fn main() {
+  // Open the browser and navigate to the gleam homepage
+  let assert Ok(browser) = chrobot.launch()
+  let assert Ok(page) =
+    browser
+    |> chrobot.create_page(build_page(), 10_000)
+
+  // Store as 'recipe.png'
+  let assert Ok(doc) = chrobot.pdf(page)
+  let assert Ok(_) = chrobot.to_file(doc, "recipe")
+  let assert Ok(_) = chrobot.quit(browser)
+}
+```
+
+
+## Documentation & Guide
 
 The full documentation can be found at <https://hexdocs.pm/chrobot>.
 
-To learn about the high level abstractions, look at the `chrobot` module documentation.
+🗼 To learn about the high level abstractions, look at the `chrobot` module documentation.
 
-To learn how to use the protocol bindings directly, look at the `protocol` module documentation.
+📠 To learn how to use the protocol bindings directly, look at the `protocol` module documentation.
 
-## Examples
-
-TODO
-
-## Guide
-
-TODO

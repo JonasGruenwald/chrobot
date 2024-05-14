@@ -119,21 +119,28 @@ pub type SecurityStateExplanation {
   SecurityStateExplanation(
     security_state: SecurityState,
     /// Security state representing the severity of the factor being explained.
+    /// 
     title: String,
     /// Title describing the type of factor.
+    /// 
     summary: String,
     /// Short phrase describing the type of factor.
+    /// 
     description: String,
     /// Full text explanation of the factor.
+    /// 
     mixed_content_type: MixedContentType,
     /// The type of mixed content described by the explanation.
+    /// 
     certificate: List(String),
     /// Page certificate.
+    /// 
     recommendations: option.Option(List(String)),
   )
 }
 
 /// Recommendations to fix any issues.
+/// 
 @internal
 pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
   json.object(

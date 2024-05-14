@@ -60,27 +60,37 @@ pub type EventListener {
   EventListener(
     type_: String,
     /// `EventListener`'s type.
+    /// 
     use_capture: Bool,
     /// `EventListener`'s useCapture.
+    /// 
     passive: Bool,
     /// `EventListener`'s passive flag.
+    /// 
     once: Bool,
     /// `EventListener`'s once flag.
+    /// 
     script_id: runtime.ScriptId,
     /// Script id of the handler code.
+    /// 
     line_number: Int,
     /// Line number in the script (0-based).
+    /// 
     column_number: Int,
     /// Column number in the script (0-based).
+    /// 
     handler: option.Option(runtime.RemoteObject),
     /// Event handler function value.
+    /// 
     original_handler: option.Option(runtime.RemoteObject),
     /// Event original handler function value.
+    /// 
     backend_node_id: option.Option(dom.BackendNodeId),
   )
 }
 
 /// Node the listener is added to (if any).
+/// 
 @internal
 pub fn encode__event_listener(value__: EventListener) {
   json.object(
@@ -157,6 +167,7 @@ pub type GetEventListenersResponse {
 }
 
 /// Array of relevant listeners.
+/// 
 @internal
 pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
   use listeners <- result.try(dynamic.field(

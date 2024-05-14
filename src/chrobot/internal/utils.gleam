@@ -1,6 +1,6 @@
+import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/json
 import gleam/option
-import gleam/erlang/process.{type Subject, type CallError} as p
 
 pub fn add_optional(
   prop_encoders: List(#(String, json.Json)),
@@ -13,14 +13,12 @@ pub fn add_optional(
   }
 }
 
-
 pub fn try_call_with_subject(
   subject: Subject(request),
   make_request: fn(Subject(response)) -> request,
   reply_subject: Subject(response),
   within timeout: Int,
 ) -> Result(response, CallError(response)) {
-
   // Monitor the callee process so we can tell if it goes down (meaning we
   // won't get a reply)
   let monitor = p.monitor_process(p.subject_owner(subject))

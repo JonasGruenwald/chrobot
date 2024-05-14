@@ -57,15 +57,18 @@ pub type TargetInfo {
     target_id: TargetID,
     type_: String,
     /// List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22
+    /// 
     title: String,
     url: String,
     attached: Bool,
     /// Whether the target has an attached client.
+    /// 
     opener_id: option.Option(TargetID),
   )
 }
 
 /// Opener target Id
+/// 
 @internal
 pub fn encode__target_info(value__: TargetInfo) {
   json.object(
@@ -113,6 +116,7 @@ pub type AttachToTargetResponse {
 }
 
 /// Id assigned to the session.
+/// 
 @internal
 pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
   use session_id <- result.try(dynamic.field("sessionId", decode__session_id)(
@@ -129,6 +133,7 @@ pub type CreateBrowserContextResponse {
 }
 
 /// The id of the context created.
+/// 
 @internal
 pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
   use browser_context_id <- result.try(dynamic.field(
@@ -146,6 +151,7 @@ pub type GetBrowserContextsResponse {
 }
 
 /// An array of browser context ids.
+/// 
 @internal
 pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
   use browser_context_ids <- result.try(dynamic.field(
@@ -163,6 +169,7 @@ pub type CreateTargetResponse {
 }
 
 /// The id of the page opened.
+/// 
 @internal
 pub fn decode__create_target_response(value__: dynamic.Dynamic) {
   use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
@@ -179,6 +186,7 @@ pub type GetTargetsResponse {
 }
 
 /// The list of targets.
+/// 
 @internal
 pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
   use target_infos <- result.try(dynamic.field(

@@ -60,13 +60,16 @@ pub type Location {
   Location(
     script_id: runtime.ScriptId,
     /// Script identifier as reported in the `Debugger.scriptParsed`.
+    /// 
     line_number: Int,
     /// Line number in the script (0-based).
+    /// 
     column_number: option.Option(Int),
   )
 }
 
 /// Column number in the script (0-based).
+/// 
 @internal
 pub fn encode__location(value__: Location) {
   json.object(
@@ -106,21 +109,28 @@ pub type CallFrame {
   CallFrame(
     call_frame_id: CallFrameId,
     /// Call frame identifier. This identifier is only valid while the virtual machine is paused.
+    /// 
     function_name: String,
     /// Name of the JavaScript function called on this call frame.
+    /// 
     function_location: option.Option(Location),
     /// Location in the source code.
+    /// 
     location: Location,
     /// Location in the source code.
+    /// 
     scope_chain: List(Scope),
     /// Scope chain for this call frame.
+    /// 
     this: runtime.RemoteObject,
     /// `this` object for this call frame.
+    /// 
     return_value: option.Option(runtime.RemoteObject),
   )
 }
 
 /// The value being returned, if the function is at return point.
+/// 
 @internal
 pub fn encode__call_frame(value__: CallFrame) {
   json.object(
@@ -184,18 +194,22 @@ pub type Scope {
   Scope(
     type_: ScopeType,
     /// Scope type.
+    /// 
     object: runtime.RemoteObject,
     /// Object representing the scope. For `global` and `with` scopes it represents the actual
     /// object; for the rest of the scopes, it is artificial transient object enumerating scope
     /// variables as its properties.
+    /// 
     name: option.Option(String),
     start_location: option.Option(Location),
     /// Location in the source code where scope starts
+    /// 
     end_location: option.Option(Location),
   )
 }
 
 /// Location in the source code where scope ends
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `Scope`
 pub type ScopeType {
@@ -303,11 +317,13 @@ pub type SearchMatch {
   SearchMatch(
     line_number: Float,
     /// Line number in resource content.
+    /// 
     line_content: String,
   )
 }
 
 /// Line with match content.
+/// 
 @internal
 pub fn encode__search_match(value__: SearchMatch) {
   json.object([
@@ -332,10 +348,13 @@ pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
     /// Script identifier as reported in the `Debugger.scriptParsed`.
+    /// 
     line_number: Int,
     /// Line number in the script (0-based).
+    /// 
     column_number: option.Option(Int),
     /// Column number in the script (0-based).
+    /// 
     type_: option.Option(BreakLocationType),
   )
 }
@@ -455,11 +474,13 @@ pub type DebugSymbols {
   DebugSymbols(
     type_: DebugSymbolsType,
     /// Type of the debug symbols.
+    /// 
     external_url: option.Option(String),
   )
 }
 
 /// URL of the external symbol source.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DebugSymbols`
 pub type DebugSymbolsType {
@@ -528,11 +549,13 @@ pub type EvaluateOnCallFrameResponse {
   EvaluateOnCallFrameResponse(
     result: runtime.RemoteObject,
     /// Object wrapper for the evaluation result.
+    /// 
     exception_details: option.Option(runtime.ExceptionDetails),
   )
 }
 
 /// Exception details.
+/// 
 @internal
 pub fn decode__evaluate_on_call_frame_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -557,6 +580,7 @@ pub type GetPossibleBreakpointsResponse {
 }
 
 /// List of the possible breakpoint locations.
+/// 
 @internal
 pub fn decode__get_possible_breakpoints_response(value__: dynamic.Dynamic) {
   use locations <- result.try(dynamic.field(
@@ -573,11 +597,13 @@ pub type GetScriptSourceResponse {
   GetScriptSourceResponse(
     script_source: String,
     /// Script source (empty in case of Wasm bytecode).
+    /// 
     bytecode: option.Option(String),
   )
 }
 
 /// Wasm bytecode. (Encoded as a base64 string when passed over JSON)
+/// 
 @internal
 pub fn decode__get_script_source_response(value__: dynamic.Dynamic) {
   use script_source <- result.try(dynamic.field("scriptSource", dynamic.string)(
@@ -597,6 +623,7 @@ pub type SearchInContentResponse {
 }
 
 /// List of search matches.
+/// 
 @internal
 pub fn decode__search_in_content_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -613,11 +640,13 @@ pub type SetBreakpointResponse {
   SetBreakpointResponse(
     breakpoint_id: BreakpointId,
     /// Id of the created breakpoint for further reference.
+    /// 
     actual_location: Location,
   )
 }
 
 /// Location this breakpoint resolved into.
+/// 
 @internal
 pub fn decode__set_breakpoint_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -642,6 +671,7 @@ pub type SetInstrumentationBreakpointResponse {
 }
 
 /// Id of the created breakpoint for further reference.
+/// 
 @internal
 pub fn decode__set_instrumentation_breakpoint_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -658,11 +688,13 @@ pub type SetBreakpointByUrlResponse {
   SetBreakpointByUrlResponse(
     breakpoint_id: BreakpointId,
     /// Id of the created breakpoint for further reference.
+    /// 
     locations: List(Location),
   )
 }
 
 /// List of the locations this breakpoint resolved into upon addition.
+/// 
 @internal
 pub fn decode__set_breakpoint_by_url_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -689,6 +721,7 @@ pub type SetScriptSourceResponse {
 }
 
 /// Exception details if any. Only present when `status` is `CompileError`.
+/// 
 @internal
 pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
   use exception_details <- result.try(dynamic.optional_field(

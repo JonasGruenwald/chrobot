@@ -76,13 +76,16 @@ pub type RequestPattern {
     url_pattern: option.Option(String),
     /// Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is
     /// backslash. Omitting is equivalent to `"*"`.
+    /// 
     resource_type: option.Option(network.ResourceType),
     /// If set, only requests for matching resource types will be intercepted.
+    /// 
     request_stage: option.Option(RequestStage),
   )
 }
 
 /// Stage at which to begin intercepting requests. Default is Request.
+/// 
 @internal
 pub fn encode__request_pattern(value__: RequestPattern) {
   json.object(
@@ -147,15 +150,19 @@ pub type AuthChallenge {
   AuthChallenge(
     source: option.Option(AuthChallengeSource),
     /// Source of the authentication challenge.
+    /// 
     origin: String,
     /// Origin of the challenger.
+    /// 
     scheme: String,
     /// The authentication scheme used, such as basic or digest
+    /// 
     realm: String,
   )
 }
 
 /// The realm of the challenge. May be empty.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `source` of `AuthChallenge`
 pub type AuthChallengeSource {
@@ -223,15 +230,18 @@ pub type AuthChallengeResponse {
     /// The decision on what to do in response to the authorization challenge.  Default means
     /// deferring to the default behavior of the net stack, which will likely either the Cancel
     /// authentication or display a popup dialog box.
+    /// 
     username: option.Option(String),
     /// The username to provide, possibly empty. Should only be set if response is
     /// ProvideCredentials.
+    /// 
     password: option.Option(String),
   )
 }
 
 /// The password to provide, possibly empty. Should only be set if response is
 /// ProvideCredentials.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `response` of `AuthChallengeResponse`
 pub type AuthChallengeResponseResponse {
@@ -308,11 +318,13 @@ pub type GetResponseBodyResponse {
   GetResponseBodyResponse(
     body: String,
     /// Response body.
+    /// 
     base64_encoded: Bool,
   )
 }
 
 /// True, if content was sent as base64.
+/// 
 @internal
 pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
   use body <- result.try(dynamic.field("body", dynamic.string)(value__))

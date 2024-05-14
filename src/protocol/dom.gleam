@@ -66,8 +66,10 @@ pub type BackendNode {
   BackendNode(
     node_type: Int,
     /// `Node`'s nodeType.
+    /// 
     node_name: String,
     /// `Node`'s nodeName.
+    /// 
     backend_node_id: BackendNodeId,
   )
 }
@@ -384,61 +386,89 @@ pub type Node {
     /// Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend
     /// will only push node with given `id` once. It is aware of all requested nodes and will only
     /// fire DOM events for nodes known to the client.
+    /// 
     parent_id: option.Option(NodeId),
     /// The id of the parent node if any.
+    /// 
     backend_node_id: BackendNodeId,
     /// The BackendNodeId for this node.
+    /// 
     node_type: Int,
     /// `Node`'s nodeType.
+    /// 
     node_name: String,
     /// `Node`'s nodeName.
+    /// 
     local_name: String,
     /// `Node`'s localName.
+    /// 
     node_value: String,
     /// `Node`'s nodeValue.
+    /// 
     child_node_count: option.Option(Int),
     /// Child count for `Container` nodes.
+    /// 
     children: option.Option(List(Node)),
     /// Child nodes of this node when requested with children.
+    /// 
     attributes: option.Option(List(String)),
     /// Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
+    /// 
     document_url: option.Option(String),
     /// Document URL that `Document` or `FrameOwner` node points to.
+    /// 
     base_url: option.Option(String),
     /// Base URL that `Document` or `FrameOwner` node uses for URL completion.
+    /// 
     public_id: option.Option(String),
     /// `DocumentType`'s publicId.
+    /// 
     system_id: option.Option(String),
     /// `DocumentType`'s systemId.
+    /// 
     internal_subset: option.Option(String),
     /// `DocumentType`'s internalSubset.
+    /// 
     xml_version: option.Option(String),
     /// `Document`'s XML version in case of XML documents.
+    /// 
     name: option.Option(String),
     /// `Attr`'s name.
+    /// 
     value: option.Option(String),
     /// `Attr`'s value.
+    /// 
     pseudo_type: option.Option(PseudoType),
     /// Pseudo element type for this node.
+    /// 
     pseudo_identifier: option.Option(String),
     /// Pseudo element identifier for this node. Only present if there is a
     /// valid pseudoType.
+    /// 
     shadow_root_type: option.Option(ShadowRootType),
     /// Shadow root type.
+    /// 
     frame_id: option.Option(String),
     /// Frame ID for frame owner elements.
+    /// 
     content_document: option.Option(Node),
     /// Content document for frame owner elements.
+    /// 
     shadow_roots: option.Option(List(Node)),
     /// Shadow root list for given element host.
+    /// 
     template_content: option.Option(Node),
     /// Content document fragment for template elements.
+    /// 
     pseudo_elements: option.Option(List(Node)),
     /// Pseudo elements associated with this node.
+    /// 
     distributed_nodes: option.Option(List(BackendNode)),
     /// Distributed nodes for given insertion point.
+    /// 
     is_svg: option.Option(Bool),
     /// Whether the node is SVG.
+    /// 
     compatibility_mode: option.Option(CompatibilityMode),
     assigned_slot: option.Option(BackendNode),
   )
@@ -672,15 +702,19 @@ pub type RGBA {
   RGBA(
     r: Int,
     /// The red component, in the [0-255] range.
+    /// 
     g: Int,
     /// The green component, in the [0-255] range.
+    /// 
     b: Int,
     /// The blue component, in the [0-255] range.
+    /// 
     a: option.Option(Float),
   )
 }
 
 /// The alpha component, in the [0-1] range (default: 1).
+/// 
 @internal
 pub fn encode__rgba(value__: RGBA) {
   json.object(
@@ -728,21 +762,28 @@ pub type BoxModel {
   BoxModel(
     content: Quad,
     /// Content box
+    /// 
     padding: Quad,
     /// Padding box
+    /// 
     border: Quad,
     /// Border box
+    /// 
     margin: Quad,
     /// Margin box
+    /// 
     width: Int,
     /// Node width
+    /// 
     height: Int,
     /// Node height
+    /// 
     shape_outside: option.Option(ShapeOutsideInfo),
   )
 }
 
 /// Shape outside coordinates
+/// 
 @internal
 pub fn encode__box_model(value__: BoxModel) {
   json.object(
@@ -789,13 +830,16 @@ pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
     bounds: Quad,
     /// Shape bounds
+    /// 
     shape: List(dynamic.Dynamic),
     /// Shape coordinate details
+    /// 
     margin_shape: List(dynamic.Dynamic),
   )
 }
 
 /// Margin shape bounds
+/// 
 @internal
 pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
   json.object([
@@ -832,15 +876,19 @@ pub type Rect {
   Rect(
     x: Float,
     /// X coordinate
+    /// 
     y: Float,
     /// Y coordinate
+    /// 
     width: Float,
     /// Rectangle width
+    /// 
     height: Float,
   )
 }
 
 /// Rectangle height
+/// 
 @internal
 pub fn encode__rect(value__: Rect) {
   json.object([
@@ -865,11 +913,13 @@ pub type CSSComputedStyleProperty {
   CSSComputedStyleProperty(
     name: String,
     /// Computed style property name.
+    /// 
     value: String,
   )
 }
 
 /// Computed style property value.
+/// 
 @internal
 pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
   json.object([
@@ -893,6 +943,7 @@ pub type DescribeNodeResponse {
 }
 
 /// Node description.
+/// 
 @internal
 pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
   use node <- result.try(dynamic.field("node", decode__node)(value__))
@@ -907,6 +958,7 @@ pub type GetAttributesResponse {
 }
 
 /// An interleaved array of node attribute names and values.
+/// 
 @internal
 pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
   use attributes <- result.try(dynamic.field(
@@ -924,6 +976,7 @@ pub type GetBoxModelResponse {
 }
 
 /// Box model for the node.
+/// 
 @internal
 pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
   use model <- result.try(dynamic.field("model", decode__box_model)(value__))
@@ -938,6 +991,7 @@ pub type GetDocumentResponse {
 }
 
 /// Resulting node.
+/// 
 @internal
 pub fn decode__get_document_response(value__: dynamic.Dynamic) {
   use root <- result.try(dynamic.field("root", decode__node)(value__))
@@ -951,13 +1005,16 @@ pub type GetNodeForLocationResponse {
   GetNodeForLocationResponse(
     backend_node_id: BackendNodeId,
     /// Resulting node.
+    /// 
     frame_id: String,
     /// Frame this node belongs to.
+    /// 
     node_id: option.Option(NodeId),
   )
 }
 
 /// Id of the node at given coordinates, only when enabled and requested document.
+/// 
 @internal
 pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
   use backend_node_id <- result.try(dynamic.field(
@@ -983,6 +1040,7 @@ pub type GetOuterHtmlResponse {
 }
 
 /// Outer HTML markup.
+/// 
 @internal
 pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
   use outer_html <- result.try(dynamic.field("outerHTML", dynamic.string)(
@@ -999,6 +1057,7 @@ pub type MoveToResponse {
 }
 
 /// New id of the moved node.
+/// 
 @internal
 pub fn decode__move_to_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1013,6 +1072,7 @@ pub type QuerySelectorResponse {
 }
 
 /// Query selector result.
+/// 
 @internal
 pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1027,6 +1087,7 @@ pub type QuerySelectorAllResponse {
 }
 
 /// Query selector result.
+/// 
 @internal
 pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
   use node_ids <- result.try(dynamic.field(
@@ -1044,6 +1105,7 @@ pub type RequestNodeResponse {
 }
 
 /// Node id for given object.
+/// 
 @internal
 pub fn decode__request_node_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1058,6 +1120,7 @@ pub type ResolveNodeResponse {
 }
 
 /// JavaScript object wrapper for given node.
+/// 
 @internal
 pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
   use object <- result.try(dynamic.field(
@@ -1075,6 +1138,7 @@ pub type SetNodeNameResponse {
 }
 
 /// New node's id.
+/// 
 @internal
 pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))

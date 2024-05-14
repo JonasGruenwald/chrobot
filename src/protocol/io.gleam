@@ -43,13 +43,16 @@ pub type ReadResponse {
   ReadResponse(
     base64_encoded: option.Option(Bool),
     /// Set if the data is base64-encoded
+    /// 
     data: String,
     /// Data that were read.
+    /// 
     eof: Bool,
   )
 }
 
 /// Set if the end-of-file condition occurred while reading.
+/// 
 @internal
 pub fn decode__read_response(value__: dynamic.Dynamic) {
   use base64_encoded <- result.try(dynamic.optional_field(
@@ -69,6 +72,7 @@ pub type ResolveBlobResponse {
 }
 
 /// UUID of the specified Blob.
+/// 
 @internal
 pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
   use uuid <- result.try(dynamic.field("uuid", dynamic.string)(value__))

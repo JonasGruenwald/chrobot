@@ -23,28 +23,38 @@ pub type LogEntry {
   LogEntry(
     source: LogEntrySource,
     /// Log entry source.
+    /// 
     level: LogEntryLevel,
     /// Log entry severity.
+    /// 
     text: String,
     /// Logged text.
+    /// 
     category: option.Option(LogEntryCategory),
     timestamp: runtime.Timestamp,
     /// Timestamp when this entry was added.
+    /// 
     url: option.Option(String),
     /// URL of the resource if known.
+    /// 
     line_number: option.Option(Int),
     /// Line number in the resource.
+    /// 
     stack_trace: option.Option(runtime.StackTrace),
     /// JavaScript stack trace.
+    /// 
     network_request_id: option.Option(network.RequestId),
     /// Identifier of the network request associated with this entry.
+    /// 
     worker_id: option.Option(String),
     /// Identifier of the worker associated with this entry.
+    /// 
     args: option.Option(List(runtime.RemoteObject)),
   )
 }
 
 /// Call arguments.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `source` of `LogEntry`
 pub type LogEntrySource {
@@ -271,11 +281,13 @@ pub type ViolationSetting {
   ViolationSetting(
     name: ViolationSettingName,
     /// Violation type.
+    /// 
     threshold: Float,
   )
 }
 
 /// Time threshold to trigger upon.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `name` of `ViolationSetting`
 pub type ViolationSettingName {

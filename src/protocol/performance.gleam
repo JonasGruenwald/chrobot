@@ -22,11 +22,13 @@ pub type Metric {
   Metric(
     name: String,
     /// Metric name.
+    /// 
     value: Float,
   )
 }
 
 /// Metric value.
+/// 
 @internal
 pub fn encode__metric(value__: Metric) {
   json.object([
@@ -50,6 +52,7 @@ pub type GetMetricsResponse {
 }
 
 /// Current values for run-time metrics.
+/// 
 @internal
 pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
   use metrics <- result.try(dynamic.field(

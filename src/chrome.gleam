@@ -87,6 +87,12 @@ pub type RequestError {
 
   /// This is an error response from the browser itself
   BrowserError(code: Int, message: String, data: String)
+
+  /// A requested resource could not be found
+  NotFoundError
+
+  /// A runtime exception thrown by JavaScript code being evaluated in the browser
+  RuntimeException(text: String, line: Int, column: Int)
 }
 
 /// Launch a browser with the given configuration,
@@ -193,7 +199,7 @@ pub fn add_listener(browser, method: String) {
   event_subject
 }
 
-pub fn remove_listener(browser, listener: Subject(d.Dynamic)){
+pub fn remove_listener(browser, listener: Subject(d.Dynamic)) {
   process.send(browser, RemoveListener(listener))
 }
 
@@ -828,7 +834,6 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
 /// This function appends a null byte to the end of the message,
 /// which is used by the browser to detect when a message ends.
 fn send_to_browser(instance: BrowserInstance, data: Json) {
-  io.debug(json.to_string(data))
   send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
 }
 

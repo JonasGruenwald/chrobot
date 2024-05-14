@@ -20,6 +20,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
 import protocol/page
+import protocol/runtime
 import protocol/target
 import simplifile as file
 
@@ -89,12 +90,13 @@ pub fn launch_with_config(config: chrome.BrowserConfig) {
 }
 
 /// Open a page and wait for the document to resolve.  
-/// Note that the timeout can't be considered strict in the current implementation,  
-/// this call specifically may take longer than the specified timeout.
+/// Returns a response only when `Page.loadEventFired` is received, you
+/// can additionally use `await_selector` to ensure the page is ready with the 
+/// content you expect.
 pub fn open(
-  browser_subject: Subject(chrome.Message),
-  url: String,
-  time_out: Int,
+  with browser_subject: Subject(chrome.Message),
+  to url: String,
+  time_out time_out: Int,
 ) -> Result(Page, chrome.RequestError) {
   use target_response <- result.try(target.create_target(
     fn(method, params) {
@@ -135,6 +137,11 @@ pub fn open(
     time_out,
   ))
 
+  // I noticed with about:blank the load event never fires
+  // maybe it's because the page is loaded to quick and there is a race condition?
+  // we could remove this 'waiting for the load event to fire' step in favour
+  // of just always using the await selector, which works pretty well I think
+
   // Return the page
   Ok(Page(
     browser: browser_subject,
@@ -142,6 +149,47 @@ pub fn open(
     target_id: target_response.target_id,
     time_out: time_out,
   ))
+}
+
+/// Similar to `open`, but creates a new page from HTML that you pass to it.
+/// The page will be created under the `about:blank` URL.
+pub fn create_page(
+  with browser: Subject(chrome.Message),
+  from html: String,
+  time_out time_out: Int,
+) {
+  use target_response <- result.try(target.create_target(
+    fn(method, params) { chrome.call(browser, method, params, None, time_out) },
+    "about:blank",
+    Some(1920),
+    Some(1080),
+    None,
+    None,
+  ))
+
+  use session_response <- result.try(target.attach_to_target(
+    fn(method, params) { chrome.call(browser, method, params, None, time_out) },
+    target_response.target_id,
+    Some(True),
+  ))
+
+  let created_page =
+    Page(
+      browser: browser,
+      session_id: session_response.session_id,
+      target_id: target_response.target_id,
+      time_out: time_out,
+    )
+
+  use _ <- result.try(await_selector(created_page, "body"))
+
+  io.debug("page")
+  let payload = "window.document.open();
+window.document.write(`" <> html <> "`);
+window.document.close();
+"
+  use _ <- result.try(eval(created_page, payload))
+  Ok(created_page)
 }
 
 /// Return an updated `Page` with the desired timeout to apply, in milliseconds
@@ -197,13 +245,79 @@ pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
 // Write an file returned from `screenshot` of `pdf` to a file.
 // File path should not include the file extension, it will be appended automatically.
 // Will return a FileError from the `simplifile` package if not successfull
-pub fn to_file(input: EncodedFile, path: String) -> Result(Nil, file.FileError) {
+pub fn to_file(
+  input input: EncodedFile,
+  path path: String,
+) -> Result(Nil, file.FileError) {
   let res =
     bit_array.base64_decode(input.data)
     |> result.replace_error(file.Unknown)
 
   use binary <- result.try(res)
   file.write_bits(to: path <> "." <> input.extension, bits: binary)
+}
+
+/// Evaluate some JavaScript on the page and return the result,
+/// which will be a `RemoteObject` reference.  
+/// Check the `protocol/runtime` module for more info.
+pub fn eval(on page: Page, js expression: String) {
+  runtime.evaluate(
+    page_caller(page),
+    expression: expression,
+    object_group: None,
+    include_command_line_api: None,
+    silent: Some(False),
+    // will be the current page by default
+    context_id: None,
+    return_by_value: Some(False),
+    user_gesture: Some(True),
+    await_promise: Some(False),
+  )
+  |> handle_eval_response()
+}
+
+/// Like `eval`, but awaits for the result of the evaluation
+/// and returns once promise has been resolved
+pub fn eval_async(on page: Page, js expression: String) {
+  runtime.evaluate(
+    page_caller(page),
+    expression: expression,
+    object_group: None,
+    include_command_line_api: None,
+    silent: Some(False),
+    // will be the current page by default
+    context_id: None,
+    return_by_value: Some(False),
+    user_gesture: Some(True),
+    await_promise: Some(True),
+  )
+  |> handle_eval_response()
+}
+
+pub fn select(on page: Page, select selector: String) {
+  let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
+  eval(page, selector_code)
+}
+
+/// Continously attempt to run a selector, until it succeeds.  
+/// You can use this after opening a page, to wait for the moment it has initialized
+/// enough sufficiently for you to run your automation on it.
+pub fn await_selector(on page: Page, select selector: String) {
+  // 🦜
+  let polly = fn() {
+    let result =
+      eval(page, "window.document.querySelector(\"" <> selector <> "\")")
+    case result {
+      Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(_remote_object_id))) -> {
+        Ok(result)
+      }
+      Ok(_) -> {
+        Error(chrome.NotFoundError)
+      }
+      Error(any) -> Error(any)
+    }
+  }
+  poll(polly, page.time_out)
 }
 
 /// Quit the browser (alias for `chrome.quit`)
@@ -227,14 +341,14 @@ pub fn defer_quit(browser: Subject(chrome.Message), body) {
 // ---- UTILS
 const poll_interval = 100
 
+// TODO measure time elapsed during function call and take it into account
 /// Periodically try to call the function until it returns a 
 /// result instead of an error.
 /// Note: doesn't handle elapsed time during function call attempt yet
-/// TODO measure time elapsed during function call and take it into account
 fn poll(callback: fn() -> Result(a, b), remaining_time: Int) -> Result(a, b) {
   case callback() {
     Ok(a) -> Ok(a)
-    Error(b) if poll_interval <= 0 -> {
+    Error(b) if remaining_time <= 0 -> {
       Error(b)
     }
     Error(_) -> {
@@ -284,5 +398,21 @@ fn validate_launch(
         target_protocol_version,
         actual_version.protocol_version,
       ))
+  }
+}
+
+fn handle_eval_response(eval_response) {
+  case eval_response {
+    Ok(runtime.EvaluateResponse(result: _, exception_details: Some(exception))) -> {
+      Error(chrome.RuntimeException(
+        text: exception.text,
+        line: exception.line_number,
+        column: exception.column_number,
+      ))
+    }
+    Ok(runtime.EvaluateResponse(result: result_data, exception_details: None)) -> {
+      Ok(result_data)
+    }
+    Error(other) -> Error(other)
   }
 }

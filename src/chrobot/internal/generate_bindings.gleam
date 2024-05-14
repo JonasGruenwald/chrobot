@@ -48,8 +48,8 @@ The protocol version is also displayed in the box above, which appears on every 
 Each domain in the protocol is represented as a module under `protocol/`. 
 
 In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol), 
-however there are some adjustments that need to be made to be made to make the protocol schema usable, mainly due to
-what I believe are bugs in the protocol.  
+however there are some little adjustments that needed to be made, to make the protocol schema usable, mainly due to
+what I believe are minor bugs in the protocol.  
 To see these changes, check the `apply_protocol_patches` function in `chrobot/internal/generate_bindings`.
 
 Domains may depend on the types of other domains, these dependencies are mirrored in the generated bindings where possible.
@@ -60,9 +60,10 @@ create a circular dependency.
 
 The generated bindings include a mirror of the type defitions of each type in the protocol spec,
 alongside with an `encode__` function to encode the type into JSON in order to send it to the browser
-and a `decode__` function in order to decode the type out of a payload sent from the browser.
+and a `decode__` function in order to decode the type out of a payload sent from the browser. Encoders and
+decoders are marked internal and should be used through command functions which are described below.
 
-Exceptions:  
+Notes:  
 - Some object properties in the protocol have the type `any`, in this case the value is considered as dynamic
 by decoders, and encoders will not encode it, setting it to `null` instead in the payload
 - Object types that don't specify any properties are treated as a `Dict(String,String)` 
@@ -75,8 +76,8 @@ the fact that they are not part of the protocol spec, but rather generated dynam
 
 ## Commands
 
-A function is generated for each command, named after the command (in snake case), the function
-handles both encoding the parameters to sent to the browser via the protocol, and decoding the response.
+A function is generated for each command, named after the command (in snake case).  
+The function handles both encoding the parameters to sent to the browser via the protocol, and decoding the response.
 A `ProtocolError` error is returned if the decoding fails, this would mean there is a bug in the protocol
 or the generated bindings.
 
@@ -1051,7 +1052,7 @@ to represent the possible values of the enum property `"
 
   let attached_comment = case comment {
     "" -> ""
-    value -> "\n" <> gen_attached_comment(value)
+    value -> "\n" <> gen_attached_comment(value <> "\n")
   }
 
   let attr_value = case optional {

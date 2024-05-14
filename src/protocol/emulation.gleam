@@ -22,11 +22,13 @@ pub type ScreenOrientation {
   ScreenOrientation(
     type_: ScreenOrientationType,
     /// Orientation type.
+    /// 
     angle: Int,
   )
 }
 
 /// Orientation angle.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `ScreenOrientation`
 pub type ScreenOrientationType {
@@ -88,9 +90,11 @@ pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
     /// Orientation of a display feature in relation to screen
+    /// 
     offset: Int,
     /// The offset from the screen origin in either the x (for vertical
     /// orientation) or y (for horizontal orientation) direction.
+    /// 
     mask_length: Int,
   )
 }
@@ -98,6 +102,7 @@ pub type DisplayFeature {
 /// A display feature may mask content such that it is not physically
 /// displayed - this length along with the offset describes this area.
 /// A display feature that only splits content will have a 0 mask_length.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `orientation` of `DisplayFeature`
 pub type DisplayFeatureOrientation {
@@ -163,6 +168,7 @@ pub type DevicePosture {
 }
 
 /// Current posture of the device
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DevicePosture`
 pub type DevicePostureType {

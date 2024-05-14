@@ -376,31 +376,43 @@ pub type ResourceTiming {
     request_time: Float,
     /// Timing's requestTime is a baseline in seconds, while the other numbers are ticks in
     /// milliseconds relatively to this requestTime.
+    /// 
     proxy_start: Float,
     /// Started resolving proxy.
+    /// 
     proxy_end: Float,
     /// Finished resolving proxy.
+    /// 
     dns_start: Float,
     /// Started DNS address resolve.
+    /// 
     dns_end: Float,
     /// Finished DNS address resolve.
+    /// 
     connect_start: Float,
     /// Started connecting to the remote host.
+    /// 
     connect_end: Float,
     /// Connected to the remote host.
+    /// 
     ssl_start: Float,
     /// Started SSL handshake.
+    /// 
     ssl_end: Float,
     /// Finished SSL handshake.
+    /// 
     send_start: Float,
     /// Started sending request.
+    /// 
     send_end: Float,
     /// Finished sending request.
+    /// 
     receive_headers_end: Float,
   )
 }
 
 /// Finished receiving response headers.
+/// 
 @internal
 pub fn encode__resource_timing(value__: ResourceTiming) {
   json.object([
@@ -533,25 +545,34 @@ pub type Request {
   Request(
     url: String,
     /// Request URL (without fragment).
+    /// 
     url_fragment: option.Option(String),
     /// Fragment of the requested URL starting with hash, if present.
+    /// 
     method: String,
     /// HTTP request method.
+    /// 
     headers: Headers,
     /// HTTP request headers.
+    /// 
     has_post_data: option.Option(Bool),
     /// True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
+    /// 
     mixed_content_type: option.Option(security.MixedContentType),
     /// The mixed content type of the request.
+    /// 
     initial_priority: ResourcePriority,
     /// Priority of the resource request at the time request is sent.
+    /// 
     referrer_policy: RequestReferrerPolicy,
     /// The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
+    /// 
     is_link_preload: option.Option(Bool),
   )
 }
 
 /// Whether is loaded via link preload.
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `referrerPolicy` of `Request`
 pub type RequestReferrerPolicy {
@@ -683,24 +704,32 @@ pub type SignedCertificateTimestamp {
   SignedCertificateTimestamp(
     status: String,
     /// Validation status.
+    /// 
     origin: String,
     /// Origin.
+    /// 
     log_description: String,
     /// Log name / description.
+    /// 
     log_id: String,
     /// Log ID.
+    /// 
     timestamp: Float,
     /// Issuance date. Unlike TimeSinceEpoch, this contains the number of
     /// milliseconds since January 1, 1970, UTC, not the number of seconds.
+    /// 
     hash_algorithm: String,
     /// Hash algorithm.
+    /// 
     signature_algorithm: String,
     /// Signature algorithm.
+    /// 
     signature_data: String,
   )
 }
 
 /// Signature data.
+/// 
 @internal
 pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp) {
   json.object([
@@ -755,39 +784,54 @@ pub type SecurityDetails {
   SecurityDetails(
     protocol: String,
     /// Protocol name (e.g. "TLS 1.2" or "QUIC").
+    /// 
     key_exchange: String,
     /// Key Exchange used by the connection, or the empty string if not applicable.
+    /// 
     key_exchange_group: option.Option(String),
     /// (EC)DH group used by the connection, if applicable.
+    /// 
     cipher: String,
     /// Cipher name.
+    /// 
     mac: option.Option(String),
     /// TLS MAC. Note that AEAD ciphers do not have separate MACs.
+    /// 
     certificate_id: security.CertificateId,
     /// Certificate ID value.
+    /// 
     subject_name: String,
     /// Certificate subject name.
+    /// 
     san_list: List(String),
     /// Subject Alternative Name (SAN) DNS names and IP addresses.
+    /// 
     issuer: String,
     /// Name of the issuing CA.
+    /// 
     valid_from: TimeSinceEpoch,
     /// Certificate valid from date.
+    /// 
     valid_to: TimeSinceEpoch,
     /// Certificate valid to (expiration) date
+    /// 
     signed_certificate_timestamp_list: List(SignedCertificateTimestamp),
     /// List of signed certificate timestamps (SCTs).
+    /// 
     certificate_transparency_compliance: CertificateTransparencyCompliance,
     /// Whether the request complied with Certificate Transparency policy
+    /// 
     server_signature_algorithm: option.Option(Int),
     /// The signature algorithm used by the server in the TLS server signature,
     /// represented as a TLS SignatureScheme code point. Omitted if not
     /// applicable or not known.
+    /// 
     encrypted_client_hello: Bool,
   )
 }
 
 /// Whether the connection used Encrypted ClientHello
+/// 
 @internal
 pub fn encode__security_details(value__: SecurityDetails) {
   json.object(
@@ -1275,53 +1319,76 @@ pub type Response {
   Response(
     url: String,
     /// Response URL. This URL can be different from CachedResource.url in case of redirect.
+    /// 
     status: Int,
     /// HTTP response status code.
+    /// 
     status_text: String,
     /// HTTP response status text.
+    /// 
     headers: Headers,
     /// HTTP response headers.
+    /// 
     mime_type: String,
     /// Resource mimeType as determined by the browser.
+    /// 
     charset: String,
     /// Resource charset as determined by the browser (if applicable).
+    /// 
     request_headers: option.Option(Headers),
     /// Refined HTTP request headers that were actually transmitted over the network.
+    /// 
     connection_reused: Bool,
     /// Specifies whether physical connection was actually reused for this request.
+    /// 
     connection_id: Float,
     /// Physical connection id that was actually used for this request.
+    /// 
     remote_ip_address: option.Option(String),
     /// Remote IP address.
+    /// 
     remote_port: option.Option(Int),
     /// Remote port.
+    /// 
     from_disk_cache: option.Option(Bool),
     /// Specifies that the request was served from the disk cache.
+    /// 
     from_service_worker: option.Option(Bool),
     /// Specifies that the request was served from the ServiceWorker.
+    /// 
     from_prefetch_cache: option.Option(Bool),
     /// Specifies that the request was served from the prefetch cache.
+    /// 
     from_early_hints: option.Option(Bool),
     /// Specifies that the request was served from the prefetch cache.
+    /// 
     encoded_data_length: Float,
     /// Total number of bytes received for this request so far.
+    /// 
     timing: option.Option(ResourceTiming),
     /// Timing information for the given request.
+    /// 
     service_worker_response_source: option.Option(ServiceWorkerResponseSource),
     /// Response source of response from ServiceWorker.
+    /// 
     response_time: option.Option(TimeSinceEpoch),
     /// The time at which the returned response was generated.
+    /// 
     cache_storage_cache_name: option.Option(String),
     /// Cache Storage Cache Name.
+    /// 
     protocol: option.Option(String),
     /// Protocol used to fetch this request.
+    /// 
     security_state: security.SecurityState,
     /// Security state of the request resource.
+    /// 
     security_details: option.Option(SecurityDetails),
   )
 }
 
 /// Security details for the request.
+/// 
 @internal
 pub fn encode__response(value__: Response) {
   json.object(
@@ -1498,6 +1565,7 @@ pub type WebSocketRequest {
 }
 
 /// HTTP request headers.
+/// 
 @internal
 pub fn encode__web_socket_request(value__: WebSocketRequest) {
   json.object([#("headers", encode__headers(value__.headers))])
@@ -1515,19 +1583,25 @@ pub type WebSocketResponse {
   WebSocketResponse(
     status: Int,
     /// HTTP response status code.
+    /// 
     status_text: String,
     /// HTTP response status text.
+    /// 
     headers: Headers,
     /// HTTP response headers.
+    /// 
     headers_text: option.Option(String),
     /// HTTP response headers text.
+    /// 
     request_headers: option.Option(Headers),
     /// HTTP request headers.
+    /// 
     request_headers_text: option.Option(String),
   )
 }
 
 /// HTTP request headers text.
+/// 
 @internal
 pub fn encode__web_socket_response(value__: WebSocketResponse) {
   json.object(
@@ -1583,8 +1657,10 @@ pub type WebSocketFrame {
   WebSocketFrame(
     opcode: Float,
     /// WebSocket message opcode.
+    /// 
     mask: Bool,
     /// WebSocket message mask.
+    /// 
     payload_data: String,
   )
 }
@@ -1592,6 +1668,7 @@ pub type WebSocketFrame {
 /// WebSocket message payload data.
 /// If the opcode is 1, this is a text message and payloadData is a UTF-8 string.
 /// If the opcode isn't 1, then payloadData is a base64 encoded string representing binary data.
+/// 
 @internal
 pub fn encode__web_socket_frame(value__: WebSocketFrame) {
   json.object([
@@ -1617,15 +1694,19 @@ pub type CachedResource {
   CachedResource(
     url: String,
     /// Resource URL. This is the url of the original network request.
+    /// 
     type_: ResourceType,
     /// Type of this resource.
+    /// 
     response: option.Option(Response),
     /// Cached response data.
+    /// 
     body_size: Float,
   )
 }
 
 /// Cached response body size.
+/// 
 @internal
 pub fn encode__cached_resource(value__: CachedResource) {
   json.object(
@@ -1663,21 +1744,27 @@ pub type Initiator {
   Initiator(
     type_: InitiatorType,
     /// Type of this initiator.
+    /// 
     stack: option.Option(runtime.StackTrace),
     /// Initiator JavaScript stack trace, set for Script only.
+    /// 
     url: option.Option(String),
     /// Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
+    /// 
     line_number: option.Option(Float),
     /// Initiator line number, set for Parser type or for Script type (when script is importing
     /// module) (0-based).
+    /// 
     column_number: option.Option(Float),
     /// Initiator column number, set for Parser type or for Script type (when script is importing
     /// module) (0-based).
+    /// 
     request_id: option.Option(RequestId),
   )
 }
 
 /// Set if another request triggered this request (e.g. preflight).
+/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `Initiator`
 pub type InitiatorType {
@@ -1781,27 +1868,37 @@ pub type Cookie {
   Cookie(
     name: String,
     /// Cookie name.
+    /// 
     value: String,
     /// Cookie value.
+    /// 
     domain: String,
     /// Cookie domain.
+    /// 
     path: String,
     /// Cookie path.
+    /// 
     expires: Float,
     /// Cookie expiration date as the number of seconds since the UNIX epoch.
+    /// 
     size: Int,
     /// Cookie size.
+    /// 
     http_only: Bool,
     /// True if cookie is http-only.
+    /// 
     secure: Bool,
     /// True if cookie is secure.
+    /// 
     session: Bool,
     /// True in case of session cookie.
+    /// 
     same_site: option.Option(CookieSameSite),
   )
 }
 
 /// Cookie SameSite type.
+/// 
 @internal
 pub fn encode__cookie(value__: Cookie) {
   json.object(
@@ -1857,26 +1954,35 @@ pub type CookieParam {
   CookieParam(
     name: String,
     /// Cookie name.
+    /// 
     value: String,
     /// Cookie value.
+    /// 
     url: option.Option(String),
     /// The request-URI to associate with the setting of the cookie. This value can affect the
     /// default domain, path, source port, and source scheme values of the created cookie.
+    /// 
     domain: option.Option(String),
     /// Cookie domain.
+    /// 
     path: option.Option(String),
     /// Cookie path.
+    /// 
     secure: option.Option(Bool),
     /// True if cookie is secure.
+    /// 
     http_only: option.Option(Bool),
     /// True if cookie is http-only.
+    /// 
     same_site: option.Option(CookieSameSite),
     /// Cookie SameSite type.
+    /// 
     expires: option.Option(TimeSinceEpoch),
   )
 }
 
 /// Cookie expiration date, session cookie if not set
+/// 
 @internal
 pub fn encode__cookie_param(value__: CookieParam) {
   json.object(
@@ -1952,6 +2058,7 @@ pub type GetCookiesResponse {
 }
 
 /// Array of cookie objects.
+/// 
 @internal
 pub fn decode__get_cookies_response(value__: dynamic.Dynamic) {
   use cookies <- result.try(dynamic.field(
@@ -1968,11 +2075,13 @@ pub type GetResponseBodyResponse {
   GetResponseBodyResponse(
     body: String,
     /// Response body.
+    /// 
     base64_encoded: Bool,
   )
 }
 
 /// True, if content was sent as base64.
+/// 
 @internal
 pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
   use body <- result.try(dynamic.field("body", dynamic.string)(value__))
@@ -1990,6 +2099,7 @@ pub type GetRequestPostDataResponse {
 }
 
 /// Request body string, omitting files from multipart requests
+/// 
 @internal
 pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
   use post_data <- result.try(dynamic.field("postData", dynamic.string)(value__))

@@ -43,21 +43,28 @@ pub type Frame {
   Frame(
     id: FrameId,
     /// Frame unique identifier.
+    /// 
     parent_id: option.Option(FrameId),
     /// Parent frame identifier.
+    /// 
     loader_id: network.LoaderId,
     /// Identifier of the loader associated with this frame.
+    /// 
     name: option.Option(String),
     /// Frame's name as specified in the tag.
+    /// 
     url: String,
     /// Frame document's URL without fragment.
+    /// 
     security_origin: String,
     /// Frame document's security origin.
+    /// 
     mime_type: String,
   )
 }
 
 /// Frame document's mimeType as determined by the browser.
+/// 
 @internal
 pub fn encode__frame(value__: Frame) {
   json.object(
@@ -112,11 +119,13 @@ pub type FrameTree {
   FrameTree(
     frame: Frame,
     /// Frame information for this tree item.
+    /// 
     child_frames: option.Option(List(FrameTree)),
   )
 }
 
 /// Child frames.
+/// 
 @internal
 pub fn encode__frame_tree(value__: FrameTree) {
   json.object(
@@ -226,17 +235,22 @@ pub type NavigationEntry {
   NavigationEntry(
     id: Int,
     /// Unique id of the navigation history entry.
+    /// 
     url: String,
     /// URL of the navigation history entry.
+    /// 
     user_typed_url: String,
     /// URL that the user typed in the url bar.
+    /// 
     title: String,
     /// Title of the navigation history entry.
+    /// 
     transition_type: TransitionType,
   )
 }
 
 /// Transition type.
+/// 
 @internal
 pub fn encode__navigation_entry(value__: NavigationEntry) {
   json.object([
@@ -313,15 +327,19 @@ pub type AppManifestError {
   AppManifestError(
     message: String,
     /// Error message.
+    /// 
     critical: Int,
     /// If critical, this is a non-recoverable parse error.
+    /// 
     line: Int,
     /// Error line.
+    /// 
     column: Int,
   )
 }
 
 /// Error column.
+/// 
 @internal
 pub fn encode__app_manifest_error(value__: AppManifestError) {
   json.object([
@@ -352,15 +370,19 @@ pub type LayoutViewport {
   LayoutViewport(
     page_x: Int,
     /// Horizontal offset relative to the document (CSS pixels).
+    /// 
     page_y: Int,
     /// Vertical offset relative to the document (CSS pixels).
+    /// 
     client_width: Int,
     /// Width (CSS pixels), excludes scrollbar if present.
+    /// 
     client_height: Int,
   )
 }
 
 /// Height (CSS pixels), excludes scrollbar if present.
+/// 
 @internal
 pub fn encode__layout_viewport(value__: LayoutViewport) {
   json.object([
@@ -395,23 +417,31 @@ pub type VisualViewport {
   VisualViewport(
     offset_x: Float,
     /// Horizontal offset relative to the layout viewport (CSS pixels).
+    /// 
     offset_y: Float,
     /// Vertical offset relative to the layout viewport (CSS pixels).
+    /// 
     page_x: Float,
     /// Horizontal offset relative to the document (CSS pixels).
+    /// 
     page_y: Float,
     /// Vertical offset relative to the document (CSS pixels).
+    /// 
     client_width: Float,
     /// Width (CSS pixels), excludes scrollbar if present.
+    /// 
     client_height: Float,
     /// Height (CSS pixels), excludes scrollbar if present.
+    /// 
     scale: Float,
     /// Scale relative to the ideal viewport (size at width=device-width).
+    /// 
     zoom: option.Option(Float),
   )
 }
 
 /// Page zoom factor (CSS to device independent pixels ratio).
+/// 
 @internal
 pub fn encode__visual_viewport(value__: VisualViewport) {
   json.object(
@@ -462,17 +492,22 @@ pub type Viewport {
   Viewport(
     x: Float,
     /// X offset in device independent pixels (dip).
+    /// 
     y: Float,
     /// Y offset in device independent pixels (dip).
+    /// 
     width: Float,
     /// Rectangle width in device independent pixels (dip).
+    /// 
     height: Float,
     /// Rectangle height in device independent pixels (dip).
+    /// 
     scale: Float,
   )
 }
 
 /// Page scale factor.
+/// 
 @internal
 pub fn encode__viewport(value__: Viewport) {
   json.object([
@@ -502,6 +537,7 @@ pub type AddScriptToEvaluateOnNewDocumentResponse {
 }
 
 /// Identifier of the added script.
+/// 
 @internal
 pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.Dynamic) {
   use identifier <- result.try(dynamic.field(
@@ -519,6 +555,7 @@ pub type CaptureScreenshotResponse {
 }
 
 /// Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
+/// 
 @internal
 pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))
@@ -533,6 +570,7 @@ pub type CreateIsolatedWorldResponse {
 }
 
 /// Execution context of the isolated world.
+/// 
 @internal
 pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
   use execution_context_id <- result.try(dynamic.field(
@@ -549,12 +587,14 @@ pub type GetAppManifestResponse {
   GetAppManifestResponse(
     url: String,
     /// Manifest location.
+    /// 
     errors: List(AppManifestError),
     data: option.Option(String),
   )
 }
 
 /// Manifest content.
+/// 
 @internal
 pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
   use url <- result.try(dynamic.field("url", dynamic.string)(value__))
@@ -574,6 +614,7 @@ pub type GetFrameTreeResponse {
 }
 
 /// Present frame tree structure.
+/// 
 @internal
 pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
   use frame_tree <- result.try(dynamic.field("frameTree", decode__frame_tree)(
@@ -589,13 +630,16 @@ pub type GetLayoutMetricsResponse {
   GetLayoutMetricsResponse(
     css_layout_viewport: LayoutViewport,
     /// Metrics relating to the layout viewport in CSS pixels.
+    /// 
     css_visual_viewport: VisualViewport,
     /// Metrics relating to the visual viewport in CSS pixels.
+    /// 
     css_content_size: dom.Rect,
   )
 }
 
 /// Size of scrollable area in CSS pixels.
+/// 
 @internal
 pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
   use css_layout_viewport <- result.try(dynamic.field(
@@ -624,11 +668,13 @@ pub type GetNavigationHistoryResponse {
   GetNavigationHistoryResponse(
     current_index: Int,
     /// Index of the current navigation history entry.
+    /// 
     entries: List(NavigationEntry),
   )
 }
 
 /// Array of navigation history entries.
+/// 
 @internal
 pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
   use current_index <- result.try(dynamic.field("currentIndex", dynamic.int)(
@@ -651,14 +697,17 @@ pub type NavigateResponse {
   NavigateResponse(
     frame_id: FrameId,
     /// Frame id that has navigated (or failed to navigate)
+    /// 
     loader_id: option.Option(network.LoaderId),
     /// Loader identifier. This is omitted in case of same-document navigation,
     /// as the previously committed loaderId would not change.
+    /// 
     error_text: option.Option(String),
   )
 }
 
 /// User friendly error message, present if and only if navigation has failed.
+/// 
 @internal
 pub fn decode__navigate_response(value__: dynamic.Dynamic) {
   use frame_id <- result.try(dynamic.field("frameId", decode__frame_id)(value__))
@@ -685,6 +734,7 @@ pub type PrintToPdfResponse {
 }
 
 /// Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON)
+/// 
 @internal
 pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))
