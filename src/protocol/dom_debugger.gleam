@@ -59,18 +59,28 @@ pub fn decode__dom_breakpoint_type(value__: dynamic.Dynamic) {
 pub type EventListener {
   EventListener(
     type_: String,
+    /// `EventListener`'s type.
     use_capture: Bool,
+    /// `EventListener`'s useCapture.
     passive: Bool,
+    /// `EventListener`'s passive flag.
     once: Bool,
+    /// `EventListener`'s once flag.
     script_id: runtime.ScriptId,
+    /// Script id of the handler code.
     line_number: Int,
+    /// Line number in the script (0-based).
     column_number: Int,
+    /// Column number in the script (0-based).
     handler: option.Option(runtime.RemoteObject),
+    /// Event handler function value.
     original_handler: option.Option(runtime.RemoteObject),
+    /// Event original handler function value.
     backend_node_id: option.Option(dom.BackendNodeId),
   )
 }
 
+/// Node the listener is added to (if any).
 @internal
 pub fn encode__event_listener(value__: EventListener) {
   json.object(
@@ -146,6 +156,7 @@ pub type GetEventListenersResponse {
   GetEventListenersResponse(listeners: List(EventListener))
 }
 
+/// Array of relevant listeners.
 @internal
 pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
   use listeners <- result.try(dynamic.field(
@@ -157,6 +168,17 @@ pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
 }
 
 /// Returns event listeners of the given object.
+/// 
+/// Parameters:  
+///  - `object_id` : Identifier of the object to return listeners for.
+///  - `depth` : The maximum depth at which Node children should be retrieved, defaults to 1. Use -1 for the
+/// entire subtree or provide an integer larger than 0.
+///  - `pierce` : Whether or not iframes and shadow roots should be traversed when returning the subtree
+/// (default is false). Reports listeners for all contexts if pierce is enabled.
+/// 
+/// Returns:  
+///  - `listeners` : Array of relevant listeners.
+/// 
 pub fn get_event_listeners(
   callback__,
   object_id object_id: runtime.RemoteObjectId,
@@ -181,6 +203,13 @@ pub fn get_event_listeners(
 }
 
 /// Removes DOM breakpoint that was set using `setDOMBreakpoint`.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node to remove breakpoint from.
+///  - `type_` : Type of the breakpoint to remove.
+/// 
+/// Returns:  
+/// 
 pub fn remove_dom_breakpoint(
   callback__,
   node_id node_id: dom.NodeId,
@@ -198,6 +227,12 @@ pub fn remove_dom_breakpoint(
 }
 
 /// Removes breakpoint on particular DOM event.
+/// 
+/// Parameters:  
+///  - `event_name` : Event name.
+/// 
+/// Returns:  
+/// 
 pub fn remove_event_listener_breakpoint(
   callback__,
   event_name event_name: String,
@@ -209,6 +244,12 @@ pub fn remove_event_listener_breakpoint(
 }
 
 /// Removes breakpoint from XMLHttpRequest.
+/// 
+/// Parameters:  
+///  - `url` : Resource URL substring.
+/// 
+/// Returns:  
+/// 
 pub fn remove_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.removeXHRBreakpoint",
@@ -217,6 +258,13 @@ pub fn remove_xhr_breakpoint(callback__, url url: String) {
 }
 
 /// Sets breakpoint on particular operation with DOM.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node to set breakpoint on.
+///  - `type_` : Type of the operation to stop upon.
+/// 
+/// Returns:  
+/// 
 pub fn set_dom_breakpoint(
   callback__,
   node_id node_id: dom.NodeId,
@@ -234,6 +282,12 @@ pub fn set_dom_breakpoint(
 }
 
 /// Sets breakpoint on particular DOM event.
+/// 
+/// Parameters:  
+///  - `event_name` : DOM Event name to stop on (any DOM event will do).
+/// 
+/// Returns:  
+/// 
 pub fn set_event_listener_breakpoint(callback__, event_name event_name: String) {
   callback__(
     "DOMDebugger.setEventListenerBreakpoint",
@@ -242,6 +296,12 @@ pub fn set_event_listener_breakpoint(callback__, event_name event_name: String) 
 }
 
 /// Sets breakpoint on XMLHttpRequest.
+/// 
+/// Parameters:  
+///  - `url` : Resource URL substring. All XHRs having this substring in the URL will get stopped upon.
+/// 
+/// Returns:  
+/// 
 pub fn set_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.setXHRBreakpoint",

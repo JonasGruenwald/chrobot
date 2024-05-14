@@ -374,20 +374,33 @@ pub fn decode__cookie_same_site(value__: dynamic.Dynamic) {
 pub type ResourceTiming {
   ResourceTiming(
     request_time: Float,
+    /// Timing's requestTime is a baseline in seconds, while the other numbers are ticks in
+    /// milliseconds relatively to this requestTime.
     proxy_start: Float,
+    /// Started resolving proxy.
     proxy_end: Float,
+    /// Finished resolving proxy.
     dns_start: Float,
+    /// Started DNS address resolve.
     dns_end: Float,
+    /// Finished DNS address resolve.
     connect_start: Float,
+    /// Started connecting to the remote host.
     connect_end: Float,
+    /// Connected to the remote host.
     ssl_start: Float,
+    /// Started SSL handshake.
     ssl_end: Float,
+    /// Finished SSL handshake.
     send_start: Float,
+    /// Started sending request.
     send_end: Float,
+    /// Finished sending request.
     receive_headers_end: Float,
   )
 }
 
+/// Finished receiving response headers.
 @internal
 pub fn encode__resource_timing(value__: ResourceTiming) {
   json.object([
@@ -519,17 +532,26 @@ pub fn decode__post_data_entry(value__: dynamic.Dynamic) {
 pub type Request {
   Request(
     url: String,
+    /// Request URL (without fragment).
     url_fragment: option.Option(String),
+    /// Fragment of the requested URL starting with hash, if present.
     method: String,
+    /// HTTP request method.
     headers: Headers,
+    /// HTTP request headers.
     has_post_data: option.Option(Bool),
+    /// True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
     mixed_content_type: option.Option(security.MixedContentType),
+    /// The mixed content type of the request.
     initial_priority: ResourcePriority,
+    /// Priority of the resource request at the time request is sent.
     referrer_policy: RequestReferrerPolicy,
+    /// The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
     is_link_preload: option.Option(Bool),
   )
 }
 
+/// Whether is loaded via link preload.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `referrerPolicy` of `Request`
 pub type RequestReferrerPolicy {
@@ -660,16 +682,25 @@ pub fn decode__request(value__: dynamic.Dynamic) {
 pub type SignedCertificateTimestamp {
   SignedCertificateTimestamp(
     status: String,
+    /// Validation status.
     origin: String,
+    /// Origin.
     log_description: String,
+    /// Log name / description.
     log_id: String,
+    /// Log ID.
     timestamp: Float,
+    /// Issuance date. Unlike TimeSinceEpoch, this contains the number of
+    /// milliseconds since January 1, 1970, UTC, not the number of seconds.
     hash_algorithm: String,
+    /// Hash algorithm.
     signature_algorithm: String,
+    /// Signature algorithm.
     signature_data: String,
   )
 }
 
+/// Signature data.
 @internal
 pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp) {
   json.object([
@@ -723,23 +754,40 @@ pub fn decode__signed_certificate_timestamp(value__: dynamic.Dynamic) {
 pub type SecurityDetails {
   SecurityDetails(
     protocol: String,
+    /// Protocol name (e.g. "TLS 1.2" or "QUIC").
     key_exchange: String,
+    /// Key Exchange used by the connection, or the empty string if not applicable.
     key_exchange_group: option.Option(String),
+    /// (EC)DH group used by the connection, if applicable.
     cipher: String,
+    /// Cipher name.
     mac: option.Option(String),
+    /// TLS MAC. Note that AEAD ciphers do not have separate MACs.
     certificate_id: security.CertificateId,
+    /// Certificate ID value.
     subject_name: String,
+    /// Certificate subject name.
     san_list: List(String),
+    /// Subject Alternative Name (SAN) DNS names and IP addresses.
     issuer: String,
+    /// Name of the issuing CA.
     valid_from: TimeSinceEpoch,
+    /// Certificate valid from date.
     valid_to: TimeSinceEpoch,
+    /// Certificate valid to (expiration) date
     signed_certificate_timestamp_list: List(SignedCertificateTimestamp),
+    /// List of signed certificate timestamps (SCTs).
     certificate_transparency_compliance: CertificateTransparencyCompliance,
+    /// Whether the request complied with Certificate Transparency policy
     server_signature_algorithm: option.Option(Int),
+    /// The signature algorithm used by the server in the TLS server signature,
+    /// represented as a TLS SignatureScheme code point. Omitted if not
+    /// applicable or not known.
     encrypted_client_hello: Bool,
   )
 }
 
+/// Whether the connection used Encrypted ClientHello
 @internal
 pub fn encode__security_details(value__: SecurityDetails) {
   json.object(
@@ -1226,31 +1274,54 @@ pub fn decode__service_worker_router_source(value__: dynamic.Dynamic) {
 pub type Response {
   Response(
     url: String,
+    /// Response URL. This URL can be different from CachedResource.url in case of redirect.
     status: Int,
+    /// HTTP response status code.
     status_text: String,
+    /// HTTP response status text.
     headers: Headers,
+    /// HTTP response headers.
     mime_type: String,
+    /// Resource mimeType as determined by the browser.
     charset: String,
+    /// Resource charset as determined by the browser (if applicable).
     request_headers: option.Option(Headers),
+    /// Refined HTTP request headers that were actually transmitted over the network.
     connection_reused: Bool,
+    /// Specifies whether physical connection was actually reused for this request.
     connection_id: Float,
+    /// Physical connection id that was actually used for this request.
     remote_ip_address: option.Option(String),
+    /// Remote IP address.
     remote_port: option.Option(Int),
+    /// Remote port.
     from_disk_cache: option.Option(Bool),
+    /// Specifies that the request was served from the disk cache.
     from_service_worker: option.Option(Bool),
+    /// Specifies that the request was served from the ServiceWorker.
     from_prefetch_cache: option.Option(Bool),
+    /// Specifies that the request was served from the prefetch cache.
     from_early_hints: option.Option(Bool),
+    /// Specifies that the request was served from the prefetch cache.
     encoded_data_length: Float,
+    /// Total number of bytes received for this request so far.
     timing: option.Option(ResourceTiming),
+    /// Timing information for the given request.
     service_worker_response_source: option.Option(ServiceWorkerResponseSource),
+    /// Response source of response from ServiceWorker.
     response_time: option.Option(TimeSinceEpoch),
+    /// The time at which the returned response was generated.
     cache_storage_cache_name: option.Option(String),
+    /// Cache Storage Cache Name.
     protocol: option.Option(String),
+    /// Protocol used to fetch this request.
     security_state: security.SecurityState,
+    /// Security state of the request resource.
     security_details: option.Option(SecurityDetails),
   )
 }
 
+/// Security details for the request.
 @internal
 pub fn encode__response(value__: Response) {
   json.object(
@@ -1426,6 +1497,7 @@ pub type WebSocketRequest {
   WebSocketRequest(headers: Headers)
 }
 
+/// HTTP request headers.
 @internal
 pub fn encode__web_socket_request(value__: WebSocketRequest) {
   json.object([#("headers", encode__headers(value__.headers))])
@@ -1442,14 +1514,20 @@ pub fn decode__web_socket_request(value__: dynamic.Dynamic) {
 pub type WebSocketResponse {
   WebSocketResponse(
     status: Int,
+    /// HTTP response status code.
     status_text: String,
+    /// HTTP response status text.
     headers: Headers,
+    /// HTTP response headers.
     headers_text: option.Option(String),
+    /// HTTP response headers text.
     request_headers: option.Option(Headers),
+    /// HTTP request headers.
     request_headers_text: option.Option(String),
   )
 }
 
+/// HTTP request headers text.
 @internal
 pub fn encode__web_socket_response(value__: WebSocketResponse) {
   json.object(
@@ -1502,9 +1580,18 @@ pub fn decode__web_socket_response(value__: dynamic.Dynamic) {
 
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
 pub type WebSocketFrame {
-  WebSocketFrame(opcode: Float, mask: Bool, payload_data: String)
+  WebSocketFrame(
+    opcode: Float,
+    /// WebSocket message opcode.
+    mask: Bool,
+    /// WebSocket message mask.
+    payload_data: String,
+  )
 }
 
+/// WebSocket message payload data.
+/// If the opcode is 1, this is a text message and payloadData is a UTF-8 string.
+/// If the opcode isn't 1, then payloadData is a base64 encoded string representing binary data.
 @internal
 pub fn encode__web_socket_frame(value__: WebSocketFrame) {
   json.object([
@@ -1529,12 +1616,16 @@ pub fn decode__web_socket_frame(value__: dynamic.Dynamic) {
 pub type CachedResource {
   CachedResource(
     url: String,
+    /// Resource URL. This is the url of the original network request.
     type_: ResourceType,
+    /// Type of this resource.
     response: option.Option(Response),
+    /// Cached response data.
     body_size: Float,
   )
 }
 
+/// Cached response body size.
 @internal
 pub fn encode__cached_resource(value__: CachedResource) {
   json.object(
@@ -1571,14 +1662,22 @@ pub fn decode__cached_resource(value__: dynamic.Dynamic) {
 pub type Initiator {
   Initiator(
     type_: InitiatorType,
+    /// Type of this initiator.
     stack: option.Option(runtime.StackTrace),
+    /// Initiator JavaScript stack trace, set for Script only.
     url: option.Option(String),
+    /// Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
     line_number: option.Option(Float),
+    /// Initiator line number, set for Parser type or for Script type (when script is importing
+    /// module) (0-based).
     column_number: option.Option(Float),
+    /// Initiator column number, set for Parser type or for Script type (when script is importing
+    /// module) (0-based).
     request_id: option.Option(RequestId),
   )
 }
 
+/// Set if another request triggered this request (e.g. preflight).
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `Initiator`
 pub type InitiatorType {
@@ -1681,18 +1780,28 @@ pub fn decode__initiator(value__: dynamic.Dynamic) {
 pub type Cookie {
   Cookie(
     name: String,
+    /// Cookie name.
     value: String,
+    /// Cookie value.
     domain: String,
+    /// Cookie domain.
     path: String,
+    /// Cookie path.
     expires: Float,
+    /// Cookie expiration date as the number of seconds since the UNIX epoch.
     size: Int,
+    /// Cookie size.
     http_only: Bool,
+    /// True if cookie is http-only.
     secure: Bool,
+    /// True if cookie is secure.
     session: Bool,
+    /// True in case of session cookie.
     same_site: option.Option(CookieSameSite),
   )
 }
 
+/// Cookie SameSite type.
 @internal
 pub fn encode__cookie(value__: Cookie) {
   json.object(
@@ -1747,17 +1856,27 @@ pub fn decode__cookie(value__: dynamic.Dynamic) {
 pub type CookieParam {
   CookieParam(
     name: String,
+    /// Cookie name.
     value: String,
+    /// Cookie value.
     url: option.Option(String),
+    /// The request-URI to associate with the setting of the cookie. This value can affect the
+    /// default domain, path, source port, and source scheme values of the created cookie.
     domain: option.Option(String),
+    /// Cookie domain.
     path: option.Option(String),
+    /// Cookie path.
     secure: option.Option(Bool),
+    /// True if cookie is secure.
     http_only: option.Option(Bool),
+    /// True if cookie is http-only.
     same_site: option.Option(CookieSameSite),
+    /// Cookie SameSite type.
     expires: option.Option(TimeSinceEpoch),
   )
 }
 
+/// Cookie expiration date, session cookie if not set
 @internal
 pub fn encode__cookie_param(value__: CookieParam) {
   json.object(
@@ -1832,6 +1951,7 @@ pub type GetCookiesResponse {
   GetCookiesResponse(cookies: List(Cookie))
 }
 
+/// Array of cookie objects.
 @internal
 pub fn decode__get_cookies_response(value__: dynamic.Dynamic) {
   use cookies <- result.try(dynamic.field(
@@ -1845,9 +1965,14 @@ pub fn decode__get_cookies_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_response_body`
 pub type GetResponseBodyResponse {
-  GetResponseBodyResponse(body: String, base64_encoded: Bool)
+  GetResponseBodyResponse(
+    body: String,
+    /// Response body.
+    base64_encoded: Bool,
+  )
 }
 
+/// True, if content was sent as base64.
 @internal
 pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
   use body <- result.try(dynamic.field("body", dynamic.string)(value__))
@@ -1864,6 +1989,7 @@ pub type GetRequestPostDataResponse {
   GetRequestPostDataResponse(post_data: String)
 }
 
+/// Request body string, omitting files from multipart requests
 @internal
 pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
   use post_data <- result.try(dynamic.field("postData", dynamic.string)(value__))
@@ -1872,16 +1998,30 @@ pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
 }
 
 /// Clears browser cache.
+/// 
 pub fn clear_browser_cache(callback__) {
   callback__("Network.clearBrowserCache", option.None)
 }
 
 /// Clears browser cookies.
+/// 
 pub fn clear_browser_cookies(callback__) {
   callback__("Network.clearBrowserCookies", option.None)
 }
 
 /// Deletes browser cookies with matching name and url or domain/path/partitionKey pair.
+/// 
+/// Parameters:  
+///  - `name` : Name of the cookies to remove.
+///  - `url` : If specified, deletes all the cookies with the given name where domain and path match
+/// provided URL.
+///  - `domain` : If specified, deletes only cookies with the exact domain.
+///  - `path` : If specified, deletes only cookies with the exact path.
+///  - `partition_key` : If specified, deletes only cookies with the the given name and partitionKey where domain
+/// matches provided URL.
+/// 
+/// Returns:  
+/// 
 pub fn delete_cookies(
   callback__,
   name name: String,
@@ -1911,11 +2051,22 @@ pub fn delete_cookies(
 }
 
 /// Disables network tracking, prevents network events from being sent to the client.
+/// 
 pub fn disable(callback__) {
   callback__("Network.disable", option.None)
 }
 
 /// Activates emulation of network conditions.
+/// 
+/// Parameters:  
+///  - `offline` : True to emulate internet disconnection.
+///  - `latency` : Minimum latency from request sent to response headers received (ms).
+///  - `download_throughput` : Maximal aggregated download throughput (bytes/sec). -1 disables download throttling.
+///  - `upload_throughput` : Maximal aggregated upload throughput (bytes/sec).  -1 disables upload throttling.
+///  - `connection_type` : Connection type if known.
+/// 
+/// Returns:  
+/// 
 pub fn emulate_network_conditions(
   callback__,
   offline offline: Bool,
@@ -1941,6 +2092,12 @@ pub fn emulate_network_conditions(
 }
 
 /// Enables network tracking, network events will now be delivered to the client.
+/// 
+/// Parameters:  
+///  - `max_post_data_size` : Longest post body size (in bytes) that would be included in requestWillBeSent notification
+/// 
+/// Returns:  
+/// 
 pub fn enable(
   callback__,
   max_post_data_size max_post_data_size: option.Option(Int),
@@ -1958,6 +2115,15 @@ pub fn enable(
 
 /// Returns all browser cookies for the current URL. Depending on the backend support, will return
 /// detailed cookie information in the `cookies` field.
+/// 
+/// Parameters:  
+///  - `urls` : The list of URLs for which applicable cookies will be fetched.
+/// If not specified, it's assumed to be set to the list containing
+/// the URLs of the page and all of its subframes.
+/// 
+/// Returns:  
+///  - `cookies` : Array of cookie objects.
+/// 
 pub fn get_cookies(callback__, urls urls: option.Option(List(String))) {
   use result__ <- result.try(callback__(
     "Network.getCookies",
@@ -1974,6 +2140,14 @@ pub fn get_cookies(callback__, urls urls: option.Option(List(String))) {
 }
 
 /// Returns content served for the given request.
+/// 
+/// Parameters:  
+///  - `request_id` : Identifier of the network request to get content for.
+/// 
+/// Returns:  
+///  - `body` : Response body.
+///  - `base64_encoded` : True, if content was sent as base64.
+/// 
 pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getResponseBody",
@@ -1985,6 +2159,13 @@ pub fn get_response_body(callback__, request_id request_id: RequestId) {
 }
 
 /// Returns post data sent with the request. Returns an error when no data was sent with the request.
+/// 
+/// Parameters:  
+///  - `request_id` : Identifier of the network request to get content for.
+/// 
+/// Returns:  
+///  - `post_data` : Request body string, omitting files from multipart requests
+/// 
 pub fn get_request_post_data(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getRequestPostData",
@@ -1996,6 +2177,12 @@ pub fn get_request_post_data(callback__, request_id request_id: RequestId) {
 }
 
 /// Toggles ignoring of service worker for each request.
+/// 
+/// Parameters:  
+///  - `bypass` : Bypass service worker and load from network.
+/// 
+/// Returns:  
+/// 
 pub fn set_bypass_service_worker(callback__, bypass bypass: Bool) {
   callback__(
     "Network.setBypassServiceWorker",
@@ -2004,6 +2191,12 @@ pub fn set_bypass_service_worker(callback__, bypass bypass: Bool) {
 }
 
 /// Toggles ignoring cache for each request. If `true`, cache will not be used.
+/// 
+/// Parameters:  
+///  - `cache_disabled` : Cache disabled state.
+/// 
+/// Returns:  
+/// 
 pub fn set_cache_disabled(callback__, cache_disabled cache_disabled: Bool) {
   callback__(
     "Network.setCacheDisabled",
@@ -2012,6 +2205,21 @@ pub fn set_cache_disabled(callback__, cache_disabled cache_disabled: Bool) {
 }
 
 /// Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
+/// 
+/// Parameters:  
+///  - `name` : Cookie name.
+///  - `value` : Cookie value.
+///  - `url` : The request-URI to associate with the setting of the cookie. This value can affect the
+/// default domain, path, source port, and source scheme values of the created cookie.
+///  - `domain` : Cookie domain.
+///  - `path` : Cookie path.
+///  - `secure` : True if cookie is secure.
+///  - `http_only` : True if cookie is http-only.
+///  - `same_site` : Cookie SameSite type.
+///  - `expires` : Cookie expiration date, session cookie if not set
+/// 
+/// Returns:  
+/// 
 pub fn set_cookie(
   callback__,
   name name: String,
@@ -2054,6 +2262,12 @@ pub fn set_cookie(
 }
 
 /// Sets given cookies.
+/// 
+/// Parameters:  
+///  - `cookies` : Cookies to be set.
+/// 
+/// Returns:  
+/// 
 pub fn set_cookies(callback__, cookies cookies: List(CookieParam)) {
   callback__(
     "Network.setCookies",
@@ -2064,6 +2278,12 @@ pub fn set_cookies(callback__, cookies cookies: List(CookieParam)) {
 }
 
 /// Specifies whether to always send extra HTTP headers with the requests from this page.
+/// 
+/// Parameters:  
+///  - `headers` : Map with extra HTTP headers.
+/// 
+/// Returns:  
+/// 
 pub fn set_extra_http_headers(callback__, headers headers: Headers) {
   callback__(
     "Network.setExtraHTTPHeaders",
@@ -2072,6 +2292,14 @@ pub fn set_extra_http_headers(callback__, headers headers: Headers) {
 }
 
 /// Allows overriding user agent with the given string.
+/// 
+/// Parameters:  
+///  - `user_agent` : User agent to use.
+///  - `accept_language` : Browser language to emulate.
+///  - `platform` : The platform navigator.platform should return.
+/// 
+/// Returns:  
+/// 
 pub fn set_user_agent_override(
   callback__,
   user_agent user_agent: String,

@@ -40,9 +40,16 @@ pub fn decode__stream_handle(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `read`
 pub type ReadResponse {
-  ReadResponse(base64_encoded: option.Option(Bool), data: String, eof: Bool)
+  ReadResponse(
+    base64_encoded: option.Option(Bool),
+    /// Set if the data is base64-encoded
+    data: String,
+    /// Data that were read.
+    eof: Bool,
+  )
 }
 
+/// Set if the end-of-file condition occurred while reading.
 @internal
 pub fn decode__read_response(value__: dynamic.Dynamic) {
   use base64_encoded <- result.try(dynamic.optional_field(
@@ -61,6 +68,7 @@ pub type ResolveBlobResponse {
   ResolveBlobResponse(uuid: String)
 }
 
+/// UUID of the specified Blob.
 @internal
 pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
   use uuid <- result.try(dynamic.field("uuid", dynamic.string)(value__))
@@ -69,6 +77,12 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
 }
 
 /// Close the stream, discard any temporary backing storage.
+/// 
+/// Parameters:  
+///  - `handle` : Handle of the stream to close.
+/// 
+/// Returns:  
+/// 
 pub fn close(callback__, handle handle: StreamHandle) {
   callback__(
     "IO.close",
@@ -77,6 +91,18 @@ pub fn close(callback__, handle handle: StreamHandle) {
 }
 
 /// Read a chunk of the stream
+/// 
+/// Parameters:  
+///  - `handle` : Handle of the stream to read.
+///  - `offset` : Seek to the specified offset before reading (if not specified, proceed with offset
+/// following the last read). Some types of streams may only support sequential reads.
+///  - `size` : Maximum number of bytes to read (left upon the agent discretion if not specified).
+/// 
+/// Returns:  
+///  - `base64_encoded` : Set if the data is base64-encoded
+///  - `data` : Data that were read.
+///  - `eof` : Set if the end-of-file condition occurred while reading.
+/// 
 pub fn read(
   callback__,
   handle handle: StreamHandle,
@@ -101,6 +127,13 @@ pub fn read(
 }
 
 /// Return UUID of Blob object specified by a remote object id.
+/// 
+/// Parameters:  
+///  - `object_id` : Object id of a Blob object wrapper.
+/// 
+/// Returns:  
+///  - `uuid` : UUID of the specified Blob.
+/// 
 pub fn resolve_blob(callback__, object_id object_id: runtime.RemoteObjectId) {
   use result__ <- result.try(callback__(
     "IO.resolveBlob",

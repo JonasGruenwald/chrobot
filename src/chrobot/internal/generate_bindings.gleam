@@ -21,6 +21,9 @@
 //// - Generated files should be put through `gleam format` before committing
 //// 
 //// This script will panic if anything goes wrong, do not import this module anywere except for tests
+//// 
+
+// TODO: Attach comments to variants generated in type definitions
 
 import gleam/dynamic.{field, optional_field} as d
 import gleam/int
@@ -95,9 +98,9 @@ Events are not implemented yet!
 
 ## Important Notes
 
-It's best never to work with Node IDs from the DOM domain for automation, an explanation of why can be found here:  
-https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749
-
+It's best never to work with Node IDs from the DOM domain for automation, 
+[an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
+  
 Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
 "
 
@@ -995,6 +998,7 @@ fn gen_attribute(
   name: String,
   t: Type,
   optional: Bool,
+  comment: String,
 ) -> #(String, String) {
   let #(attr_value, enum_def) = case t {
     PrimitiveType(type_name) -> {
@@ -1045,9 +1049,14 @@ to represent the possible values of the enum property `"
     }
   }
 
+  let attached_comment = case comment {
+    "" -> ""
+    value -> "\n" <> gen_attached_comment(value)
+  }
+
   let attr_value = case optional {
-    True -> "option.Option(" <> attr_value <> ")"
-    False -> attr_value
+    True -> attached_comment <> "option.Option(" <> attr_value <> ")"
+    False -> attached_comment <> attr_value
   }
 
   #(safe_snake_case(name) <> ": " <> attr_value <> ",\n", enum_def)
@@ -1081,7 +1090,13 @@ fn gen_type_body(name: String, t: Type) -> #(String, String) {
       let attribute_gen_results =
         properties
         |> list.map(fn(prop) {
-          gen_attribute(name, prop.name, prop.inner, is(prop.optional))
+          gen_attribute(
+            name,
+            prop.name,
+            prop.inner,
+            is(prop.optional),
+            option.unwrap(prop.description, ""),
+          )
         })
 
       let #(attributes, enum_defs) = list.unzip(attribute_gen_results)
@@ -1520,7 +1535,33 @@ to represent the response to the command `"
   }
 }
 
-/// Generate command parameters and supportin definitions
+fn gen_event_param_type(event: Event) {
+  let builder = sb.new()
+  case event.parameters {
+    Some([]) -> builder
+    Some(params) -> {
+      let return_type_def =
+        TypeDefinition(
+          id: pascal_case(event.name) <> "Event",
+          description: Some(
+            "This type was generated to represent the event `"
+            <> event.name
+            <> "`\n"
+            <> option.unwrap(event.description, ""),
+          ),
+          experimental: None,
+          deprecated: None,
+          inner: ObjectType(properties: Some(params)),
+        )
+
+      gen_type_def_body(builder, return_type_def)
+      |> sb.append(gen_type_def_decoder(return_type_def))
+    }
+    None -> builder
+  }
+}
+
+/// Generate command parameters and supporting definitions
 fn gen_command_parameters(command: Command) {
   case command.parameters {
     Some(params) -> {
@@ -1531,6 +1572,7 @@ fn gen_command_parameters(command: Command) {
             param.name,
             param.inner,
             is(param.optional),
+            "",
           )
         })
       let #(param_definitions, extra_definitions) =
@@ -1599,6 +1641,31 @@ fn gen_command_body(command: Command, domain: Domain) {
   final_encoder_part <> decoder_part
 }
 
+fn gen_property_list_doc(properties: List(PropertyDefinition)) {
+  list.map(properties, fn(prop) {
+    " - `"
+    <> safe_snake_case(prop.name)
+    <> "`"
+    <> {
+      case prop.description {
+        None -> "\n"
+        Some(description) -> " : " <> description <> "\n"
+      }
+    }
+  })
+  |> string.join("")
+}
+
+fn gen_command_parameter_docs(command: Command) {
+  sb.new()
+  |> append_optional(command.parameters, fn(_) { "\nParameters:  \n" })
+  |> append_optional(command.parameters, fn(i) { gen_property_list_doc(i) })
+  |> append_optional(command.parameters, fn(_) { "\nReturns:  \n" })
+  |> append_optional(command.returns, fn(i) { gen_property_list_doc(i) })
+  |> sb.to_string()
+  |> gen_attached_comment()
+}
+
 fn gen_command_function(command: Command, domain: Domain) {
   let #(param_definition, appendage) = gen_command_parameters(command)
   sb.new()
@@ -1608,6 +1675,7 @@ fn gen_command_function(command: Command, domain: Domain) {
       "This generated protocol command has no description",
     )),
   )
+  |> sb.append(gen_command_parameter_docs(command))
   |> sb.append("pub fn ")
   |> sb.append(safe_snake_case(command.name))
   |> sb.append("(\n")

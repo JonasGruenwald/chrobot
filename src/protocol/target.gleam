@@ -56,13 +56,16 @@ pub type TargetInfo {
   TargetInfo(
     target_id: TargetID,
     type_: String,
+    /// List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22
     title: String,
     url: String,
     attached: Bool,
+    /// Whether the target has an attached client.
     opener_id: option.Option(TargetID),
   )
 }
 
+/// Opener target Id
 @internal
 pub fn encode__target_info(value__: TargetInfo) {
   json.object(
@@ -109,6 +112,7 @@ pub type AttachToTargetResponse {
   AttachToTargetResponse(session_id: SessionID)
 }
 
+/// Id assigned to the session.
 @internal
 pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
   use session_id <- result.try(dynamic.field("sessionId", decode__session_id)(
@@ -124,6 +128,7 @@ pub type CreateBrowserContextResponse {
   CreateBrowserContextResponse(browser_context_id: String)
 }
 
+/// The id of the context created.
 @internal
 pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
   use browser_context_id <- result.try(dynamic.field(
@@ -140,6 +145,7 @@ pub type GetBrowserContextsResponse {
   GetBrowserContextsResponse(browser_context_ids: List(String))
 }
 
+/// An array of browser context ids.
 @internal
 pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
   use browser_context_ids <- result.try(dynamic.field(
@@ -156,6 +162,7 @@ pub type CreateTargetResponse {
   CreateTargetResponse(target_id: TargetID)
 }
 
+/// The id of the page opened.
 @internal
 pub fn decode__create_target_response(value__: dynamic.Dynamic) {
   use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
@@ -171,6 +178,7 @@ pub type GetTargetsResponse {
   GetTargetsResponse(target_infos: List(TargetInfo))
 }
 
+/// The list of targets.
 @internal
 pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
   use target_infos <- result.try(dynamic.field(
@@ -182,6 +190,12 @@ pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
 }
 
 /// Activates (focuses) the target.
+/// 
+/// Parameters:  
+///  - `target_id`
+/// 
+/// Returns:  
+/// 
 pub fn activate_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.activateTarget",
@@ -190,6 +204,16 @@ pub fn activate_target(callback__, target_id target_id: TargetID) {
 }
 
 /// Attaches to the target with given id.
+/// 
+/// Parameters:  
+///  - `target_id`
+///  - `flatten` : Enables "flat" access to the session via specifying sessionId attribute in the commands.
+/// We plan to make this the default, deprecate non-flattened mode,
+/// and eventually retire it. See crbug.com/991325.
+/// 
+/// Returns:  
+///  - `session_id` : Id assigned to the session.
+/// 
 pub fn attach_to_target(
   callback__,
   target_id target_id: TargetID,
@@ -210,6 +234,12 @@ pub fn attach_to_target(
 }
 
 /// Closes the target. If the target is a page that gets closed too.
+/// 
+/// Parameters:  
+///  - `target_id`
+/// 
+/// Returns:  
+/// 
 pub fn close_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.closeTarget",
@@ -219,6 +249,12 @@ pub fn close_target(callback__, target_id target_id: TargetID) {
 
 /// Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
 /// one.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+///  - `browser_context_id` : The id of the context created.
+/// 
 pub fn create_browser_context(callback__) {
   use result__ <- result.try(callback__(
     "Target.createBrowserContext",
@@ -230,6 +266,8 @@ pub fn create_browser_context(callback__) {
 }
 
 /// Returns all browser contexts created with `Target.createBrowserContext` method.
+///  - `browser_context_ids` : An array of browser context ids.
+/// 
 pub fn get_browser_contexts(callback__) {
   use result__ <- result.try(callback__(
     "Target.getBrowserContexts",
@@ -241,6 +279,18 @@ pub fn get_browser_contexts(callback__) {
 }
 
 /// Creates a new page.
+/// 
+/// Parameters:  
+///  - `url` : The initial URL the page will be navigated to. An empty string indicates about:blank.
+///  - `width` : Frame width in DIP (headless chrome only).
+///  - `height` : Frame height in DIP (headless chrome only).
+///  - `new_window` : Whether to create a new Window or Tab (chrome-only, false by default).
+///  - `background` : Whether to create the target in background or foreground (chrome-only,
+/// false by default).
+/// 
+/// Returns:  
+///  - `target_id` : The id of the page opened.
+/// 
 pub fn create_target(
   callback__,
   url url: String,
@@ -273,6 +323,12 @@ pub fn create_target(
 }
 
 /// Detaches session with given id.
+/// 
+/// Parameters:  
+///  - `session_id` : Session to detach.
+/// 
+/// Returns:  
+/// 
 pub fn detach_from_target(
   callback__,
   session_id session_id: option.Option(SessionID),
@@ -290,6 +346,12 @@ pub fn detach_from_target(
 
 /// Deletes a BrowserContext. All the belonging pages will be closed without calling their
 /// beforeunload hooks.
+/// 
+/// Parameters:  
+///  - `browser_context_id`
+/// 
+/// Returns:  
+/// 
 pub fn dispose_browser_context(
   callback__,
   browser_context_id browser_context_id: String,
@@ -303,6 +365,12 @@ pub fn dispose_browser_context(
 }
 
 /// Retrieves a list of available targets.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+///  - `target_infos` : The list of targets.
+/// 
 pub fn get_targets(callback__) {
   use result__ <- result.try(callback__("Target.getTargets", option.None))
 
@@ -315,6 +383,14 @@ pub fn get_targets(callback__) {
 /// automatically detaches from all currently attached targets.
 /// This also clears all targets added by `autoAttachRelated` from the list of targets to watch
 /// for creation of related targets.
+/// 
+/// Parameters:  
+///  - `auto_attach` : Whether to auto-attach to related targets.
+///  - `wait_for_debugger_on_start` : Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger`
+/// to run paused targets.
+/// 
+/// Returns:  
+/// 
 pub fn set_auto_attach(
   callback__,
   auto_attach auto_attach: Bool,
@@ -333,6 +409,12 @@ pub fn set_auto_attach(
 
 /// Controls whether to discover available targets and notify via
 /// `targetCreated/targetInfoChanged/targetDestroyed` events.
+/// 
+/// Parameters:  
+///  - `discover` : Whether to discover available targets.
+/// 
+/// Returns:  
+/// 
 pub fn set_discover_targets(callback__, discover discover: Bool) {
   callback__(
     "Target.setDiscoverTargets",

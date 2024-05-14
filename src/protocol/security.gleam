@@ -118,15 +118,22 @@ pub fn decode__security_state(value__: dynamic.Dynamic) {
 pub type SecurityStateExplanation {
   SecurityStateExplanation(
     security_state: SecurityState,
+    /// Security state representing the severity of the factor being explained.
     title: String,
+    /// Title describing the type of factor.
     summary: String,
+    /// Short phrase describing the type of factor.
     description: String,
+    /// Full text explanation of the factor.
     mixed_content_type: MixedContentType,
+    /// The type of mixed content described by the explanation.
     certificate: List(String),
+    /// Page certificate.
     recommendations: option.Option(List(String)),
   )
 }
 
+/// Recommendations to fix any issues.
 @internal
 pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
   json.object(
@@ -216,16 +223,24 @@ pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
 }
 
 /// Disables tracking security state changes.
+/// 
 pub fn disable(callback__) {
   callback__("Security.disable", option.None)
 }
 
 /// Enables tracking security state changes.
+/// 
 pub fn enable(callback__) {
   callback__("Security.enable", option.None)
 }
 
 /// Enable/disable whether all certificate errors should be ignored.
+/// 
+/// Parameters:  
+///  - `ignore` : If true, all certificate errors will be ignored.
+/// 
+/// Returns:  
+/// 
 pub fn set_ignore_certificate_errors(callback__, ignore ignore: Bool) {
   callback__(
     "Security.setIgnoreCertificateErrors",

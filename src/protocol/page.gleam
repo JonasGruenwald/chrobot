@@ -42,15 +42,22 @@ pub fn decode__frame_id(value__: dynamic.Dynamic) {
 pub type Frame {
   Frame(
     id: FrameId,
+    /// Frame unique identifier.
     parent_id: option.Option(FrameId),
+    /// Parent frame identifier.
     loader_id: network.LoaderId,
+    /// Identifier of the loader associated with this frame.
     name: option.Option(String),
+    /// Frame's name as specified in the tag.
     url: String,
+    /// Frame document's URL without fragment.
     security_origin: String,
+    /// Frame document's security origin.
     mime_type: String,
   )
 }
 
+/// Frame document's mimeType as determined by the browser.
 @internal
 pub fn encode__frame(value__: Frame) {
   json.object(
@@ -102,9 +109,14 @@ pub fn decode__frame(value__: dynamic.Dynamic) {
 
 /// Information about the Frame hierarchy.
 pub type FrameTree {
-  FrameTree(frame: Frame, child_frames: option.Option(List(FrameTree)))
+  FrameTree(
+    frame: Frame,
+    /// Frame information for this tree item.
+    child_frames: option.Option(List(FrameTree)),
+  )
 }
 
+/// Child frames.
 @internal
 pub fn encode__frame_tree(value__: FrameTree) {
   json.object(
@@ -213,13 +225,18 @@ pub fn decode__transition_type(value__: dynamic.Dynamic) {
 pub type NavigationEntry {
   NavigationEntry(
     id: Int,
+    /// Unique id of the navigation history entry.
     url: String,
+    /// URL of the navigation history entry.
     user_typed_url: String,
+    /// URL that the user typed in the url bar.
     title: String,
+    /// Title of the navigation history entry.
     transition_type: TransitionType,
   )
 }
 
+/// Transition type.
 @internal
 pub fn encode__navigation_entry(value__: NavigationEntry) {
   json.object([
@@ -293,9 +310,18 @@ pub fn decode__dialog_type(value__: dynamic.Dynamic) {
 
 /// Error while paring app manifest.
 pub type AppManifestError {
-  AppManifestError(message: String, critical: Int, line: Int, column: Int)
+  AppManifestError(
+    message: String,
+    /// Error message.
+    critical: Int,
+    /// If critical, this is a non-recoverable parse error.
+    line: Int,
+    /// Error line.
+    column: Int,
+  )
 }
 
+/// Error column.
 @internal
 pub fn encode__app_manifest_error(value__: AppManifestError) {
   json.object([
@@ -325,12 +351,16 @@ pub fn decode__app_manifest_error(value__: dynamic.Dynamic) {
 pub type LayoutViewport {
   LayoutViewport(
     page_x: Int,
+    /// Horizontal offset relative to the document (CSS pixels).
     page_y: Int,
+    /// Vertical offset relative to the document (CSS pixels).
     client_width: Int,
+    /// Width (CSS pixels), excludes scrollbar if present.
     client_height: Int,
   )
 }
 
+/// Height (CSS pixels), excludes scrollbar if present.
 @internal
 pub fn encode__layout_viewport(value__: LayoutViewport) {
   json.object([
@@ -364,16 +394,24 @@ pub fn decode__layout_viewport(value__: dynamic.Dynamic) {
 pub type VisualViewport {
   VisualViewport(
     offset_x: Float,
+    /// Horizontal offset relative to the layout viewport (CSS pixels).
     offset_y: Float,
+    /// Vertical offset relative to the layout viewport (CSS pixels).
     page_x: Float,
+    /// Horizontal offset relative to the document (CSS pixels).
     page_y: Float,
+    /// Vertical offset relative to the document (CSS pixels).
     client_width: Float,
+    /// Width (CSS pixels), excludes scrollbar if present.
     client_height: Float,
+    /// Height (CSS pixels), excludes scrollbar if present.
     scale: Float,
+    /// Scale relative to the ideal viewport (size at width=device-width).
     zoom: option.Option(Float),
   )
 }
 
+/// Page zoom factor (CSS to device independent pixels ratio).
 @internal
 pub fn encode__visual_viewport(value__: VisualViewport) {
   json.object(
@@ -421,9 +459,20 @@ pub fn decode__visual_viewport(value__: dynamic.Dynamic) {
 
 /// Viewport for capturing screenshot.
 pub type Viewport {
-  Viewport(x: Float, y: Float, width: Float, height: Float, scale: Float)
+  Viewport(
+    x: Float,
+    /// X offset in device independent pixels (dip).
+    y: Float,
+    /// Y offset in device independent pixels (dip).
+    width: Float,
+    /// Rectangle width in device independent pixels (dip).
+    height: Float,
+    /// Rectangle height in device independent pixels (dip).
+    scale: Float,
+  )
 }
 
+/// Page scale factor.
 @internal
 pub fn encode__viewport(value__: Viewport) {
   json.object([
@@ -452,6 +501,7 @@ pub type AddScriptToEvaluateOnNewDocumentResponse {
   AddScriptToEvaluateOnNewDocumentResponse(identifier: ScriptIdentifier)
 }
 
+/// Identifier of the added script.
 @internal
 pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.Dynamic) {
   use identifier <- result.try(dynamic.field(
@@ -468,6 +518,7 @@ pub type CaptureScreenshotResponse {
   CaptureScreenshotResponse(data: String)
 }
 
+/// Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
 @internal
 pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))
@@ -481,6 +532,7 @@ pub type CreateIsolatedWorldResponse {
   CreateIsolatedWorldResponse(execution_context_id: runtime.ExecutionContextId)
 }
 
+/// Execution context of the isolated world.
 @internal
 pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
   use execution_context_id <- result.try(dynamic.field(
@@ -496,11 +548,13 @@ pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
 pub type GetAppManifestResponse {
   GetAppManifestResponse(
     url: String,
+    /// Manifest location.
     errors: List(AppManifestError),
     data: option.Option(String),
   )
 }
 
+/// Manifest content.
 @internal
 pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
   use url <- result.try(dynamic.field("url", dynamic.string)(value__))
@@ -519,6 +573,7 @@ pub type GetFrameTreeResponse {
   GetFrameTreeResponse(frame_tree: FrameTree)
 }
 
+/// Present frame tree structure.
 @internal
 pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
   use frame_tree <- result.try(dynamic.field("frameTree", decode__frame_tree)(
@@ -533,11 +588,14 @@ pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
 pub type GetLayoutMetricsResponse {
   GetLayoutMetricsResponse(
     css_layout_viewport: LayoutViewport,
+    /// Metrics relating to the layout viewport in CSS pixels.
     css_visual_viewport: VisualViewport,
+    /// Metrics relating to the visual viewport in CSS pixels.
     css_content_size: dom.Rect,
   )
 }
 
+/// Size of scrollable area in CSS pixels.
 @internal
 pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
   use css_layout_viewport <- result.try(dynamic.field(
@@ -565,10 +623,12 @@ pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
 pub type GetNavigationHistoryResponse {
   GetNavigationHistoryResponse(
     current_index: Int,
+    /// Index of the current navigation history entry.
     entries: List(NavigationEntry),
   )
 }
 
+/// Array of navigation history entries.
 @internal
 pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
   use current_index <- result.try(dynamic.field("currentIndex", dynamic.int)(
@@ -590,11 +650,15 @@ pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
 pub type NavigateResponse {
   NavigateResponse(
     frame_id: FrameId,
+    /// Frame id that has navigated (or failed to navigate)
     loader_id: option.Option(network.LoaderId),
+    /// Loader identifier. This is omitted in case of same-document navigation,
+    /// as the previously committed loaderId would not change.
     error_text: option.Option(String),
   )
 }
 
+/// User friendly error message, present if and only if navigation has failed.
 @internal
 pub fn decode__navigate_response(value__: dynamic.Dynamic) {
   use frame_id <- result.try(dynamic.field("frameId", decode__frame_id)(value__))
@@ -620,6 +684,7 @@ pub type PrintToPdfResponse {
   PrintToPdfResponse(data: String)
 }
 
+/// Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON)
 @internal
 pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))
@@ -628,6 +693,13 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
 }
 
 /// Evaluates given script in every frame upon creation (before loading frame's scripts).
+/// 
+/// Parameters:  
+///  - `source`
+/// 
+/// Returns:  
+///  - `identifier` : Identifier of the added script.
+/// 
 pub fn add_script_to_evaluate_on_new_document(callback__, source source: String) {
   use result__ <- result.try(callback__(
     "Page.addScriptToEvaluateOnNewDocument",
@@ -639,11 +711,21 @@ pub fn add_script_to_evaluate_on_new_document(callback__, source source: String)
 }
 
 /// Brings page to front (activates tab).
+/// 
 pub fn bring_to_front(callback__) {
   callback__("Page.bringToFront", option.None)
 }
 
 /// Capture page screenshot.
+/// 
+/// Parameters:  
+///  - `format` : Image compression format (defaults to png).
+///  - `quality` : Compression quality from range [0..100] (jpeg only).
+///  - `clip` : Capture the screenshot of a given region only.
+/// 
+/// Returns:  
+///  - `data` : Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
+/// 
 pub fn capture_screenshot(
   callback__,
   format format: option.Option(CaptureScreenshotFormat),
@@ -707,6 +789,16 @@ pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
 }
 
 /// Creates an isolated world for the given frame.
+/// 
+/// Parameters:  
+///  - `frame_id` : Id of the frame in which the isolated world should be created.
+///  - `world_name` : An optional name which is reported in the Execution Context.
+///  - `grant_univeral_access` : Whether or not universal access should be granted to the isolated world. This is a powerful
+/// option, use with caution.
+/// 
+/// Returns:  
+///  - `execution_context_id` : Execution context of the isolated world.
+/// 
 pub fn create_isolated_world(
   callback__,
   frame_id frame_id: FrameId,
@@ -731,11 +823,13 @@ pub fn create_isolated_world(
 }
 
 /// Disables page domain notifications.
+/// 
 pub fn disable(callback__) {
   callback__("Page.disable", option.None)
 }
 
 /// Enables page domain notifications.
+/// 
 pub fn enable(callback__) {
   callback__("Page.enable", option.None)
 }
@@ -745,6 +839,15 @@ pub fn enable(callback__) {
 ///   If manifestId is provided, and it does not match the manifest of the
 ///     current document, this API errors out.
 ///   If there is not a loaded page, this API errors out immediately.
+/// 
+/// Parameters:  
+///  - `manifest_id`
+/// 
+/// Returns:  
+///  - `url` : Manifest location.
+///  - `errors`
+///  - `data` : Manifest content.
+/// 
 pub fn get_app_manifest(
   callback__,
   manifest_id manifest_id: option.Option(String),
@@ -764,6 +867,8 @@ pub fn get_app_manifest(
 }
 
 /// Returns present frame tree structure.
+///  - `frame_tree` : Present frame tree structure.
+/// 
 pub fn get_frame_tree(callback__) {
   use result__ <- result.try(callback__("Page.getFrameTree", option.None))
 
@@ -772,6 +877,10 @@ pub fn get_frame_tree(callback__) {
 }
 
 /// Returns metrics relating to the layouting of the page, such as viewport bounds/scale.
+///  - `css_layout_viewport` : Metrics relating to the layout viewport in CSS pixels.
+///  - `css_visual_viewport` : Metrics relating to the visual viewport in CSS pixels.
+///  - `css_content_size` : Size of scrollable area in CSS pixels.
+/// 
 pub fn get_layout_metrics(callback__) {
   use result__ <- result.try(callback__("Page.getLayoutMetrics", option.None))
 
@@ -780,6 +889,9 @@ pub fn get_layout_metrics(callback__) {
 }
 
 /// Returns navigation history for the current page.
+///  - `current_index` : Index of the current navigation history entry.
+///  - `entries` : Array of navigation history entries.
+/// 
 pub fn get_navigation_history(callback__) {
   use result__ <- result.try(callback__(
     "Page.getNavigationHistory",
@@ -791,11 +903,20 @@ pub fn get_navigation_history(callback__) {
 }
 
 /// Resets navigation history for the current page.
+/// 
 pub fn reset_navigation_history(callback__) {
   callback__("Page.resetNavigationHistory", option.None)
 }
 
 /// Accepts or dismisses a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
+/// 
+/// Parameters:  
+///  - `accept` : Whether to accept or dismiss the dialog.
+///  - `prompt_text` : The text to enter into the dialog prompt before accepting. Used only if this is a prompt
+/// dialog.
+/// 
+/// Returns:  
+/// 
 pub fn handle_java_script_dialog(
   callback__,
   accept accept: Bool,
@@ -813,6 +934,19 @@ pub fn handle_java_script_dialog(
 }
 
 /// Navigates current page to the given URL.
+/// 
+/// Parameters:  
+///  - `url` : URL to navigate the page to.
+///  - `referrer` : Referrer URL.
+///  - `transition_type` : Intended transition type.
+///  - `frame_id` : Frame id to navigate, if not specified navigates the top frame.
+/// 
+/// Returns:  
+///  - `frame_id` : Frame id that has navigated (or failed to navigate)
+///  - `loader_id` : Loader identifier. This is omitted in case of same-document navigation,
+/// as the previously committed loaderId would not change.
+///  - `error_text` : User friendly error message, present if and only if navigation has failed.
+/// 
 pub fn navigate(
   callback__,
   url url: String,
@@ -841,6 +975,12 @@ pub fn navigate(
 }
 
 /// Navigates current page to the given history entry.
+/// 
+/// Parameters:  
+///  - `entry_id` : Unique id of the entry to navigate to.
+/// 
+/// Returns:  
+/// 
 pub fn navigate_to_history_entry(callback__, entry_id entry_id: Int) {
   callback__(
     "Page.navigateToHistoryEntry",
@@ -849,6 +989,42 @@ pub fn navigate_to_history_entry(callback__, entry_id entry_id: Int) {
 }
 
 /// Print page as PDF.
+/// 
+/// Parameters:  
+///  - `landscape` : Paper orientation. Defaults to false.
+///  - `display_header_footer` : Display header and footer. Defaults to false.
+///  - `print_background` : Print background graphics. Defaults to false.
+///  - `scale` : Scale of the webpage rendering. Defaults to 1.
+///  - `paper_width` : Paper width in inches. Defaults to 8.5 inches.
+///  - `paper_height` : Paper height in inches. Defaults to 11 inches.
+///  - `margin_top` : Top margin in inches. Defaults to 1cm (~0.4 inches).
+///  - `margin_bottom` : Bottom margin in inches. Defaults to 1cm (~0.4 inches).
+///  - `margin_left` : Left margin in inches. Defaults to 1cm (~0.4 inches).
+///  - `margin_right` : Right margin in inches. Defaults to 1cm (~0.4 inches).
+///  - `page_ranges` : Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are
+/// printed in the document order, not in the order specified, and no
+/// more than once.
+/// Defaults to empty string, which implies the entire document is printed.
+/// The page numbers are quietly capped to actual page count of the
+/// document, and ranges beyond the end of the document are ignored.
+/// If this results in no pages to print, an error is reported.
+/// It is an error to specify a range with start greater than end.
+///  - `header_template` : HTML template for the print header. Should be valid HTML markup with following
+/// classes used to inject printing values into them:
+/// - `date`: formatted print date
+/// - `title`: document title
+/// - `url`: document location
+/// - `pageNumber`: current page number
+/// - `totalPages`: total pages in the document
+/// 
+/// For example, `<span class=title></span>` would generate span containing the title.
+///  - `footer_template` : HTML template for the print footer. Should use the same format as the `headerTemplate`.
+///  - `prefer_css_page_size` : Whether or not to prefer page size as defined by css. Defaults to false,
+/// in which case the content will be scaled to fit the paper size.
+/// 
+/// Returns:  
+///  - `data` : Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON)
+/// 
 pub fn print_to_pdf(
   callback__,
   landscape landscape: option.Option(Bool),
@@ -920,6 +1096,14 @@ pub fn print_to_pdf(
 }
 
 /// Reloads given page optionally ignoring the cache.
+/// 
+/// Parameters:  
+///  - `ignore_cache` : If true, browser cache is ignored (as if the user pressed Shift+refresh).
+///  - `script_to_evaluate_on_load` : If set, the script will be injected into all frames of the inspected page after reload.
+/// Argument will be ignored if reloading dataURL origin.
+/// 
+/// Returns:  
+/// 
 pub fn reload(
   callback__,
   ignore_cache ignore_cache: option.Option(Bool),
@@ -940,6 +1124,12 @@ pub fn reload(
 }
 
 /// Removes given script from the list.
+/// 
+/// Parameters:  
+///  - `identifier`
+/// 
+/// Returns:  
+/// 
 pub fn remove_script_to_evaluate_on_new_document(
   callback__,
   identifier identifier: ScriptIdentifier,
@@ -953,6 +1143,12 @@ pub fn remove_script_to_evaluate_on_new_document(
 }
 
 /// Enable page Content Security Policy by-passing.
+/// 
+/// Parameters:  
+///  - `enabled` : Whether to bypass page CSP.
+/// 
+/// Returns:  
+/// 
 pub fn set_bypass_csp(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setBypassCSP",
@@ -961,6 +1157,13 @@ pub fn set_bypass_csp(callback__, enabled enabled: Bool) {
 }
 
 /// Sets given markup as the document's HTML.
+/// 
+/// Parameters:  
+///  - `frame_id` : Frame id to set HTML for.
+///  - `html` : HTML content to set.
+/// 
+/// Returns:  
+/// 
 pub fn set_document_content(
   callback__,
   frame_id frame_id: FrameId,
@@ -978,6 +1181,12 @@ pub fn set_document_content(
 }
 
 /// Controls whether page will emit lifecycle events.
+/// 
+/// Parameters:  
+///  - `enabled` : If true, starts emitting lifecycle events.
+/// 
+/// Returns:  
+/// 
 pub fn set_lifecycle_events_enabled(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setLifecycleEventsEnabled",
@@ -986,11 +1195,13 @@ pub fn set_lifecycle_events_enabled(callback__, enabled enabled: Bool) {
 }
 
 /// Force the page stop all navigations and pending resource fetches.
+/// 
 pub fn stop_loading(callback__) {
   callback__("Page.stopLoading", option.None)
 }
 
 /// Tries to close page, running its beforeunload hooks, if any.
+/// 
 pub fn close(callback__) {
   callback__("Page.close", option.None)
 }
@@ -998,6 +1209,12 @@ pub fn close(callback__) {
 /// Intercept file chooser requests and transfer control to protocol clients.
 /// When file chooser interception is enabled, native file chooser dialog is not shown.
 /// Instead, a protocol event `Page.fileChooserOpened` is emitted.
+/// 
+/// Parameters:  
+///  - `enabled`
+/// 
+/// Returns:  
+/// 
 pub fn set_intercept_file_chooser_dialog(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setInterceptFileChooserDialog",

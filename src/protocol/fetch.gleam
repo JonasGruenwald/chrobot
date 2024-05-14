@@ -74,11 +74,15 @@ pub fn decode__request_stage(value__: dynamic.Dynamic) {
 pub type RequestPattern {
   RequestPattern(
     url_pattern: option.Option(String),
+    /// Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is
+    /// backslash. Omitting is equivalent to `"*"`.
     resource_type: option.Option(network.ResourceType),
+    /// If set, only requests for matching resource types will be intercepted.
     request_stage: option.Option(RequestStage),
   )
 }
 
+/// Stage at which to begin intercepting requests. Default is Request.
 @internal
 pub fn encode__request_pattern(value__: RequestPattern) {
   json.object(
@@ -142,12 +146,16 @@ pub fn decode__header_entry(value__: dynamic.Dynamic) {
 pub type AuthChallenge {
   AuthChallenge(
     source: option.Option(AuthChallengeSource),
+    /// Source of the authentication challenge.
     origin: String,
+    /// Origin of the challenger.
     scheme: String,
+    /// The authentication scheme used, such as basic or digest
     realm: String,
   )
 }
 
+/// The realm of the challenge. May be empty.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `source` of `AuthChallenge`
 pub type AuthChallengeSource {
@@ -212,11 +220,18 @@ pub fn decode__auth_challenge(value__: dynamic.Dynamic) {
 pub type AuthChallengeResponse {
   AuthChallengeResponse(
     response: AuthChallengeResponseResponse,
+    /// The decision on what to do in response to the authorization challenge.  Default means
+    /// deferring to the default behavior of the net stack, which will likely either the Cancel
+    /// authentication or display a popup dialog box.
     username: option.Option(String),
+    /// The username to provide, possibly empty. Should only be set if response is
+    /// ProvideCredentials.
     password: option.Option(String),
   )
 }
 
+/// The password to provide, possibly empty. Should only be set if response is
+/// ProvideCredentials.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `response` of `AuthChallengeResponse`
 pub type AuthChallengeResponseResponse {
@@ -290,9 +305,14 @@ pub fn decode__auth_challenge_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_response_body`
 pub type GetResponseBodyResponse {
-  GetResponseBodyResponse(body: String, base64_encoded: Bool)
+  GetResponseBodyResponse(
+    body: String,
+    /// Response body.
+    base64_encoded: Bool,
+  )
 }
 
+/// True, if content was sent as base64.
 @internal
 pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
   use body <- result.try(dynamic.field("body", dynamic.string)(value__))
@@ -319,12 +339,23 @@ pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
 }
 
 /// Disables the fetch domain.
+/// 
 pub fn disable(callback__) {
   callback__("Fetch.disable", option.None)
 }
 
 /// Enables issuing of requestPaused events. A request will be paused until client
 /// calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
+/// 
+/// Parameters:  
+///  - `patterns` : If specified, only requests matching any of these patterns will produce
+/// fetchRequested event and will be paused until clients response. If not set,
+/// all requests will be affected.
+///  - `handle_auth_requests` : If true, authRequired events will be issued and requests will be paused
+/// expecting a call to continueWithAuth.
+/// 
+/// Returns:  
+/// 
 pub fn enable(
   callback__,
   patterns patterns: option.Option(List(RequestPattern)),
@@ -345,6 +376,13 @@ pub fn enable(
 }
 
 /// Causes the request to fail with specified reason.
+/// 
+/// Parameters:  
+///  - `request_id` : An id the client received in requestPaused event.
+///  - `error_reason` : Causes the request to fail with the given reason.
+/// 
+/// Returns:  
+/// 
 pub fn fail_request(
   callback__,
   request_id request_id: RequestId,
@@ -362,6 +400,23 @@ pub fn fail_request(
 }
 
 /// Provides response to the request.
+/// 
+/// Parameters:  
+///  - `request_id` : An id the client received in requestPaused event.
+///  - `response_code` : An HTTP response code.
+///  - `response_headers` : Response headers.
+///  - `binary_response_headers` : Alternative way of specifying response headers as a \0-separated
+/// series of name: value pairs. Prefer the above method unless you
+/// need to represent some non-UTF8 values that can't be transmitted
+/// over the protocol as text. (Encoded as a base64 string when passed over JSON)
+///  - `body` : A response body. If absent, original response body will be used if
+/// the request is intercepted at the response stage and empty body
+/// will be used if the request is intercepted at the request stage. (Encoded as a base64 string when passed over JSON)
+///  - `response_phrase` : A textual representation of responseCode.
+/// If absent, a standard phrase matching responseCode is used.
+/// 
+/// Returns:  
+/// 
 pub fn fulfill_request(
   callback__,
   request_id request_id: RequestId,
@@ -398,6 +453,18 @@ pub fn fulfill_request(
 }
 
 /// Continues the request, optionally modifying some of its parameters.
+/// 
+/// Parameters:  
+///  - `request_id` : An id the client received in requestPaused event.
+///  - `url` : If set, the request url will be modified in a way that's not observable by page.
+///  - `method` : If set, the request method is overridden.
+///  - `post_data` : If set, overrides the post data in the request. (Encoded as a base64 string when passed over JSON)
+///  - `headers` : If set, overrides the request headers. Note that the overrides do not
+/// extend to subsequent redirect hops, if a redirect happens. Another override
+/// may be applied to a different request produced by a redirect.
+/// 
+/// Returns:  
+/// 
 pub fn continue_request(
   callback__,
   request_id request_id: RequestId,
@@ -427,6 +494,13 @@ pub fn continue_request(
 }
 
 /// Continues a request supplying authChallengeResponse following authRequired event.
+/// 
+/// Parameters:  
+///  - `request_id` : An id the client received in authRequired event.
+///  - `auth_challenge_response` : Response to  with an authChallenge.
+/// 
+/// Returns:  
+/// 
 pub fn continue_with_auth(
   callback__,
   request_id request_id: RequestId,
@@ -456,6 +530,14 @@ pub fn continue_with_auth(
 /// paused in the _redirect received_ state may be differentiated by
 /// `responseCode` and presence of `location` response header, see
 /// comments to `requestPaused` for details.
+/// 
+/// Parameters:  
+///  - `request_id` : Identifier for the intercepted request to get body for.
+/// 
+/// Returns:  
+///  - `body` : Response body.
+///  - `base64_encoded` : True, if content was sent as base64.
+/// 
 pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Fetch.getResponseBody",
@@ -476,6 +558,13 @@ pub fn get_response_body(callback__, request_id request_id: RequestId) {
 /// This method is mutually exclusive with getResponseBody.
 /// Calling other methods that affect the request or disabling fetch
 /// domain before body is received results in an undefined behavior.
+/// 
+/// Parameters:  
+///  - `request_id`
+/// 
+/// Returns:  
+///  - `stream`
+/// 
 pub fn take_response_body_as_stream(
   callback__,
   request_id request_id: RequestId,

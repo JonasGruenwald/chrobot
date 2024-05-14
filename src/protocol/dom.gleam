@@ -63,7 +63,13 @@ pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
 
 /// Backend node with a friendly name.
 pub type BackendNode {
-  BackendNode(node_type: Int, node_name: String, backend_node_id: BackendNodeId)
+  BackendNode(
+    node_type: Int,
+    /// `Node`'s nodeType.
+    node_name: String,
+    /// `Node`'s nodeName.
+    backend_node_id: BackendNodeId,
+  )
 }
 
 @internal
@@ -375,33 +381,64 @@ pub fn decode__scroll_orientation(value__: dynamic.Dynamic) {
 pub type Node {
   Node(
     node_id: NodeId,
+    /// Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend
+    /// will only push node with given `id` once. It is aware of all requested nodes and will only
+    /// fire DOM events for nodes known to the client.
     parent_id: option.Option(NodeId),
+    /// The id of the parent node if any.
     backend_node_id: BackendNodeId,
+    /// The BackendNodeId for this node.
     node_type: Int,
+    /// `Node`'s nodeType.
     node_name: String,
+    /// `Node`'s nodeName.
     local_name: String,
+    /// `Node`'s localName.
     node_value: String,
+    /// `Node`'s nodeValue.
     child_node_count: option.Option(Int),
+    /// Child count for `Container` nodes.
     children: option.Option(List(Node)),
+    /// Child nodes of this node when requested with children.
     attributes: option.Option(List(String)),
+    /// Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
     document_url: option.Option(String),
+    /// Document URL that `Document` or `FrameOwner` node points to.
     base_url: option.Option(String),
+    /// Base URL that `Document` or `FrameOwner` node uses for URL completion.
     public_id: option.Option(String),
+    /// `DocumentType`'s publicId.
     system_id: option.Option(String),
+    /// `DocumentType`'s systemId.
     internal_subset: option.Option(String),
+    /// `DocumentType`'s internalSubset.
     xml_version: option.Option(String),
+    /// `Document`'s XML version in case of XML documents.
     name: option.Option(String),
+    /// `Attr`'s name.
     value: option.Option(String),
+    /// `Attr`'s value.
     pseudo_type: option.Option(PseudoType),
+    /// Pseudo element type for this node.
     pseudo_identifier: option.Option(String),
+    /// Pseudo element identifier for this node. Only present if there is a
+    /// valid pseudoType.
     shadow_root_type: option.Option(ShadowRootType),
+    /// Shadow root type.
     frame_id: option.Option(String),
+    /// Frame ID for frame owner elements.
     content_document: option.Option(Node),
+    /// Content document for frame owner elements.
     shadow_roots: option.Option(List(Node)),
+    /// Shadow root list for given element host.
     template_content: option.Option(Node),
+    /// Content document fragment for template elements.
     pseudo_elements: option.Option(List(Node)),
+    /// Pseudo elements associated with this node.
     distributed_nodes: option.Option(List(BackendNode)),
+    /// Distributed nodes for given insertion point.
     is_svg: option.Option(Bool),
+    /// Whether the node is SVG.
     compatibility_mode: option.Option(CompatibilityMode),
     assigned_slot: option.Option(BackendNode),
   )
@@ -632,9 +669,18 @@ pub fn decode__node(value__: dynamic.Dynamic) {
 
 /// A structure holding an RGBA color.
 pub type RGBA {
-  RGBA(r: Int, g: Int, b: Int, a: option.Option(Float))
+  RGBA(
+    r: Int,
+    /// The red component, in the [0-255] range.
+    g: Int,
+    /// The green component, in the [0-255] range.
+    b: Int,
+    /// The blue component, in the [0-255] range.
+    a: option.Option(Float),
+  )
 }
 
+/// The alpha component, in the [0-1] range (default: 1).
 @internal
 pub fn encode__rgba(value__: RGBA) {
   json.object(
@@ -681,15 +727,22 @@ pub fn decode__quad(value__: dynamic.Dynamic) {
 pub type BoxModel {
   BoxModel(
     content: Quad,
+    /// Content box
     padding: Quad,
+    /// Padding box
     border: Quad,
+    /// Border box
     margin: Quad,
+    /// Margin box
     width: Int,
+    /// Node width
     height: Int,
+    /// Node height
     shape_outside: option.Option(ShapeOutsideInfo),
   )
 }
 
+/// Shape outside coordinates
 @internal
 pub fn encode__box_model(value__: BoxModel) {
   json.object(
@@ -735,11 +788,14 @@ pub fn decode__box_model(value__: dynamic.Dynamic) {
 pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
     bounds: Quad,
+    /// Shape bounds
     shape: List(dynamic.Dynamic),
+    /// Shape coordinate details
     margin_shape: List(dynamic.Dynamic),
   )
 }
 
+/// Margin shape bounds
 @internal
 pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
   json.object([
@@ -773,9 +829,18 @@ pub fn decode__shape_outside_info(value__: dynamic.Dynamic) {
 
 /// Rectangle.
 pub type Rect {
-  Rect(x: Float, y: Float, width: Float, height: Float)
+  Rect(
+    x: Float,
+    /// X coordinate
+    y: Float,
+    /// Y coordinate
+    width: Float,
+    /// Rectangle width
+    height: Float,
+  )
 }
 
+/// Rectangle height
 @internal
 pub fn encode__rect(value__: Rect) {
   json.object([
@@ -797,9 +862,14 @@ pub fn decode__rect(value__: dynamic.Dynamic) {
 }
 
 pub type CSSComputedStyleProperty {
-  CSSComputedStyleProperty(name: String, value: String)
+  CSSComputedStyleProperty(
+    name: String,
+    /// Computed style property name.
+    value: String,
+  )
 }
 
+/// Computed style property value.
 @internal
 pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
   json.object([
@@ -822,6 +892,7 @@ pub type DescribeNodeResponse {
   DescribeNodeResponse(node: Node)
 }
 
+/// Node description.
 @internal
 pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
   use node <- result.try(dynamic.field("node", decode__node)(value__))
@@ -835,6 +906,7 @@ pub type GetAttributesResponse {
   GetAttributesResponse(attributes: List(String))
 }
 
+/// An interleaved array of node attribute names and values.
 @internal
 pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
   use attributes <- result.try(dynamic.field(
@@ -851,6 +923,7 @@ pub type GetBoxModelResponse {
   GetBoxModelResponse(model: BoxModel)
 }
 
+/// Box model for the node.
 @internal
 pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
   use model <- result.try(dynamic.field("model", decode__box_model)(value__))
@@ -864,6 +937,7 @@ pub type GetDocumentResponse {
   GetDocumentResponse(root: Node)
 }
 
+/// Resulting node.
 @internal
 pub fn decode__get_document_response(value__: dynamic.Dynamic) {
   use root <- result.try(dynamic.field("root", decode__node)(value__))
@@ -876,11 +950,14 @@ pub fn decode__get_document_response(value__: dynamic.Dynamic) {
 pub type GetNodeForLocationResponse {
   GetNodeForLocationResponse(
     backend_node_id: BackendNodeId,
+    /// Resulting node.
     frame_id: String,
+    /// Frame this node belongs to.
     node_id: option.Option(NodeId),
   )
 }
 
+/// Id of the node at given coordinates, only when enabled and requested document.
 @internal
 pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
   use backend_node_id <- result.try(dynamic.field(
@@ -905,6 +982,7 @@ pub type GetOuterHtmlResponse {
   GetOuterHtmlResponse(outer_html: String)
 }
 
+/// Outer HTML markup.
 @internal
 pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
   use outer_html <- result.try(dynamic.field("outerHTML", dynamic.string)(
@@ -920,6 +998,7 @@ pub type MoveToResponse {
   MoveToResponse(node_id: NodeId)
 }
 
+/// New id of the moved node.
 @internal
 pub fn decode__move_to_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -933,6 +1012,7 @@ pub type QuerySelectorResponse {
   QuerySelectorResponse(node_id: NodeId)
 }
 
+/// Query selector result.
 @internal
 pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -946,6 +1026,7 @@ pub type QuerySelectorAllResponse {
   QuerySelectorAllResponse(node_ids: List(NodeId))
 }
 
+/// Query selector result.
 @internal
 pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
   use node_ids <- result.try(dynamic.field(
@@ -962,6 +1043,7 @@ pub type RequestNodeResponse {
   RequestNodeResponse(node_id: NodeId)
 }
 
+/// Node id for given object.
 @internal
 pub fn decode__request_node_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -975,6 +1057,7 @@ pub type ResolveNodeResponse {
   ResolveNodeResponse(object: runtime.RemoteObject)
 }
 
+/// JavaScript object wrapper for given node.
 @internal
 pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
   use object <- result.try(dynamic.field(
@@ -991,6 +1074,7 @@ pub type SetNodeNameResponse {
   SetNodeNameResponse(node_id: NodeId)
 }
 
+/// New node's id.
 @internal
 pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1000,6 +1084,19 @@ pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
 
 /// Describes node given its id, does not require domain to be enabled. Does not start tracking any
 /// objects, can be used for automation.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+///  - `depth` : The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+/// entire subtree or provide an integer larger than 0.
+///  - `pierce` : Whether or not iframes and shadow roots should be traversed when returning the subtree
+/// (default is false).
+/// 
+/// Returns:  
+///  - `node` : Node description.
+/// 
 pub fn describe_node(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1037,6 +1134,16 @@ pub fn describe_node(
 /// Scrolls the specified rect of the given node into view if not already visible.
 /// Note: exactly one between nodeId, backendNodeId and objectId should be passed
 /// to identify the node.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+///  - `rect` : The rect to be scrolled into view, relative to the node's border box, in CSS pixels.
+/// When omitted, center of the node will be used, similar to Element.scrollIntoView.
+/// 
+/// Returns:  
+/// 
 pub fn scroll_into_view_if_needed(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1065,16 +1172,30 @@ pub fn scroll_into_view_if_needed(
 }
 
 /// Disables DOM agent for the given page.
+/// 
 pub fn disable(callback__) {
   callback__("DOM.disable", option.None)
 }
 
 /// Enables DOM agent for the given page.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+/// 
 pub fn enable(callback__) {
   callback__("DOM.enable", option.None)
 }
 
 /// Focuses the given element.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+/// 
+/// Returns:  
+/// 
 pub fn focus(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1099,6 +1220,13 @@ pub fn focus(
 }
 
 /// Returns attributes for the specified node.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to retrieve attributes for.
+/// 
+/// Returns:  
+///  - `attributes` : An interleaved array of node attribute names and values.
+/// 
 pub fn get_attributes(callback__, node_id node_id: NodeId) {
   use result__ <- result.try(callback__(
     "DOM.getAttributes",
@@ -1110,6 +1238,15 @@ pub fn get_attributes(callback__, node_id node_id: NodeId) {
 }
 
 /// Returns boxes for the given node.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+/// 
+/// Returns:  
+///  - `model` : Box model for the node.
+/// 
 pub fn get_box_model(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1138,6 +1275,16 @@ pub fn get_box_model(
 
 /// Returns the root DOM node (and optionally the subtree) to the caller.
 /// Implicitly enables the DOM domain events for the current target.
+/// 
+/// Parameters:  
+///  - `depth` : The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+/// entire subtree or provide an integer larger than 0.
+///  - `pierce` : Whether or not iframes and shadow roots should be traversed when returning the subtree
+/// (default is false).
+/// 
+/// Returns:  
+///  - `root` : Resulting node.
+/// 
 pub fn get_document(
   callback__,
   depth depth: option.Option(Int),
@@ -1162,6 +1309,18 @@ pub fn get_document(
 
 /// Returns node id at given location. Depending on whether DOM domain is enabled, nodeId is
 /// either returned or not.
+/// 
+/// Parameters:  
+///  - `x` : X coordinate.
+///  - `y` : Y coordinate.
+///  - `include_user_agent_shadow_dom` : False to skip to the nearest non-UA shadow root ancestor (default: false).
+///  - `ignore_pointer_events_none` : Whether to ignore pointer-events: none on elements and hit test them.
+/// 
+/// Returns:  
+///  - `backend_node_id` : Resulting node.
+///  - `frame_id` : Frame this node belongs to.
+///  - `node_id` : Id of the node at given coordinates, only when enabled and requested document.
+/// 
 pub fn get_node_for_location(
   callback__,
   x x: Int,
@@ -1189,6 +1348,15 @@ pub fn get_node_for_location(
 }
 
 /// Returns node's HTML markup.
+/// 
+/// Parameters:  
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+/// 
+/// Returns:  
+///  - `outer_html` : Outer HTML markup.
+/// 
 pub fn get_outer_html(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1216,21 +1384,34 @@ pub fn get_outer_html(
 }
 
 /// Hides any highlight.
+/// 
 pub fn hide_highlight(callback__) {
   callback__("DOM.hideHighlight", option.None)
 }
 
 /// Highlights DOM node.
+/// 
 pub fn highlight_node(callback__) {
   callback__("DOM.highlightNode", option.None)
 }
 
 /// Highlights given rectangle.
+/// 
 pub fn highlight_rect(callback__) {
   callback__("DOM.highlightRect", option.None)
 }
 
 /// Moves node into the new container, places it before the given anchor.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to move.
+///  - `target_node_id` : Id of the element to drop the moved node into.
+///  - `insert_before_node_id` : Drop node before this one (if absent, the moved node becomes the last child of
+/// `targetNodeId`).
+/// 
+/// Returns:  
+///  - `node_id` : New id of the moved node.
+/// 
 pub fn move_to(
   callback__,
   node_id node_id: NodeId,
@@ -1255,6 +1436,14 @@ pub fn move_to(
 }
 
 /// Executes `querySelector` on a given node.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to query upon.
+///  - `selector` : Selector string.
+/// 
+/// Returns:  
+///  - `node_id` : Query selector result.
+/// 
 pub fn query_selector(
   callback__,
   node_id node_id: NodeId,
@@ -1275,6 +1464,14 @@ pub fn query_selector(
 }
 
 /// Executes `querySelectorAll` on a given node.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to query upon.
+///  - `selector` : Selector string.
+/// 
+/// Returns:  
+///  - `node_ids` : Query selector result.
+/// 
 pub fn query_selector_all(
   callback__,
   node_id node_id: NodeId,
@@ -1295,6 +1492,13 @@ pub fn query_selector_all(
 }
 
 /// Removes attribute with given name from an element with given id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the element to remove attribute from.
+///  - `name` : Name of the attribute to remove.
+/// 
+/// Returns:  
+/// 
 pub fn remove_attribute(callback__, node_id node_id: NodeId, name name: String) {
   callback__(
     "DOM.removeAttribute",
@@ -1308,6 +1512,12 @@ pub fn remove_attribute(callback__, node_id node_id: NodeId, name name: String) 
 }
 
 /// Removes node with given id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to remove.
+/// 
+/// Returns:  
+/// 
 pub fn remove_node(callback__, node_id node_id: NodeId) {
   callback__(
     "DOM.removeNode",
@@ -1318,6 +1528,16 @@ pub fn remove_node(callback__, node_id node_id: NodeId) {
 /// Requests that children of the node with given id are returned to the caller in form of
 /// `setChildNodes` events where not only immediate children are retrieved, but all children down to
 /// the specified depth.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to get children for.
+///  - `depth` : The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the
+/// entire subtree or provide an integer larger than 0.
+///  - `pierce` : Whether or not iframes and shadow roots should be traversed when returning the sub-tree
+/// (default is false).
+/// 
+/// Returns:  
+/// 
 pub fn request_child_nodes(
   callback__,
   node_id node_id: NodeId,
@@ -1341,6 +1561,13 @@ pub fn request_child_nodes(
 /// Requests that the node is sent to the caller given the JavaScript node object reference. All
 /// nodes that form the path from the node to the root are also sent to the client as a series of
 /// `setChildNodes` notifications.
+/// 
+/// Parameters:  
+///  - `object_id` : JavaScript object id to convert into node.
+/// 
+/// Returns:  
+///  - `node_id` : Node id for given object.
+/// 
 pub fn request_node(callback__, object_id object_id: runtime.RemoteObjectId) {
   use result__ <- result.try(callback__(
     "DOM.requestNode",
@@ -1354,6 +1581,16 @@ pub fn request_node(callback__, object_id object_id: runtime.RemoteObjectId) {
 }
 
 /// Resolves the JavaScript node object for a given NodeId or BackendNodeId.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to resolve.
+///  - `backend_node_id` : Backend identifier of the node to resolve.
+///  - `object_group` : Symbolic group name that can be used to release multiple objects.
+///  - `execution_context_id` : Execution context in which to resolve the node.
+/// 
+/// Returns:  
+///  - `object` : JavaScript object wrapper for given node.
+/// 
 pub fn resolve_node(
   callback__,
   node_id node_id: option.Option(NodeId),
@@ -1390,6 +1627,14 @@ pub fn resolve_node(
 }
 
 /// Sets attribute for an element with given id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the element to set attribute for.
+///  - `name` : Attribute name.
+///  - `value` : Attribute value.
+/// 
+/// Returns:  
+/// 
 pub fn set_attribute_value(
   callback__,
   node_id node_id: NodeId,
@@ -1410,6 +1655,15 @@ pub fn set_attribute_value(
 
 /// Sets attributes on element with given id. This method is useful when user edits some existing
 /// attribute value and types in several attribute name/value pairs.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the element to set attributes for.
+///  - `text` : Text with a number of attributes. Will parse this text using HTML parser.
+///  - `name` : Attribute name to replace with new attributes derived from text in case text parsed
+/// successfully.
+/// 
+/// Returns:  
+/// 
 pub fn set_attributes_as_text(
   callback__,
   node_id node_id: NodeId,
@@ -1428,6 +1682,15 @@ pub fn set_attributes_as_text(
 }
 
 /// Sets files for the given file input element.
+/// 
+/// Parameters:  
+///  - `files` : Array of file paths to set.
+///  - `node_id` : Identifier of the node.
+///  - `backend_node_id` : Identifier of the backend node.
+///  - `object_id` : JavaScript object id of the node wrapper.
+/// 
+/// Returns:  
+/// 
 pub fn set_file_input_files(
   callback__,
   files files: List(String),
@@ -1453,6 +1716,14 @@ pub fn set_file_input_files(
 }
 
 /// Sets node name for a node with given id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to set name for.
+///  - `name` : New node's name.
+/// 
+/// Returns:  
+///  - `node_id` : New node's id.
+/// 
 pub fn set_node_name(callback__, node_id node_id: NodeId, name name: String) {
   use result__ <- result.try(callback__(
     "DOM.setNodeName",
@@ -1469,6 +1740,13 @@ pub fn set_node_name(callback__, node_id node_id: NodeId, name name: String) {
 }
 
 /// Sets node value for a node with given id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to set value for.
+///  - `value` : New node's value.
+/// 
+/// Returns:  
+/// 
 pub fn set_node_value(callback__, node_id node_id: NodeId, value value: String) {
   callback__(
     "DOM.setNodeValue",
@@ -1482,6 +1760,13 @@ pub fn set_node_value(callback__, node_id node_id: NodeId, value value: String) 
 }
 
 /// Sets node HTML markup, returns new node id.
+/// 
+/// Parameters:  
+///  - `node_id` : Id of the node to set markup for.
+///  - `outer_html` : Outer HTML markup to set.
+/// 
+/// Returns:  
+/// 
 pub fn set_outer_html(
   callback__,
   node_id node_id: NodeId,

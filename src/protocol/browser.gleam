@@ -22,13 +22,18 @@ import gleam/result
 pub type GetVersionResponse {
   GetVersionResponse(
     protocol_version: String,
+    /// Protocol version.
     product: String,
+    /// Product name.
     revision: String,
+    /// Product revision.
     user_agent: String,
+    /// User-Agent.
     js_version: String,
   )
 }
 
+/// V8 version.
 @internal
 pub fn decode__get_version_response(value__: dynamic.Dynamic) {
   use protocol_version <- result.try(dynamic.field(
@@ -54,6 +59,12 @@ pub fn decode__get_version_response(value__: dynamic.Dynamic) {
 }
 
 /// Reset all permission management for all origins.
+/// 
+/// Parameters:  
+///  - `browser_context_id` : BrowserContext to reset permissions. When omitted, default browser context is used.
+/// 
+/// Returns:  
+/// 
 pub fn reset_permissions(
   callback__,
   browser_context_id browser_context_id: option.Option(String),
@@ -70,11 +81,18 @@ pub fn reset_permissions(
 }
 
 /// Close browser gracefully.
+/// 
 pub fn close(callback__) {
   callback__("Browser.close", option.None)
 }
 
 /// Returns version information.
+///  - `protocol_version` : Protocol version.
+///  - `product` : Product name.
+///  - `revision` : Product revision.
+///  - `user_agent` : User-Agent.
+///  - `js_version` : V8 version.
+/// 
 pub fn get_version(callback__) {
   use result__ <- result.try(callback__("Browser.getVersion", option.None))
 
@@ -84,6 +102,12 @@ pub fn get_version(callback__) {
 
 /// Allows a site to use privacy sandbox features that require enrollment
 /// without the site actually being enrolled. Only supported on page targets.
+/// 
+/// Parameters:  
+///  - `url`
+/// 
+/// Returns:  
+/// 
 pub fn add_privacy_sandbox_enrollment_override(callback__, url url: String) {
   callback__(
     "Browser.addPrivacySandboxEnrollmentOverride",

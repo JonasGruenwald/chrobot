@@ -59,11 +59,14 @@ pub fn decode__call_frame_id(value__: dynamic.Dynamic) {
 pub type Location {
   Location(
     script_id: runtime.ScriptId,
+    /// Script identifier as reported in the `Debugger.scriptParsed`.
     line_number: Int,
+    /// Line number in the script (0-based).
     column_number: option.Option(Int),
   )
 }
 
+/// Column number in the script (0-based).
 @internal
 pub fn encode__location(value__: Location) {
   json.object(
@@ -102,15 +105,22 @@ pub fn decode__location(value__: dynamic.Dynamic) {
 pub type CallFrame {
   CallFrame(
     call_frame_id: CallFrameId,
+    /// Call frame identifier. This identifier is only valid while the virtual machine is paused.
     function_name: String,
+    /// Name of the JavaScript function called on this call frame.
     function_location: option.Option(Location),
+    /// Location in the source code.
     location: Location,
+    /// Location in the source code.
     scope_chain: List(Scope),
+    /// Scope chain for this call frame.
     this: runtime.RemoteObject,
+    /// `this` object for this call frame.
     return_value: option.Option(runtime.RemoteObject),
   )
 }
 
+/// The value being returned, if the function is at return point.
 @internal
 pub fn encode__call_frame(value__: CallFrame) {
   json.object(
@@ -173,13 +183,19 @@ pub fn decode__call_frame(value__: dynamic.Dynamic) {
 pub type Scope {
   Scope(
     type_: ScopeType,
+    /// Scope type.
     object: runtime.RemoteObject,
+    /// Object representing the scope. For `global` and `with` scopes it represents the actual
+    /// object; for the rest of the scopes, it is artificial transient object enumerating scope
+    /// variables as its properties.
     name: option.Option(String),
     start_location: option.Option(Location),
+    /// Location in the source code where scope starts
     end_location: option.Option(Location),
   )
 }
 
+/// Location in the source code where scope ends
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `Scope`
 pub type ScopeType {
@@ -284,9 +300,14 @@ pub fn decode__scope(value__: dynamic.Dynamic) {
 
 /// Search match for resource.
 pub type SearchMatch {
-  SearchMatch(line_number: Float, line_content: String)
+  SearchMatch(
+    line_number: Float,
+    /// Line number in resource content.
+    line_content: String,
+  )
 }
 
+/// Line with match content.
 @internal
 pub fn encode__search_match(value__: SearchMatch) {
   json.object([
@@ -310,8 +331,11 @@ pub fn decode__search_match(value__: dynamic.Dynamic) {
 pub type BreakLocation {
   BreakLocation(
     script_id: runtime.ScriptId,
+    /// Script identifier as reported in the `Debugger.scriptParsed`.
     line_number: Int,
+    /// Line number in the script (0-based).
     column_number: option.Option(Int),
+    /// Column number in the script (0-based).
     type_: option.Option(BreakLocationType),
   )
 }
@@ -428,9 +452,14 @@ pub fn decode__script_language(value__: dynamic.Dynamic) {
 
 /// Debug symbols available for a wasm script.
 pub type DebugSymbols {
-  DebugSymbols(type_: DebugSymbolsType, external_url: option.Option(String))
+  DebugSymbols(
+    type_: DebugSymbolsType,
+    /// Type of the debug symbols.
+    external_url: option.Option(String),
+  )
 }
 
+/// URL of the external symbol source.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DebugSymbols`
 pub type DebugSymbolsType {
@@ -498,10 +527,12 @@ pub fn decode__debug_symbols(value__: dynamic.Dynamic) {
 pub type EvaluateOnCallFrameResponse {
   EvaluateOnCallFrameResponse(
     result: runtime.RemoteObject,
+    /// Object wrapper for the evaluation result.
     exception_details: option.Option(runtime.ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__evaluate_on_call_frame_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -525,6 +556,7 @@ pub type GetPossibleBreakpointsResponse {
   GetPossibleBreakpointsResponse(locations: List(BreakLocation))
 }
 
+/// List of the possible breakpoint locations.
 @internal
 pub fn decode__get_possible_breakpoints_response(value__: dynamic.Dynamic) {
   use locations <- result.try(dynamic.field(
@@ -540,10 +572,12 @@ pub fn decode__get_possible_breakpoints_response(value__: dynamic.Dynamic) {
 pub type GetScriptSourceResponse {
   GetScriptSourceResponse(
     script_source: String,
+    /// Script source (empty in case of Wasm bytecode).
     bytecode: option.Option(String),
   )
 }
 
+/// Wasm bytecode. (Encoded as a base64 string when passed over JSON)
 @internal
 pub fn decode__get_script_source_response(value__: dynamic.Dynamic) {
   use script_source <- result.try(dynamic.field("scriptSource", dynamic.string)(
@@ -562,6 +596,7 @@ pub type SearchInContentResponse {
   SearchInContentResponse(result: List(SearchMatch))
 }
 
+/// List of search matches.
 @internal
 pub fn decode__search_in_content_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -575,9 +610,14 @@ pub fn decode__search_in_content_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `set_breakpoint`
 pub type SetBreakpointResponse {
-  SetBreakpointResponse(breakpoint_id: BreakpointId, actual_location: Location)
+  SetBreakpointResponse(
+    breakpoint_id: BreakpointId,
+    /// Id of the created breakpoint for further reference.
+    actual_location: Location,
+  )
 }
 
+/// Location this breakpoint resolved into.
 @internal
 pub fn decode__set_breakpoint_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -601,6 +641,7 @@ pub type SetInstrumentationBreakpointResponse {
   SetInstrumentationBreakpointResponse(breakpoint_id: BreakpointId)
 }
 
+/// Id of the created breakpoint for further reference.
 @internal
 pub fn decode__set_instrumentation_breakpoint_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -616,10 +657,12 @@ pub fn decode__set_instrumentation_breakpoint_response(value__: dynamic.Dynamic)
 pub type SetBreakpointByUrlResponse {
   SetBreakpointByUrlResponse(
     breakpoint_id: BreakpointId,
+    /// Id of the created breakpoint for further reference.
     locations: List(Location),
   )
 }
 
+/// List of the locations this breakpoint resolved into upon addition.
 @internal
 pub fn decode__set_breakpoint_by_url_response(value__: dynamic.Dynamic) {
   use breakpoint_id <- result.try(dynamic.field(
@@ -645,6 +688,7 @@ pub type SetScriptSourceResponse {
   )
 }
 
+/// Exception details if any. Only present when `status` is `CompileError`.
 @internal
 pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
   use exception_details <- result.try(dynamic.optional_field(
@@ -656,6 +700,13 @@ pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
 }
 
 /// Continues execution until specific location is reached.
+/// 
+/// Parameters:  
+///  - `location` : Location to continue to.
+///  - `target_call_frames`
+/// 
+/// Returns:  
+/// 
 pub fn continue_to_location(
   callback__,
   location location: Location,
@@ -711,17 +762,40 @@ pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic)
 }
 
 /// Disables debugger for given page.
+/// 
 pub fn disable(callback__) {
   callback__("Debugger.disable", option.None)
 }
 
 /// Enables debugger for the given page. Clients should not assume that the debugging has been
 /// enabled until the result for this command is received.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+/// 
 pub fn enable(callback__) {
   callback__("Debugger.enable", option.None)
 }
 
 /// Evaluates expression on a given call frame.
+/// 
+/// Parameters:  
+///  - `call_frame_id` : Call frame identifier to evaluate on.
+///  - `expression` : Expression to evaluate.
+///  - `object_group` : String object group name to put result into (allows rapid releasing resulting object handles
+/// using `releaseObjectGroup`).
+///  - `include_command_line_api` : Specifies whether command line API should be available to the evaluated expression, defaults
+/// to false.
+///  - `silent` : In silent mode exceptions thrown during evaluation are not reported and do not pause
+/// execution. Overrides `setPauseOnException` state.
+///  - `return_by_value` : Whether the result is expected to be a JSON object that should be sent by value.
+///  - `throw_on_side_effect` : Whether to throw an exception if side effect cannot be ruled out during evaluation.
+/// 
+/// Returns:  
+///  - `result` : Object wrapper for the evaluation result.
+///  - `exception_details` : Exception details.
+/// 
 pub fn evaluate_on_call_frame(
   callback__,
   call_frame_id call_frame_id: CallFrameId,
@@ -763,6 +837,16 @@ pub fn evaluate_on_call_frame(
 
 /// Returns possible locations for breakpoint. scriptId in start and end range locations should be
 /// the same.
+/// 
+/// Parameters:  
+///  - `start` : Start of range to search possible breakpoint locations in.
+///  - `end` : End of range to search possible breakpoint locations in (excluding). When not specified, end
+/// of scripts is used as end of range.
+///  - `restrict_to_function` : Only consider locations which are in the same (non-nested) function as start.
+/// 
+/// Returns:  
+///  - `locations` : List of the possible breakpoint locations.
+/// 
 pub fn get_possible_breakpoints(
   callback__,
   start start: Location,
@@ -787,6 +871,14 @@ pub fn get_possible_breakpoints(
 }
 
 /// Returns source for the script with given id.
+/// 
+/// Parameters:  
+///  - `script_id` : Id of the script to get source for.
+/// 
+/// Returns:  
+///  - `script_source` : Script source (empty in case of Wasm bytecode).
+///  - `bytecode` : Wasm bytecode. (Encoded as a base64 string when passed over JSON)
+/// 
 pub fn get_script_source(callback__, script_id script_id: runtime.ScriptId) {
   use result__ <- result.try(callback__(
     "Debugger.getScriptSource",
@@ -800,11 +892,18 @@ pub fn get_script_source(callback__, script_id script_id: runtime.ScriptId) {
 }
 
 /// Stops on the next JavaScript statement.
+/// 
 pub fn pause(callback__) {
   callback__("Debugger.pause", option.None)
 }
 
 /// Removes JavaScript breakpoint.
+/// 
+/// Parameters:  
+///  - `breakpoint_id`
+/// 
+/// Returns:  
+/// 
 pub fn remove_breakpoint(callback__, breakpoint_id breakpoint_id: BreakpointId) {
   callback__(
     "Debugger.removeBreakpoint",
@@ -827,6 +926,12 @@ pub fn remove_breakpoint(callback__, breakpoint_id breakpoint_id: BreakpointId) 
 /// The various return values are deprecated and `callFrames` is always empty.
 /// Use the call frames from the `Debugger#paused` events instead, that fires
 /// once V8 pauses at the beginning of the restarted function.
+/// 
+/// Parameters:  
+///  - `call_frame_id` : Call frame identifier to evaluate on.
+/// 
+/// Returns:  
+/// 
 pub fn restart_frame(callback__, call_frame_id call_frame_id: CallFrameId) {
   callback__(
     "Debugger.restartFrame",
@@ -837,6 +942,16 @@ pub fn restart_frame(callback__, call_frame_id call_frame_id: CallFrameId) {
 }
 
 /// Resumes JavaScript execution.
+/// 
+/// Parameters:  
+///  - `terminate_on_resume` : Set to true to terminate execution upon resuming execution. In contrast
+/// to Runtime.terminateExecution, this will allows to execute further
+/// JavaScript (i.e. via evaluation) until execution of the paused code
+/// is actually resumed, at which point termination is triggered.
+/// If execution is currently not paused, this parameter has no effect.
+/// 
+/// Returns:  
+/// 
 pub fn resume(
   callback__,
   terminate_on_resume terminate_on_resume: option.Option(Bool),
@@ -853,6 +968,16 @@ pub fn resume(
 }
 
 /// Searches for given string in script content.
+/// 
+/// Parameters:  
+///  - `script_id` : Id of the script to search in.
+///  - `query` : String to search for.
+///  - `case_sensitive` : If true, search is case sensitive.
+///  - `is_regex` : If true, treats string parameter as regex.
+/// 
+/// Returns:  
+///  - `result` : List of search matches.
+/// 
 pub fn search_in_content(
   callback__,
   script_id script_id: runtime.ScriptId,
@@ -881,6 +1006,13 @@ pub fn search_in_content(
 }
 
 /// Enables or disables async call stacks tracking.
+/// 
+/// Parameters:  
+///  - `max_depth` : Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async
+/// call stacks (default).
+/// 
+/// Returns:  
+/// 
 pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
   callback__(
     "Debugger.setAsyncCallStackDepth",
@@ -889,6 +1021,16 @@ pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
 }
 
 /// Sets JavaScript breakpoint at a given location.
+/// 
+/// Parameters:  
+///  - `location` : Location to set breakpoint in.
+///  - `condition` : Expression to use as a breakpoint condition. When specified, debugger will only stop on the
+/// breakpoint if this expression evaluates to true.
+/// 
+/// Returns:  
+///  - `breakpoint_id` : Id of the created breakpoint for further reference.
+///  - `actual_location` : Location this breakpoint resolved into.
+/// 
 pub fn set_breakpoint(
   callback__,
   location location: Location,
@@ -909,6 +1051,13 @@ pub fn set_breakpoint(
 }
 
 /// Sets instrumentation breakpoint.
+/// 
+/// Parameters:  
+///  - `instrumentation` : Instrumentation name.
+/// 
+/// Returns:  
+///  - `breakpoint_id` : Id of the created breakpoint for further reference.
+/// 
 pub fn set_instrumentation_breakpoint(
   callback__,
   instrumentation instrumentation: SetInstrumentationBreakpointInstrumentation,
@@ -974,6 +1123,21 @@ pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.D
 /// command is issued, all existing parsed scripts will have breakpoints resolved and returned in
 /// `locations` property. Further matching script parsing will result in subsequent
 /// `breakpointResolved` events issued. This logical breakpoint will survive page reloads.
+/// 
+/// Parameters:  
+///  - `line_number` : Line number to set breakpoint at.
+///  - `url` : URL of the resources to set breakpoint on.
+///  - `url_regex` : Regex pattern for the URLs of the resources to set breakpoints on. Either `url` or
+/// `urlRegex` must be specified.
+///  - `script_hash` : Script hash of the resources to set breakpoint on.
+///  - `column_number` : Offset in the line to set breakpoint at.
+///  - `condition` : Expression to use as a breakpoint condition. When specified, debugger will only stop on the
+/// breakpoint if this expression evaluates to true.
+/// 
+/// Returns:  
+///  - `breakpoint_id` : Id of the created breakpoint for further reference.
+///  - `locations` : List of the locations this breakpoint resolved into upon addition.
+/// 
 pub fn set_breakpoint_by_url(
   callback__,
   line_number line_number: Int,
@@ -1010,6 +1174,12 @@ pub fn set_breakpoint_by_url(
 }
 
 /// Activates / deactivates all breakpoints on the page.
+/// 
+/// Parameters:  
+///  - `active` : New value for breakpoints active state.
+/// 
+/// Returns:  
+/// 
 pub fn set_breakpoints_active(callback__, active active: Bool) {
   callback__(
     "Debugger.setBreakpointsActive",
@@ -1019,6 +1189,12 @@ pub fn set_breakpoints_active(callback__, active active: Bool) {
 
 /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions,
 /// or caught exceptions, no exceptions. Initial pause on exceptions state is `none`.
+/// 
+/// Parameters:  
+///  - `state` : Pause on exceptions mode.
+/// 
+/// Returns:  
+/// 
 pub fn set_pause_on_exceptions(
   callback__,
   state state: SetPauseOnExceptionsState,
@@ -1077,6 +1253,16 @@ pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
 /// that is the only activation of that function on the stack. In this case
 /// the live edit will be successful and a `Debugger.restartFrame` for the
 /// top-most function is automatically triggered.
+/// 
+/// Parameters:  
+///  - `script_id` : Id of the script to edit.
+///  - `script_source` : New content of the script.
+///  - `dry_run` : If true the change will not actually be applied. Dry run may be used to get result
+/// description without actually modifying the code.
+/// 
+/// Returns:  
+///  - `exception_details` : Exception details if any. Only present when `status` is `CompileError`.
+/// 
 pub fn set_script_source(
   callback__,
   script_id script_id: runtime.ScriptId,
@@ -1101,6 +1287,12 @@ pub fn set_script_source(
 }
 
 /// Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc).
+/// 
+/// Parameters:  
+///  - `skip` : New value for skip pauses state.
+/// 
+/// Returns:  
+/// 
 pub fn set_skip_all_pauses(callback__, skip skip: Bool) {
   callback__(
     "Debugger.setSkipAllPauses",
@@ -1110,6 +1302,16 @@ pub fn set_skip_all_pauses(callback__, skip skip: Bool) {
 
 /// Changes value of variable in a callframe. Object-based scopes are not supported and must be
 /// mutated manually.
+/// 
+/// Parameters:  
+///  - `scope_number` : 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch'
+/// scope types are allowed. Other scopes could be manipulated manually.
+///  - `variable_name` : Variable name.
+///  - `new_value` : New variable value.
+///  - `call_frame_id` : Id of callframe that holds variable.
+/// 
+/// Returns:  
+/// 
 pub fn set_variable_value(
   callback__,
   scope_number scope_number: Int,
@@ -1131,16 +1333,27 @@ pub fn set_variable_value(
 }
 
 /// Steps into the function call.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+/// 
 pub fn step_into(callback__) {
   callback__("Debugger.stepInto", option.None)
 }
 
 /// Steps out of the function call.
+/// 
 pub fn step_out(callback__) {
   callback__("Debugger.stepOut", option.None)
 }
 
 /// Steps over the statement.
+/// 
+/// Parameters:  
+/// 
+/// Returns:  
+/// 
 pub fn step_over(callback__) {
   callback__("Debugger.stepOver", option.None)
 }

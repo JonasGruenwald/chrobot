@@ -41,19 +41,28 @@ pub type LaunchError {
   FailedToStart
   /// This is used by the launch functions of the root `chrobot` module
   UnresponsiveAfterStart
-  ProtocolVersionMismatch(supported_version: String, got_version: String)
+  ProtocolVersionMismatch(
+    /// Version supported by the protocol
+    supported_version: String,
+    /// Version the browser reported
+    got_version: String,
+  )
 }
 
 /// Errors that may occur when a protocol request is made
 pub type RequestError {
   PortError
-  // These errors are for OTP actor failures
+  /// OTP actor timeout
   ChromeAgentTimeout
+
+  /// OTP actor down
   ChromeAgentDown
-  // The ProtocolError variant is used by `/protocol` domains 
-  // to return a homogeneous error type for all requests.
+
+  /// The ProtocolError variant is used by `/protocol` domains 
+  /// to return a homogeneous error type for all requests.
   ProtocolError
-  // This is an error response from the browser itself
+
+  /// This is an error response from the browser itself
   BrowserError(code: Int, message: String, data: String)
 }
 

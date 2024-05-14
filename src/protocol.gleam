@@ -60,9 +60,9 @@
 //// 
 //// ## Important Notes
 //// 
-//// It's best never to work with Node IDs from the DOM domain for automation, an explanation of why can be found here:  
-//// https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749
-//// 
+//// It's best never to work with Node IDs from the DOM domain for automation, 
+//// [an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
+////   
 //// Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
 //// 
 

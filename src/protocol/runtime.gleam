@@ -46,10 +46,14 @@ pub type SerializationOptions {
   SerializationOptions(
     serialization: SerializationOptionsSerialization,
     max_depth: option.Option(Int),
+    /// Deep serialization depth. Default is full depth. Respected only in `deep` serialization mode.
     additional_parameters: option.Option(dict.Dict(String, String)),
   )
 }
 
+/// Embedder-specific parameters. For example if connected to V8 in Chrome these control DOM
+/// serialization via `maxNodeDepth: integer` and `includeShadowTree: "none" | "open" | "all"`.
+/// Values can be only of type string or integer.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `serialization` of `SerializationOptions`
 pub type SerializationOptionsSerialization {
@@ -140,6 +144,9 @@ pub type DeepSerializedValue {
   )
 }
 
+/// Set if value reference met more then once during serialization. In such
+/// case, value is provided only to one of the serialized values. Unique
+/// per value in the scope of one CDP call.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DeepSerializedValue`
 pub type DeepSerializedValueType {
@@ -328,15 +335,25 @@ pub fn decode__unserializable_value(value__: dynamic.Dynamic) {
 pub type RemoteObject {
   RemoteObject(
     type_: RemoteObjectType,
+    /// Object type.
     subtype: option.Option(RemoteObjectSubtype),
+    /// Object subtype hint. Specified for `object` type values only.
+    /// NOTE: If you change anything here, make sure to also update
+    /// `subtype` in `ObjectPreview` and `PropertyPreview` below.
     class_name: option.Option(String),
+    /// Object class (constructor) name. Specified for `object` type values only.
     value: option.Option(dynamic.Dynamic),
+    /// Remote object value in case of primitive values or JSON values (if it was requested).
     unserializable_value: option.Option(UnserializableValue),
+    /// Primitive value which can not be JSON-stringified does not have `value`, but gets this
+    /// property.
     description: option.Option(String),
+    /// String representation of the object.
     object_id: option.Option(RemoteObjectId),
   )
 }
 
+/// Unique object identifier (for non-primitive values).
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `RemoteObject`
 pub type RemoteObjectType {
@@ -545,18 +562,32 @@ pub fn decode__remote_object(value__: dynamic.Dynamic) {
 pub type PropertyDescriptor {
   PropertyDescriptor(
     name: String,
+    /// Property name or symbol description.
     value: option.Option(RemoteObject),
+    /// The value associated with the property.
     writable: option.Option(Bool),
+    /// True if the value associated with the property may be changed (data descriptors only).
     get: option.Option(RemoteObject),
+    /// A function which serves as a getter for the property, or `undefined` if there is no getter
+    /// (accessor descriptors only).
     set: option.Option(RemoteObject),
+    /// A function which serves as a setter for the property, or `undefined` if there is no setter
+    /// (accessor descriptors only).
     configurable: Bool,
+    /// True if the type of this property descriptor may be changed and if the property may be
+    /// deleted from the corresponding object.
     enumerable: Bool,
+    /// True if this property shows up during enumeration of the properties on the corresponding
+    /// object.
     was_thrown: option.Option(Bool),
+    /// True if the result was thrown during the evaluation.
     is_own: option.Option(Bool),
+    /// True if the property is owned for the object.
     symbol: option.Option(RemoteObject),
   )
 }
 
+/// Property symbol object, if the property is of the `symbol` type.
 @internal
 pub fn encode__property_descriptor(value__: PropertyDescriptor) {
   json.object(
@@ -637,9 +668,14 @@ pub fn decode__property_descriptor(value__: dynamic.Dynamic) {
 
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor {
-  InternalPropertyDescriptor(name: String, value: option.Option(RemoteObject))
+  InternalPropertyDescriptor(
+    name: String,
+    /// Conventional property name.
+    value: option.Option(RemoteObject),
+  )
 }
 
+/// The value associated with the property.
 @internal
 pub fn encode__internal_property_descriptor(value__: InternalPropertyDescriptor) {
   json.object(
@@ -665,11 +701,14 @@ pub fn decode__internal_property_descriptor(value__: dynamic.Dynamic) {
 pub type CallArgument {
   CallArgument(
     value: option.Option(dynamic.Dynamic),
+    /// Primitive value or serializable javascript object.
     unserializable_value: option.Option(UnserializableValue),
+    /// Primitive value which can not be JSON-stringified.
     object_id: option.Option(RemoteObjectId),
   )
 }
 
+/// Remote object handle.
 @internal
 pub fn encode__call_argument(value__: CallArgument) {
   json.object(
@@ -733,12 +772,17 @@ pub fn decode__execution_context_id(value__: dynamic.Dynamic) {
 pub type ExecutionContextDescription {
   ExecutionContextDescription(
     id: ExecutionContextId,
+    /// Unique id of the execution context. It can be used to specify in which execution context
+    /// script evaluation should be performed.
     origin: String,
+    /// Execution context origin.
     name: String,
+    /// Human readable name describing given context.
     aux_data: option.Option(dict.Dict(String, String)),
   )
 }
 
+/// Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
 @internal
 pub fn encode__execution_context_description(value__: ExecutionContextDescription) {
   json.object(
@@ -783,17 +827,26 @@ pub fn decode__execution_context_description(value__: dynamic.Dynamic) {
 pub type ExceptionDetails {
   ExceptionDetails(
     exception_id: Int,
+    /// Exception id.
     text: String,
+    /// Exception text, which should be used together with exception object when available.
     line_number: Int,
+    /// Line number of the exception location (0-based).
     column_number: Int,
+    /// Column number of the exception location (0-based).
     script_id: option.Option(ScriptId),
+    /// Script ID of the exception location.
     url: option.Option(String),
+    /// URL of the exception location, to be used when the script was not reported.
     stack_trace: option.Option(StackTrace),
+    /// JavaScript stack trace if available.
     exception: option.Option(RemoteObject),
+    /// Exception object if available.
     execution_context_id: option.Option(ExecutionContextId),
   )
 }
 
+/// Identifier of the context where exception happened.
 @internal
 pub fn encode__exception_details(value__: ExceptionDetails) {
   json.object(
@@ -904,13 +957,18 @@ pub fn decode__time_delta(value__: dynamic.Dynamic) {
 pub type CallFrame {
   CallFrame(
     function_name: String,
+    /// JavaScript function name.
     script_id: ScriptId,
+    /// JavaScript script id.
     url: String,
+    /// JavaScript script name or url.
     line_number: Int,
+    /// JavaScript script line number (0-based).
     column_number: Int,
   )
 }
 
+/// JavaScript script column number (0-based).
 @internal
 pub fn encode__call_frame(value__: CallFrame) {
   json.object([
@@ -951,11 +1009,15 @@ pub fn decode__call_frame(value__: dynamic.Dynamic) {
 pub type StackTrace {
   StackTrace(
     description: option.Option(String),
+    /// String label of this stack trace. For async traces this may be a name of the function that
+    /// initiated the async call.
     call_frames: List(CallFrame),
+    /// JavaScript function name.
     parent: option.Option(StackTrace),
   )
 }
 
+/// Asynchronous JavaScript stack trace that preceded this stack, if available.
 @internal
 pub fn encode__stack_trace(value__: StackTrace) {
   json.object(
@@ -995,10 +1057,12 @@ pub fn decode__stack_trace(value__: dynamic.Dynamic) {
 pub type AwaitPromiseResponse {
   AwaitPromiseResponse(
     result: RemoteObject,
+    /// Promise result. Will contain rejected value if promise was rejected.
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details if stack strace is available.
 @internal
 pub fn decode__await_promise_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1017,10 +1081,12 @@ pub fn decode__await_promise_response(value__: dynamic.Dynamic) {
 pub type CallFunctionOnResponse {
   CallFunctionOnResponse(
     result: RemoteObject,
+    /// Call result.
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__call_function_on_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1042,10 +1108,12 @@ pub fn decode__call_function_on_response(value__: dynamic.Dynamic) {
 pub type CompileScriptResponse {
   CompileScriptResponse(
     script_id: option.Option(ScriptId),
+    /// Id of the script.
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__compile_script_response(value__: dynamic.Dynamic) {
   use script_id <- result.try(dynamic.optional_field(
@@ -1068,10 +1136,12 @@ pub fn decode__compile_script_response(value__: dynamic.Dynamic) {
 pub type EvaluateResponse {
   EvaluateResponse(
     result: RemoteObject,
+    /// Evaluation result.
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__evaluate_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1090,11 +1160,14 @@ pub fn decode__evaluate_response(value__: dynamic.Dynamic) {
 pub type GetPropertiesResponse {
   GetPropertiesResponse(
     result: List(PropertyDescriptor),
+    /// Object properties.
     internal_properties: option.Option(List(InternalPropertyDescriptor)),
+    /// Internal object properties (only of the element itself).
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__get_properties_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -1138,6 +1211,7 @@ pub type QueryObjectsResponse {
   QueryObjectsResponse(objects: RemoteObject)
 }
 
+/// Array with objects.
 @internal
 pub fn decode__query_objects_response(value__: dynamic.Dynamic) {
   use objects <- result.try(dynamic.field("objects", decode__remote_object)(
@@ -1152,10 +1226,12 @@ pub fn decode__query_objects_response(value__: dynamic.Dynamic) {
 pub type RunScriptResponse {
   RunScriptResponse(
     result: RemoteObject,
+    /// Run result.
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
+/// Exception details.
 @internal
 pub fn decode__run_script_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1170,6 +1246,16 @@ pub fn decode__run_script_response(value__: dynamic.Dynamic) {
 }
 
 /// Add handler to promise with given promise object id.
+/// 
+/// Parameters:  
+///  - `promise_object_id` : Identifier of the promise.
+///  - `return_by_value` : Whether the result is expected to be a JSON object that should be sent by value.
+///  - `generate_preview` : Whether preview should be generated for the result.
+/// 
+/// Returns:  
+///  - `result` : Promise result. Will contain rejected value if promise was rejected.
+///  - `exception_details` : Exception details if stack strace is available.
+/// 
 pub fn await_promise(
   callback__,
   promise_object_id promise_object_id: RemoteObjectId,
@@ -1195,6 +1281,29 @@ pub fn await_promise(
 
 /// Calls function with given declaration on the given object. Object group of the result is
 /// inherited from the target object.
+/// 
+/// Parameters:  
+///  - `function_declaration` : Declaration of the function to call.
+///  - `object_id` : Identifier of the object to call function on. Either objectId or executionContextId should
+/// be specified.
+///  - `arguments` : Call arguments. All call arguments must belong to the same JavaScript world as the target
+/// object.
+///  - `silent` : In silent mode exceptions thrown during evaluation are not reported and do not pause
+/// execution. Overrides `setPauseOnException` state.
+///  - `return_by_value` : Whether the result is expected to be a JSON object which should be sent by value.
+/// Can be overriden by `serializationOptions`.
+///  - `user_gesture` : Whether execution should be treated as initiated by user in the UI.
+///  - `await_promise` : Whether execution should `await` for resulting value and return once awaited promise is
+/// resolved.
+///  - `execution_context_id` : Specifies execution context which global object will be used to call function on. Either
+/// executionContextId or objectId should be specified.
+///  - `object_group` : Symbolic group name that can be used to release multiple objects. If objectGroup is not
+/// specified and objectId is, objectGroup will be inherited from object.
+/// 
+/// Returns:  
+///  - `result` : Call result.
+///  - `exception_details` : Exception details.
+/// 
 pub fn call_function_on(
   callback__,
   function_declaration function_declaration: String,
@@ -1243,6 +1352,18 @@ pub fn call_function_on(
 }
 
 /// Compiles expression.
+/// 
+/// Parameters:  
+///  - `expression` : Expression to compile.
+///  - `source_url` : Source url to be set for the script.
+///  - `persist_script` : Specifies whether the compiled script should be persisted.
+///  - `execution_context_id` : Specifies in which execution context to perform script run. If the parameter is omitted the
+/// evaluation will be performed in the context of the inspected page.
+/// 
+/// Returns:  
+///  - `script_id` : Id of the script.
+///  - `exception_details` : Exception details.
+/// 
 pub fn compile_script(
   callback__,
   expression expression: String,
@@ -1269,11 +1390,13 @@ pub fn compile_script(
 }
 
 /// Disables reporting of execution contexts creation.
+/// 
 pub fn disable(callback__) {
   callback__("Runtime.disable", option.None)
 }
 
 /// Discards collected exceptions and console API calls.
+/// 
 pub fn discard_console_entries(callback__) {
   callback__("Runtime.discardConsoleEntries", option.None)
 }
@@ -1281,11 +1404,33 @@ pub fn discard_console_entries(callback__) {
 /// Enables reporting of execution contexts creation by means of `executionContextCreated` event.
 /// When the reporting gets enabled the event will be sent immediately for each existing execution
 /// context.
+/// 
 pub fn enable(callback__) {
   callback__("Runtime.enable", option.None)
 }
 
 /// Evaluates expression on global object.
+/// 
+/// Parameters:  
+///  - `expression` : Expression to evaluate.
+///  - `object_group` : Symbolic group name that can be used to release multiple objects.
+///  - `include_command_line_api` : Determines whether Command Line API should be available during the evaluation.
+///  - `silent` : In silent mode exceptions thrown during evaluation are not reported and do not pause
+/// execution. Overrides `setPauseOnException` state.
+///  - `context_id` : Specifies in which execution context to perform evaluation. If the parameter is omitted the
+/// evaluation will be performed in the context of the inspected page.
+/// This is mutually exclusive with `uniqueContextId`, which offers an
+/// alternative way to identify the execution context that is more reliable
+/// in a multi-process environment.
+///  - `return_by_value` : Whether the result is expected to be a JSON object that should be sent by value.
+///  - `user_gesture` : Whether execution should be treated as initiated by user in the UI.
+///  - `await_promise` : Whether execution should `await` for resulting value and return once awaited promise is
+/// resolved.
+/// 
+/// Returns:  
+///  - `result` : Evaluation result.
+///  - `exception_details` : Exception details.
+/// 
 pub fn evaluate(
   callback__,
   expression expression: String,
@@ -1331,6 +1476,17 @@ pub fn evaluate(
 
 /// Returns properties of a given object. Object group of the result is inherited from the target
 /// object.
+/// 
+/// Parameters:  
+///  - `object_id` : Identifier of the object to return properties for.
+///  - `own_properties` : If true, returns properties belonging only to the element itself, not to its prototype
+/// chain.
+/// 
+/// Returns:  
+///  - `result` : Object properties.
+///  - `internal_properties` : Internal object properties (only of the element itself).
+///  - `exception_details` : Exception details.
+/// 
 pub fn get_properties(
   callback__,
   object_id object_id: RemoteObjectId,
@@ -1351,6 +1507,13 @@ pub fn get_properties(
 }
 
 /// Returns all let, const and class variables from global scope.
+/// 
+/// Parameters:  
+///  - `execution_context_id` : Specifies in which execution context to lookup global scope variables.
+/// 
+/// Returns:  
+///  - `names`
+/// 
 pub fn global_lexical_scope_names(
   callback__,
   execution_context_id execution_context_id: option.Option(ExecutionContextId),
@@ -1370,6 +1533,14 @@ pub fn global_lexical_scope_names(
 }
 
 /// This generated protocol command has no description
+/// 
+/// Parameters:  
+///  - `prototype_object_id` : Identifier of the prototype to return objects for.
+///  - `object_group` : Symbolic group name that can be used to release the results.
+/// 
+/// Returns:  
+///  - `objects` : Array with objects.
+/// 
 pub fn query_objects(
   callback__,
   prototype_object_id prototype_object_id: RemoteObjectId,
@@ -1390,6 +1561,12 @@ pub fn query_objects(
 }
 
 /// Releases remote object with given id.
+/// 
+/// Parameters:  
+///  - `object_id` : Identifier of the object to release.
+/// 
+/// Returns:  
+/// 
 pub fn release_object(callback__, object_id object_id: RemoteObjectId) {
   callback__(
     "Runtime.releaseObject",
@@ -1400,6 +1577,12 @@ pub fn release_object(callback__, object_id object_id: RemoteObjectId) {
 }
 
 /// Releases all remote objects that belong to a given group.
+/// 
+/// Parameters:  
+///  - `object_group` : Symbolic object group name.
+/// 
+/// Returns:  
+/// 
 pub fn release_object_group(callback__, object_group object_group: String) {
   callback__(
     "Runtime.releaseObjectGroup",
@@ -1408,11 +1591,30 @@ pub fn release_object_group(callback__, object_group object_group: String) {
 }
 
 /// Tells inspected instance to run if it was waiting for debugger to attach.
+/// 
 pub fn run_if_waiting_for_debugger(callback__) {
   callback__("Runtime.runIfWaitingForDebugger", option.None)
 }
 
 /// Runs script with given id in a given context.
+/// 
+/// Parameters:  
+///  - `script_id` : Id of the script to run.
+///  - `execution_context_id` : Specifies in which execution context to perform script run. If the parameter is omitted the
+/// evaluation will be performed in the context of the inspected page.
+///  - `object_group` : Symbolic group name that can be used to release multiple objects.
+///  - `silent` : In silent mode exceptions thrown during evaluation are not reported and do not pause
+/// execution. Overrides `setPauseOnException` state.
+///  - `include_command_line_api` : Determines whether Command Line API should be available during the evaluation.
+///  - `return_by_value` : Whether the result is expected to be a JSON object which should be sent by value.
+///  - `generate_preview` : Whether preview should be generated for the result.
+///  - `await_promise` : Whether execution should `await` for resulting value and return once awaited promise is
+/// resolved.
+/// 
+/// Returns:  
+///  - `result` : Run result.
+///  - `exception_details` : Exception details.
+/// 
 pub fn run_script(
   callback__,
   script_id script_id: ScriptId,
@@ -1457,6 +1659,13 @@ pub fn run_script(
 }
 
 /// Enables or disables async call stacks tracking.
+/// 
+/// Parameters:  
+///  - `max_depth` : Maximum depth of async call stacks. Setting to `0` will effectively disable collecting async
+/// call stacks (default).
+/// 
+/// Returns:  
+/// 
 pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
   callback__(
     "Runtime.setAsyncCallStackDepth",
@@ -1470,6 +1679,17 @@ pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
 /// Binding function takes exactly one argument, this argument should be string,
 /// in case of any other input, function throws an exception.
 /// Each binding function call produces Runtime.bindingCalled notification.
+/// 
+/// Parameters:  
+///  - `name`
+///  - `execution_context_name` : If specified, the binding is exposed to the executionContext with
+/// matching name, even for contexts created after the binding is added.
+/// See also `ExecutionContext.name` and `worldName` parameter to
+/// `Page.addScriptToEvaluateOnNewDocument`.
+/// This parameter is mutually exclusive with `executionContextId`.
+/// 
+/// Returns:  
+/// 
 pub fn add_binding(
   callback__,
   name name: String,
@@ -1488,6 +1708,12 @@ pub fn add_binding(
 
 /// This method does not remove binding function from global object but
 /// unsubscribes current runtime agent from Runtime.bindingCalled notifications.
+/// 
+/// Parameters:  
+///  - `name`
+/// 
+/// Returns:  
+/// 
 pub fn remove_binding(callback__, name name: String) {
   callback__(
     "Runtime.removeBinding",

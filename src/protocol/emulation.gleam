@@ -19,9 +19,14 @@ import protocol/dom
 
 /// Screen orientation.
 pub type ScreenOrientation {
-  ScreenOrientation(type_: ScreenOrientationType, angle: Int)
+  ScreenOrientation(
+    type_: ScreenOrientationType,
+    /// Orientation type.
+    angle: Int,
+  )
 }
 
+/// Orientation angle.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `ScreenOrientation`
 pub type ScreenOrientationType {
@@ -82,11 +87,17 @@ pub fn decode__screen_orientation(value__: dynamic.Dynamic) {
 pub type DisplayFeature {
   DisplayFeature(
     orientation: DisplayFeatureOrientation,
+    /// Orientation of a display feature in relation to screen
     offset: Int,
+    /// The offset from the screen origin in either the x (for vertical
+    /// orientation) or y (for horizontal orientation) direction.
     mask_length: Int,
   )
 }
 
+/// A display feature may mask content such that it is not physically
+/// displayed - this length along with the offset describes this area.
+/// A display feature that only splits content will have a 0 mask_length.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `orientation` of `DisplayFeature`
 pub type DisplayFeatureOrientation {
@@ -151,6 +162,7 @@ pub type DevicePosture {
   DevicePosture(type_: DevicePostureType)
 }
 
+/// Current posture of the device
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DevicePosture`
 pub type DevicePostureType {
@@ -219,16 +231,24 @@ pub fn decode__media_feature(value__: dynamic.Dynamic) {
 }
 
 /// Clears the overridden device metrics.
+/// 
 pub fn clear_device_metrics_override(callback__) {
   callback__("Emulation.clearDeviceMetricsOverride", option.None)
 }
 
 /// Clears the overridden Geolocation Position and Error.
+/// 
 pub fn clear_geolocation_override(callback__) {
   callback__("Emulation.clearGeolocationOverride", option.None)
 }
 
 /// Enables CPU throttling to emulate slow CPUs.
+/// 
+/// Parameters:  
+///  - `rate` : Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
+/// 
+/// Returns:  
+/// 
 pub fn set_cpu_throttling_rate(callback__, rate rate: Float) {
   callback__(
     "Emulation.setCPUThrottlingRate",
@@ -238,6 +258,13 @@ pub fn set_cpu_throttling_rate(callback__, rate rate: Float) {
 
 /// Sets or clears an override of the default background color of the frame. This override is used
 /// if the content does not specify one.
+/// 
+/// Parameters:  
+///  - `color` : RGBA of the default background color. If not specified, any existing override will be
+/// cleared.
+/// 
+/// Returns:  
+/// 
 pub fn set_default_background_color_override(
   callback__,
   color color: option.Option(dom.RGBA),
@@ -256,6 +283,17 @@ pub fn set_default_background_color_override(
 /// Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
 /// window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
 /// query results).
+/// 
+/// Parameters:  
+///  - `width` : Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+///  - `height` : Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+///  - `device_scale_factor` : Overriding device scale factor value. 0 disables the override.
+///  - `mobile` : Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text
+/// autosizing and more.
+///  - `screen_orientation` : Screen orientation override.
+/// 
+/// Returns:  
+/// 
 pub fn set_device_metrics_override(
   callback__,
   width width: Int,
@@ -281,6 +319,13 @@ pub fn set_device_metrics_override(
 }
 
 /// Emulates the given media type or media feature for CSS media queries.
+/// 
+/// Parameters:  
+///  - `media` : Media type to emulate. Empty string disables the override.
+///  - `features` : Media features to emulate.
+/// 
+/// Returns:  
+/// 
 pub fn set_emulated_media(
   callback__,
   media media: option.Option(String),
@@ -301,6 +346,13 @@ pub fn set_emulated_media(
 }
 
 /// Emulates the given vision deficiency.
+/// 
+/// Parameters:  
+///  - `type_` : Vision deficiency to emulate. Order: best-effort emulations come first, followed by any
+/// physiologically accurate emulations for medically recognized color vision deficiencies.
+/// 
+/// Returns:  
+/// 
 pub fn set_emulated_vision_deficiency(
   callback__,
   type_ type_: SetEmulatedVisionDeficiencyType,
@@ -365,6 +417,14 @@ pub fn decode__set_emulated_vision_deficiency_type(value__: dynamic.Dynamic) {
 
 /// Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
 /// unavailable.
+/// 
+/// Parameters:  
+///  - `latitude` : Mock latitude
+///  - `longitude` : Mock longitude
+///  - `accuracy` : Mock accuracy
+/// 
+/// Returns:  
+/// 
 pub fn set_geolocation_override(
   callback__,
   latitude latitude: option.Option(Float),
@@ -389,6 +449,13 @@ pub fn set_geolocation_override(
 }
 
 /// Overrides the Idle state.
+/// 
+/// Parameters:  
+///  - `is_user_active` : Mock isUserActive
+///  - `is_screen_unlocked` : Mock isScreenUnlocked
+/// 
+/// Returns:  
+/// 
 pub fn set_idle_override(
   callback__,
   is_user_active is_user_active: Bool,
@@ -406,11 +473,18 @@ pub fn set_idle_override(
 }
 
 /// Clears Idle state overrides.
+/// 
 pub fn clear_idle_override(callback__) {
   callback__("Emulation.clearIdleOverride", option.None)
 }
 
 /// Switches script execution in the page.
+/// 
+/// Parameters:  
+///  - `value` : Whether script execution should be disabled in the page.
+/// 
+/// Returns:  
+/// 
 pub fn set_script_execution_disabled(callback__, value value: Bool) {
   callback__(
     "Emulation.setScriptExecutionDisabled",
@@ -419,6 +493,13 @@ pub fn set_script_execution_disabled(callback__, value value: Bool) {
 }
 
 /// Enables touch on platforms which do not support them.
+/// 
+/// Parameters:  
+///  - `enabled` : Whether the touch event emulation should be enabled.
+///  - `max_touch_points` : Maximum touch points supported. Defaults to one.
+/// 
+/// Returns:  
+/// 
 pub fn set_touch_emulation_enabled(
   callback__,
   enabled enabled: Bool,
@@ -436,6 +517,14 @@ pub fn set_touch_emulation_enabled(
 }
 
 /// Overrides default host system timezone with the specified one.
+/// 
+/// Parameters:  
+///  - `timezone_id` : The timezone identifier. List of supported timezones:
+/// https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt
+/// If empty, disables the override and restores default host system timezone.
+/// 
+/// Returns:  
+/// 
 pub fn set_timezone_override(callback__, timezone_id timezone_id: String) {
   callback__(
     "Emulation.setTimezoneOverride",
@@ -445,6 +534,14 @@ pub fn set_timezone_override(callback__, timezone_id timezone_id: String) {
 
 /// Allows overriding user agent with the given string.
 /// `userAgentMetadata` must be set for Client Hint headers to be sent.
+/// 
+/// Parameters:  
+///  - `user_agent` : User agent to use.
+///  - `accept_language` : Browser language to emulate.
+///  - `platform` : The platform navigator.platform should return.
+/// 
+/// Returns:  
+/// 
 pub fn set_user_agent_override(
   callback__,
   user_agent user_agent: String,

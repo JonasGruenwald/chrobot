@@ -11,15 +11,6 @@
 //// 
 //// The rest should hopefully be self-evident from the documentation of this module's functions.
 //// 
-//// A brief explanation of the abstractions in this module, in case you need to make raw protocol calls:  
-//// In CDP the way to interact with websites is by creating a target and attaching to it, which spawns
-//// a session with a `sessionId`. It's only possible to interact with domains like the dom domain,
-//// if you pass this `sessionId` with your protocol call.  
-//// Confusingly, if you forget to provide a `sessionId` to a method like `DOM.getDocument`, the error response 
-//// will tell you that no such method exists - it does though, you just need to provide a `sessionId` when calling it.
-//// When you call `open` in this module, the steps of creating a target and session are taken for you, 
-//// and stored in the returned `Page` type along with the browser subject.
-//// When you make raw protocol calls, be sure to provide a `sessionId`!
 
 import chrome
 import gleam/erlang/process.{type Subject}

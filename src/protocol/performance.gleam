@@ -19,9 +19,14 @@ import gleam/result
 
 /// Run-time execution metric.
 pub type Metric {
-  Metric(name: String, value: Float)
+  Metric(
+    name: String,
+    /// Metric name.
+    value: Float,
+  )
 }
 
+/// Metric value.
 @internal
 pub fn encode__metric(value__: Metric) {
   json.object([
@@ -44,6 +49,7 @@ pub type GetMetricsResponse {
   GetMetricsResponse(metrics: List(Metric))
 }
 
+/// Current values for run-time metrics.
 @internal
 pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
   use metrics <- result.try(dynamic.field(
@@ -55,11 +61,18 @@ pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
 }
 
 /// Disable collecting and reporting metrics.
+/// 
 pub fn disable(callback__) {
   callback__("Performance.disable", option.None)
 }
 
 /// Enable collecting and reporting metrics.
+/// 
+/// Parameters:  
+///  - `time_domain` : Time domain to use for collecting and reporting duration metrics.
+/// 
+/// Returns:  
+/// 
 pub fn enable(
   callback__,
   time_domain time_domain: option.Option(EnableTimeDomain),
@@ -109,6 +122,8 @@ pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
 }
 
 /// Retrieve current values of run-time metrics.
+///  - `metrics` : Current values for run-time metrics.
+/// 
 pub fn get_metrics(callback__) {
   use result__ <- result.try(callback__("Performance.getMetrics", option.None))
 

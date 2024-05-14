@@ -22,19 +22,29 @@ import protocol/runtime
 pub type LogEntry {
   LogEntry(
     source: LogEntrySource,
+    /// Log entry source.
     level: LogEntryLevel,
+    /// Log entry severity.
     text: String,
+    /// Logged text.
     category: option.Option(LogEntryCategory),
     timestamp: runtime.Timestamp,
+    /// Timestamp when this entry was added.
     url: option.Option(String),
+    /// URL of the resource if known.
     line_number: option.Option(Int),
+    /// Line number in the resource.
     stack_trace: option.Option(runtime.StackTrace),
+    /// JavaScript stack trace.
     network_request_id: option.Option(network.RequestId),
+    /// Identifier of the network request associated with this entry.
     worker_id: option.Option(String),
+    /// Identifier of the worker associated with this entry.
     args: option.Option(List(runtime.RemoteObject)),
   )
 }
 
+/// Call arguments.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `source` of `LogEntry`
 pub type LogEntrySource {
@@ -258,9 +268,14 @@ pub fn decode__log_entry(value__: dynamic.Dynamic) {
 
 /// Violation configuration setting.
 pub type ViolationSetting {
-  ViolationSetting(name: ViolationSettingName, threshold: Float)
+  ViolationSetting(
+    name: ViolationSettingName,
+    /// Violation type.
+    threshold: Float,
+  )
 }
 
+/// Time threshold to trigger upon.
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `name` of `ViolationSetting`
 pub type ViolationSettingName {
@@ -328,22 +343,31 @@ pub fn decode__violation_setting(value__: dynamic.Dynamic) {
 }
 
 /// Clears the log.
+/// 
 pub fn clear(callback__) {
   callback__("Log.clear", option.None)
 }
 
 /// Disables log domain, prevents further log entries from being reported to the client.
+/// 
 pub fn disable(callback__) {
   callback__("Log.disable", option.None)
 }
 
 /// Enables log domain, sends the entries collected so far to the client by means of the
 /// `entryAdded` notification.
+/// 
 pub fn enable(callback__) {
   callback__("Log.enable", option.None)
 }
 
 /// start violation reporting.
+/// 
+/// Parameters:  
+///  - `config` : Configuration for violations.
+/// 
+/// Returns:  
+/// 
 pub fn start_violations_report(
   callback__,
   config config: List(ViolationSetting),
@@ -359,6 +383,7 @@ pub fn start_violations_report(
 }
 
 /// Stop violation reporting.
+/// 
 pub fn stop_violations_report(callback__) {
   callback__("Log.stopViolationsReport", option.None)
 }
