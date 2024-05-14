@@ -4,6 +4,7 @@ import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option
+import gleam/string_builder as sb
 import gleeunit/should
 import utils
 
@@ -463,4 +464,43 @@ pub fn handle_protocol_error_2_test() {
   }
 
   should.be_ok(chrome.quit(browser_subject))
+}
+
+pub fn process_port_message_test() {
+  // Simplest possible message
+  let message = "a\u{0000}"
+  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+
+  chunks
+  |> should.equal(["a"])
+  sb.is_empty(buffer)
+  |> should.equal(True)
+
+  // Several packets in one message
+  let message = "a\u{0000}b\u{0000}c\u{0000}"
+  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+
+  chunks
+  |> should.equal(["a", "b", "c"])
+  sb.is_empty(buffer)
+  |> should.equal(True)
+
+  // Buffering messages
+  let message = "some message\u{0000}some unfinished"
+  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+  chunks
+  |> should.equal(["some message"])
+  sb.is_empty(buffer)
+  |> should.equal(False)
+  sb.to_string(buffer)
+  |> should.equal("some unfinished")
+
+  let second_message = " message\u{0000}:)\u{0000}"
+  let #(chunks, buffer) =
+    chrome.process_port_message(second_message, [], buffer)
+
+  chunks
+  |> should.equal(["some unfinished message", ":)"])
+  sb.is_empty(buffer)
+  |> should.equal(True)
 }

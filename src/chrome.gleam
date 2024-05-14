@@ -17,7 +17,6 @@
 // This is rare but can be the case for large data transfers
 // we need to implement a buffer in the browser state!
 
-
 import chrobot/internal/utils
 import filepath as path
 import gleam/dynamic as d
@@ -32,6 +31,7 @@ import gleam/otp/actor
 import gleam/otp/port.{type Port}
 import gleam/result
 import gleam/string
+import gleam/string_builder as sb
 import simplifile as file
 
 const default_message_timeout: Int = 5000
@@ -343,7 +343,7 @@ fn create_init_fn(cfg: BrowserConfig) {
         let instance = BrowserInstance(port)
         log(instance, "Started")
         actor.Ready(
-          BrowserState(instance, 0, [], [], None),
+          BrowserState(instance, 0, [], [], sb.new(), None),
           process.new_selector()
             |> process.selecting_record2(port, map_port_message),
         )
@@ -389,12 +389,32 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
   }
 }
 
+/// Processes an input string and returns a list of complete packets
+/// as well as the updated buffer containing overflow data
+@internal
+pub fn process_port_message(input: String, chunks: List(String), buffer: sb.StringBuilder) -> #(
+  List(String),
+  sb.StringBuilder,
+) {
+  case string.pop_grapheme(input) {
+    Ok(#("\u{0000}", rest)) -> {
+      // Null byte reached -> the buffer is a complete package, but there is more!
+      process_port_message(rest, [sb.to_string(buffer), ..chunks], sb.new())
+    }
+    Ok(#(current, rest)) -> {
+      process_port_message(rest, chunks, sb.append(buffer, current))
+    }
+    Error(Nil) -> #(list.reverse(chunks), buffer)
+  }
+}
+
 type BrowserState {
   BrowserState(
     instance: BrowserInstance,
     next_id: Int,
     unanswered_requests: List(PendingRequest),
     event_listeners: List(#(String, Subject(d.Dynamic))),
+    message_buffer: sb.StringBuilder,
     shutdown_request: Option(Subject(Nil)),
   )
 }
@@ -458,6 +478,7 @@ fn loop(message: Message, state: BrowserState) {
         next_id: state.next_id,
         unanswered_requests: state.unanswered_requests,
         event_listeners: updated_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       ))
     }
@@ -473,19 +494,26 @@ fn loop(message: Message, state: BrowserState) {
         next_id: state.next_id,
         unanswered_requests: state.unanswered_requests,
         event_listeners: updated_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       ))
     }
     PortResponse(data) -> {
-      // There may be more than one JSON payload!
-      // JSON payloads are separated by null bytes.
-      // We want to drop the last null byte then split by them
-      // to process each response
-      let new_state =
-        string.drop_right(data, 1)
-        |> string.split("\u{0000}")
+      let #(chunks, buffer) =
+        process_port_message(data, [], state.message_buffer)
+
+      let updated_state =
+        chunks
         |> list.fold(state, fn(acc, curr) { handle_port_response(acc, curr) })
-      actor.continue(new_state)
+
+      actor.continue(BrowserState(
+        instance: updated_state.instance,
+        next_id: updated_state.next_id,
+        unanswered_requests: updated_state.unanswered_requests,
+        event_listeners: updated_state.event_listeners,
+        message_buffer: buffer,
+        shutdown_request: updated_state.shutdown_request,
+      ))
     }
     UnexpectedPortMessage(msg) -> {
       log(
@@ -509,6 +537,7 @@ fn loop(message: Message, state: BrowserState) {
         next_id: state.next_id,
         unanswered_requests: state.unanswered_requests,
         event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: Some(client),
       ))
     }
@@ -567,6 +596,7 @@ fn handle_call(
         next_id: request_id + 1,
         unanswered_requests: state.unanswered_requests,
         event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       ))
     }
@@ -576,6 +606,7 @@ fn handle_call(
         next_id: request_id + 1,
         unanswered_requests: [request_memo, ..state.unanswered_requests],
         event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       ))
     }
@@ -606,6 +637,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
     next_id: request_id + 1,
     unanswered_requests: state.unanswered_requests,
     event_listeners: state.event_listeners,
+    message_buffer: state.message_buffer,
     shutdown_request: state.shutdown_request,
   ))
 }
@@ -726,6 +758,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         next_id: state.next_id,
         unanswered_requests: answer_request(state, id, result),
         event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       )
     }
@@ -736,6 +769,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         next_id: state.next_id,
         unanswered_requests: answer_failed_request(state, id, raw_error),
         event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
       )
     }
