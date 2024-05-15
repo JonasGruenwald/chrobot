@@ -419,7 +419,7 @@ pub fn select_all(on page: Page, matching selector: String) {
         }
         runtime.GetPropertiesResponse(
           result: property_descriptors,
-          internal_properties: internal_props,
+          internal_properties: _internal_props,
           exception_details: None,
         ) -> {
           Ok(

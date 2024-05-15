@@ -1226,7 +1226,7 @@ fn gen_property_encoder(
 ) {
   case value_type {
     PrimitiveType("any") -> {
-      "// dynamic values cannot be encoded!\n json.null()\n"
+      "utils.alert_encode_dynamic(" <> value_name <> ")"
     }
     PrimitiveType(type_name) -> {
       "json."
@@ -1538,32 +1538,6 @@ to represent the response to the command `"
           experimental: None,
           deprecated: None,
           inner: ObjectType(properties: Some(return_properties)),
-        )
-
-      gen_type_def_body(builder, return_type_def)
-      |> sb.append(gen_type_def_decoder(return_type_def))
-    }
-    None -> builder
-  }
-}
-
-fn gen_event_param_type(event: Event) {
-  let builder = sb.new()
-  case event.parameters {
-    Some([]) -> builder
-    Some(params) -> {
-      let return_type_def =
-        TypeDefinition(
-          id: pascal_case(event.name) <> "Event",
-          description: Some(
-            "This type was generated to represent the event `"
-            <> event.name
-            <> "`\n"
-            <> option.unwrap(event.description, ""),
-          ),
-          experimental: None,
-          deprecated: None,
-          inner: ObjectType(properties: Some(params)),
         )
 
       gen_type_def_body(builder, return_type_def)

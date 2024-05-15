@@ -1,0 +1,7 @@
+---
+version: 1.1.4
+title: Runtime.evaluate response
+file: ./test/protocol/runtime_test.gleam
+test_name: evaluate_test
+---
+Ok(EvaluateResponse(RemoteObject(RemoteObjectTypeObject, Some(RemoteObjectSubtypeNode), Some("HTMLHeadingElement"), None, None, Some("h1"), Some(RemoteObjectId("8282282834669415287.1.3079"))), None))

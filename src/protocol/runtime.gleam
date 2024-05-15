@@ -251,11 +251,7 @@ pub fn encode__deep_serialized_value(value__: DeepSerializedValue) {
   json.object(
     [#("type", encode__deep_serialized_value_type(value__.type_))]
     |> utils.add_optional(value__.value, fn(inner_value__) {
-      #(
-        "value",
-        // dynamic values cannot be encoded!
-        json.null(),
-      )
+      #("value", utils.alert_encode_dynamic(inner_value__))
     })
     |> utils.add_optional(value__.object_id, fn(inner_value__) {
       #("objectId", json.string(inner_value__))
@@ -500,11 +496,7 @@ pub fn encode__remote_object(value__: RemoteObject) {
       #("className", json.string(inner_value__))
     })
     |> utils.add_optional(value__.value, fn(inner_value__) {
-      #(
-        "value",
-        // dynamic values cannot be encoded!
-        json.null(),
-      )
+      #("value", utils.alert_encode_dynamic(inner_value__))
     })
     |> utils.add_optional(value__.unserializable_value, fn(inner_value__) {
       #("unserializableValue", encode__unserializable_value(inner_value__))
@@ -714,11 +706,7 @@ pub fn encode__call_argument(value__: CallArgument) {
   json.object(
     []
     |> utils.add_optional(value__.value, fn(inner_value__) {
-      #(
-        "value",
-        // dynamic values cannot be encoded!
-        json.null(),
-      )
+      #("value", utils.alert_encode_dynamic(inner_value__))
     })
     |> utils.add_optional(value__.unserializable_value, fn(inner_value__) {
       #("unserializableValue", encode__unserializable_value(inner_value__))

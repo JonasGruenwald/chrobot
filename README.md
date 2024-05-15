@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="https://raw.githubusercontent.com/JonasGruenwald/chrobot/main/doc_assets/header_1.png" alt="" style="max-width: 450px">
+<img src="https://raw.githubusercontent.com/JonasGruenwald/chrobot/main/doc_assets/header_1.png" alt="" style="max-width: 450px; width: 100%;">
 </p>
 
 <h1 align="center">Chrobot</h1>

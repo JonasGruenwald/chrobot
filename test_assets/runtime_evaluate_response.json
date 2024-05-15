@@ -1,0 +1,42 @@
+{
+  "result": {
+    "type": "object",
+    "subtype": "node",
+    "className": "HTMLHeadingElement",
+    "description": "h1",
+    "objectId": "8282282834669415287.1.3079",
+    "preview": {
+      "type": "object",
+      "subtype": "node",
+      "description": "h1",
+      "overflow": true,
+      "properties": [
+        {
+          "name": "align",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "name": "lang",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "name": "translate",
+          "type": "boolean",
+          "value": "true"
+        },
+        {
+          "name": "dir",
+          "type": "string",
+          "value": ""
+        }
+      ]
+    }
+  }
+}

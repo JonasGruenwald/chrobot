@@ -4,10 +4,10 @@ import chrome
 import gleam/io
 import gleam/list
 import gleam/result
+import gleam/string
 import gleeunit
 import gleeunit/should
 import utils
-import gleam/string
 
 /// TEST SETUP
 /// The tests will only run if a browser path is set in the environment variable `CHROBOT_TEST_BROWSER_PATH`.

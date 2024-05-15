@@ -1,6 +1,8 @@
 import gleam/erlang/process.{type CallError, type Subject} as p
+import gleam/io
 import gleam/json
 import gleam/option
+import gleam/string
 
 pub fn add_optional(
   prop_encoders: List(#(String, json.Json)),
@@ -11,6 +13,16 @@ pub fn add_optional(
     option.Some(a) -> [callback(a), ..prop_encoders]
     option.None -> prop_encoders
   }
+}
+
+pub fn alert_encode_dynamic(input_value) {
+  io.println(
+    "\u{1b}[31mWARNING: You passed a dymamic value to a protocol encoder!
+Dynamic values cannot be encoded, the value will be set to null instead.
+    \u{1b}[0m",
+  )
+  io.println("The value was: " <> string.inspect(input_value))
+  json.null()
 }
 
 pub fn try_call_with_subject(
