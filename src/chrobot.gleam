@@ -101,10 +101,9 @@ pub fn launch_with_config(config: chrome.BrowserConfig) {
   validate_launch(chrome.launch_with_config(config))
 }
 
-/// Open a page and wait for the document to resolve.  
-/// Returns a response only when `Page.loadEventFired` is received, you
-/// can additionally use `await_selector` to ensure the page is ready with the 
-/// content you expect.  
+/// Open a new page in the browser.
+/// Returns a response when the protocol call succeeds, please use
+/// `await_selector` to determine when the page is ready.  
 /// The timeout passed to this function will be attached to the returned
 /// `Page` type to be reused by other functions in this module.  
 /// You can always adjust it using `with_timeout`.
@@ -132,31 +131,6 @@ pub fn open(
     Some(True),
   ))
 
-  // Enable Page domain to receive events like ` Page.loadEventFired`
-  use _ <- result.try(
-    page.enable(fn(method, params) {
-      chrome.call(
-        browser_subject,
-        method,
-        params,
-        pass_session(session_response.session_id),
-        time_out,
-      )
-    }),
-  )
-
-  // Wait for the load event to fire
-  use _ <- result.try(chrome.listen_once(
-    browser_subject,
-    "Page.loadEventFired",
-    time_out,
-  ))
-
-  // I noticed with about:blank the load event never fires
-  // maybe it's because the page is loaded too quickly and there is a race condition?
-  // could remove this 'waiting for the load event to fire' step in favour
-  // of just always using the await selector, which works pretty well I think
-
   // Return the page
   Ok(Page(
     browser: browser_subject,
@@ -178,32 +152,9 @@ pub fn create_page(
   from html: String,
   time_out time_out: Int,
 ) {
-  use target_response <- result.try(target.create_target(
-    fn(method, params) { chrome.call(browser, method, params, None, time_out) },
-    "about:blank",
-    Some(1920),
-    Some(1080),
-    None,
-    None,
-  ))
-
-  use session_response <- result.try(target.attach_to_target(
-    fn(method, params) { chrome.call(browser, method, params, None, time_out) },
-    target_response.target_id,
-    Some(True),
-  ))
-
-  let created_page =
-    Page(
-      browser: browser,
-      session_id: session_response.session_id,
-      target_id: target_response.target_id,
-      time_out: time_out,
-    )
-
+  use created_page <- result.try(open(browser, "about:blank", time_out))
   use _ <- result.try(await_selector(created_page, "body"))
 
-  io.debug("page")
   let payload = "window.document.open();
 window.document.write(`" <> html <> "`);
 window.document.close();
@@ -418,6 +369,7 @@ pub fn get_property(
   )
 }
 
+/// Note: Accesses the `innerText` property, not `textContent`
 pub fn get_text(on page: Page, from item: runtime.RemoteObjectId) {
   get_property(page, item, "innerText", dynamic.string)
 }
@@ -426,15 +378,79 @@ pub fn get_inner_html(on page: Page, from item: runtime.RemoteObjectId) {
   get_property(page, item, "innerHTML", dynamic.string)
 }
 
-pub fn get_outer_html(on page: Page) {
+pub fn get_outer_html(on page: Page, from item: runtime.RemoteObjectId) {
+  get_property(page, item, "outerHTML", dynamic.string)
+}
+
+pub fn get_all_html(on page: Page) {
   eval(page, "window.document.documentElement.outerHTML")
   |> as_value(dynamic.string)
 }
 
-pub fn select(on page: Page, select selector: String) {
+pub fn select(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
   eval(page, selector_code)
   |> handle_object_id_response()
+}
+
+/// Run `querySelectorAll` on the page and return a list of remote object ids
+pub fn select_all(on page: Page, matching selector: String) {
+  let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
+  let result = eval(page, selector_code)
+  case result {
+    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+      use result_properties <- result.try(runtime.get_properties(
+        page_caller(page),
+        remote_object_id,
+        own_properties: Some(True),
+      ))
+
+      case result_properties {
+        runtime.GetPropertiesResponse(
+          result: _,
+          internal_properties: _,
+          exception_details: Some(exception),
+        ) -> {
+          Error(chrome.RuntimeException(
+            text: exception.text,
+            line: exception.line_number,
+            column: exception.column_number,
+          ))
+        }
+        runtime.GetPropertiesResponse(
+          result: property_descriptors,
+          internal_properties: internal_props,
+          exception_details: None,
+        ) -> {
+          Ok(
+            list.filter_map(property_descriptors, fn(prop_descriptor) {
+              case prop_descriptor {
+                runtime.PropertyDescriptor(
+                  _,
+                  Some(runtime.RemoteObject(_, _, _, _, _, _, Some(object_id))),
+                  _,
+                  _,
+                  _,
+                  _,
+                  _,
+                  _,
+                  _,
+                  _,
+                ) -> {
+                  Ok(object_id)
+                }
+                _ -> Error(Nil)
+              }
+            }),
+          )
+        }
+      }
+    }
+    Ok(_) -> {
+      Ok([])
+    }
+    Error(any) -> Error(any)
+  }
 }
 
 /// Continously attempt to run a selector, until it succeeds.  
@@ -452,6 +468,18 @@ pub fn await_selector(
   }
 
   poll(polly, page.time_out)
+}
+
+/// Block until the page load event has fired.
+/// Note that with local pages, the load event can often fire 
+/// before the handler is attached.  
+/// It's best to use `await_selector` instead of this
+pub fn await_load_event(browser, page: Page) {
+  // Enable Page domain to receive events like ` Page.loadEventFired`
+  use _ <- result.try(page.enable(page_caller(page)))
+
+  // // Wait for the load event to fire
+  chrome.listen_once(browser, "Page.loadEventFired", page.time_out)
 }
 
 /// Quit the browser (alias for `chrome.quit`)

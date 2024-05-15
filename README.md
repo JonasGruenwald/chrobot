@@ -70,14 +70,14 @@ pub fn main() {
   let assert Ok(browser) = chrobot.launch()
   let assert Ok(page) =
     browser
-    |> chrobot.open("https://gleam.run", 10_000)
-
+    |> chrobot.open("https://gleam.run", 30_000)
+  let assert Ok(_) = chrobot.await_selector(page, "body")
+  
   // Take a screeshot and save it as 'hi_lucy.png'
   let assert Ok(screenshot) = chrobot.screenshot(page)
   let assert Ok(_) = chrobot.to_file(screenshot, "hi_lucy")
   let assert Ok(_) = chrobot.quit(browser)
 }
-
 ```
 
 ### Generate a PDF document with [lustre](http://lustre.build/)

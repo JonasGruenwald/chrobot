@@ -1,0 +1,31 @@
+---
+version: 1.1.4
+title: List of links
+file: ./test/chrobot_test.gleam
+test_name: select_all_test
+---
+http://info.cern.ch/hypertext/WWW/WhatIs.html
+http://info.cern.ch/hypertext/WWW/Summary.html
+http://info.cern.ch/hypertext/WWW/Administration/Mailing/Overview.html
+http://info.cern.ch/hypertext/WWW/Policy.html
+http://info.cern.ch/hypertext/WWW/News/9211.html
+http://info.cern.ch/hypertext/WWW/FAQ/List.html
+http://info.cern.ch/hypertext/DataSources/Top.html
+http://info.cern.ch/hypertext/DataSources/bySubject/Overview.html
+http://info.cern.ch/hypertext/DataSources/WWW/Servers.html
+http://info.cern.ch/hypertext/WWW/Help.html
+http://info.cern.ch/hypertext/WWW/Status.html
+http://info.cern.ch/hypertext/WWW/LineMode/Browser.html
+http://info.cern.ch/hypertext/WWW/Status.html#35
+http://info.cern.ch/hypertext/WWW/NeXT/WorldWideWeb.html
+http://info.cern.ch/hypertext/WWW/Daemon/Overview.html
+http://info.cern.ch/hypertext/WWW/Tools/Overview.html
+http://info.cern.ch/hypertext/WWW/MailRobot/Overview.html
+http://info.cern.ch/hypertext/WWW/Status.html#57
+http://info.cern.ch/hypertext/WWW/Technical.html
+http://info.cern.ch/hypertext/WWW/Bibliography.html
+http://info.cern.ch/hypertext/WWW/People.html
+http://info.cern.ch/hypertext/WWW/History.html
+http://info.cern.ch/hypertext/WWW/Helping.html
+http://info.cern.ch/hypertext/README.html
+http://info.cern.ch/hypertext/WWW/LineMode/Defaults/Distribution.html

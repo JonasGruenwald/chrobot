@@ -1,0 +1,11 @@
+---
+version: 1.1.4
+title: Element Inner HTML
+file: ./test/chrobot_test.gleam
+test_name: get_html_test
+---
+
+    <title>The World Wide Web project</title>
+    <nextid n="55">
+    </nextid>
+  
