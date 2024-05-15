@@ -12,11 +12,6 @@
 //// which perform additional checks and validations.
 //// 
 
-// TODO: Port messages are not properly handeled yet
-// Port messages can be **partial**, if they are not terminated with a null byte
-// This is rare but can be the case for large data transfers
-// we need to implement a buffer in the browser state!
-
 import chrobot/internal/utils
 import filepath as path
 import gleam/dynamic as d
