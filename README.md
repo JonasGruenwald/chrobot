@@ -131,6 +131,35 @@ pub fn main() {
 }
 ```
 
+### Scrape a Website
+
+> 🍄‍🟫 **Just a quick reminder:**  
+> Please be mindful of the load you are putting on other people's web services when you are scraping them programmatically!  
+
+
+```gleam
+import chrobot
+import gleam/io
+import gleam/list
+import gleam/result
+
+pub fn main() {
+  let assert Ok(browser) = chrobot.launch()
+  let assert Ok(page) =
+    browser
+    |> chrobot.open("https://books.toscrape.com/", 30_000)
+
+  let assert Ok(_) = chrobot.await_selector(page, "body")
+  let assert Ok(page_items) = chrobot.select_all(page, ".product_pod h3 a")
+  let assert Ok(title_results) =
+    list.map(page_items, fn(i) { chrobot.get_attribute(page, i, "title") })
+    |> result.all()
+  io.debug(title_results)
+  let assert Ok(_) = chrobot.quit(browser)
+}
+
+```
+
 
 ## Documentation & Guide
 
