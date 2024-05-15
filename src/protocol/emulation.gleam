@@ -20,15 +20,13 @@ import protocol/dom
 /// Screen orientation.
 pub type ScreenOrientation {
   ScreenOrientation(
+    /// Orientation type.  
     type_: ScreenOrientationType,
-    /// Orientation type.
-    /// 
+    /// Orientation angle.  
     angle: Int,
   )
 }
 
-/// Orientation angle.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `ScreenOrientation`
 pub type ScreenOrientationType {
@@ -88,21 +86,18 @@ pub fn decode__screen_orientation(value__: dynamic.Dynamic) {
 
 pub type DisplayFeature {
   DisplayFeature(
+    /// Orientation of a display feature in relation to screen  
     orientation: DisplayFeatureOrientation,
-    /// Orientation of a display feature in relation to screen
-    /// 
-    offset: Int,
     /// The offset from the screen origin in either the x (for vertical
-    /// orientation) or y (for horizontal orientation) direction.
-    /// 
+    /// orientation) or y (for horizontal orientation) direction.  
+    offset: Int,
+    /// A display feature may mask content such that it is not physically
+    /// displayed - this length along with the offset describes this area.
+    /// A display feature that only splits content will have a 0 mask_length.  
     mask_length: Int,
   )
 }
 
-/// A display feature may mask content such that it is not physically
-/// displayed - this length along with the offset describes this area.
-/// A display feature that only splits content will have a 0 mask_length.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `orientation` of `DisplayFeature`
 pub type DisplayFeatureOrientation {
@@ -164,11 +159,12 @@ pub fn decode__display_feature(value__: dynamic.Dynamic) {
 }
 
 pub type DevicePosture {
-  DevicePosture(type_: DevicePostureType)
+  DevicePosture(
+    /// Current posture of the device  
+    type_: DevicePostureType,
+  )
 }
 
-/// Current posture of the device
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DevicePosture`
 pub type DevicePostureType {

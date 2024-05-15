@@ -45,17 +45,15 @@ pub fn decode__script_id(value__: dynamic.Dynamic) {
 pub type SerializationOptions {
   SerializationOptions(
     serialization: SerializationOptionsSerialization,
+    /// Deep serialization depth. Default is full depth. Respected only in `deep` serialization mode.  
     max_depth: option.Option(Int),
-    /// Deep serialization depth. Default is full depth. Respected only in `deep` serialization mode.
-    /// 
+    /// Embedder-specific parameters. For example if connected to V8 in Chrome these control DOM
+    /// serialization via `maxNodeDepth: integer` and `includeShadowTree: "none" | "open" | "all"`.
+    /// Values can be only of type string or integer.  
     additional_parameters: option.Option(dict.Dict(String, String)),
   )
 }
 
-/// Embedder-specific parameters. For example if connected to V8 in Chrome these control DOM
-/// serialization via `maxNodeDepth: integer` and `includeShadowTree: "none" | "open" | "all"`.
-/// Values can be only of type string or integer.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `serialization` of `SerializationOptions`
 pub type SerializationOptionsSerialization {
@@ -142,14 +140,13 @@ pub type DeepSerializedValue {
     type_: DeepSerializedValueType,
     value: option.Option(dynamic.Dynamic),
     object_id: option.Option(String),
+    /// Set if value reference met more then once during serialization. In such
+    /// case, value is provided only to one of the serialized values. Unique
+    /// per value in the scope of one CDP call.  
     weak_local_object_reference: option.Option(Int),
   )
 }
 
-/// Set if value reference met more then once during serialization. In such
-/// case, value is provided only to one of the serialized values. Unique
-/// per value in the scope of one CDP call.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `DeepSerializedValue`
 pub type DeepSerializedValueType {
@@ -337,33 +334,26 @@ pub fn decode__unserializable_value(value__: dynamic.Dynamic) {
 /// Mirror object referencing original JavaScript object.
 pub type RemoteObject {
   RemoteObject(
+    /// Object type.  
     type_: RemoteObjectType,
-    /// Object type.
-    /// 
-    subtype: option.Option(RemoteObjectSubtype),
     /// Object subtype hint. Specified for `object` type values only.
     /// NOTE: If you change anything here, make sure to also update
-    /// `subtype` in `ObjectPreview` and `PropertyPreview` below.
-    /// 
+    /// `subtype` in `ObjectPreview` and `PropertyPreview` below.  
+    subtype: option.Option(RemoteObjectSubtype),
+    /// Object class (constructor) name. Specified for `object` type values only.  
     class_name: option.Option(String),
-    /// Object class (constructor) name. Specified for `object` type values only.
-    /// 
+    /// Remote object value in case of primitive values or JSON values (if it was requested).  
     value: option.Option(dynamic.Dynamic),
-    /// Remote object value in case of primitive values or JSON values (if it was requested).
-    /// 
-    unserializable_value: option.Option(UnserializableValue),
     /// Primitive value which can not be JSON-stringified does not have `value`, but gets this
-    /// property.
-    /// 
+    /// property.  
+    unserializable_value: option.Option(UnserializableValue),
+    /// String representation of the object.  
     description: option.Option(String),
-    /// String representation of the object.
-    /// 
+    /// Unique object identifier (for non-primitive values).  
     object_id: option.Option(RemoteObjectId),
   )
 }
 
-/// Unique object identifier (for non-primitive values).
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `type` of `RemoteObject`
 pub type RemoteObjectType {
@@ -571,43 +561,33 @@ pub fn decode__remote_object(value__: dynamic.Dynamic) {
 /// Object property descriptor.
 pub type PropertyDescriptor {
   PropertyDescriptor(
+    /// Property name or symbol description.  
     name: String,
-    /// Property name or symbol description.
-    /// 
+    /// The value associated with the property.  
     value: option.Option(RemoteObject),
-    /// The value associated with the property.
-    /// 
+    /// True if the value associated with the property may be changed (data descriptors only).  
     writable: option.Option(Bool),
-    /// True if the value associated with the property may be changed (data descriptors only).
-    /// 
-    get: option.Option(RemoteObject),
     /// A function which serves as a getter for the property, or `undefined` if there is no getter
-    /// (accessor descriptors only).
-    /// 
-    set: option.Option(RemoteObject),
+    /// (accessor descriptors only).  
+    get: option.Option(RemoteObject),
     /// A function which serves as a setter for the property, or `undefined` if there is no setter
-    /// (accessor descriptors only).
-    /// 
-    configurable: Bool,
+    /// (accessor descriptors only).  
+    set: option.Option(RemoteObject),
     /// True if the type of this property descriptor may be changed and if the property may be
-    /// deleted from the corresponding object.
-    /// 
-    enumerable: Bool,
+    /// deleted from the corresponding object.  
+    configurable: Bool,
     /// True if this property shows up during enumeration of the properties on the corresponding
-    /// object.
-    /// 
+    /// object.  
+    enumerable: Bool,
+    /// True if the result was thrown during the evaluation.  
     was_thrown: option.Option(Bool),
-    /// True if the result was thrown during the evaluation.
-    /// 
+    /// True if the property is owned for the object.  
     is_own: option.Option(Bool),
-    /// True if the property is owned for the object.
-    /// 
+    /// Property symbol object, if the property is of the `symbol` type.  
     symbol: option.Option(RemoteObject),
   )
 }
 
-/// Property symbol object, if the property is of the `symbol` type.
-/// 
 @internal
 pub fn encode__property_descriptor(value__: PropertyDescriptor) {
   json.object(
@@ -689,15 +669,13 @@ pub fn decode__property_descriptor(value__: dynamic.Dynamic) {
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor {
   InternalPropertyDescriptor(
+    /// Conventional property name.  
     name: String,
-    /// Conventional property name.
-    /// 
+    /// The value associated with the property.  
     value: option.Option(RemoteObject),
   )
 }
 
-/// The value associated with the property.
-/// 
 @internal
 pub fn encode__internal_property_descriptor(value__: InternalPropertyDescriptor) {
   json.object(
@@ -722,18 +700,15 @@ pub fn decode__internal_property_descriptor(value__: dynamic.Dynamic) {
 /// unserializable primitive value or neither of (for undefined) them should be specified.
 pub type CallArgument {
   CallArgument(
+    /// Primitive value or serializable javascript object.  
     value: option.Option(dynamic.Dynamic),
-    /// Primitive value or serializable javascript object.
-    /// 
+    /// Primitive value which can not be JSON-stringified.  
     unserializable_value: option.Option(UnserializableValue),
-    /// Primitive value which can not be JSON-stringified.
-    /// 
+    /// Remote object handle.  
     object_id: option.Option(RemoteObjectId),
   )
 }
 
-/// Remote object handle.
-/// 
 @internal
 pub fn encode__call_argument(value__: CallArgument) {
   json.object(
@@ -796,22 +771,18 @@ pub fn decode__execution_context_id(value__: dynamic.Dynamic) {
 /// Description of an isolated world.
 pub type ExecutionContextDescription {
   ExecutionContextDescription(
-    id: ExecutionContextId,
     /// Unique id of the execution context. It can be used to specify in which execution context
-    /// script evaluation should be performed.
-    /// 
+    /// script evaluation should be performed.  
+    id: ExecutionContextId,
+    /// Execution context origin.  
     origin: String,
-    /// Execution context origin.
-    /// 
+    /// Human readable name describing given context.  
     name: String,
-    /// Human readable name describing given context.
-    /// 
+    /// Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}  
     aux_data: option.Option(dict.Dict(String, String)),
   )
 }
 
-/// Embedder-specific auxiliary data likely matching {isDefault: boolean, type: 'default'|'isolated'|'worker', frameId: string}
-/// 
 @internal
 pub fn encode__execution_context_description(value__: ExecutionContextDescription) {
   json.object(
@@ -855,36 +826,27 @@ pub fn decode__execution_context_description(value__: dynamic.Dynamic) {
 /// execution.
 pub type ExceptionDetails {
   ExceptionDetails(
+    /// Exception id.  
     exception_id: Int,
-    /// Exception id.
-    /// 
+    /// Exception text, which should be used together with exception object when available.  
     text: String,
-    /// Exception text, which should be used together with exception object when available.
-    /// 
+    /// Line number of the exception location (0-based).  
     line_number: Int,
-    /// Line number of the exception location (0-based).
-    /// 
+    /// Column number of the exception location (0-based).  
     column_number: Int,
-    /// Column number of the exception location (0-based).
-    /// 
+    /// Script ID of the exception location.  
     script_id: option.Option(ScriptId),
-    /// Script ID of the exception location.
-    /// 
+    /// URL of the exception location, to be used when the script was not reported.  
     url: option.Option(String),
-    /// URL of the exception location, to be used when the script was not reported.
-    /// 
+    /// JavaScript stack trace if available.  
     stack_trace: option.Option(StackTrace),
-    /// JavaScript stack trace if available.
-    /// 
+    /// Exception object if available.  
     exception: option.Option(RemoteObject),
-    /// Exception object if available.
-    /// 
+    /// Identifier of the context where exception happened.  
     execution_context_id: option.Option(ExecutionContextId),
   )
 }
 
-/// Identifier of the context where exception happened.
-/// 
 @internal
 pub fn encode__exception_details(value__: ExceptionDetails) {
   json.object(
@@ -994,24 +956,19 @@ pub fn decode__time_delta(value__: dynamic.Dynamic) {
 /// Stack entry for runtime errors and assertions.
 pub type CallFrame {
   CallFrame(
+    /// JavaScript function name.  
     function_name: String,
-    /// JavaScript function name.
-    /// 
+    /// JavaScript script id.  
     script_id: ScriptId,
-    /// JavaScript script id.
-    /// 
+    /// JavaScript script name or url.  
     url: String,
-    /// JavaScript script name or url.
-    /// 
+    /// JavaScript script line number (0-based).  
     line_number: Int,
-    /// JavaScript script line number (0-based).
-    /// 
+    /// JavaScript script column number (0-based).  
     column_number: Int,
   )
 }
 
-/// JavaScript script column number (0-based).
-/// 
 @internal
 pub fn encode__call_frame(value__: CallFrame) {
   json.object([
@@ -1051,19 +1008,16 @@ pub fn decode__call_frame(value__: dynamic.Dynamic) {
 /// Call frames for assertions or error messages.
 pub type StackTrace {
   StackTrace(
-    description: option.Option(String),
     /// String label of this stack trace. For async traces this may be a name of the function that
-    /// initiated the async call.
-    /// 
+    /// initiated the async call.  
+    description: option.Option(String),
+    /// JavaScript function name.  
     call_frames: List(CallFrame),
-    /// JavaScript function name.
-    /// 
+    /// Asynchronous JavaScript stack trace that preceded this stack, if available.  
     parent: option.Option(StackTrace),
   )
 }
 
-/// Asynchronous JavaScript stack trace that preceded this stack, if available.
-/// 
 @internal
 pub fn encode__stack_trace(value__: StackTrace) {
   json.object(
@@ -1102,15 +1056,13 @@ pub fn decode__stack_trace(value__: dynamic.Dynamic) {
 /// to represent the response to the command `await_promise`
 pub type AwaitPromiseResponse {
   AwaitPromiseResponse(
+    /// Promise result. Will contain rejected value if promise was rejected.  
     result: RemoteObject,
-    /// Promise result. Will contain rejected value if promise was rejected.
-    /// 
+    /// Exception details if stack strace is available.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details if stack strace is available.
-/// 
 @internal
 pub fn decode__await_promise_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1128,15 +1080,13 @@ pub fn decode__await_promise_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `call_function_on`
 pub type CallFunctionOnResponse {
   CallFunctionOnResponse(
+    /// Call result.  
     result: RemoteObject,
-    /// Call result.
-    /// 
+    /// Exception details.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details.
-/// 
 @internal
 pub fn decode__call_function_on_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1157,15 +1107,13 @@ pub fn decode__call_function_on_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `compile_script`
 pub type CompileScriptResponse {
   CompileScriptResponse(
+    /// Id of the script.  
     script_id: option.Option(ScriptId),
-    /// Id of the script.
-    /// 
+    /// Exception details.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details.
-/// 
 @internal
 pub fn decode__compile_script_response(value__: dynamic.Dynamic) {
   use script_id <- result.try(dynamic.optional_field(
@@ -1187,15 +1135,13 @@ pub fn decode__compile_script_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `evaluate`
 pub type EvaluateResponse {
   EvaluateResponse(
+    /// Evaluation result.  
     result: RemoteObject,
-    /// Evaluation result.
-    /// 
+    /// Exception details.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details.
-/// 
 @internal
 pub fn decode__evaluate_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(
@@ -1213,18 +1159,15 @@ pub fn decode__evaluate_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `get_properties`
 pub type GetPropertiesResponse {
   GetPropertiesResponse(
+    /// Object properties.  
     result: List(PropertyDescriptor),
-    /// Object properties.
-    /// 
+    /// Internal object properties (only of the element itself).  
     internal_properties: option.Option(List(InternalPropertyDescriptor)),
-    /// Internal object properties (only of the element itself).
-    /// 
+    /// Exception details.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details.
-/// 
 @internal
 pub fn decode__get_properties_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -1265,11 +1208,12 @@ pub fn decode__global_lexical_scope_names_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `query_objects`
 pub type QueryObjectsResponse {
-  QueryObjectsResponse(objects: RemoteObject)
+  QueryObjectsResponse(
+    /// Array with objects.  
+    objects: RemoteObject,
+  )
 }
 
-/// Array with objects.
-/// 
 @internal
 pub fn decode__query_objects_response(value__: dynamic.Dynamic) {
   use objects <- result.try(dynamic.field("objects", decode__remote_object)(
@@ -1283,15 +1227,13 @@ pub fn decode__query_objects_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `run_script`
 pub type RunScriptResponse {
   RunScriptResponse(
+    /// Run result.  
     result: RemoteObject,
-    /// Run result.
-    /// 
+    /// Exception details.  
     exception_details: option.Option(ExceptionDetails),
   )
 }
 
-/// Exception details.
-/// 
 @internal
 pub fn decode__run_script_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field("result", decode__remote_object)(

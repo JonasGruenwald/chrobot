@@ -117,30 +117,23 @@ pub fn decode__security_state(value__: dynamic.Dynamic) {
 /// An explanation of an factor contributing to the security state.
 pub type SecurityStateExplanation {
   SecurityStateExplanation(
+    /// Security state representing the severity of the factor being explained.  
     security_state: SecurityState,
-    /// Security state representing the severity of the factor being explained.
-    /// 
+    /// Title describing the type of factor.  
     title: String,
-    /// Title describing the type of factor.
-    /// 
+    /// Short phrase describing the type of factor.  
     summary: String,
-    /// Short phrase describing the type of factor.
-    /// 
+    /// Full text explanation of the factor.  
     description: String,
-    /// Full text explanation of the factor.
-    /// 
+    /// The type of mixed content described by the explanation.  
     mixed_content_type: MixedContentType,
-    /// The type of mixed content described by the explanation.
-    /// 
+    /// Page certificate.  
     certificate: List(String),
-    /// Page certificate.
-    /// 
+    /// Recommendations to fix any issues.  
     recommendations: option.Option(List(String)),
   )
 }
 
-/// Recommendations to fix any issues.
-/// 
 @internal
 pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
   json.object(

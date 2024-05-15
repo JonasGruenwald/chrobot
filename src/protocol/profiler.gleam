@@ -21,28 +21,22 @@ import protocol/runtime
 /// Profile node. Holds callsite information, execution statistics and child nodes.
 pub type ProfileNode {
   ProfileNode(
+    /// Unique id of the node.  
     id: Int,
-    /// Unique id of the node.
-    /// 
+    /// Function location.  
     call_frame: runtime.CallFrame,
-    /// Function location.
-    /// 
+    /// Number of samples where this node was on top of the call stack.  
     hit_count: option.Option(Int),
-    /// Number of samples where this node was on top of the call stack.
-    /// 
+    /// Child node ids.  
     children: option.Option(List(Int)),
-    /// Child node ids.
-    /// 
-    deopt_reason: option.Option(String),
     /// The reason of being not optimized. The function may be deoptimized or marked as don't
-    /// optimize.
-    /// 
+    /// optimize.  
+    deopt_reason: option.Option(String),
+    /// An array of source position ticks.  
     position_ticks: option.Option(List(PositionTickInfo)),
   )
 }
 
-/// An array of source position ticks.
-/// 
 @internal
 pub fn encode__profile_node(value__: ProfileNode) {
   json.object(
@@ -104,25 +98,20 @@ pub fn decode__profile_node(value__: dynamic.Dynamic) {
 /// Profile.
 pub type Profile {
   Profile(
+    /// The list of profile nodes. First item is the root node.  
     nodes: List(ProfileNode),
-    /// The list of profile nodes. First item is the root node.
-    /// 
+    /// Profiling start timestamp in microseconds.  
     start_time: Float,
-    /// Profiling start timestamp in microseconds.
-    /// 
+    /// Profiling end timestamp in microseconds.  
     end_time: Float,
-    /// Profiling end timestamp in microseconds.
-    /// 
+    /// Ids of samples top nodes.  
     samples: option.Option(List(Int)),
-    /// Ids of samples top nodes.
-    /// 
+    /// Time intervals between adjacent samples in microseconds. The first delta is relative to the
+    /// profile startTime.  
     time_deltas: option.Option(List(Int)),
   )
 }
 
-/// Time intervals between adjacent samples in microseconds. The first delta is relative to the
-/// profile startTime.
-/// 
 @internal
 pub fn encode__profile(value__: Profile) {
   json.object(
@@ -171,15 +160,13 @@ pub fn decode__profile(value__: dynamic.Dynamic) {
 /// Specifies a number of samples attributed to a certain source position.
 pub type PositionTickInfo {
   PositionTickInfo(
+    /// Source line number (1-based).  
     line: Int,
-    /// Source line number (1-based).
-    /// 
+    /// Number of samples attributed to the source line.  
     ticks: Int,
   )
 }
 
-/// Number of samples attributed to the source line.
-/// 
 @internal
 pub fn encode__position_tick_info(value__: PositionTickInfo) {
   json.object([
@@ -199,18 +186,15 @@ pub fn decode__position_tick_info(value__: dynamic.Dynamic) {
 /// Coverage data for a source range.
 pub type CoverageRange {
   CoverageRange(
+    /// JavaScript script source offset for the range start.  
     start_offset: Int,
-    /// JavaScript script source offset for the range start.
-    /// 
+    /// JavaScript script source offset for the range end.  
     end_offset: Int,
-    /// JavaScript script source offset for the range end.
-    /// 
+    /// Collected execution count of the source range.  
     count: Int,
   )
 }
 
-/// Collected execution count of the source range.
-/// 
 @internal
 pub fn encode__coverage_range(value__: CoverageRange) {
   json.object([
@@ -238,18 +222,15 @@ pub fn decode__coverage_range(value__: dynamic.Dynamic) {
 /// Coverage data for a JavaScript function.
 pub type FunctionCoverage {
   FunctionCoverage(
+    /// JavaScript function name.  
     function_name: String,
-    /// JavaScript function name.
-    /// 
+    /// Source ranges inside the function with coverage data.  
     ranges: List(CoverageRange),
-    /// Source ranges inside the function with coverage data.
-    /// 
+    /// Whether coverage data for this function has block granularity.  
     is_block_coverage: Bool,
   )
 }
 
-/// Whether coverage data for this function has block granularity.
-/// 
 @internal
 pub fn encode__function_coverage(value__: FunctionCoverage) {
   json.object([
@@ -283,18 +264,15 @@ pub fn decode__function_coverage(value__: dynamic.Dynamic) {
 /// Coverage data for a JavaScript script.
 pub type ScriptCoverage {
   ScriptCoverage(
+    /// JavaScript script id.  
     script_id: runtime.ScriptId,
-    /// JavaScript script id.
-    /// 
+    /// JavaScript script name or url.  
     url: String,
-    /// JavaScript script name or url.
-    /// 
+    /// Functions contained in the script that has coverage data.  
     functions: List(FunctionCoverage),
   )
 }
 
-/// Functions contained in the script that has coverage data.
-/// 
 @internal
 pub fn encode__script_coverage(value__: ScriptCoverage) {
   json.object([
@@ -322,11 +300,12 @@ pub fn decode__script_coverage(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_best_effort_coverage`
 pub type GetBestEffortCoverageResponse {
-  GetBestEffortCoverageResponse(result: List(ScriptCoverage))
+  GetBestEffortCoverageResponse(
+    /// Coverage data for the current isolate.  
+    result: List(ScriptCoverage),
+  )
 }
 
-/// Coverage data for the current isolate.
-/// 
 @internal
 pub fn decode__get_best_effort_coverage_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(
@@ -340,11 +319,12 @@ pub fn decode__get_best_effort_coverage_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `start_precise_coverage`
 pub type StartPreciseCoverageResponse {
-  StartPreciseCoverageResponse(timestamp: Float)
+  StartPreciseCoverageResponse(
+    /// Monotonically increasing time (in seconds) when the coverage update was taken in the backend.  
+    timestamp: Float,
+  )
 }
 
-/// Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
-/// 
 @internal
 pub fn decode__start_precise_coverage_response(value__: dynamic.Dynamic) {
   use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
@@ -355,11 +335,12 @@ pub fn decode__start_precise_coverage_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `stop`
 pub type StopResponse {
-  StopResponse(profile: Profile)
+  StopResponse(
+    /// Recorded profile.  
+    profile: Profile,
+  )
 }
 
-/// Recorded profile.
-/// 
 @internal
 pub fn decode__stop_response(value__: dynamic.Dynamic) {
   use profile <- result.try(dynamic.field("profile", decode__profile)(value__))
@@ -371,15 +352,13 @@ pub fn decode__stop_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `take_precise_coverage`
 pub type TakePreciseCoverageResponse {
   TakePreciseCoverageResponse(
+    /// Coverage data for the current isolate.  
     result: List(ScriptCoverage),
-    /// Coverage data for the current isolate.
-    /// 
+    /// Monotonically increasing time (in seconds) when the coverage update was taken in the backend.  
     timestamp: Float,
   )
 }
 
-/// Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
-/// 
 @internal
 pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
   use result <- result.try(dynamic.field(

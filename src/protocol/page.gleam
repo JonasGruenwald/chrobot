@@ -41,30 +41,23 @@ pub fn decode__frame_id(value__: dynamic.Dynamic) {
 /// Information about the Frame on the page.
 pub type Frame {
   Frame(
+    /// Frame unique identifier.  
     id: FrameId,
-    /// Frame unique identifier.
-    /// 
+    /// Parent frame identifier.  
     parent_id: option.Option(FrameId),
-    /// Parent frame identifier.
-    /// 
+    /// Identifier of the loader associated with this frame.  
     loader_id: network.LoaderId,
-    /// Identifier of the loader associated with this frame.
-    /// 
+    /// Frame's name as specified in the tag.  
     name: option.Option(String),
-    /// Frame's name as specified in the tag.
-    /// 
+    /// Frame document's URL without fragment.  
     url: String,
-    /// Frame document's URL without fragment.
-    /// 
+    /// Frame document's security origin.  
     security_origin: String,
-    /// Frame document's security origin.
-    /// 
+    /// Frame document's mimeType as determined by the browser.  
     mime_type: String,
   )
 }
 
-/// Frame document's mimeType as determined by the browser.
-/// 
 @internal
 pub fn encode__frame(value__: Frame) {
   json.object(
@@ -117,15 +110,13 @@ pub fn decode__frame(value__: dynamic.Dynamic) {
 /// Information about the Frame hierarchy.
 pub type FrameTree {
   FrameTree(
+    /// Frame information for this tree item.  
     frame: Frame,
-    /// Frame information for this tree item.
-    /// 
+    /// Child frames.  
     child_frames: option.Option(List(FrameTree)),
   )
 }
 
-/// Child frames.
-/// 
 @internal
 pub fn encode__frame_tree(value__: FrameTree) {
   json.object(
@@ -233,24 +224,19 @@ pub fn decode__transition_type(value__: dynamic.Dynamic) {
 /// Navigation history entry.
 pub type NavigationEntry {
   NavigationEntry(
+    /// Unique id of the navigation history entry.  
     id: Int,
-    /// Unique id of the navigation history entry.
-    /// 
+    /// URL of the navigation history entry.  
     url: String,
-    /// URL of the navigation history entry.
-    /// 
+    /// URL that the user typed in the url bar.  
     user_typed_url: String,
-    /// URL that the user typed in the url bar.
-    /// 
+    /// Title of the navigation history entry.  
     title: String,
-    /// Title of the navigation history entry.
-    /// 
+    /// Transition type.  
     transition_type: TransitionType,
   )
 }
 
-/// Transition type.
-/// 
 @internal
 pub fn encode__navigation_entry(value__: NavigationEntry) {
   json.object([
@@ -325,21 +311,17 @@ pub fn decode__dialog_type(value__: dynamic.Dynamic) {
 /// Error while paring app manifest.
 pub type AppManifestError {
   AppManifestError(
+    /// Error message.  
     message: String,
-    /// Error message.
-    /// 
+    /// If critical, this is a non-recoverable parse error.  
     critical: Int,
-    /// If critical, this is a non-recoverable parse error.
-    /// 
+    /// Error line.  
     line: Int,
-    /// Error line.
-    /// 
+    /// Error column.  
     column: Int,
   )
 }
 
-/// Error column.
-/// 
 @internal
 pub fn encode__app_manifest_error(value__: AppManifestError) {
   json.object([
@@ -368,21 +350,17 @@ pub fn decode__app_manifest_error(value__: dynamic.Dynamic) {
 /// Layout viewport position and dimensions.
 pub type LayoutViewport {
   LayoutViewport(
+    /// Horizontal offset relative to the document (CSS pixels).  
     page_x: Int,
-    /// Horizontal offset relative to the document (CSS pixels).
-    /// 
+    /// Vertical offset relative to the document (CSS pixels).  
     page_y: Int,
-    /// Vertical offset relative to the document (CSS pixels).
-    /// 
+    /// Width (CSS pixels), excludes scrollbar if present.  
     client_width: Int,
-    /// Width (CSS pixels), excludes scrollbar if present.
-    /// 
+    /// Height (CSS pixels), excludes scrollbar if present.  
     client_height: Int,
   )
 }
 
-/// Height (CSS pixels), excludes scrollbar if present.
-/// 
 @internal
 pub fn encode__layout_viewport(value__: LayoutViewport) {
   json.object([
@@ -415,33 +393,25 @@ pub fn decode__layout_viewport(value__: dynamic.Dynamic) {
 /// Visual viewport position, dimensions, and scale.
 pub type VisualViewport {
   VisualViewport(
+    /// Horizontal offset relative to the layout viewport (CSS pixels).  
     offset_x: Float,
-    /// Horizontal offset relative to the layout viewport (CSS pixels).
-    /// 
+    /// Vertical offset relative to the layout viewport (CSS pixels).  
     offset_y: Float,
-    /// Vertical offset relative to the layout viewport (CSS pixels).
-    /// 
+    /// Horizontal offset relative to the document (CSS pixels).  
     page_x: Float,
-    /// Horizontal offset relative to the document (CSS pixels).
-    /// 
+    /// Vertical offset relative to the document (CSS pixels).  
     page_y: Float,
-    /// Vertical offset relative to the document (CSS pixels).
-    /// 
+    /// Width (CSS pixels), excludes scrollbar if present.  
     client_width: Float,
-    /// Width (CSS pixels), excludes scrollbar if present.
-    /// 
+    /// Height (CSS pixels), excludes scrollbar if present.  
     client_height: Float,
-    /// Height (CSS pixels), excludes scrollbar if present.
-    /// 
+    /// Scale relative to the ideal viewport (size at width=device-width).  
     scale: Float,
-    /// Scale relative to the ideal viewport (size at width=device-width).
-    /// 
+    /// Page zoom factor (CSS to device independent pixels ratio).  
     zoom: option.Option(Float),
   )
 }
 
-/// Page zoom factor (CSS to device independent pixels ratio).
-/// 
 @internal
 pub fn encode__visual_viewport(value__: VisualViewport) {
   json.object(
@@ -490,24 +460,19 @@ pub fn decode__visual_viewport(value__: dynamic.Dynamic) {
 /// Viewport for capturing screenshot.
 pub type Viewport {
   Viewport(
+    /// X offset in device independent pixels (dip).  
     x: Float,
-    /// X offset in device independent pixels (dip).
-    /// 
+    /// Y offset in device independent pixels (dip).  
     y: Float,
-    /// Y offset in device independent pixels (dip).
-    /// 
+    /// Rectangle width in device independent pixels (dip).  
     width: Float,
-    /// Rectangle width in device independent pixels (dip).
-    /// 
+    /// Rectangle height in device independent pixels (dip).  
     height: Float,
-    /// Rectangle height in device independent pixels (dip).
-    /// 
+    /// Page scale factor.  
     scale: Float,
   )
 }
 
-/// Page scale factor.
-/// 
 @internal
 pub fn encode__viewport(value__: Viewport) {
   json.object([
@@ -533,11 +498,12 @@ pub fn decode__viewport(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `add_script_to_evaluate_on_new_document`
 pub type AddScriptToEvaluateOnNewDocumentResponse {
-  AddScriptToEvaluateOnNewDocumentResponse(identifier: ScriptIdentifier)
+  AddScriptToEvaluateOnNewDocumentResponse(
+    /// Identifier of the added script.  
+    identifier: ScriptIdentifier,
+  )
 }
 
-/// Identifier of the added script.
-/// 
 @internal
 pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.Dynamic) {
   use identifier <- result.try(dynamic.field(
@@ -551,11 +517,12 @@ pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `capture_screenshot`
 pub type CaptureScreenshotResponse {
-  CaptureScreenshotResponse(data: String)
+  CaptureScreenshotResponse(
+    /// Base64-encoded image data. (Encoded as a base64 string when passed over JSON)  
+    data: String,
+  )
 }
 
-/// Base64-encoded image data. (Encoded as a base64 string when passed over JSON)
-/// 
 @internal
 pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))
@@ -566,11 +533,12 @@ pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `create_isolated_world`
 pub type CreateIsolatedWorldResponse {
-  CreateIsolatedWorldResponse(execution_context_id: runtime.ExecutionContextId)
+  CreateIsolatedWorldResponse(
+    /// Execution context of the isolated world.  
+    execution_context_id: runtime.ExecutionContextId,
+  )
 }
 
-/// Execution context of the isolated world.
-/// 
 @internal
 pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
   use execution_context_id <- result.try(dynamic.field(
@@ -585,16 +553,14 @@ pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `get_app_manifest`
 pub type GetAppManifestResponse {
   GetAppManifestResponse(
+    /// Manifest location.  
     url: String,
-    /// Manifest location.
-    /// 
     errors: List(AppManifestError),
+    /// Manifest content.  
     data: option.Option(String),
   )
 }
 
-/// Manifest content.
-/// 
 @internal
 pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
   use url <- result.try(dynamic.field("url", dynamic.string)(value__))
@@ -610,11 +576,12 @@ pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_frame_tree`
 pub type GetFrameTreeResponse {
-  GetFrameTreeResponse(frame_tree: FrameTree)
+  GetFrameTreeResponse(
+    /// Present frame tree structure.  
+    frame_tree: FrameTree,
+  )
 }
 
-/// Present frame tree structure.
-/// 
 @internal
 pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
   use frame_tree <- result.try(dynamic.field("frameTree", decode__frame_tree)(
@@ -628,18 +595,15 @@ pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `get_layout_metrics`
 pub type GetLayoutMetricsResponse {
   GetLayoutMetricsResponse(
+    /// Metrics relating to the layout viewport in CSS pixels.  
     css_layout_viewport: LayoutViewport,
-    /// Metrics relating to the layout viewport in CSS pixels.
-    /// 
+    /// Metrics relating to the visual viewport in CSS pixels.  
     css_visual_viewport: VisualViewport,
-    /// Metrics relating to the visual viewport in CSS pixels.
-    /// 
+    /// Size of scrollable area in CSS pixels.  
     css_content_size: dom.Rect,
   )
 }
 
-/// Size of scrollable area in CSS pixels.
-/// 
 @internal
 pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
   use css_layout_viewport <- result.try(dynamic.field(
@@ -666,15 +630,13 @@ pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `get_navigation_history`
 pub type GetNavigationHistoryResponse {
   GetNavigationHistoryResponse(
+    /// Index of the current navigation history entry.  
     current_index: Int,
-    /// Index of the current navigation history entry.
-    /// 
+    /// Array of navigation history entries.  
     entries: List(NavigationEntry),
   )
 }
 
-/// Array of navigation history entries.
-/// 
 @internal
 pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
   use current_index <- result.try(dynamic.field("currentIndex", dynamic.int)(
@@ -695,19 +657,16 @@ pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `navigate`
 pub type NavigateResponse {
   NavigateResponse(
+    /// Frame id that has navigated (or failed to navigate)  
     frame_id: FrameId,
-    /// Frame id that has navigated (or failed to navigate)
-    /// 
-    loader_id: option.Option(network.LoaderId),
     /// Loader identifier. This is omitted in case of same-document navigation,
-    /// as the previously committed loaderId would not change.
-    /// 
+    /// as the previously committed loaderId would not change.  
+    loader_id: option.Option(network.LoaderId),
+    /// User friendly error message, present if and only if navigation has failed.  
     error_text: option.Option(String),
   )
 }
 
-/// User friendly error message, present if and only if navigation has failed.
-/// 
 @internal
 pub fn decode__navigate_response(value__: dynamic.Dynamic) {
   use frame_id <- result.try(dynamic.field("frameId", decode__frame_id)(value__))
@@ -730,11 +689,12 @@ pub fn decode__navigate_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `print_to_pdf`
 pub type PrintToPdfResponse {
-  PrintToPdfResponse(data: String)
+  PrintToPdfResponse(
+    /// Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON)  
+    data: String,
+  )
 }
 
-/// Base64-encoded pdf data. Empty if |returnAsStream| is specified. (Encoded as a base64 string when passed over JSON)
-/// 
 @internal
 pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
   use data <- result.try(dynamic.field("data", dynamic.string)(value__))

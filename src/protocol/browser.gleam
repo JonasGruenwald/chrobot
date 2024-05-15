@@ -21,24 +21,19 @@ import gleam/result
 /// to represent the response to the command `get_version`
 pub type GetVersionResponse {
   GetVersionResponse(
+    /// Protocol version.  
     protocol_version: String,
-    /// Protocol version.
-    /// 
+    /// Product name.  
     product: String,
-    /// Product name.
-    /// 
+    /// Product revision.  
     revision: String,
-    /// Product revision.
-    /// 
+    /// User-Agent.  
     user_agent: String,
-    /// User-Agent.
-    /// 
+    /// V8 version.  
     js_version: String,
   )
 }
 
-/// V8 version.
-/// 
 @internal
 pub fn decode__get_version_response(value__: dynamic.Dynamic) {
   use protocol_version <- result.try(dynamic.field(

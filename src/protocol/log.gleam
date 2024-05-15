@@ -21,40 +21,30 @@ import protocol/runtime
 /// Log entry.
 pub type LogEntry {
   LogEntry(
+    /// Log entry source.  
     source: LogEntrySource,
-    /// Log entry source.
-    /// 
+    /// Log entry severity.  
     level: LogEntryLevel,
-    /// Log entry severity.
-    /// 
+    /// Logged text.  
     text: String,
-    /// Logged text.
-    /// 
     category: option.Option(LogEntryCategory),
+    /// Timestamp when this entry was added.  
     timestamp: runtime.Timestamp,
-    /// Timestamp when this entry was added.
-    /// 
+    /// URL of the resource if known.  
     url: option.Option(String),
-    /// URL of the resource if known.
-    /// 
+    /// Line number in the resource.  
     line_number: option.Option(Int),
-    /// Line number in the resource.
-    /// 
+    /// JavaScript stack trace.  
     stack_trace: option.Option(runtime.StackTrace),
-    /// JavaScript stack trace.
-    /// 
+    /// Identifier of the network request associated with this entry.  
     network_request_id: option.Option(network.RequestId),
-    /// Identifier of the network request associated with this entry.
-    /// 
+    /// Identifier of the worker associated with this entry.  
     worker_id: option.Option(String),
-    /// Identifier of the worker associated with this entry.
-    /// 
+    /// Call arguments.  
     args: option.Option(List(runtime.RemoteObject)),
   )
 }
 
-/// Call arguments.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `source` of `LogEntry`
 pub type LogEntrySource {
@@ -279,15 +269,13 @@ pub fn decode__log_entry(value__: dynamic.Dynamic) {
 /// Violation configuration setting.
 pub type ViolationSetting {
   ViolationSetting(
+    /// Violation type.  
     name: ViolationSettingName,
-    /// Violation type.
-    /// 
+    /// Time threshold to trigger upon.  
     threshold: Float,
   )
 }
 
-/// Time threshold to trigger upon.
-/// 
 /// This type is not part of the protocol spec, it has been generated dynamically 
 /// to represent the possible values of the enum property `name` of `ViolationSetting`
 pub type ViolationSettingName {

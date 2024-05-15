@@ -58,39 +58,29 @@ pub fn decode__dom_breakpoint_type(value__: dynamic.Dynamic) {
 /// Object event listener.
 pub type EventListener {
   EventListener(
+    /// `EventListener`'s type.  
     type_: String,
-    /// `EventListener`'s type.
-    /// 
+    /// `EventListener`'s useCapture.  
     use_capture: Bool,
-    /// `EventListener`'s useCapture.
-    /// 
+    /// `EventListener`'s passive flag.  
     passive: Bool,
-    /// `EventListener`'s passive flag.
-    /// 
+    /// `EventListener`'s once flag.  
     once: Bool,
-    /// `EventListener`'s once flag.
-    /// 
+    /// Script id of the handler code.  
     script_id: runtime.ScriptId,
-    /// Script id of the handler code.
-    /// 
+    /// Line number in the script (0-based).  
     line_number: Int,
-    /// Line number in the script (0-based).
-    /// 
+    /// Column number in the script (0-based).  
     column_number: Int,
-    /// Column number in the script (0-based).
-    /// 
+    /// Event handler function value.  
     handler: option.Option(runtime.RemoteObject),
-    /// Event handler function value.
-    /// 
+    /// Event original handler function value.  
     original_handler: option.Option(runtime.RemoteObject),
-    /// Event original handler function value.
-    /// 
+    /// Node the listener is added to (if any).  
     backend_node_id: option.Option(dom.BackendNodeId),
   )
 }
 
-/// Node the listener is added to (if any).
-/// 
 @internal
 pub fn encode__event_listener(value__: EventListener) {
   json.object(
@@ -163,11 +153,12 @@ pub fn decode__event_listener(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_event_listeners`
 pub type GetEventListenersResponse {
-  GetEventListenersResponse(listeners: List(EventListener))
+  GetEventListenersResponse(
+    /// Array of relevant listeners.  
+    listeners: List(EventListener),
+  )
 }
 
-/// Array of relevant listeners.
-/// 
 @internal
 pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
   use listeners <- result.try(dynamic.field(

@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="https://raw.githubusercontent.com/JonasGruenwald/chrobot/main/docs/header_1.png" alt="" style="max-width: 450px">
+<img src="https://raw.githubusercontent.com/JonasGruenwald/chrobot/main/doc_assets/header_1.png" alt="" style="max-width: 450px">
 </p>
 
 <h1 align="center">Chrobot</h1>
@@ -14,13 +14,16 @@
 <a href="https://hexdocs.pm/chrobot/">
   <img src="https://img.shields.io/badge/hex-docs-ffaff3" alt="Hex Docs">
 </a>
+<img alt="Target: Erlang" src="https://img.shields.io/badge/target-erlang-red?logo=erlang">
 </p>
 
 ## About
 
 Chrobot provides a set of typed bindings to the stable version of the [Chrome Devtools Protocol](https://chromedevtools.github.io/devtools-protocol/), based on its published JSON specification.
 
-It also exposes some handy high level abstractions for browser automation, and handles starting a browser instance and communicating with it for you.
+The typed interface is achieved by generating Gleam code for type definitions as well as encoder / decoder functions from the parsed JSON specification file.
+
+Chrobot also exposes some handy high level abstractions for browser automation, and handles managing a browser instance via an Erlang Port and communicating with it for you.
 
 You could use it for 
 
@@ -29,7 +32,8 @@ You could use it for
 * Web archiving
 * Browser integration tests
 
-> 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril
+> 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril!  
+> The package is public because I think it's already useful in its current state though. My use case is mainly short running automation jobs which don't need to be highly stable
 
 ## Setup
 
@@ -80,7 +84,6 @@ pub fn main() {
 
 ```gleam
 import chrobot
-import gleam/io
 import lustre/element.{text}
 import lustre/element/html
 
@@ -116,7 +119,6 @@ fn build_page() {
 }
 
 pub fn main() {
-  // Open the browser and navigate to the gleam homepage
   let assert Ok(browser) = chrobot.launch()
   let assert Ok(page) =
     browser

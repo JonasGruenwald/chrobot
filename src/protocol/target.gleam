@@ -55,20 +55,17 @@ pub fn decode__session_id(value__: dynamic.Dynamic) {
 pub type TargetInfo {
   TargetInfo(
     target_id: TargetID,
+    /// List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22  
     type_: String,
-    /// List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22
-    /// 
     title: String,
     url: String,
+    /// Whether the target has an attached client.  
     attached: Bool,
-    /// Whether the target has an attached client.
-    /// 
+    /// Opener target Id  
     opener_id: option.Option(TargetID),
   )
 }
 
-/// Opener target Id
-/// 
 @internal
 pub fn encode__target_info(value__: TargetInfo) {
   json.object(
@@ -112,11 +109,12 @@ pub fn decode__target_info(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `attach_to_target`
 pub type AttachToTargetResponse {
-  AttachToTargetResponse(session_id: SessionID)
+  AttachToTargetResponse(
+    /// Id assigned to the session.  
+    session_id: SessionID,
+  )
 }
 
-/// Id assigned to the session.
-/// 
 @internal
 pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
   use session_id <- result.try(dynamic.field("sessionId", decode__session_id)(
@@ -129,11 +127,12 @@ pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `create_browser_context`
 pub type CreateBrowserContextResponse {
-  CreateBrowserContextResponse(browser_context_id: String)
+  CreateBrowserContextResponse(
+    /// The id of the context created.  
+    browser_context_id: String,
+  )
 }
 
-/// The id of the context created.
-/// 
 @internal
 pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
   use browser_context_id <- result.try(dynamic.field(
@@ -147,11 +146,12 @@ pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_browser_contexts`
 pub type GetBrowserContextsResponse {
-  GetBrowserContextsResponse(browser_context_ids: List(String))
+  GetBrowserContextsResponse(
+    /// An array of browser context ids.  
+    browser_context_ids: List(String),
+  )
 }
 
-/// An array of browser context ids.
-/// 
 @internal
 pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
   use browser_context_ids <- result.try(dynamic.field(
@@ -165,11 +165,12 @@ pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `create_target`
 pub type CreateTargetResponse {
-  CreateTargetResponse(target_id: TargetID)
+  CreateTargetResponse(
+    /// The id of the page opened.  
+    target_id: TargetID,
+  )
 }
 
-/// The id of the page opened.
-/// 
 @internal
 pub fn decode__create_target_response(value__: dynamic.Dynamic) {
   use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
@@ -182,11 +183,12 @@ pub fn decode__create_target_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_targets`
 pub type GetTargetsResponse {
-  GetTargetsResponse(target_infos: List(TargetInfo))
+  GetTargetsResponse(
+    /// The list of targets.  
+    target_infos: List(TargetInfo),
+  )
 }
 
-/// The list of targets.
-/// 
 @internal
 pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
   use target_infos <- result.try(dynamic.field(

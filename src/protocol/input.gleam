@@ -18,37 +18,28 @@ import gleam/result
 
 pub type TouchPoint {
   TouchPoint(
+    /// X coordinate of the event relative to the main frame's viewport in CSS pixels.  
     x: Float,
-    /// X coordinate of the event relative to the main frame's viewport in CSS pixels.
-    /// 
-    y: Float,
     /// Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to
-    /// the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-    /// 
+    /// the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.  
+    y: Float,
+    /// X radius of the touch area (default: 1.0).  
     radius_x: option.Option(Float),
-    /// X radius of the touch area (default: 1.0).
-    /// 
+    /// Y radius of the touch area (default: 1.0).  
     radius_y: option.Option(Float),
-    /// Y radius of the touch area (default: 1.0).
-    /// 
+    /// Rotation angle (default: 0.0).  
     rotation_angle: option.Option(Float),
-    /// Rotation angle (default: 0.0).
-    /// 
+    /// Force (default: 1.0).  
     force: option.Option(Float),
-    /// Force (default: 1.0).
-    /// 
+    /// The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)  
     tilt_x: option.Option(Float),
-    /// The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
-    /// 
+    /// The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).  
     tilt_y: option.Option(Float),
-    /// The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
-    /// 
+    /// Identifier used to track touch sources between events, must be unique within an event.  
     id: option.Option(Float),
   )
 }
 
-/// Identifier used to track touch sources between events, must be unique within an event.
-/// 
 @internal
 pub fn encode__touch_point(value__: TouchPoint) {
   json.object(

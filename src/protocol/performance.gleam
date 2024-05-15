@@ -20,15 +20,13 @@ import gleam/result
 /// Run-time execution metric.
 pub type Metric {
   Metric(
+    /// Metric name.  
     name: String,
-    /// Metric name.
-    /// 
+    /// Metric value.  
     value: Float,
   )
 }
 
-/// Metric value.
-/// 
 @internal
 pub fn encode__metric(value__: Metric) {
   json.object([
@@ -48,11 +46,12 @@ pub fn decode__metric(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_metrics`
 pub type GetMetricsResponse {
-  GetMetricsResponse(metrics: List(Metric))
+  GetMetricsResponse(
+    /// Current values for run-time metrics.  
+    metrics: List(Metric),
+  )
 }
 
-/// Current values for run-time metrics.
-/// 
 @internal
 pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
   use metrics <- result.try(dynamic.field(

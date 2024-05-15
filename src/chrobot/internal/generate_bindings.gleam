@@ -43,6 +43,20 @@ This is the protocol definition entrypoint, it contains an overview of the proto
 and a function to retrieve the version of the protocol used to generate the current bindings.  
 The protocol version is also displayed in the box above, which appears on every generated module.  
 
+## ⚠️ Really Important Notes
+   
+1) It's best never to work with the DOM domain for automation, 
+[an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
+Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
+  
+2) Unfortunately, I haven't found a good way to map dynamic properties to gleam attributes bidirectionally.  
+**This means all dynamic values you supply to commands will be silently dropped**!  
+It's important to realize this to avoid confusion, for example in `runtime.call_function_on` 
+you may want to supply arguments which can be any value, but it won't work.  
+The only path to do that as far as I can tell, is write the protocol call logic yourself,
+perhaps taking the codegen code as a basis.  
+Check the `call_custom_function_on` function from `chrobot` which does this for the mentioned function
+
 ## Structure
 
 Each domain in the protocol is represented as a module under `protocol/`. 
@@ -97,12 +111,6 @@ arguments, like the `sessionId` which is required for some operations.
 Events are not implemented yet!
 
 
-## Important Notes
-
-It's best never to work with Node IDs from the DOM domain for automation, 
-[an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
-  
-Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
 "
 
 pub type Protocol {
@@ -1052,15 +1060,18 @@ to represent the possible values of the enum property `"
 
   let attached_comment = case comment {
     "" -> ""
-    value -> "\n" <> gen_attached_comment(value <> "\n")
+    value -> "\n" <> gen_attached_comment(value <> "  ")
   }
 
   let attr_value = case optional {
-    True -> attached_comment <> "option.Option(" <> attr_value <> ")"
-    False -> attached_comment <> attr_value
+    True -> "option.Option(" <> attr_value <> ")"
+    False -> attr_value
   }
 
-  #(safe_snake_case(name) <> ": " <> attr_value <> ",\n", enum_def)
+  #(
+    attached_comment <> safe_snake_case(name) <> ": " <> attr_value <> ",\n",
+    enum_def,
+  )
 }
 
 // Returns the type definition body and any additional definitions required for

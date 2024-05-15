@@ -41,18 +41,15 @@ pub fn decode__stream_handle(value__: dynamic.Dynamic) {
 /// to represent the response to the command `read`
 pub type ReadResponse {
   ReadResponse(
+    /// Set if the data is base64-encoded  
     base64_encoded: option.Option(Bool),
-    /// Set if the data is base64-encoded
-    /// 
+    /// Data that were read.  
     data: String,
-    /// Data that were read.
-    /// 
+    /// Set if the end-of-file condition occurred while reading.  
     eof: Bool,
   )
 }
 
-/// Set if the end-of-file condition occurred while reading.
-/// 
 @internal
 pub fn decode__read_response(value__: dynamic.Dynamic) {
   use base64_encoded <- result.try(dynamic.optional_field(
@@ -68,11 +65,12 @@ pub fn decode__read_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `resolve_blob`
 pub type ResolveBlobResponse {
-  ResolveBlobResponse(uuid: String)
+  ResolveBlobResponse(
+    /// UUID of the specified Blob.  
+    uuid: String,
+  )
 }
 
-/// UUID of the specified Blob.
-/// 
 @internal
 pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
   use uuid <- result.try(dynamic.field("uuid", dynamic.string)(value__))

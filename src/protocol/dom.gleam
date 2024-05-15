@@ -64,12 +64,10 @@ pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
 /// Backend node with a friendly name.
 pub type BackendNode {
   BackendNode(
+    /// `Node`'s nodeType.  
     node_type: Int,
-    /// `Node`'s nodeType.
-    /// 
+    /// `Node`'s nodeName.  
     node_name: String,
-    /// `Node`'s nodeName.
-    /// 
     backend_node_id: BackendNodeId,
   )
 }
@@ -382,93 +380,65 @@ pub fn decode__scroll_orientation(value__: dynamic.Dynamic) {
 /// DOMNode is a base node mirror type.
 pub type Node {
   Node(
-    node_id: NodeId,
     /// Node identifier that is passed into the rest of the DOM messages as the `nodeId`. Backend
     /// will only push node with given `id` once. It is aware of all requested nodes and will only
-    /// fire DOM events for nodes known to the client.
-    /// 
+    /// fire DOM events for nodes known to the client.  
+    node_id: NodeId,
+    /// The id of the parent node if any.  
     parent_id: option.Option(NodeId),
-    /// The id of the parent node if any.
-    /// 
+    /// The BackendNodeId for this node.  
     backend_node_id: BackendNodeId,
-    /// The BackendNodeId for this node.
-    /// 
+    /// `Node`'s nodeType.  
     node_type: Int,
-    /// `Node`'s nodeType.
-    /// 
+    /// `Node`'s nodeName.  
     node_name: String,
-    /// `Node`'s nodeName.
-    /// 
+    /// `Node`'s localName.  
     local_name: String,
-    /// `Node`'s localName.
-    /// 
+    /// `Node`'s nodeValue.  
     node_value: String,
-    /// `Node`'s nodeValue.
-    /// 
+    /// Child count for `Container` nodes.  
     child_node_count: option.Option(Int),
-    /// Child count for `Container` nodes.
-    /// 
+    /// Child nodes of this node when requested with children.  
     children: option.Option(List(Node)),
-    /// Child nodes of this node when requested with children.
-    /// 
+    /// Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.  
     attributes: option.Option(List(String)),
-    /// Attributes of the `Element` node in the form of flat array `[name1, value1, name2, value2]`.
-    /// 
+    /// Document URL that `Document` or `FrameOwner` node points to.  
     document_url: option.Option(String),
-    /// Document URL that `Document` or `FrameOwner` node points to.
-    /// 
+    /// Base URL that `Document` or `FrameOwner` node uses for URL completion.  
     base_url: option.Option(String),
-    /// Base URL that `Document` or `FrameOwner` node uses for URL completion.
-    /// 
+    /// `DocumentType`'s publicId.  
     public_id: option.Option(String),
-    /// `DocumentType`'s publicId.
-    /// 
+    /// `DocumentType`'s systemId.  
     system_id: option.Option(String),
-    /// `DocumentType`'s systemId.
-    /// 
+    /// `DocumentType`'s internalSubset.  
     internal_subset: option.Option(String),
-    /// `DocumentType`'s internalSubset.
-    /// 
+    /// `Document`'s XML version in case of XML documents.  
     xml_version: option.Option(String),
-    /// `Document`'s XML version in case of XML documents.
-    /// 
+    /// `Attr`'s name.  
     name: option.Option(String),
-    /// `Attr`'s name.
-    /// 
+    /// `Attr`'s value.  
     value: option.Option(String),
-    /// `Attr`'s value.
-    /// 
+    /// Pseudo element type for this node.  
     pseudo_type: option.Option(PseudoType),
-    /// Pseudo element type for this node.
-    /// 
-    pseudo_identifier: option.Option(String),
     /// Pseudo element identifier for this node. Only present if there is a
-    /// valid pseudoType.
-    /// 
+    /// valid pseudoType.  
+    pseudo_identifier: option.Option(String),
+    /// Shadow root type.  
     shadow_root_type: option.Option(ShadowRootType),
-    /// Shadow root type.
-    /// 
+    /// Frame ID for frame owner elements.  
     frame_id: option.Option(String),
-    /// Frame ID for frame owner elements.
-    /// 
+    /// Content document for frame owner elements.  
     content_document: option.Option(Node),
-    /// Content document for frame owner elements.
-    /// 
+    /// Shadow root list for given element host.  
     shadow_roots: option.Option(List(Node)),
-    /// Shadow root list for given element host.
-    /// 
+    /// Content document fragment for template elements.  
     template_content: option.Option(Node),
-    /// Content document fragment for template elements.
-    /// 
+    /// Pseudo elements associated with this node.  
     pseudo_elements: option.Option(List(Node)),
-    /// Pseudo elements associated with this node.
-    /// 
+    /// Distributed nodes for given insertion point.  
     distributed_nodes: option.Option(List(BackendNode)),
-    /// Distributed nodes for given insertion point.
-    /// 
+    /// Whether the node is SVG.  
     is_svg: option.Option(Bool),
-    /// Whether the node is SVG.
-    /// 
     compatibility_mode: option.Option(CompatibilityMode),
     assigned_slot: option.Option(BackendNode),
   )
@@ -700,21 +670,17 @@ pub fn decode__node(value__: dynamic.Dynamic) {
 /// A structure holding an RGBA color.
 pub type RGBA {
   RGBA(
+    /// The red component, in the [0-255] range.  
     r: Int,
-    /// The red component, in the [0-255] range.
-    /// 
+    /// The green component, in the [0-255] range.  
     g: Int,
-    /// The green component, in the [0-255] range.
-    /// 
+    /// The blue component, in the [0-255] range.  
     b: Int,
-    /// The blue component, in the [0-255] range.
-    /// 
+    /// The alpha component, in the [0-1] range (default: 1).  
     a: option.Option(Float),
   )
 }
 
-/// The alpha component, in the [0-1] range (default: 1).
-/// 
 @internal
 pub fn encode__rgba(value__: RGBA) {
   json.object(
@@ -760,30 +726,23 @@ pub fn decode__quad(value__: dynamic.Dynamic) {
 /// Box model.
 pub type BoxModel {
   BoxModel(
+    /// Content box  
     content: Quad,
-    /// Content box
-    /// 
+    /// Padding box  
     padding: Quad,
-    /// Padding box
-    /// 
+    /// Border box  
     border: Quad,
-    /// Border box
-    /// 
+    /// Margin box  
     margin: Quad,
-    /// Margin box
-    /// 
+    /// Node width  
     width: Int,
-    /// Node width
-    /// 
+    /// Node height  
     height: Int,
-    /// Node height
-    /// 
+    /// Shape outside coordinates  
     shape_outside: option.Option(ShapeOutsideInfo),
   )
 }
 
-/// Shape outside coordinates
-/// 
 @internal
 pub fn encode__box_model(value__: BoxModel) {
   json.object(
@@ -828,18 +787,15 @@ pub fn decode__box_model(value__: dynamic.Dynamic) {
 /// CSS Shape Outside details.
 pub type ShapeOutsideInfo {
   ShapeOutsideInfo(
+    /// Shape bounds  
     bounds: Quad,
-    /// Shape bounds
-    /// 
+    /// Shape coordinate details  
     shape: List(dynamic.Dynamic),
-    /// Shape coordinate details
-    /// 
+    /// Margin shape bounds  
     margin_shape: List(dynamic.Dynamic),
   )
 }
 
-/// Margin shape bounds
-/// 
 @internal
 pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
   json.object([
@@ -874,21 +830,17 @@ pub fn decode__shape_outside_info(value__: dynamic.Dynamic) {
 /// Rectangle.
 pub type Rect {
   Rect(
+    /// X coordinate  
     x: Float,
-    /// X coordinate
-    /// 
+    /// Y coordinate  
     y: Float,
-    /// Y coordinate
-    /// 
+    /// Rectangle width  
     width: Float,
-    /// Rectangle width
-    /// 
+    /// Rectangle height  
     height: Float,
   )
 }
 
-/// Rectangle height
-/// 
 @internal
 pub fn encode__rect(value__: Rect) {
   json.object([
@@ -911,15 +863,13 @@ pub fn decode__rect(value__: dynamic.Dynamic) {
 
 pub type CSSComputedStyleProperty {
   CSSComputedStyleProperty(
+    /// Computed style property name.  
     name: String,
-    /// Computed style property name.
-    /// 
+    /// Computed style property value.  
     value: String,
   )
 }
 
-/// Computed style property value.
-/// 
 @internal
 pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
   json.object([
@@ -939,11 +889,12 @@ pub fn decode__css_computed_style_property(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `describe_node`
 pub type DescribeNodeResponse {
-  DescribeNodeResponse(node: Node)
+  DescribeNodeResponse(
+    /// Node description.  
+    node: Node,
+  )
 }
 
-/// Node description.
-/// 
 @internal
 pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
   use node <- result.try(dynamic.field("node", decode__node)(value__))
@@ -954,11 +905,12 @@ pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_attributes`
 pub type GetAttributesResponse {
-  GetAttributesResponse(attributes: List(String))
+  GetAttributesResponse(
+    /// An interleaved array of node attribute names and values.  
+    attributes: List(String),
+  )
 }
 
-/// An interleaved array of node attribute names and values.
-/// 
 @internal
 pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
   use attributes <- result.try(dynamic.field(
@@ -972,11 +924,12 @@ pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_box_model`
 pub type GetBoxModelResponse {
-  GetBoxModelResponse(model: BoxModel)
+  GetBoxModelResponse(
+    /// Box model for the node.  
+    model: BoxModel,
+  )
 }
 
-/// Box model for the node.
-/// 
 @internal
 pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
   use model <- result.try(dynamic.field("model", decode__box_model)(value__))
@@ -987,11 +940,12 @@ pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_document`
 pub type GetDocumentResponse {
-  GetDocumentResponse(root: Node)
+  GetDocumentResponse(
+    /// Resulting node.  
+    root: Node,
+  )
 }
 
-/// Resulting node.
-/// 
 @internal
 pub fn decode__get_document_response(value__: dynamic.Dynamic) {
   use root <- result.try(dynamic.field("root", decode__node)(value__))
@@ -1003,18 +957,15 @@ pub fn decode__get_document_response(value__: dynamic.Dynamic) {
 /// to represent the response to the command `get_node_for_location`
 pub type GetNodeForLocationResponse {
   GetNodeForLocationResponse(
+    /// Resulting node.  
     backend_node_id: BackendNodeId,
-    /// Resulting node.
-    /// 
+    /// Frame this node belongs to.  
     frame_id: String,
-    /// Frame this node belongs to.
-    /// 
+    /// Id of the node at given coordinates, only when enabled and requested document.  
     node_id: option.Option(NodeId),
   )
 }
 
-/// Id of the node at given coordinates, only when enabled and requested document.
-/// 
 @internal
 pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
   use backend_node_id <- result.try(dynamic.field(
@@ -1036,11 +987,12 @@ pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_outer_html`
 pub type GetOuterHtmlResponse {
-  GetOuterHtmlResponse(outer_html: String)
+  GetOuterHtmlResponse(
+    /// Outer HTML markup.  
+    outer_html: String,
+  )
 }
 
-/// Outer HTML markup.
-/// 
 @internal
 pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
   use outer_html <- result.try(dynamic.field("outerHTML", dynamic.string)(
@@ -1053,11 +1005,12 @@ pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `move_to`
 pub type MoveToResponse {
-  MoveToResponse(node_id: NodeId)
+  MoveToResponse(
+    /// New id of the moved node.  
+    node_id: NodeId,
+  )
 }
 
-/// New id of the moved node.
-/// 
 @internal
 pub fn decode__move_to_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1068,11 +1021,12 @@ pub fn decode__move_to_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `query_selector`
 pub type QuerySelectorResponse {
-  QuerySelectorResponse(node_id: NodeId)
+  QuerySelectorResponse(
+    /// Query selector result.  
+    node_id: NodeId,
+  )
 }
 
-/// Query selector result.
-/// 
 @internal
 pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1083,11 +1037,12 @@ pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `query_selector_all`
 pub type QuerySelectorAllResponse {
-  QuerySelectorAllResponse(node_ids: List(NodeId))
+  QuerySelectorAllResponse(
+    /// Query selector result.  
+    node_ids: List(NodeId),
+  )
 }
 
-/// Query selector result.
-/// 
 @internal
 pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
   use node_ids <- result.try(dynamic.field(
@@ -1101,11 +1056,12 @@ pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `request_node`
 pub type RequestNodeResponse {
-  RequestNodeResponse(node_id: NodeId)
+  RequestNodeResponse(
+    /// Node id for given object.  
+    node_id: NodeId,
+  )
 }
 
-/// Node id for given object.
-/// 
 @internal
 pub fn decode__request_node_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
@@ -1116,11 +1072,12 @@ pub fn decode__request_node_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `resolve_node`
 pub type ResolveNodeResponse {
-  ResolveNodeResponse(object: runtime.RemoteObject)
+  ResolveNodeResponse(
+    /// JavaScript object wrapper for given node.  
+    object: runtime.RemoteObject,
+  )
 }
 
-/// JavaScript object wrapper for given node.
-/// 
 @internal
 pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
   use object <- result.try(dynamic.field(
@@ -1134,11 +1091,12 @@ pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `set_node_name`
 pub type SetNodeNameResponse {
-  SetNodeNameResponse(node_id: NodeId)
+  SetNodeNameResponse(
+    /// New node's id.  
+    node_id: NodeId,
+  )
 }
 
-/// New node's id.
-/// 
 @internal
 pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
   use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))

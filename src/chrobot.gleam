@@ -9,13 +9,25 @@
 //// - If you want to make raw protocol calls, you can use `page_caller`, to create a callback to pass to protocol commands from your `Page`
 //// - When you are done with the browser, you should call `quit` to shut it down gracefully
 //// 
-//// 
+//// The functions in this module just make calls to `protocol/`  modules, if you
+//// would like to customize the behaviour, take a look at them to see how to make
+//// direct protocol calls and pass different defaults.  
+////  
+//// Something to consider:  
+//// A lot of the functions in this module are interpolating their parameters into  
+//// JavaScript expressions that are evaluated in the page context.  
+//// No attempt is made to escape the passed parameters or prevent script injection through them, 
+//// you should not use the functions in this module with arbitrary strings if you want
+//// to treat the pages you are operating on as a secure context.
 //// 
 
-import chrome
+import chrome.{type RequestError}
 import gleam/bit_array
+import gleam/dynamic
 import gleam/erlang/process.{type Subject}
 import gleam/io
+import gleam/json
+import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
@@ -92,7 +104,10 @@ pub fn launch_with_config(config: chrome.BrowserConfig) {
 /// Open a page and wait for the document to resolve.  
 /// Returns a response only when `Page.loadEventFired` is received, you
 /// can additionally use `await_selector` to ensure the page is ready with the 
-/// content you expect.
+/// content you expect.  
+/// The timeout passed to this function will be attached to the returned
+/// `Page` type to be reused by other functions in this module.  
+/// You can always adjust it using `with_timeout`.
 pub fn open(
   with browser_subject: Subject(chrome.Message),
   to url: String,
@@ -138,8 +153,8 @@ pub fn open(
   ))
 
   // I noticed with about:blank the load event never fires
-  // maybe it's because the page is loaded to quick and there is a race condition?
-  // we could remove this 'waiting for the load event to fire' step in favour
+  // maybe it's because the page is loaded too quickly and there is a race condition?
+  // could remove this 'waiting for the load event to fire' step in favour
   // of just always using the await selector, which works pretty well I think
 
   // Return the page
@@ -149,6 +164,11 @@ pub fn open(
     target_id: target_response.target_id,
     time_out: time_out,
   ))
+}
+
+/// Close the passed page
+pub fn close(page: Page) {
+  target.close_target(page_caller(page), page.target_id)
 }
 
 /// Similar to `open`, but creates a new page from HTML that you pass to it.
@@ -276,6 +296,22 @@ pub fn eval(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
+pub fn eval_to_value(on page: Page, js expression: String) {
+  runtime.evaluate(
+    page_caller(page),
+    expression: expression,
+    object_group: None,
+    include_command_line_api: None,
+    silent: Some(False),
+    // will be the current page by default
+    context_id: None,
+    return_by_value: Some(True),
+    user_gesture: Some(True),
+    await_promise: Some(False),
+  )
+  |> handle_eval_response()
+}
+
 /// Like `eval`, but awaits for the result of the evaluation
 /// and returns once promise has been resolved
 pub fn eval_async(on page: Page, js expression: String) {
@@ -294,29 +330,127 @@ pub fn eval_async(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
+/// Evalute a remote object to a value,
+/// passing in the appropriate decoder function
+pub fn to_value(
+  on page: Page,
+  from remote_object_id: runtime.RemoteObjectId,
+  to decoder,
+) {
+  let declaration =
+    "function to_value(){
+    return JSON.stringify(this)
+  }"
+
+  call_custom_function_on(
+    page_caller(page),
+    declaration,
+    remote_object_id,
+    [],
+    decoder,
+  )
+}
+
+/// Cast a RemoteObject into a value by passing a dynamic decoder.  
+/// This is a convenience for when you know a RemoteObject is returned by value and not ID,
+/// and you want to extract the value from it.  
+/// You can chain this to `eval` or `eval_async` like so:
+/// ```gleam
+/// eval(page, "window.location.href")
+///   |> as_value(dynamic.string)
+/// ```
+pub fn as_value(
+  result: Result(runtime.RemoteObject, chrome.RequestError),
+  decoder,
+) {
+  case result {
+    Ok(runtime.RemoteObject(_, _, _, Some(value), _, _, _)) -> {
+      decoder(value)
+      |> result.replace_error(chrome.ProtocolError)
+    }
+    Error(something) -> Error(something)
+    _ -> Error(chrome.NotFoundError)
+  }
+}
+
+/// Assuming the passed remote object reference is an Element, 
+/// return an attribute of that element.  
+/// Attributes are always returned as a string.
+pub fn get_attribute(
+  on page: Page,
+  from item: runtime.RemoteObjectId,
+  name attribute_name: String,
+) {
+  let declaration =
+    "function get_arg(attribute_name)
+  {
+    return this.getAttribute(attribute_name)
+  }
+"
+  call_custom_function_on(
+    page_caller(page),
+    declaration,
+    item,
+    [StringArg(attribute_name)],
+    dynamic.string,
+  )
+}
+
+/// Get a property of a remote object and decode it with the provided decoder
+pub fn get_property(
+  on page: Page,
+  from item: runtime.RemoteObjectId,
+  name property_name: String,
+  property_decoder property_decoder,
+) {
+  let declaration =
+    "function get_prop(property_name)
+  {
+    return this[property_name]
+  }
+"
+  call_custom_function_on(
+    page_caller(page),
+    declaration,
+    item,
+    [StringArg(property_name)],
+    property_decoder,
+  )
+}
+
+pub fn get_text(on page: Page, from item: runtime.RemoteObjectId) {
+  get_property(page, item, "innerText", dynamic.string)
+}
+
+pub fn get_inner_html(on page: Page, from item: runtime.RemoteObjectId) {
+  get_property(page, item, "innerHTML", dynamic.string)
+}
+
+pub fn get_outer_html(on page: Page) {
+  eval(page, "window.document.documentElement.outerHTML")
+  |> as_value(dynamic.string)
+}
+
 pub fn select(on page: Page, select selector: String) {
   let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
   eval(page, selector_code)
+  |> handle_object_id_response()
 }
 
 /// Continously attempt to run a selector, until it succeeds.  
 /// You can use this after opening a page, to wait for the moment it has initialized
-/// enough sufficiently for you to run your automation on it.
-pub fn await_selector(on page: Page, select selector: String) {
+/// enough sufficiently for you to run your automation on it.  
+/// The final result will be single remote object id
+pub fn await_selector(
+  on page: Page,
+  select selector: String,
+) -> Result(runtime.RemoteObjectId, RequestError) {
   // 🦜
   let polly = fn() {
-    let result =
-      eval(page, "window.document.querySelector(\"" <> selector <> "\")")
-    case result {
-      Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(_remote_object_id))) -> {
-        Ok(result)
-      }
-      Ok(_) -> {
-        Error(chrome.NotFoundError)
-      }
-      Error(any) -> Error(any)
-    }
+    eval(page, "window.document.querySelector(\"" <> selector <> "\")")
+    |> handle_object_id_response()
   }
+
   poll(polly, page.time_out)
 }
 
@@ -414,5 +548,104 @@ fn handle_eval_response(eval_response) {
       Ok(result_data)
     }
     Error(other) -> Error(other)
+  }
+}
+
+fn handle_object_id_response(response) {
+  case response {
+    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+      Ok(remote_object_id)
+    }
+    Ok(_) -> {
+      Error(chrome.NotFoundError)
+    }
+    Error(any) -> Error(any)
+  }
+}
+
+pub type CallArgument {
+  StringArg(value: String)
+  IntArg(value: Int)
+  FloatArg(value: Float)
+  BoolArg(value: Bool)
+  ArrayArg(value: List(CallArgument))
+}
+
+fn encode_custom_arg(arg: CallArgument) {
+  case arg {
+    StringArg(value) -> json.string(value)
+    IntArg(value) -> json.int(value)
+    FloatArg(value) -> json.float(value)
+    BoolArg(value) -> json.bool(value)
+    ArrayArg(value) -> json.array(value, encode_custom_arg)
+  }
+}
+
+fn encode_custom_arguments(input: List(CallArgument)) {
+  json.array(input, fn(arg) {
+    json.object([#("value", encode_custom_arg(arg))])
+  })
+}
+
+// }
+/// This is a version of `runtime.call_function_on` which allows
+/// passing in arguments, and always returns the result as a value,
+/// which will be decoded by the decoder you pass in
+///  
+/// You would use it with a JavaScript function declaration like this:  
+/// ```js
+/// function my_function(my_arg) {
+///   // You can access the passed RemoteObject with `this`
+///   const wibble = this.getAttribute('href')
+///   // You have access to the arguments you passed in
+///   const wobble = 'hello ' + my_arg
+///   // You receive this return value, you should pass in a string decoder
+///   // in this case
+///   return wibble + wobble;
+/// }
+/// ```
+pub fn call_custom_function_on(
+  callback,
+  function_declaration function_declaration: String,
+  object_id object_id: runtime.RemoteObjectId,
+  args arguments: List(CallArgument),
+  value_decoder value_decoder,
+) {
+  // Make call
+  let encoded_arguments = encode_custom_arguments(arguments)
+  let payload =
+    Some(
+      json.object([
+        #("functionDeclaration", json.string(function_declaration)),
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+        #("arguments", encoded_arguments),
+        #("returnByValue", json.bool(True)),
+      ]),
+    )
+
+  // Parse response
+  use result <- result.try(callback("Runtime.callFunctionOn", payload))
+  use decoded_response <- result.try(
+    runtime.decode__call_function_on_response(result)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  // Ensure response contains a value
+  case decoded_response {
+    runtime.CallFunctionOnResponse(_, Some(exception)) -> {
+      Error(chrome.RuntimeException(
+        text: exception.text,
+        line: exception.line_number,
+        column: exception.column_number,
+      ))
+    }
+    runtime.CallFunctionOnResponse(
+      runtime.RemoteObject(_, _, _, Some(value), _, _, _),
+      None,
+    ) -> {
+      value_decoder(value)
+      |> result.replace_error(chrome.ProtocolError)
+    }
+    _ -> Error(chrome.NotFoundError)
   }
 }
