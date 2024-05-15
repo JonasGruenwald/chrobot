@@ -33,7 +33,6 @@ You could use it for
 * Browser integration tests
 
 > 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril!  
-> The package is public because I think it's already useful in its current state though. My use case is mainly short running automation jobs which don't need to be highly stable
 
 ## Setup
 
