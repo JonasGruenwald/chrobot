@@ -1,6 +1,5 @@
 import chrome
 import gleam/erlang/os
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option
@@ -453,7 +452,6 @@ pub fn handle_protocol_error_2_test() {
 
   case res {
     Error(chrome.BrowserError(code, message, _data)) -> {
-      io.debug(#(code, message))
       message
       |> should.equal("'Bogus.method' wasn't found")
       code

@@ -4,3 +4,4 @@
 erl_crash.dump
 /chrome
 .DS_Store
+src/playground_.gleam
