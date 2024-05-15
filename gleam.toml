@@ -12,7 +12,6 @@ links = []
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 gleam_json = ">= 1.0.0 and < 2.0.0"
-glexec = ">= 1.0.3 and < 2.0.0"
 gleam_erlang = ">= 0.25.0 and < 1.0.0"
 gleam_otp = ">= 0.10.0 and < 1.0.0"
 filepath = ">= 1.0.0 and < 2.0.0"
