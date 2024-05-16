@@ -1,5 +1,5 @@
 import birdie
-import chrobot/internal/generate_bindings.{
+import codegen/generate_bindings.{
   apply_protocol_patches, gen_domain_module, gen_root_module,
   get_stable_protocol, merge_protocols, parse_protocol,
 }

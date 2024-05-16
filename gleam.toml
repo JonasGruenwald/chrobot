@@ -6,8 +6,10 @@ licences = ["MIT"]
 repository = { type = "github", user = "JonasGruenwald", repo = "chrobot" }
 links = []
 
-# For a full reference of all the available options, you can have a look at
-# https://gleam.run/writing-gleam/gleam-toml/.
+[documentation]
+pages = [
+  { title = "Changelog", path = "changelog.html", source = "./CHANGELOG.md" },
+]
 
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
