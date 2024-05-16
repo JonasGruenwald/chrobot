@@ -29,7 +29,7 @@ pub fn get_browser_instance() {
       path: browser_path,
       args: chrome.get_default_chrome_args(),
       start_timeout: 5000,
-      log_level: chrome.LogLevelWarnings
+      log_level: chrome.LogLevelWarnings,
     )
   let browser = should.be_ok(chrome.launch_with_config(config))
   browser
