@@ -57,6 +57,17 @@ Install as a Gleam package
 gleam add chrobot
 ```
 
+Install as an Elixir dependency with mix
+
+```elixir
+# in your mix.exs
+defp deps do
+  [
+    {:chrobot, "~> 2.0.0", app: false, manager: :rebar3}
+  ]
+end
+```
+
 ## Examples
 
 ### Take a screenshot of a website
@@ -157,6 +168,18 @@ pub fn main() {
   let assert Ok(_) = chrobot.quit(browser)
 }
 
+```
+
+### Using from Elixir
+
+```elixir
+# ( output / logging removed for brevity )
+iex(1)> {:ok, browser} = :chrobot.launch()
+iex(2)> {:ok, page} = :chrobot.open(browser, "https://example.com", 10_000)
+iex(3)> {:ok, object} = :chrobot.select(page, "h1")
+iex(4)> {:ok,text} = :chrobot.get_text(page, object)
+iex(5)> text
+"Example Domain"
 ```
 
 

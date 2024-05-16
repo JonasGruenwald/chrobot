@@ -33,8 +33,25 @@ const default_message_timeout: Int = 5000
 
 // --- PUBLIC API ---
 
+/// The log level the browser is using.  
+pub type LogLevel {
+  /// Log nothing
+  LogLevelSilent
+  /// Log only warnings, this is the default
+  LogLevelWarnings
+  /// Log normal but uncommon events, like buffering a long message, shutdown
+  LogLevelInfo
+  /// Log everything, including protocol payloads
+  LogLevelDebug
+}
+
 pub type BrowserConfig {
-  BrowserConfig(path: String, args: List(String), start_timeout: Int)
+  BrowserConfig(
+    path: String,
+    args: List(String),
+    start_timeout: Int,
+    log_level: LogLevel,
+  )
 }
 
 pub type BrowserInstance {
@@ -139,10 +156,15 @@ pub fn launch() {
     get_local_chrome_path(),
     get_system_chrome_path,
   ))
+  // I think logging this is important to avoid confusion
+  io.println(
+    "Dynamically resolved browser path: \"" <> resolved_chrome_path <> "\"",
+  )
   launch_with_config(BrowserConfig(
     path: resolved_chrome_path,
     args: get_default_chrome_args(),
     start_timeout: 10_000,
+    log_level: LogLevelWarnings,
   ))
 }
 
@@ -188,14 +210,23 @@ pub fn listen_once(browser: Subject(Message), method: String, time_out) {
   }
 }
 
+/// Add an event listener
+/// (Experimental! Event forwarding is not really supported yet)
 pub fn add_listener(browser, method: String) {
   let event_subject = process.new_subject()
   process.send(browser, AddListener(event_subject, method))
   event_subject
 }
 
+/// Remove an event listener
+/// (Experimental! Event forwarding is not really supported yet)
 pub fn remove_listener(browser, listener: Subject(d.Dynamic)) {
   process.send(browser, RemoveListener(listener))
+}
+
+/// Allows you to set the log level of a running browser instance
+pub fn set_log_level(browser, level: LogLevel) {
+  process.send(browser, SetLogLevel(level))
 }
 
 /// Issue a protocol call to the browser without waiting for a response,
@@ -344,17 +375,17 @@ pub fn get_system_chrome_path() {
 /// Returns a function that can be passed to the actor spec to initialize the actor
 fn create_init_fn(cfg: BrowserConfig) {
   fn() {
-    io.println("Starting browser exectuable: " <> cfg.path)
     let cmd = cfg.path
     let args = ["--remote-debugging-pipe", ..cfg.args]
-    // io.println(cmd <> " " <> string.join(args, " "))
     let res = open_browser_port(cmd, args)
     case res {
       Ok(port) -> {
         let instance = BrowserInstance(port)
-        log(instance, "Started")
+        let initial_state =
+          BrowserState(instance, 0, [], [], sb.new(), None, cfg.log_level)
+        log_info(initial_state, "Port opened successfully, actor initialized")
         actor.Ready(
-          BrowserState(instance, 0, [], [], sb.new(), None),
+          initial_state,
           process.new_selector()
             |> process.selecting_record2(port, map_port_message),
         )
@@ -427,6 +458,7 @@ type BrowserState {
     event_listeners: List(#(String, Subject(d.Dynamic))),
     message_buffer: sb.StringBuilder,
     shutdown_request: Option(Subject(Nil)),
+    log_level: LogLevel,
   )
 }
 
@@ -452,6 +484,8 @@ pub type Message {
   UnexpectedPortMessage(d.Dynamic)
   /// (From Port) Protocol Message
   PortResponse(String)
+  /// Allows you to set the log level of the running instance
+  SetLogLevel(LogLevel)
   /// (From Port) Port has exited
   PortExit(Int)
 }
@@ -464,8 +498,8 @@ type PendingRequest {
 fn loop(message: Message, state: BrowserState) {
   case message {
     Kill -> {
-      log(
-        state.instance,
+      log_warn(
+        state,
         "Received kill signal, actor is shutting down, this is unuasual and means the browser did not respond to a shutdown request in time!",
       )
       actor.Stop(process.Normal)
@@ -480,10 +514,7 @@ fn loop(message: Message, state: BrowserState) {
     }
     AddListener(client, method) -> {
       let updated_listeners = [#(method, client), ..state.event_listeners]
-      log(
-        state.instance,
-        "Event listeners: " <> string.inspect(updated_listeners),
-      )
+      log_info(state, "Event listeners: " <> string.inspect(updated_listeners))
       actor.continue(BrowserState(
         instance: state.instance,
         next_id: state.next_id,
@@ -491,15 +522,13 @@ fn loop(message: Message, state: BrowserState) {
         event_listeners: updated_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       ))
     }
     RemoveListener(client) -> {
       let updated_listeners =
         list.filter(state.event_listeners, fn(l) { l.1 != client })
-      log(
-        state.instance,
-        "Event listeners: " <> string.inspect(updated_listeners),
-      )
+      log_info(state, "Event listeners: " <> string.inspect(updated_listeners))
       actor.continue(BrowserState(
         instance: state.instance,
         next_id: state.next_id,
@@ -507,6 +536,7 @@ fn loop(message: Message, state: BrowserState) {
         event_listeners: updated_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       ))
     }
     PortResponse(data) -> {
@@ -515,7 +545,7 @@ fn loop(message: Message, state: BrowserState) {
 
       // For debugging
       case sb.is_empty(buffer) {
-        False -> log(state.instance, "buffering browser message!")
+        False -> log_info(state, "buffering browser message!")
         True -> Nil
       }
 
@@ -530,11 +560,12 @@ fn loop(message: Message, state: BrowserState) {
         event_listeners: updated_state.event_listeners,
         message_buffer: buffer,
         shutdown_request: updated_state.shutdown_request,
+        log_level: state.log_level,
       ))
     }
     UnexpectedPortMessage(msg) -> {
-      log(
-        state.instance,
+      log_warn(
+        state,
         "Got an unexpected message from the port! This should not happen!",
       )
       io.debug(msg)
@@ -544,10 +575,7 @@ fn loop(message: Message, state: BrowserState) {
       // Initiate shutdown of the browser
       // the process is left hanging and should be replied to when the browser
       // has successfully shut down -> PortExit message below
-      log(
-        state.instance,
-        "Received shutdown request, attempting to quit browser",
-      )
+      log_info(state, "Received shutdown request, attempting to quit browser")
       handle_send(state, "Browser.close", None)
       actor.continue(BrowserState(
         instance: state.instance,
@@ -556,22 +584,23 @@ fn loop(message: Message, state: BrowserState) {
         event_listeners: state.event_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: Some(client),
+        log_level: state.log_level,
       ))
     }
     PortExit(exit_status) -> {
       // The browser has exited
       case state.shutdown_request {
         Some(client) -> {
-          log(
-            state.instance,
+          log_info(
+            state,
             "Browser exited after shtudown request, actor is shutting down",
           )
           process.send(client, Nil)
           actor.Stop(process.Normal)
         }
         _ -> {
-          log(
-            state.instance,
+          log_warn(
+            state,
             "Browser exited but there was no shutdown request! Exit Status: "
               <> string.inspect(exit_status)
               <> " browser actor is shutting down abnormally",
@@ -579,6 +608,17 @@ fn loop(message: Message, state: BrowserState) {
           actor.Stop(process.Abnormal(reason: "browser exited abnormally"))
         }
       }
+    }
+    SetLogLevel(level) -> {
+      actor.continue(BrowserState(
+        instance: state.instance,
+        next_id: state.next_id,
+        unanswered_requests: state.unanswered_requests,
+        event_listeners: state.event_listeners,
+        message_buffer: state.message_buffer,
+        shutdown_request: state.shutdown_request,
+        log_level: level,
+      ))
     }
   }
 }
@@ -604,9 +644,9 @@ fn handle_call(
       }),
     )
 
-  case send_to_browser(state.instance, payload) {
+  case send_to_browser(state, payload) {
     Error(_) -> {
-      log(state.instance, "Request call to browser was unsuccessful!")
+      log_warn(state, "Request call to browser was unsuccessful!")
       process.send(client, Error(PortError))
       actor.continue(BrowserState(
         instance: state.instance,
@@ -615,6 +655,7 @@ fn handle_call(
         event_listeners: state.event_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       ))
     }
     Ok(_) -> {
@@ -625,6 +666,7 @@ fn handle_call(
         event_listeners: state.event_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       ))
     }
   }
@@ -639,9 +681,9 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
       [#("id", json.int(request_id)), #("method", json.string(method))]
       |> utils.add_optional(params, fn(some_params) { #("params", some_params) }),
     )
-  case send_to_browser(state.instance, payload) {
+  case send_to_browser(state, payload) {
     Error(_) -> {
-      log(state.instance, "Request sent to browser was unsuccessful!")
+      log_warn(state, "Request sent to browser was unsuccessful!")
       io.debug(payload)
       Nil
     }
@@ -656,6 +698,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
     event_listeners: state.event_listeners,
     message_buffer: state.message_buffer,
     shutdown_request: state.shutdown_request,
+    log_level: state.log_level,
   ))
 }
 
@@ -716,8 +759,8 @@ fn answer_failed_request(
       rest
     }
     Error(Nil) -> {
-      log(
-        state.instance,
+      log_warn(
+        state,
         "An error arrived from the browser but could not be associated with a request: "
           <> string.inspect(data),
       )
@@ -777,6 +820,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         event_listeners: state.event_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       )
     }
     Ok(BrowserResponse(Some(id), _, _, _, Some(raw_error))) -> {
@@ -788,6 +832,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         event_listeners: state.event_listeners,
         message_buffer: state.message_buffer,
         shutdown_request: state.shutdown_request,
+        log_level: state.log_level,
       )
     }
     Ok(BrowserResponse(None, None, Some(method), Some(params), None)) -> {
@@ -798,7 +843,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
           True -> process.send(l.1, params)
           False -> {
             // An event without a listener is dropped
-            // log(state.instance, "Ignored Event: " <> string.inspect(params))
+            log_debug(state, fn() { "Ignored Event:" <> string.inspect(params) })
             Nil
           }
         }
@@ -806,17 +851,19 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
       state
     }
     Ok(_) -> {
-      log(
-        state.instance,
+      log_warn(
+        state,
         "Received an unexpectedly formatted response from the browser",
       )
       io.debug(response)
       state
     }
     Error(e) -> {
-      log(state.instance, "Failed to decode data from port message, ignoring!")
-      io.debug(response)
-      io.debug(e)
+      log_warn(
+        state,
+        "Failed to decode data from port message, ignoring! Resonse and error:",
+      )
+      io.debug(#(response, e))
       state
     }
   }
@@ -828,8 +875,10 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
 /// the JSON payload must already include the `id` field.
 /// This function appends a null byte to the end of the message,
 /// which is used by the browser to detect when a message ends.
-fn send_to_browser(instance: BrowserInstance, data: Json) {
-  send_to_port(instance.port, json.to_string(data) <> "\u{0000}")
+fn send_to_browser(state: BrowserState, data: Json) {
+  let payload = json.to_string(data)
+  log_debug(state, fn() { "Sending Payload: " <> payload })
+  send_to_port(state.instance.port, payload <> "\u{0000}")
 }
 
 fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
@@ -848,8 +897,37 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
   }
 }
 
-fn log(instance: BrowserInstance, message: String) {
-  io.println(string.inspect(instance) <> ": " <> message)
+fn log_info(state: BrowserState, message: String) {
+  case state.log_level {
+    LogLevelInfo | LogLevelDebug -> {
+      io.println("[INFO] " <> string.inspect(state.instance) <> ": " <> message)
+    }
+    _ -> Nil
+  }
+}
+
+fn log_warn(state: BrowserState, message: String) {
+  case state.log_level {
+    LogLevelInfo | LogLevelDebug | LogLevelWarnings -> {
+      io.println(
+        "[WARNING] " <> string.inspect(state.instance) <> ": " <> message,
+      )
+    }
+    _ -> Nil
+  }
+}
+
+/// Debug is called lazily, to avoid doing work constructing strings
+/// for it that never get used
+fn log_debug(state: BrowserState, callback: fn() -> String) {
+  case state.log_level {
+    LogLevelDebug -> {
+      io.println(
+        "[DEBUG] " <> string.inspect(state.instance) <> ": " <> callback(),
+      )
+    }
+    _ -> Nil
+  }
 }
 
 fn transform_call_response(call_response) {
