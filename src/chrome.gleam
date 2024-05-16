@@ -34,8 +34,6 @@ const default_message_timeout: Int = 5000
 // --- PUBLIC API ---
 
 /// The log level the browser is using.  
-/// Currently silent by default and not part of 
-/// the BrowserConfig
 pub type LogLevel {
   /// Log nothing
   LogLevelSilent
@@ -48,7 +46,12 @@ pub type LogLevel {
 }
 
 pub type BrowserConfig {
-  BrowserConfig(path: String, args: List(String), start_timeout: Int)
+  BrowserConfig(
+    path: String,
+    args: List(String),
+    start_timeout: Int,
+    log_level: LogLevel,
+  )
 }
 
 pub type BrowserInstance {
@@ -154,11 +157,14 @@ pub fn launch() {
     get_system_chrome_path,
   ))
   // I think logging this is important to avoid confusion
-  io.println("Dynamically resolved browser path: \"" <> resolved_chrome_path <> "\"")
+  io.println(
+    "Dynamically resolved browser path: \"" <> resolved_chrome_path <> "\"",
+  )
   launch_with_config(BrowserConfig(
     path: resolved_chrome_path,
     args: get_default_chrome_args(),
     start_timeout: 10_000,
+    log_level: LogLevelWarnings,
   ))
 }
 
@@ -375,8 +381,11 @@ fn create_init_fn(cfg: BrowserConfig) {
     case res {
       Ok(port) -> {
         let instance = BrowserInstance(port)
+        let initial_state =
+          BrowserState(instance, 0, [], [], sb.new(), None, cfg.log_level)
+        log_info(initial_state, "Port opened successfully, actor initialized")
         actor.Ready(
-          BrowserState(instance, 0, [], [], sb.new(), None, LogLevelWarnings),
+          initial_state,
           process.new_selector()
             |> process.selecting_record2(port, map_port_message),
         )
