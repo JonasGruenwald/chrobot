@@ -101,6 +101,22 @@ pub fn launch_with_config(config: chrome.BrowserConfig) {
   validate_launch(chrome.launch_with_config(config))
 }
 
+/// Launch a browser, and read the configuration from environment variables.
+/// The browser path variable must be set, all others will fall back to a default.
+/// 
+/// This function will validate that the browser launched successfully, and the 
+/// protocol version matches the one supported by this library.
+/// 
+/// Configuration variables:
+/// - `CHROBOT_BROWSER_PATH` - The path to the browser executable
+/// - `CHROBOT_BROWSER_ARGS` - The arguments to pass to the browser, separated by spaces
+/// - `CHROBOT_BROWSER_TIMEOUT` - The timeout in milliseconds to wait for the browser to start, must be an integer
+/// - `CHROBOT_LOG_LEVEL` - The log level to use, one of `silent`, `warnings`, `info`, `debug`
+/// 
+pub fn launch_with_env() {
+  validate_launch(chrome.launch_with_env())
+}
+
 /// Open a new page in the browser.
 /// Returns a response when the protocol call succeeds, please use
 /// `await_selector` to determine when the page is ready.  

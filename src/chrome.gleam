@@ -18,6 +18,7 @@ import gleam/dynamic as d
 import gleam/erlang/atom
 import gleam/erlang/os
 import gleam/erlang/process.{type Subject}
+import gleam/int
 import gleam/io
 import gleam/json.{type Json}
 import gleam/list
@@ -29,7 +30,7 @@ import gleam/string
 import gleam/string_builder as sb
 import simplifile as file
 
-const default_message_timeout: Int = 5000
+const default_timeout: Int = 10_000
 
 // --- PUBLIC API ---
 
@@ -123,7 +124,9 @@ pub type RequestError {
 /// )
 /// let assert Ok(browser_subject) = launch_with_config(config)
 /// ```
-pub fn launch_with_config(cfg: BrowserConfig) {
+pub fn launch_with_config(
+  cfg: BrowserConfig,
+) -> Result(Subject(Message), LaunchError) {
   let launch_result =
     actor.start_spec(actor.Spec(
       init: create_init_fn(cfg),
@@ -151,7 +154,7 @@ pub fn launch_with_config(cfg: BrowserConfig) {
 /// 
 /// Be aware that this function will not validate that the browser launched successfully,
 /// please use the higher level functions from the root chrobot module instead if you want these guarantees.
-pub fn launch() {
+pub fn launch() -> Result(Subject(Message), LaunchError) {
   use resolved_chrome_path <- result.try(result.lazy_or(
     get_local_chrome_path(),
     get_system_chrome_path,
@@ -163,8 +166,49 @@ pub fn launch() {
   launch_with_config(BrowserConfig(
     path: resolved_chrome_path,
     args: get_default_chrome_args(),
-    start_timeout: 10_000,
+    start_timeout: default_timeout,
     log_level: LogLevelWarnings,
+  ))
+}
+
+/// Launch a browser, and read the configuration from environment variables.
+/// The browser path variable must be set, all others will fall back to a default.
+/// 
+/// Be aware that this function will not validate that the browser launched successfully,
+/// please use the higher level functions from the root chrobot module instead if you want these guarantees.
+/// 
+/// Configuration variables:
+/// - `CHROBOT_BROWSER_PATH` - The path to the browser executable
+/// - `CHROBOT_BROWSER_ARGS` - The arguments to pass to the browser, separated by spaces
+/// - `CHROBOT_BROWSER_TIMEOUT` - The timeout in milliseconds to wait for the browser to start, must be an integer
+/// - `CHROBOT_LOG_LEVEL` - The log level to use, one of `silent`, `warnings`, `info`, `debug`
+pub fn launch_with_env() -> Result(Subject(Message), LaunchError) {
+  use path <- result.try(
+    os.get_env("CHROBOT_BROWSER_PATH")
+    |> result.replace_error(CouldNotFindExecutable),
+  )
+  let args = case os.get_env("CHROBOT_BROWSER_ARGS") {
+    Ok(args_string) -> string.split(args_string, "\n")
+    Error(Nil) -> get_default_chrome_args()
+  }
+  let time_out = case os.get_env("CHROBOT_BROWSER_TIMEOUT") {
+    Ok(timeout_string) ->
+      result.unwrap(int.parse(timeout_string), default_timeout)
+    Error(Nil) -> default_timeout
+  }
+  let log_level = case os.get_env("CHROBOT_LOG_LEVEL") {
+    Ok("silent") -> LogLevelSilent
+    Ok("warnings") -> LogLevelWarnings
+    Ok("info") -> LogLevelInfo
+    Ok("debug") -> LogLevelDebug
+    Ok(_) -> LogLevelWarnings
+    Error(Nil) -> LogLevelWarnings
+  }
+  launch_with_config(BrowserConfig(
+    path: path,
+    args: args,
+    start_timeout: time_out,
+    log_level: log_level,
   ))
 }
 
@@ -174,9 +218,9 @@ pub fn launch() {
 /// The result typing reflects the success of graceful shutdown.
 pub fn quit(browser: Subject(Message)) {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
-  let _ = process.send_after(browser, default_message_timeout * 2, Kill)
+  let _ = process.send_after(browser, default_timeout * 2, Kill)
   // invoke graceful shutdown of the browser
-  process.try_call(browser, Shutdown(_), default_message_timeout)
+  process.try_call(browser, Shutdown(_), default_timeout)
 }
 
 /// Issue a protocol call to the browser and expect a response
@@ -252,7 +296,7 @@ pub fn get_version(
     "Browser.getVersion",
     None,
     None,
-    default_message_timeout,
+    default_timeout,
   ))
   let version_decoder =
     d.decode5(
