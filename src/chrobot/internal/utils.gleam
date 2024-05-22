@@ -3,6 +3,7 @@ import gleam/io
 import gleam/json
 import gleam/option
 import gleam/string
+import gleam_community/ansi
 
 pub fn add_optional(
   prop_encoders: List(#(String, json.Json)),
@@ -16,13 +17,74 @@ pub fn add_optional(
 }
 
 pub fn alert_encode_dynamic(input_value) {
-  io.println(
-    "\u{1b}[31mWARNING: You passed a dymamic value to a protocol encoder!
+  warn(
+    "You passed a dymamic value to a protocol encoder!
 Dynamic values cannot be encoded, the value will be set to null instead.
-    \u{1b}[0m",
+This is unlikely to be intentional, you should fix that part of your code.",
   )
   io.println("The value was: " <> string.inspect(input_value))
   json.null()
+}
+
+fn align(content: String) {
+  string.replace(content, "\n", "\n            ")
+}
+
+pub fn err(content: String) {
+  {
+    "[-_-] ERR! "
+    |> ansi.bg_red()
+    |> ansi.white()
+    |> ansi.bold()
+    <> " "
+    <> align(content)
+    |> ansi.red()
+  }
+  |> io.println()
+}
+
+pub fn warn(content: String) {
+  {
+    "[O_O] HEY! "
+    |> ansi.bg_yellow()
+    |> ansi.black()
+    |> ansi.bold()
+    <> " "
+    <> align(content)
+    |> ansi.yellow()
+  }
+  |> io.println()
+}
+
+pub fn hint(content: String) {
+  {
+    "[>‿0] HINT "
+    |> ansi.bg_cyan()
+    |> ansi.black()
+    |> ansi.bold()
+    <> " "
+    <> align(content)
+    |> ansi.cyan()
+  }
+  |> io.println()
+}
+
+pub fn info(content: String) {
+  {
+    "[0‿0] INFO "
+    |> ansi.bg_white()
+    |> ansi.black()
+    |> ansi.bold()
+    <> " "
+    <> align(content)
+    |> ansi.white()
+  }
+  |> io.println()
+}
+
+pub fn show_cmd(content: String) {
+  { "\n " <> ansi.dim("$") <> " " <> ansi.bold(content) <> "\n" }
+  |> io.println()
 }
 
 pub fn try_call_with_subject(

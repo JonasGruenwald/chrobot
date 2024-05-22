@@ -21,6 +21,7 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
 import gleam/dynamic
@@ -67,15 +68,11 @@ pub fn launch() {
   // Some helpful logging for when the browser could not be found
   case launch_result {
     Error(chrome.CouldNotFindExecutable) -> {
-      io.println(
-        "\u{1b}[31mChrobot could not find a chrome executable to launch!\u{1b}[0m",
+      utils.err("Chrobot could not find a chrome executable to launch!\n")
+      utils.hint(
+        "You can install a local version of chrome for testing with this command:",
       )
-      io.println("\u{1b}[36m")
-      io.println(
-        "ℹ️  Hint: Consider installing Chrome for Testing from puppeteer:",
-      )
-      io.println("npx @puppeteer/browsers install chrome")
-      io.println("\u{1b}[0m ")
+      utils.show_cmd("gleam run -m chrobot/install")
       launch_result
     }
     other -> other

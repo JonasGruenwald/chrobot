@@ -26,6 +26,7 @@ packages = [
 [requirements]
 birdie = { version = ">= 1.1.4 and < 2.0.0" }
 filepath = { version = ">= 1.0.0 and < 2.0.0" }
+gleam_community_ansi = { version = ">= 1.4.0 and < 2.0.0"}
 gleam_erlang = { version = ">= 0.25.0 and < 1.0.0" }
 gleam_http = { version = ">= 3.6.0 and < 4.0.0" }
 gleam_httpc = { version = ">= 2.2.0 and < 3.0.0" }

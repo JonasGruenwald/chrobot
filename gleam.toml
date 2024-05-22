@@ -18,6 +18,7 @@ gleam_erlang = ">= 0.25.0 and < 1.0.0"
 gleam_otp = ">= 0.10.0 and < 1.0.0"
 filepath = ">= 1.0.0 and < 2.0.0"
 simplifile = ">= 1.7.0 and < 2.0.0"
+gleam_community_ansi = ">= 1.4.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

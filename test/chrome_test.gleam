@@ -5,7 +5,7 @@ import gleam/list
 import gleam/option
 import gleam/string_builder as sb
 import gleeunit/should
-import utils
+import test_utils
 
 pub fn is_local_chrome_path_test() {
   let valid_mac_path =
@@ -385,7 +385,7 @@ pub fn is_local_chrome_path_haystack_test() {
 
 /// Launch the browser, query the version, quit
 pub fn launch_with_config_test() {
-  let browser_path = utils.get_browser_path()
+  let browser_path = test_utils.get_browser_path()
   let config =
     chrome.BrowserConfig(
       path: browser_path,
@@ -400,7 +400,7 @@ pub fn launch_with_config_test() {
 
 // Ensure the call function correctly handles errors sent by the browser
 pub fn handle_protocol_error_test() {
-  let browser_path = utils.get_browser_path()
+  let browser_path = test_utils.get_browser_path()
   let config =
     chrome.BrowserConfig(
       path: browser_path,
@@ -440,7 +440,7 @@ pub fn handle_protocol_error_test() {
 }
 
 pub fn handle_protocol_error_2_test() {
-  let browser_path = utils.get_browser_path()
+  let browser_path = test_utils.get_browser_path()
   let config =
     chrome.BrowserConfig(
       path: browser_path,
