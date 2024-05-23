@@ -1,5 +1,7 @@
 -module(chrobot_ffi).
--export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2]).
+-include_lib("kernel/include/file.hrl").
+-export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1]).
+
 
 % ---------------------------------------------------
 % RUNTIME
@@ -51,5 +53,18 @@ unzip(ZipFile, DestDir) ->
       Error
   catch
     _:Reason ->
+      {error, Reason}
+  end.
+
+set_executable(FilePath) ->
+  FileInfo = file:read_file_info(FilePath),
+  case FileInfo of
+    {ok, FI} ->
+      NewFI = FI#file_info{mode = 8#755},
+      case file:write_file_info(FilePath, NewFI) of
+        ok -> {ok, nil};
+        {error, _} = Error -> Error
+      end;
+    {error, Reason} ->
       {error, Reason}
   end.

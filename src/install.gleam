@@ -207,10 +207,29 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to remove downloaded .zip archive! The installation should otherwise have succeeded.",
   )
 
-  //  TODO! Set the executable bit on the chrome binary
-  //        Because unzip does not preserve file permissions
+  // Find the executable binary 
+  use haystack <- assert_ok(
+    file.get_files(installation_dir),
+    "Failed to scan installation directory for executable",
+  )
 
-  Ok(Nil)
+  use executable <- assert_ok(
+    list.find(haystack, fn(file) {
+      chrome.is_local_chrome_path(file, os.family())
+    }),
+    "Failed to find executable in installation directory",
+  )
+
+  use _ <- assert_ok(
+    set_executable(executable),
+    "Failed to set executable permissions on the installed binary",
+  )
+
+  // TODO mac permissions are still not correct, need to fix this
+  // it's trying to launch binaries under Frameworks/
+
+  utils.stop_progress(p)
+  Ok(executable)
 }
 
 type VersionItem {
@@ -368,3 +387,6 @@ fn get_arch() -> String
 
 @external(erlang, "chrobot_ffi", "unzip")
 fn unzip(from: String, to: String) -> Result(Nil, dynamic.Dynamic)
+
+@external(erlang, "chrobot_ffi", "set_executable")
+fn set_executable(file: String) -> Result(Nil, Nil)
