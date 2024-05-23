@@ -121,7 +121,7 @@ pub fn info(content: String) {
   }
 }
 
-pub fn start_spinner(text: String) -> Option(spinner.Spinner) {
+pub fn start_progress(text: String) -> Option(spinner.Spinner) {
   case term_supports_color() {
     True -> {
       let spinner =
@@ -137,7 +137,7 @@ pub fn start_spinner(text: String) -> Option(spinner.Spinner) {
   }
 }
 
-pub fn set_spinner(spinner: Option(spinner.Spinner), text: String) -> Nil {
+pub fn set_progress(spinner: Option(spinner.Spinner), text: String) -> Nil {
   case spinner {
     Some(spinner) -> spinner.set_text(spinner, text)
     None -> {
@@ -147,7 +147,7 @@ pub fn set_spinner(spinner: Option(spinner.Spinner), text: String) -> Nil {
   }
 }
 
-pub fn stop_spinner(spinner: Option(spinner.Spinner)) -> Nil {
+pub fn stop_progress(spinner: Option(spinner.Spinner)) -> Nil {
   case spinner {
     Some(spinner) -> spinner.stop(spinner)
     None -> Nil
