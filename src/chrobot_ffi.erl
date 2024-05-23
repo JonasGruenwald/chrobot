@@ -1,9 +1,12 @@
+-module(chrobot_ffi).
+-export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2]).
+
+% ---------------------------------------------------
+% RUNTIME
+% ---------------------------------------------------
+
 % FFI to interact with the browser via a port from erlang
 % since gleam does not really support ports yet.
-% ---
-
--module(chrobot_ffi).
--export([open_browser_port/2, send_to_port/2, get_arch/0]).
 
 % The port is opened with the option "nouse_stdio"
 % which makes it use file descriptors 3 and 4 for stdin and stdout
@@ -28,7 +31,25 @@ send_to_port(Port, BinaryString) ->
         error:Reason -> {error, Reason}
     end.
 
+% ---------------------------------------------------
+% INSTALLER
+% ---------------------------------------------------
+
+% Utils for the installer script
 
 get_arch() ->
-  ArchCharlist = erlang:system_info(system_architecture),
-  list_to_binary(ArchCharlist).
+    ArchCharlist = erlang:system_info(system_architecture),
+    list_to_binary(ArchCharlist).
+
+unzip(ZipFile, DestDir) ->
+  ZipFileCharlist = binary_to_list(ZipFile),
+  DestDirCharlist = binary_to_list(DestDir),
+  try zip:unzip(ZipFileCharlist, [{cwd, DestDirCharlist}]) of
+    {ok, _FileList} ->
+      {ok, nil};
+    {error, _} = Error ->
+      Error
+  catch
+    _:Reason ->
+      {error, Reason}
+  end.

@@ -335,7 +335,7 @@ pub fn get_default_chrome_args() {
 }
 
 /// Returns whether the given path is a local chrome installation, of the kind
-/// created by `npx @puppeteer/browsers install chrome`.
+/// created by `chrobot/install` or the puppeteer install script.
 /// This can be used to scan a directory with `simplifile.get_files`.
 pub fn is_local_chrome_path(
   relative_path: String,
@@ -367,7 +367,7 @@ pub fn is_local_chrome_path(
 }
 
 /// Try to find a hermetic chrome installation in the current directory,
-/// of the kind installed by `npx @puppeteer/browsers install chrome`.
+/// of the kind installed by `chrobot/install` or the puppeteer install script.
 /// The installation must be in a directory called `chrome`.
 pub fn get_local_chrome_path() {
   get_local_chrome_path_at("chrome")

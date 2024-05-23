@@ -21,9 +21,7 @@
 //// the only goal is to have a quick and convenient way to install browsers locally, for more advanced management of browser
 //// installations, please seek out other tools.
 //// 
-//// Installation source is [Google's official Chrome for Testing distribution](https://github.com/GoogleChromeLabs/chrome-for-testing).
-//// 
-//// Supported platforms are bound by what that distribution supports, which is currently:
+//// Supported platforms are limited by what the Google Chrome for Testing distribution supports, which is currently:
 //// 
 //// * linux64
 //// * mac-arm64
@@ -41,14 +39,17 @@ import gleam/bool
 import gleam/dynamic
 import gleam/erlang/os
 import gleam/erlang/process
+import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/io
 import gleam/json
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/string
+import simplifile as file
 
 const version_list_endpoint = "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
 
@@ -102,13 +103,11 @@ Chrobot does not support managing multiple browser installations,
 you are encouraged to remove old installations manually if you no longer need them.",
       )
     }
-    Error(_) -> {
-      { io.println("Downloading Chrome for Testing...") }
-    }
+    Error(_) -> Nil
   }
 
   use platform <- assert_ok(resolve_platform(), "Platform unsupported")
-  utils.start_progress("Fetching available versions...")
+  let p = utils.start_progress("Fetching available versions...")
   use req <- assert_ok(
     request.to(version_list_endpoint),
     "Failed to build version request",
@@ -150,9 +149,68 @@ you are encouraged to remove old installations manually if you no longer need th
       <> version.version,
   )
 
-  io.debug(#(version, download))
+  utils.stop_progress(p)
 
-  todo
+  io.println(
+    "\nSelected version "
+    <> version.version
+    <> " for platform "
+    <> download.platform
+    <> "\n",
+  )
+
+  let p = utils.start_progress("Downloading Chrome for Testing...")
+
+  use download_request <- assert_ok(
+    new_download_request(download.url),
+    "Failed to build download request",
+  )
+  use download_res <- assert_ok(
+    httpc.send_bits(download_request),
+    "Download request failed, ensure you have an active internet connection",
+  )
+  use <- assert_true(
+    download_res.status == 200,
+    "Download request returned a non-200 status code",
+  )
+
+  utils.set_progress(p, "Writing download to disk...")
+
+  let download_path =
+    path.join(
+      chrome_dir_path,
+      "chrome_download_" <> download.platform <> version.revision <> ".zip",
+    )
+
+  let installation_dir =
+    path.join(chrome_dir_path, platform <> "-" <> version.version)
+
+  use _ <- assert_ok(
+    file.create_directory_all(installation_dir),
+    "Failed to create directory",
+  )
+
+  use _ <- assert_ok(
+    file.write_bits(download_res.body, to: download_path),
+    "Failed to write download to disk",
+  )
+
+  utils.set_progress(p, "Extracting download...")
+
+  use _ <- assert_ok(
+    unzip(download_path, installation_dir),
+    "Failed to extract downloaded .zip archive",
+  )
+
+  use _ <- assert_ok(
+    file.delete(download_path),
+    "Failed to remove downloaded .zip archive! The installation should otherwise have succeeded.",
+  )
+
+  //  TODO! Set the executable bit on the chrome binary
+  //        Because unzip does not preserve file permissions
+
+  Ok(Nil)
 }
 
 type VersionItem {
@@ -300,5 +358,13 @@ fn assert_true(
   }
 }
 
+fn new_download_request(url: String) {
+  use base_req <- result.try(request.to(url))
+  Ok(request.set_body(base_req, <<>>))
+}
+
 @external(erlang, "chrobot_ffi", "get_arch")
 fn get_arch() -> String
+
+@external(erlang, "chrobot_ffi", "unzip")
+fn unzip(from: String, to: String) -> Result(Nil, dynamic.Dynamic)
