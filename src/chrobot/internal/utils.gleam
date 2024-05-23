@@ -1,9 +1,20 @@
+import gleam/erlang/os
 import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
-import gleam/option
+import gleam/option.{type Option, None, Some}
+import gleam/result
 import gleam/string
 import gleam_community/ansi
+import spinner
+
+/// Very very naive but should be fine
+fn term_supports_color() -> Bool {
+  case os.get_env("TERM") {
+    Ok("dumb") -> False
+    _ -> True
+  }
+}
 
 pub fn add_optional(
   prop_encoders: List(#(String, json.Json)),
@@ -31,60 +42,128 @@ fn align(content: String) {
 }
 
 pub fn err(content: String) {
-  {
-    "[-_-] ERR! "
-    |> ansi.bg_red()
-    |> ansi.white()
-    |> ansi.bold()
-    <> " "
-    <> align(content)
-    |> ansi.red()
+  case term_supports_color() {
+    True -> {
+      {
+        "[-_-] ERR! "
+        |> ansi.bg_red()
+        |> ansi.white()
+        |> ansi.bold()
+        <> " "
+        <> align(content)
+        |> ansi.red()
+      }
+      |> io.println()
+    }
+    False -> {
+      io.println("[-_-] ERR! " <> content)
+    }
   }
-  |> io.println()
 }
 
 pub fn warn(content: String) {
-  {
-    "[O_O] HEY! "
-    |> ansi.bg_yellow()
-    |> ansi.black()
-    |> ansi.bold()
-    <> " "
-    <> align(content)
-    |> ansi.yellow()
+  case term_supports_color() {
+    True -> {
+      {
+        "[O_O] HEY! "
+        |> ansi.bg_yellow()
+        |> ansi.black()
+        |> ansi.bold()
+        <> " "
+        <> align(content)
+        |> ansi.yellow()
+      }
+      |> io.println()
+    }
+    False -> {
+      io.println("[O_O] HEY! " <> content)
+    }
   }
-  |> io.println()
 }
 
 pub fn hint(content: String) {
-  {
-    "[>‿0] HINT "
-    |> ansi.bg_cyan()
-    |> ansi.black()
-    |> ansi.bold()
-    <> " "
-    <> align(content)
-    |> ansi.cyan()
+  case term_supports_color() {
+    True -> {
+      {
+        "[>‿0] HINT "
+        |> ansi.bg_cyan()
+        |> ansi.black()
+        |> ansi.bold()
+        <> " "
+        <> align(content)
+        |> ansi.cyan()
+      }
+      |> io.println()
+    }
+    False -> {
+      io.println("[>‿0] HINT " <> content)
+    }
   }
-  |> io.println()
 }
 
 pub fn info(content: String) {
-  {
-    "[0‿0] INFO "
-    |> ansi.bg_white()
-    |> ansi.black()
-    |> ansi.bold()
-    <> " "
-    <> align(content)
-    |> ansi.white()
+  case term_supports_color() {
+    True -> {
+      {
+        "[0‿0] INFO "
+        |> ansi.bg_white()
+        |> ansi.black()
+        |> ansi.bold()
+        <> " "
+        <> align(content)
+        |> ansi.white()
+      }
+      |> io.println()
+    }
+    False -> {
+      io.println("[0‿0] INFO " <> content)
+    }
   }
-  |> io.println()
+}
+
+pub fn start_spinner(text: String) -> Option(spinner.Spinner) {
+  case term_supports_color() {
+    True -> {
+      let spinner =
+        spinner.new(text)
+        |> spinner.with_colour(ansi.blue)
+        |> spinner.start()
+      Some(spinner)
+    }
+    False -> {
+      io.println("Progress: " <> text)
+      None
+    }
+  }
+}
+
+pub fn set_spinner(spinner: Option(spinner.Spinner), text: String) -> Nil {
+  case spinner {
+    Some(spinner) -> spinner.set_text(spinner, text)
+    None -> {
+      io.println("Progress: " <> text)
+      Nil
+    }
+  }
+}
+
+pub fn stop_spinner(spinner: Option(spinner.Spinner)) -> Nil {
+  case spinner {
+    Some(spinner) -> spinner.stop(spinner)
+    None -> Nil
+  }
 }
 
 pub fn show_cmd(content: String) {
-  { "\n " <> ansi.dim("$") <> " " <> ansi.bold(content) <> "\n" }
-  |> io.println()
+  case term_supports_color() {
+    True -> {
+      { "\n " <> ansi.dim("$") <> " " <> ansi.bold(content) <> "\n" }
+      |> io.println()
+    }
+    False -> {
+      io.println("\n $ " <> content <> "\n")
+    }
+  }
 }
 
 pub fn try_call_with_subject(

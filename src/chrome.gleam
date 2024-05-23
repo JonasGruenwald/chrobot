@@ -144,31 +144,47 @@ pub fn launch_with_config(
   }
 }
 
-/// Try to find a chrome installation and launch it with default arguments.
+/// Cleverly try to find a chrome installation and launch it with reasonable defaults.
 /// 
-/// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
-/// If that fails, it will try to find a system chrome installation in some common places.
+/// 1. If `CHROBOT_BROWSER_PATH` is set, use that
+/// 2. If a local chrome installation is found, use that
+/// 3. If a system chrome installation is found, use that
+/// 4. If none of the above, return an error
 /// 
-/// For consistency it would be preferrable to not use this function and instead use `launch_with_config` with a `BrowserConfig`
-/// that specifies the path to the chrome executable.
-/// 
+/// If you want to always use a specific chrome installation, take a look at `launch_with_config` or 
+/// `launch_with_env` to set the path explicitly.
+///  
 /// Be aware that this function will not validate that the browser launched successfully,
 /// please use the higher level functions from the root chrobot module instead if you want these guarantees.
 pub fn launch() -> Result(Subject(Message), LaunchError) {
-  use resolved_chrome_path <- result.try(result.lazy_or(
-    get_local_chrome_path(),
-    get_system_chrome_path,
-  ))
-  // I think logging this is important to avoid confusion
-  io.println(
-    "Dynamically resolved browser path: \"" <> resolved_chrome_path <> "\"",
-  )
-  launch_with_config(BrowserConfig(
-    path: resolved_chrome_path,
-    args: get_default_chrome_args(),
-    start_timeout: default_timeout,
-    log_level: LogLevelWarnings,
-  ))
+  case resolve_env_cofig() {
+    Ok(env_config) -> {
+      // Env config vars are set, use them
+      utils.info(
+        "Launching browser using config provided through environment variables",
+      )
+      launch_with_config(env_config)
+    }
+    Error(_) -> {
+      // Try local first, then a system installation
+      use resolved_chrome_path <- result.try(result.lazy_or(
+        get_local_chrome_path(),
+        get_system_chrome_path,
+      ))
+      // I think logging this is important to avoid confusion
+      utils.info(
+        "Launching browser from dynamically resolved path: \""
+        <> resolved_chrome_path
+        <> "\"",
+      )
+      launch_with_config(BrowserConfig(
+        path: resolved_chrome_path,
+        args: get_default_chrome_args(),
+        start_timeout: default_timeout,
+        log_level: LogLevelWarnings,
+      ))
+    }
+  }
 }
 
 /// Launch a browser, and read the configuration from environment variables.
@@ -183,33 +199,15 @@ pub fn launch() -> Result(Subject(Message), LaunchError) {
 /// - `CHROBOT_BROWSER_TIMEOUT` - The timeout in milliseconds to wait for the browser to start, must be an integer
 /// - `CHROBOT_LOG_LEVEL` - The log level to use, one of `silent`, `warnings`, `info`, `debug`
 pub fn launch_with_env() -> Result(Subject(Message), LaunchError) {
-  use path <- result.try(
-    os.get_env("CHROBOT_BROWSER_PATH")
-    |> result.replace_error(CouldNotFindExecutable),
-  )
-  let args = case os.get_env("CHROBOT_BROWSER_ARGS") {
-    Ok(args_string) -> string.split(args_string, "\n")
-    Error(Nil) -> get_default_chrome_args()
+  case resolve_env_cofig() {
+    Ok(env_config) -> launch_with_config(env_config)
+    Error(_) -> {
+      utils.err(
+        "Failed to resolve browser configuration from environment variables, please check that they are set correctly",
+      )
+      Error(CouldNotFindExecutable)
+    }
   }
-  let time_out = case os.get_env("CHROBOT_BROWSER_TIMEOUT") {
-    Ok(timeout_string) ->
-      result.unwrap(int.parse(timeout_string), default_timeout)
-    Error(Nil) -> default_timeout
-  }
-  let log_level = case os.get_env("CHROBOT_LOG_LEVEL") {
-    Ok("silent") -> LogLevelSilent
-    Ok("warnings") -> LogLevelWarnings
-    Ok("info") -> LogLevelInfo
-    Ok("debug") -> LogLevelDebug
-    Ok(_) -> LogLevelWarnings
-    Error(Nil) -> LogLevelWarnings
-  }
-  launch_with_config(BrowserConfig(
-    path: path,
-    args: args,
-    start_timeout: time_out,
-    log_level: log_level,
-  ))
 }
 
 /// Quit the browser and shut down the actor.  
@@ -372,10 +370,15 @@ pub fn is_local_chrome_path(
 /// of the kind installed by `npx @puppeteer/browsers install chrome`.
 /// The installation must be in a directory called `chrome`.
 pub fn get_local_chrome_path() {
-  case file.verify_is_directory("chrome") {
+  get_local_chrome_path_at("chrome")
+}
+
+@internal
+pub fn get_local_chrome_path_at(base_dir: String) {
+  case file.verify_is_directory(base_dir) {
     Ok(True) -> {
       let files_res =
-        result.replace_error(file.get_files("chrome"), CouldNotFindExecutable)
+        result.replace_error(file.get_files(base_dir), CouldNotFindExecutable)
       use files <- result.try(files_res)
       list.find(files, fn(file) { is_local_chrome_path(file, os.family()) })
       |> result.replace_error(CouldNotFindExecutable)
@@ -435,7 +438,8 @@ fn create_init_fn(cfg: BrowserConfig) {
         )
       }
       Error(err) -> {
-        io.debug(#("Browser start error: ", string.inspect(err)))
+        utils.err("Browser failed to start!")
+        io.debug(err)
         actor.Failed("Browser did not start")
       }
     }
@@ -939,6 +943,34 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
     [first, ..] -> Ok(first)
     [] -> Error(CouldNotFindExecutable)
   }
+}
+
+fn resolve_env_cofig() -> Result(BrowserConfig, Nil) {
+  use path <- result.try(os.get_env("CHROBOT_BROWSER_PATH"))
+  let args = case os.get_env("CHROBOT_BROWSER_ARGS") {
+    Ok(args_string) -> string.split(args_string, "\n")
+    Error(Nil) -> get_default_chrome_args()
+  }
+  let time_out = case os.get_env("CHROBOT_BROWSER_TIMEOUT") {
+    Ok(timeout_string) ->
+      result.unwrap(int.parse(timeout_string), default_timeout)
+    Error(Nil) -> default_timeout
+  }
+  let log_level = case os.get_env("CHROBOT_LOG_LEVEL") {
+    Ok("silent") -> LogLevelSilent
+    Ok("warnings") -> LogLevelWarnings
+    Ok("info") -> LogLevelInfo
+    Ok("debug") -> LogLevelDebug
+    Ok(_) -> LogLevelWarnings
+    Error(Nil) -> LogLevelWarnings
+  }
+
+  Ok(BrowserConfig(
+    path: path,
+    args: args,
+    start_timeout: time_out,
+    log_level: log_level,
+  ))
 }
 
 fn log_info(state: BrowserState, message: String) {

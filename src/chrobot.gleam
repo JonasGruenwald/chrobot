@@ -53,12 +53,15 @@ pub type EncodedFile {
   EncodedFile(data: String, extension: String)
 }
 
-/// Try to find a chrome installation and launch it with default arguments.
+/// Cleverly try to find a chrome installation and launch it with reasonable defaults.
 /// 
-/// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
-/// If that fails, it will try to find a system chrome installation in some common places.  
-/// Consider using `launch_with_config` with a `BrowserConfig` instead and specifying 
-/// an explicit path to the chrome executable if consistency is a requirement.
+/// 1. If `CHROBOT_BROWSER_PATH` is set, use that
+/// 2. If a local chrome installation is found, use that
+/// 3. If a system chrome installation is found, use that
+/// 4. If none of the above, return an error
+/// 
+/// If you want to always use a specific chrome installation, take a look at `launch_with_config` or 
+/// `launch_with_env` to set the path explicitly.
 /// 
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.

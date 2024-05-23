@@ -3,7 +3,7 @@
 % ---
 
 -module(chrobot_ffi).
--export([open_browser_port/2, send_to_port/2]).
+-export([open_browser_port/2, send_to_port/2, get_arch/0]).
 
 % The port is opened with the option "nouse_stdio"
 % which makes it use file descriptors 3 and 4 for stdin and stdout
@@ -27,3 +27,8 @@ send_to_port(Port, BinaryString) ->
     catch
         error:Reason -> {error, Reason}
     end.
+
+
+get_arch() ->
+  ArchCharlist = erlang:system_info(system_architecture),
+  list_to_binary(ArchCharlist).
