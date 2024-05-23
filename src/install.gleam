@@ -137,6 +137,21 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to decode version list JSON - Maybe the API has changed or is down?",
   )
 
+  use version <- assert_ok(
+    select_version(target_version, version_list),
+    "Failed to find version " <> target_version <> " in version list",
+  )
+
+  use download <- assert_ok(
+    select_download(version, platform),
+    "Failed to find download for platform "
+      <> platform
+      <> " in version "
+      <> version.version,
+  )
+
+  io.debug(#(version, download))
+
   todo
 }
 
@@ -146,6 +161,39 @@ type VersionItem {
 
 type DownloadItem {
   DownloadItem(platform: String, url: String)
+}
+
+fn select_version(
+  target: String,
+  version_list: List(VersionItem),
+) -> Result(VersionItem, Nil) {
+  case target {
+    "latest" -> {
+      list.last(version_list)
+    }
+    _ -> {
+      case string.contains(target, ".") {
+        // Try for exact match
+        True -> {
+          list.find(version_list, fn(item) { item.version == target })
+        }
+        False -> {
+          // Try to find first major version matching the target
+          list.reverse(version_list)
+          |> list.find(fn(item) {
+            case string.split(item.version, ".") {
+              [major, ..] if major == target -> True
+              _ -> False
+            }
+          })
+        }
+      }
+    }
+  }
+}
+
+fn select_download(version: VersionItem, platform: String) {
+  list.find(version.downloads, fn(item) { item.platform == platform })
 }
 
 fn parse_version_list(input: dynamic.Dynamic) {
