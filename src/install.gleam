@@ -1,5 +1,7 @@
 //// This module provides basic browser installation functionality, allowing you
 //// to install a local version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) in the current directory on macOS and Linux.
+//// 
+//// ## Usage
 ////  
 //// You may run browser installation directly with 
 //// 
@@ -17,6 +19,8 @@
 //// To uninstall browsers installed by this tool just remove the `chrome` directory created by it, or delete an individual browser
 //// installation from inside it.
 //// 
+//// ## Caveats
+//// 
 //// This module attempts to rudimentarily mimic the functionality of the [puppeteer install script](https://pptr.dev/browsers-api),
 //// the only goal is to have a quick and convenient way to install browsers locally, for more advanced management of browser
 //// installations, please seek out other tools.
@@ -31,6 +35,51 @@
 //// 
 //// Notably, this distribution **unfortunately does not support ARM64 on Linux**.
 //// 
+//// ### Linux Dependencies
+//// 
+//// The tool does **not** install dependencies on Linux, you must install them yourself.
+//// 
+//// On debian / ubuntu based systems you may intall dependencies with the following command:
+//// 
+//// ```sh
+//// sudo apt-get update && sudo apt-get install -y \
+//// ca-certificates \
+//// fonts-liberation \
+//// libasound2 \
+//// libatk-bridge2.0-0 \
+//// libatk1.0-0 \
+//// libc6 \
+//// libcairo2 \
+//// libcups2 \
+//// libdbus-1-3 \
+//// libexpat1 \
+//// libfontconfig1 \
+//// libgbm1 \
+//// libgcc1 \
+//// libglib2.0-0 \
+//// libgtk-3-0 \
+//// libnspr4 \
+//// libnss3 \
+//// libpango-1.0-0 \
+//// libpangocairo-1.0-0 \
+//// libstdc++6 \
+//// libx11-6 \
+//// libx11-xcb1 \
+//// libxcb1 \
+//// libxcomposite1 \
+//// libxcursor1 \
+//// libxdamage1 \
+//// libxext6 \
+//// libxfixes3 \
+//// libxi6 \
+//// libxrandr2 \
+//// libxrender1 \
+//// libxss1 \
+//// libxtst6 \
+//// lsb-release \
+//// wget \
+//// xdg-utils
+//// ```
 
 import chrobot/internal/utils
 import chrome
@@ -215,7 +264,27 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to find executable in installation directory",
   )
 
+  case os.family() {
+    os.Linux -> {
+      utils.hint(
+        "You can run the following command to check wich depencies are missing on your system:",
+      )
+      utils.show_cmd("ldd \"" <> executable <> "\" | grep not")
+    }
+    _ -> Nil
+  }
+
   utils.stop_progress(p)
+
+  io.println("\n")
+  utils.info(
+    "Chrome for Testing ("
+    <> version.version
+    <> ") installed successfully! The executable is located at:\n"
+    <> installation_dir
+    <> "\n"
+    <> "When using the `launch` command, chrobot should automatically use this local installation.",
+  )
 
   Ok(executable)
 }
@@ -293,7 +362,7 @@ fn resolve_platform() -> Result(String, String) {
     os.Linux, "x86_64" <> _ -> {
       utils.warn(
         "You appear to be on linux, just to let you know, dependencies are not installed automatically by this script,
-you must install them yourself! Please check the README for more information.",
+you must install them yourself! Please check the docs of the install module for further information.",
       )
       Ok("linux64")
     }
