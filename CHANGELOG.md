@@ -1,3 +1,8 @@
+## [2.1.0] 2024-05-25
+
+- Make logging prettier
+- Add browser installation script
+
 ## [2.0.0] 2024-05-17
 
 - **Breaking Change:** Added `log_level` to `chrome.BrowserConfig`, this means any `launch_with_config` calls must 
