@@ -35,18 +35,14 @@
 import chrobot/internal/utils
 import chrome
 import filepath as path
-import gleam/bool
 import gleam/dynamic
 import gleam/erlang/os
-import gleam/erlang/process
-import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/io
 import gleam/json
 import gleam/list
-import gleam/option
 import gleam/result
 import gleam/string
 import simplifile as file
@@ -98,7 +94,6 @@ pub fn install_with_config(
         "You already have a local Chrome installation at this path:\n"
         <> local_chrome_path
         <> "
-It will be overwritten if it is the same version as the one to be installed.
 Chrobot does not support managing multiple browser installations, 
 you are encouraged to remove old installations manually if you no longer need them.",
       )
@@ -220,15 +215,8 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to find executable in installation directory",
   )
 
-  use _ <- assert_ok(
-    set_executable(executable),
-    "Failed to set executable permissions on the installed binary",
-  )
-
-  // TODO mac permissions are still not correct, need to fix this
-  // it's trying to launch binaries under Frameworks/
-
   utils.stop_progress(p)
+
   Ok(executable)
 }
 
@@ -377,6 +365,61 @@ fn assert_true(
   }
 }
 
+/// Attempt unzip of the downloaded file  
+/// Notes:
+/// The erlang standard library unzip function, does not restore file permissions, and 
+/// chrome consists of a bunch of executables, setting them all to executable
+/// manually is a bit annoying.
+/// Therefore, we try to use the system unzip command via a shell instead,
+/// and only fall back to the erlang unzip if that fails.
+fn unzip(from: String, to: String) {
+  run_command("unzip -q " <> from <> " -d " <> to)
+  use installation_dir_entries <- result.try(
+    file.read_directory(to)
+    |> result.replace_error(Nil),
+  )
+
+  let was_extracted =
+    list.map(installation_dir_entries, fn(i) {
+      file.verify_is_directory(path.join(to, i))
+    })
+    |> list.any(fn(check) {
+      case check {
+        Ok(True) -> True
+        _ -> False
+      }
+    })
+
+  case was_extracted {
+    True -> Ok(Nil)
+    False -> {
+      // In this fallback method we extract the zip using erlang unzip, and then set the executable bit on all files
+      // As you can imagine, this is not ideal, and may cause issues, therefore we warn the user.
+      utils.warn(
+        "Failed to extract downloaded .zip archive using system unzip command, falling back to erlang unzip.
+You might run into permission issues when attempting to run the installed binary, this is not ideal!",
+      )
+      use _ <- result.try(erl_unzip(from, to))
+      use installation_files <- result.try(
+        file.get_files(to)
+        |> result.replace_error(Nil),
+      )
+      list.each(installation_files, fn(i) {
+        case file.verify_is_file(i) {
+          Ok(True) -> {
+            let _ = set_executable(i)
+            Nil
+          }
+          _ -> {
+            Nil
+          }
+        }
+      })
+      Ok(Nil)
+    }
+  }
+}
+
 fn new_download_request(url: String) {
   use base_req <- result.try(request.to(url))
   Ok(request.set_body(base_req, <<>>))
@@ -386,7 +429,10 @@ fn new_download_request(url: String) {
 fn get_arch() -> String
 
 @external(erlang, "chrobot_ffi", "unzip")
-fn unzip(from: String, to: String) -> Result(Nil, dynamic.Dynamic)
+fn erl_unzip(from: String, to: String) -> Result(Nil, Nil)
+
+@external(erlang, "chrobot_ffi", "run_command")
+fn run_command(command: String) -> String
 
 @external(erlang, "chrobot_ffi", "set_executable")
 fn set_executable(file: String) -> Result(Nil, Nil)

@@ -3,7 +3,6 @@ import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
 import gleam/option.{type Option, None, Some}
-import gleam/result
 import gleam/string
 import gleam_community/ansi
 import spinner

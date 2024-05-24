@@ -1,7 +1,6 @@
 -module(chrobot_ffi).
 -include_lib("kernel/include/file.hrl").
--export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1]).
-
+-export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1, run_command/1]).
 
 % ---------------------------------------------------
 % RUNTIME
@@ -39,32 +38,40 @@ send_to_port(Port, BinaryString) ->
 
 % Utils for the installer script
 
+% Get the architecture of the system
 get_arch() ->
     ArchCharlist = erlang:system_info(system_architecture),
     list_to_binary(ArchCharlist).
 
-unzip(ZipFile, DestDir) ->
-  ZipFileCharlist = binary_to_list(ZipFile),
-  DestDirCharlist = binary_to_list(DestDir),
-  try zip:unzip(ZipFileCharlist, [{cwd, DestDirCharlist}]) of
-    {ok, _FileList} ->
-      {ok, nil};
-    {error, _} = Error ->
-      Error
-  catch
-    _:Reason ->
-      {error, Reason}
-  end.
+% Run a shell command and return the output
+run_command(Command) ->
+    CommandList = binary_to_list(Command),
+    list_to_binary(os:cmd(CommandList)).
 
+% Unzip a file to a directory using the erlang stdlib zip module
+unzip(ZipFile, DestDir) ->
+    ZipFileCharlist = binary_to_list(ZipFile),
+    DestDirCharlist = binary_to_list(DestDir),
+    try zip:unzip(ZipFileCharlist, [{cwd, DestDirCharlist}]) of
+        {ok, _FileList} ->
+            {ok, nil};
+        {error, _} = Error ->
+            Error
+    catch
+        _:Reason ->
+            {error, Reason}
+    end.
+
+% Set the executable bit on a file
 set_executable(FilePath) ->
-  FileInfo = file:read_file_info(FilePath),
-  case FileInfo of
-    {ok, FI} ->
-      NewFI = FI#file_info{mode = 8#755},
-      case file:write_file_info(FilePath, NewFI) of
-        ok -> {ok, nil};
-        {error, _} = Error -> Error
-      end;
-    {error, Reason} ->
-      {error, Reason}
-  end.
+    FileInfo = file:read_file_info(FilePath),
+    case FileInfo of
+        {ok, FI} ->
+            NewFI = FI#file_info{mode = 8#755},
+            case file:write_file_info(FilePath, NewFI) of
+                ok -> {ok, nil};
+                {error, _} = Error -> Error
+            end;
+        {error, Reason} ->
+            {error, Reason}
+    end.
