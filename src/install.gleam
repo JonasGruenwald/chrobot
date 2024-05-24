@@ -359,7 +359,7 @@ fn resolve_platform() -> Result(String, String) {
       Ok("mac-x64")
     }
     os.Linux, "x86_64" <> _ -> {
-      io.println("\n")
+      io.println("")
       utils.warn(
         "You appear to be on linux, just to let you know, dependencies are not installed automatically by this script,
 you must install them yourself! Please check the docs of the install module for further information.",
