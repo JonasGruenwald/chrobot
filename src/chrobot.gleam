@@ -74,7 +74,7 @@ pub fn launch() {
       utils.hint(
         "You can install a local version of chrome for testing with this command:",
       )
-      utils.show_cmd("gleam run -m chrobot/install")
+      utils.show_cmd("gleam run -m browser_install")
       launch_result
     }
     other -> other

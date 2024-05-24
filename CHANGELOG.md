@@ -1,3 +1,7 @@
+## [2.1.1] 2024-05-25
+
+- Rename the install module to browser_install 
+
 ## [2.1.0] 2024-05-25
 
 - Allow setting launch config through environment

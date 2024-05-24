@@ -45,10 +45,10 @@ Chrobot will automatically pick up this local installation when started via the 
 
 You can run the browser installer utility like so:
 ```sh
-gleam run -m chrobot/install
+gleam run -m browser_install
 ```
 
-Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/install.html) – this installation method will not work everywhere and comes with some caveats!
+Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
 
 
 ### Package

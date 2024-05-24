@@ -6,7 +6,7 @@
 //// You may run browser installation directly with 
 //// 
 //// ```sh
-//// gleam run -m chrobot/install
+//// gleam run -m browser_install
 //// ```
 //// When running directly, you can configure the browser version to install by setting the `CHROBOT_TARGET_VERSION` environment variable,
 //// it will default to `latest`. 

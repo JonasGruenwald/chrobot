@@ -41,7 +41,7 @@ pub fn main() {
           utils.hint(
             "Consider installing a local version of chrome for the project:",
           )
-          utils.show_cmd("gleam run -m install")
+          utils.show_cmd("gleam run -m browser_install")
         }
       }
       panic as "See output above!"
