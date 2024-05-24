@@ -1,5 +1,6 @@
 ## [2.1.0] 2024-05-25
 
+- Allow setting launch config through environment
 - Make logging prettier
 - Add browser installation script
 
