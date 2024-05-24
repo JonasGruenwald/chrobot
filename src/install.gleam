@@ -264,6 +264,8 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to find executable in installation directory",
   )
 
+  utils.stop_progress(p)
+
   case os.family() {
     os.Linux -> {
       utils.hint(
@@ -274,14 +276,11 @@ you are encouraged to remove old installations manually if you no longer need th
     _ -> Nil
   }
 
-  utils.stop_progress(p)
-
-  io.println("\n")
   utils.info(
     "Chrome for Testing ("
     <> version.version
     <> ") installed successfully! The executable is located at:\n"
-    <> installation_dir
+    <> executable
     <> "\n"
     <> "When using the `launch` command, chrobot should automatically use this local installation.",
   )
