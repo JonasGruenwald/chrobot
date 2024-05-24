@@ -21,11 +21,11 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
 import gleam/dynamic
 import gleam/erlang/process.{type Subject}
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -52,12 +52,15 @@ pub type EncodedFile {
   EncodedFile(data: String, extension: String)
 }
 
-/// Try to find a chrome installation and launch it with default arguments.
+/// Cleverly try to find a chrome installation and launch it with reasonable defaults.
 /// 
-/// First, it will try to find a local chrome installation, like that created by `npx @puppeteer/browsers install chrome`
-/// If that fails, it will try to find a system chrome installation in some common places.  
-/// Consider using `launch_with_config` with a `BrowserConfig` instead and specifying 
-/// an explicit path to the chrome executable if consistency is a requirement.
+/// 1. If `CHROBOT_BROWSER_PATH` is set, use that
+/// 2. If a local chrome installation is found, use that
+/// 3. If a system chrome installation is found, use that
+/// 4. If none of the above, return an error
+/// 
+/// If you want to always use a specific chrome installation, take a look at `launch_with_config` or 
+/// `launch_with_env` to set the path explicitly.
 /// 
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
@@ -67,15 +70,11 @@ pub fn launch() {
   // Some helpful logging for when the browser could not be found
   case launch_result {
     Error(chrome.CouldNotFindExecutable) -> {
-      io.println(
-        "\u{1b}[31mChrobot could not find a chrome executable to launch!\u{1b}[0m",
+      utils.err("Chrobot could not find a chrome executable to launch!\n")
+      utils.hint(
+        "You can install a local version of chrome for testing with this command:",
       )
-      io.println("\u{1b}[36m")
-      io.println(
-        "ℹ️  Hint: Consider installing Chrome for Testing from puppeteer:",
-      )
-      io.println("npx @puppeteer/browsers install chrome")
-      io.println("\u{1b}[0m ")
+      utils.show_cmd("gleam run -m chrobot/install")
       launch_result
     }
     other -> other
@@ -99,6 +98,22 @@ pub fn launch() {
 /// ```
 pub fn launch_with_config(config: chrome.BrowserConfig) {
   validate_launch(chrome.launch_with_config(config))
+}
+
+/// Launch a browser, and read the configuration from environment variables.
+/// The browser path variable must be set, all others will fall back to a default.
+/// 
+/// This function will validate that the browser launched successfully, and the 
+/// protocol version matches the one supported by this library.
+/// 
+/// Configuration variables:
+/// - `CHROBOT_BROWSER_PATH` - The path to the browser executable
+/// - `CHROBOT_BROWSER_ARGS` - The arguments to pass to the browser, separated by spaces
+/// - `CHROBOT_BROWSER_TIMEOUT` - The timeout in milliseconds to wait for the browser to start, must be an integer
+/// - `CHROBOT_LOG_LEVEL` - The log level to use, one of `silent`, `warnings`, `info`, `debug`
+/// 
+pub fn launch_with_env() {
+  validate_launch(chrome.launch_with_env())
 }
 
 /// Open a new page in the browser.
