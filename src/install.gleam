@@ -1,5 +1,5 @@
 //// This module provides basic browser installation functionality, allowing you
-//// to install a local version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) in the current directory.
+//// to install a local version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) in the current directory on macOS and Linux.
 ////  
 //// You may run browser installation directly with 
 //// 
@@ -293,8 +293,7 @@ fn resolve_platform() -> Result(String, String) {
     os.Linux, "x86_64" <> _ -> {
       utils.warn(
         "You appear to be on linux, just to let you know, dependencies are not installed automatically by this script,
-you must install them yourself! You may check `ldd chrome | grep not` to see what dependencies are missing.
-See also: https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-doesnt-launch-on-linux",
+you must install them yourself! Please check the README for more information.",
       )
       Ok("linux64")
     }

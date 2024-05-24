@@ -32,7 +32,7 @@ You could use it for
 * Web archiving
 * Browser integration tests
 
-> 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril!  
+> 🦝 The generated protocol bindings are largely untested and I would consider this package experimental, use at your own peril!
 
 ## Setup
 
@@ -40,14 +40,16 @@ You could use it for
 
 Chrobot can use an existing system installation of Google Chrome or Chromium, if you already have one.
 
-If you would like a hermetic installation of a specific version of a chrome build optimized for automation, I recommend using the [installation script from puppeteer](https://pptr.dev/browsers-api) to achieve this
+Chrobot also comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
+Chrobot will automatically pick up this local installation when started via the `launch` command, and will prioritise it over a system installation of Google Chrome.
 
+You can run the browser installer utility like so:
 ```sh
-# (you will need node.js to run this of course)
-npx @puppeteer/browsers install chrome
+gleam run -m chrobot/install
 ```
 
-The `chrobot.launch` / `chrome.launch` commands will attempt to find a local chrome installation like this, and prioritize it over your system installation.
+Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/install.html) – this installation method will not work everywhere and comes with some caveats!
+
 
 ### Package
 
@@ -187,7 +189,7 @@ iex(5)> text
 
 The full documentation can be found at <https://hexdocs.pm/chrobot>.
 
-🗼 To learn about the high level abstractions, look at the `chrobot` module documentation.
+🗼 To learn about the high level abstractions, look at the [`chrobot` module documentation](https://hexdocs.pm/chrobot/chrobot.html).
 
-📠 To learn how to use the protocol bindings directly, look at the `protocol` module documentation.
+📠 To learn how to use the protocol bindings directly, look at the [`protocol` module documentation](https://hexdocs.pm/chrobot/protocol.html).
 
