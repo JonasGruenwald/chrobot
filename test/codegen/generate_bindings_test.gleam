@@ -25,7 +25,7 @@ pub fn parse_browser_protocol_test() {
   let assert Ok(node_id_type) = list.find(dom_types, fn(t) { t.id == "NodeId" })
 
   // NodeId should have an inner type of "integer"
-  let assert inner_type_is_int = case node_id_type.inner {
+  let inner_type_is_int = case node_id_type.inner {
     generate_bindings.PrimitiveType("integer") -> True
     _ -> False
   }
