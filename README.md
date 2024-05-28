@@ -36,21 +36,6 @@ You could use it for
 
 ## Setup
 
-### Browser
-
-Chrobot can use an existing system installation of Google Chrome or Chromium, if you already have one.
-
-Chrobot also comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
-Chrobot will automatically pick up this local installation when started via the `launch` command, and will prioritise it over a system installation of Google Chrome.
-
-You can run the browser installer utility like so:
-```sh
-gleam run -m browser_install
-```
-
-Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
-
-
 ### Package
 
 Install as a Gleam package
@@ -69,6 +54,20 @@ defp deps do
   ]
 end
 ```
+
+### Browser
+
+Chrobot can use an existing system installation of Google Chrome or Chromium, if you already have one.
+
+Chrobot also comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
+Chrobot will automatically pick up this local installation when started via the `launch` command, and will prioritise it over a system installation of Google Chrome.
+
+You can run the browser installer utility like so:
+```sh
+gleam run -m browser_install
+```
+
+Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
 
 ## Examples
 
