@@ -1,3 +1,8 @@
+## [2.1.2] 2024-05-29  
+
+- Improve message parsing performance A LOT 🚀
+  - This should have a big impact on the speed of generating PDFs and taking screenshots
+
 ## [2.1.1] 2024-05-25
 
 - Rename the install module to browser_install 

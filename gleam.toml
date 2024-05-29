@@ -1,5 +1,5 @@
 name = "chrobot"
-version = "2.1.1"
+version = "2.1.2"
 
 description = "A browser automation tool and interface to the Chrome DevTools Protocol."
 licences = ["MIT"]
