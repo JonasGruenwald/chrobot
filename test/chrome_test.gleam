@@ -470,7 +470,7 @@ pub fn handle_protocol_error_2_test() {
 pub fn process_port_message_test() {
   // Simplest possible message
   let message = "a\u{0000}"
-  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
 
   chunks
   |> should.equal(["a"])
@@ -479,7 +479,7 @@ pub fn process_port_message_test() {
 
   // Several packets in one message
   let message = "a\u{0000}b\u{0000}c\u{0000}"
-  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
 
   chunks
   |> should.equal(["a", "b", "c"])
@@ -488,7 +488,7 @@ pub fn process_port_message_test() {
 
   // Buffering messages
   let message = "some message\u{0000}some unfinished"
-  let #(chunks, buffer) = chrome.process_port_message(message, [], sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
   chunks
   |> should.equal(["some message"])
   sb.is_empty(buffer)
@@ -497,8 +497,7 @@ pub fn process_port_message_test() {
   |> should.equal("some unfinished")
 
   let second_message = " message\u{0000}:)\u{0000}"
-  let #(chunks, buffer) =
-    chrome.process_port_message(second_message, [], buffer)
+  let #(chunks, buffer) = chrome.process_port_message(second_message, buffer)
 
   chunks
   |> should.equal(["some unfinished message", ":)"])

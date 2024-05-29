@@ -482,19 +482,46 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
 /// Processes an input string and returns a list of complete packets
 /// as well as the updated buffer containing overflow data
 @internal
-pub fn process_port_message(input: String, chunks: List(String), buffer: sb.StringBuilder) -> #(
+pub fn process_port_message(input: String, buffer: sb.StringBuilder) -> #(
   List(String),
   sb.StringBuilder,
 ) {
-  case string.pop_grapheme(input) {
-    Ok(#("\u{0000}", rest)) -> {
-      // Null byte reached -> the buffer is a complete package, but there is more!
-      process_port_message(rest, [sb.to_string(buffer), ..chunks], sb.new())
+  case string.split(input, "\u{0000}") {
+    [unterminated_msg] -> #([], sb.append(buffer, unterminated_msg))
+    // Match on this case directly even though it would be handled by the next case
+    // because it is the most common case and we want to avoid the overhead of the list recursion
+    [single_msg, ""] -> #(
+      [sb.append(buffer, single_msg) |> sb.to_string()],
+      sb.new(),
+    )
+    [first, ..rest] -> {
+      let complete_parts = [sb.append(buffer, first) |> sb.to_string(), ..rest]
+      process_port_message_parts(complete_parts, [])
     }
-    Ok(#(current, rest)) -> {
-      process_port_message(rest, chunks, sb.append(buffer, current))
-    }
-    Error(Nil) -> #(list.reverse(chunks), buffer)
+    [] -> #([], buffer)
+  }
+}
+
+/// Process a list of port messages that are known to be at least one
+/// complete payload, but may be unterminated.  
+/// The overflow buffer is already appended to the first message in advance
+/// so it is not included as a parameter to this function.  
+/// The function may return a newly filled buffer though, if the last message was unterminated.
+fn process_port_message_parts(
+  parts: List(String),
+  collector: List(String),
+) -> #(List(String), sb.StringBuilder) {
+  case parts {
+    // Last message is terminated, return the collector and an empty buffer
+    [""] -> #(list.reverse(collector), sb.new())
+    // Last message is unterminated, return the collector and new buffer with
+    // the the contents of the unterminated message
+    [overflow] -> #(list.reverse(collector), sb.new() |> sb.append(overflow))
+    // Append the current message to the collector and continue with the rest
+    [cur, ..rest] -> process_port_message_parts(rest, [cur, ..collector])
+    // This case should never happen, since we hancle [one] and never pass
+    // an empty list, it's just to avoid the compiler error
+    [] -> #(list.reverse(collector), sb.new())
   }
 }
 
@@ -588,8 +615,7 @@ fn loop(message: Message, state: BrowserState) {
       ))
     }
     PortResponse(data) -> {
-      let #(chunks, buffer) =
-        process_port_message(data, [], state.message_buffer)
+      let #(chunks, buffer) = process_port_message(data, state.message_buffer)
 
       // For debugging
       case sb.is_empty(buffer) {

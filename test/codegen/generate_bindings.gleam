@@ -514,8 +514,9 @@ fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
       )
       PrimitiveType("string")
     }
-    RefType("Network.TimeSinceEpoch") if domain.domain == "Security"
-      || domain.domain == "Accessibility" -> {
+    RefType("Network.TimeSinceEpoch")
+      if domain.domain == "Security" || domain.domain == "Accessibility"
+    -> {
       io.println(
         "[PATCHING PROTOCOL] Replacing instance of 'Network.TimeSinceEpoch' with its primitive type, because the domain is not a depencency of "
         <> domain.domain,
@@ -531,8 +532,9 @@ fn apply_type_patches(inner_type: Type, domain: Domain) -> Type {
       )
       PrimitiveType("string")
     }
-    ArrayType(ReferenceItem("Browser.BrowserContextID")) if domain.domain
-      == "Target" -> {
+    ArrayType(ReferenceItem("Browser.BrowserContextID"))
+      if domain.domain == "Target"
+    -> {
       io.println(
         "[PATCHING PROTOCOL] Replacing instance of 'BrowserContextID' (array) with its primitive type, because it is an experimental property referenced by a stable one",
       )
@@ -597,8 +599,7 @@ pub fn apply_protocol_patches(protocol: Protocol) -> Protocol {
         dependencies: {
           case domain.domain, domain.dependencies {
             // IO domain references Runtime.RemoteObjectId but doesn't declare the dependency to Runtime
-            "IO", None
-            -> {
+            "IO", None -> {
               io.println(
                 "[PATCHING PROTOCOL] Adding 'Runtime' dependency to IO domain",
               )
@@ -771,7 +772,8 @@ fn parse_type(input: d.Dynamic) -> Result(Type, List(d.DecodeError)) {
     | Ok("boolean"), _, _
     | Ok("number"), _, _
     | Ok("any"), _, _
-    | Ok("integer"), _, _ -> primitive_type_decoder(input)
+    | Ok("integer"), _, _
+    -> primitive_type_decoder(input)
     Ok("object"), _, _ -> object_type_decoder(input)
     Ok("array"), _, _ -> array_type_decoder(input)
     _, _, Some(_ref) -> ref_type_decoder(input)
