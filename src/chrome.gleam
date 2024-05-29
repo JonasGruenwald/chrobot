@@ -488,25 +488,40 @@ pub fn process_port_message(input: String, buffer: sb.StringBuilder) -> #(
 ) {
   case string.split(input, "\u{0000}") {
     [unterminated_msg] -> #([], sb.append(buffer, unterminated_msg))
+    // Match on this case directly even though it would be handled by the next case
+    // because it is the most common case and we want to avoid the overhead of the list recursion
     [single_msg, ""] -> #(
       [sb.append(buffer, single_msg) |> sb.to_string()],
       sb.new(),
     )
-    [first, ..rest] -> #(
-      // TODO handle the case where rest is unterminated
-      [
-        sb.append(buffer, first) |> sb.to_string(),
-        ..list.fold(rest, [], fn(acc, curr) {
-          case curr {
-            "" -> acc
-            item -> [item, ..acc]
-          }
-        })
-        |> list.reverse
-      ],
-      sb.new(),
-    )
+    [first, ..rest] -> {
+      let complete_parts = [sb.append(buffer, first) |> sb.to_string(), ..rest]
+      process_port_message_parts(complete_parts, [])
+    }
     [] -> #([], buffer)
+  }
+}
+
+/// Process a list of port messages that are known to be at least one
+/// complete payload, but may be unterminated.  
+/// The overflow buffer is already appended to the first message in advance
+/// so it is not included as a parameter to this function.  
+/// The function may return a newly filled buffer though, if the last message was unterminated.
+fn process_port_message_parts(
+  parts: List(String),
+  collector: List(String),
+) -> #(List(String), sb.StringBuilder) {
+  case parts {
+    // Last message is terminated, return the collector and an empty buffer
+    [""] -> #(list.reverse(collector), sb.new())
+    // Last message is unterminated, return the collector and new buffer with
+    // the the contents of the unterminated message
+    [overflow] -> #(list.reverse(collector), sb.new() |> sb.append(overflow))
+    // Append the current message to the collector and continue with the rest
+    [cur, ..rest] -> process_port_message_parts(rest, [cur, ..collector])
+    // This case should never happen, since we hancle [one] and never pass
+    // an empty list, it's just to avoid the compiler error
+    [] -> #(list.reverse(collector), sb.new())
   }
 }
 
