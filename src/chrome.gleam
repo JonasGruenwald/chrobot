@@ -482,19 +482,31 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
 /// Processes an input string and returns a list of complete packets
 /// as well as the updated buffer containing overflow data
 @internal
-pub fn process_port_message(input: String, chunks: List(String), buffer: sb.StringBuilder) -> #(
+pub fn process_port_message(input: String, buffer: sb.StringBuilder) -> #(
   List(String),
   sb.StringBuilder,
 ) {
-  case string.pop_grapheme(input) {
-    Ok(#("\u{0000}", rest)) -> {
-      // Null byte reached -> the buffer is a complete package, but there is more!
-      process_port_message(rest, [sb.to_string(buffer), ..chunks], sb.new())
-    }
-    Ok(#(current, rest)) -> {
-      process_port_message(rest, chunks, sb.append(buffer, current))
-    }
-    Error(Nil) -> #(list.reverse(chunks), buffer)
+  case string.split(input, "\u{0000}") {
+    [unterminated_msg] -> #([], sb.append(buffer, unterminated_msg))
+    [single_msg, ""] -> #(
+      [sb.append(buffer, single_msg) |> sb.to_string()],
+      sb.new(),
+    )
+    [first, ..rest] -> #(
+      // TODO handle the case where rest is unterminated
+      [
+        sb.append(buffer, first) |> sb.to_string(),
+        ..list.fold(rest, [], fn(acc, curr) {
+          case curr {
+            "" -> acc
+            item -> [item, ..acc]
+          }
+        })
+        |> list.reverse
+      ],
+      sb.new(),
+    )
+    [] -> #([], buffer)
   }
 }
 
@@ -588,8 +600,7 @@ fn loop(message: Message, state: BrowserState) {
       ))
     }
     PortResponse(data) -> {
-      let #(chunks, buffer) =
-        process_port_message(data, [], state.message_buffer)
+      let #(chunks, buffer) = process_port_message(data, state.message_buffer)
 
       // For debugging
       case sb.is_empty(buffer) {

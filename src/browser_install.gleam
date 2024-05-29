@@ -39,7 +39,7 @@
 //// 
 //// The tool does **not** install dependencies on Linux, you must install them yourself.
 //// 
-//// On debian / ubuntu based systems you may intall dependencies with the following command:
+//// On debian / ubuntu based systems you may install dependencies with the following command:
 //// 
 //// ```sh
 //// sudo apt-get update && sudo apt-get install -y \
