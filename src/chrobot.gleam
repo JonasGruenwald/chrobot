@@ -362,6 +362,27 @@ pub fn get_attribute(
   )
 }
 
+/// Convencience function to simulate a click on an element by selector.
+pub fn click_selector(on page: Page, target selector: String) {
+  use item <- result.try(select(page, selector))
+  click(page, item)
+}
+
+/// Simulate a click on an element.  
+/// Calls [`HTMLElement.click()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click) via JavaScript.
+pub fn click(on page: Page, from item: runtime.RemoteObjectId) {
+  let declaration =
+    "function click_el(){
+    return this.click()
+  }"
+  call_custom_function_on_raw(
+    page_caller(page),
+    declaration,
+    item,
+    []
+  )
+}
+
 /// Get a property of a remote object and decode it with the provided decoder
 pub fn get_property(
   on page: Page,
@@ -690,5 +711,45 @@ pub fn call_custom_function_on(
       |> result.replace_error(chrome.ProtocolError)
     }
     _ -> Error(chrome.NotFoundError)
+  }
+}
+
+/// This is a version of `call_custom_function_on` which does not attempt
+/// to decode the result as a value and just returns it directly instead.  
+/// Useful when the return value should be discarded or handled in a custom way.
+pub fn call_custom_function_on_raw(
+  callback,
+  function_declaration function_declaration: String,
+  object_id object_id: runtime.RemoteObjectId,
+  args arguments: List(CallArgument),
+) {
+  // Make call
+  let encoded_arguments = encode_custom_arguments(arguments)
+  let payload =
+    Some(
+      json.object([
+        #("functionDeclaration", json.string(function_declaration)),
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+        #("arguments", encoded_arguments),
+        #("returnByValue", json.bool(True)),
+      ]),
+    )
+    // Parse response
+  use result <- result.try(callback("Runtime.callFunctionOn", payload))
+  use decoded_response <- result.try(
+    runtime.decode__call_function_on_response(result)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  // Ensure response contains a value
+  case decoded_response {
+    runtime.CallFunctionOnResponse(_, Some(exception)) -> {
+      Error(chrome.RuntimeException(
+        text: exception.text,
+        line: exception.line_number,
+        column: exception.column_number,
+      ))
+    }
+    _ -> Ok(decoded_response)
   }
 }

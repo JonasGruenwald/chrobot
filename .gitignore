@@ -5,3 +5,4 @@ erl_crash.dump
 /chrome
 .DS_Store
 test/playground_.gleam
+test/debugging_.gleam
