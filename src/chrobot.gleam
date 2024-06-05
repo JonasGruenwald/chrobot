@@ -370,17 +370,19 @@ pub fn click_selector(on page: Page, target selector: String) {
 
 /// Simulate a click on an element.  
 /// Calls [`HTMLElement.click()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click) via JavaScript.
-pub fn click(on page: Page, from item: runtime.RemoteObjectId) {
+pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
   let declaration =
     "function click_el(){
     return this.click()
   }"
-  call_custom_function_on_raw(
-    page_caller(page),
-    declaration,
-    item,
-    []
-  )
+  call_custom_function_on_raw(page_caller(page), declaration, item, [])
+}
+
+/// Simulate a key press on an element.  
+/// This will dispatch both a keydown and keyup event in sequence.  
+/// If the 
+pub fn press_key(on page: Page, key key: String) {
+  todo
 }
 
 /// Get a property of a remote object and decode it with the provided decoder
@@ -734,7 +736,7 @@ pub fn call_custom_function_on_raw(
         #("returnByValue", json.bool(True)),
       ]),
     )
-    // Parse response
+  // Parse response
   use result <- result.try(callback("Runtime.callFunctionOn", payload))
   use decoded_response <- result.try(
     runtime.decode__call_function_on_response(result)
