@@ -3,6 +3,7 @@ import chrobot
 import chrobot/internal/utils
 import chrome
 import gleam/dynamic
+import gleam/erlang/process
 import gleam/io
 import gleam/list
 import gleam/result
@@ -181,5 +182,21 @@ pub fn click_test() {
   chrobot.get_property(page, object_id, "checked", dynamic.bool)
   |> should.be_ok
   |> should.be_false
+}
 
+pub fn type_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, "#demo-text-input")
+    |> should.be_ok
+
+  chrobot.focus(page, object_id)
+  |> should.be_ok
+
+  chrobot.type_text(page, "Hello, World!")
+  |> should.be_ok
+
+  chrobot.get_property(page, object_id, "value", dynamic.string)
+  |> should.be_ok
+  |> should.equal("Hello, World!")
 }
