@@ -21,6 +21,7 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/internal/keyboard
 import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
@@ -31,6 +32,7 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import protocol
+import protocol/input
 import protocol/page
 import protocol/runtime
 import protocol/target
@@ -368,7 +370,7 @@ pub fn click_selector(on page: Page, target selector: String) {
   click(page, item)
 }
 
-/// Simulate a click on an element.  
+/// Simulate a click on an element.
 /// Calls [`HTMLElement.click()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click) via JavaScript.
 pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
   let declaration =
@@ -378,11 +380,107 @@ pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
   call_custom_function_on_raw(page_caller(page), declaration, item, [])
 }
 
-/// Simulate a key press on an element.  
-/// This will dispatch both a keydown and keyup event in sequence.  
-/// If the 
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in ASCII characters, digits and some DOM key names.
+/// Be aware that the supported keymap is limited to a subset of the US keyboard layout.
+/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)
+pub fn down_key(on page: Page, key key: String) {
+  let key_data_result = keyboard.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: {
+          case key_data.text {
+            Some(_text) -> input.DispatchKeyEventTypeKeyDown
+            None -> input.DispatchKeyEventTypeRawKeyDown
+          }
+        },
+        modifiers: None,
+        timestamp: None,
+        text: key_data.text,
+        unmodified_text: key_data.text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+    }
+    Error(Nil) -> {
+      utils.warn(
+        "You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be pressed down is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!",
+      )
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in ASCII characters, digits and some DOM key names.
+/// Be aware that the supported keymap is limited to a subset of the US keyboard layout.
+/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)
+pub fn up_key(on page: Page, key key: String) {
+  let key_data_result = keyboard.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: input.DispatchKeyEventTypeKeyUp,
+        modifiers: None,
+        timestamp: None,
+        text: key_data.text,
+        unmodified_text: key_data.text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+    }
+    Error(Nil) -> {
+      utils.warn(
+        "You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be released is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!",
+      )
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
+/// Simulate a keypress for a given key.  
+/// This will trigger a keydown and keyup event in sequence.
+/// See the `down_key` and `up_key` functions for more information.
 pub fn press_key(on page: Page, key key: String) {
-  todo
+  use _ <- result.try(down_key(page, key))
+  up_key(page, key)
 }
 
 /// Get a property of a remote object and decode it with the provided decoder

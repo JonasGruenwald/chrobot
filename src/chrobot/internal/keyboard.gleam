@@ -1633,6 +1633,8 @@ pub fn get_key_data(input: String) {
         location: Some(4),
         text: None,
       ))
-    _ -> Error(Nil)
+    _ -> {
+      Error(Nil)
+    }
   }
 }
