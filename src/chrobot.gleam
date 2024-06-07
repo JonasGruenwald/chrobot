@@ -342,7 +342,7 @@ pub fn as_value(
   }
 }
 
-/// Assuming the passed remote object reference is an Element, 
+/// Assuming the passed remote object reference is an Element,
 /// return an attribute of that element.  
 /// Attributes are always returned as a string.
 pub fn get_attribute(
@@ -371,7 +371,7 @@ pub fn click_selector(on page: Page, target selector: String) {
   click(page, item)
 }
 
-/// Simulate a click on an element.
+/// Simulate a click on an element.  
 /// Calls [`HTMLElement.click()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click) via JavaScript.
 pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
   let declaration =
@@ -402,6 +402,7 @@ pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
 /// 
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
+/// 
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn down_key(on page: Page, key key: String, modifiers modifiers: Int) {
   let key_data_result = keymap.get_key_data(key)
@@ -457,6 +458,7 @@ it's best to stick to ASCII characters and DOM key names!")
 /// 
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
+/// 
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn up_key(on page: Page, key key: String, modifiers modifiers: Int) {
   let key_data_result = keymap.get_key_data(key)
@@ -502,6 +504,7 @@ it's best to stick to ASCII characters and DOM key names!")
 /// 
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
+/// 
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn press_key(on page: Page, key key: String) {
   use _ <- result.try(down_key(page, key, 0))
@@ -534,7 +537,8 @@ pub fn insert_char(on page: Page, key key: String) {
 /// Type text by simulating keypresses for each character in the input string.  
 /// Note: If a character is not supported by the virtual keyboard, it will be inserted using a char event,
 /// which will not produce keydown or keyup events.  
-/// [⌨️ You can see the key values supported by the virtual keyboard here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+/// [⌨️ You can see the key values supported by the virtual keyboard here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)  
+/// 
 /// If you want to type text into an input field, make sure to `focus` it first!  
 pub fn type_text(on page, text input: String) {
   string.to_graphemes(input)
