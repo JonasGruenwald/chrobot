@@ -379,6 +379,13 @@ pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
     return this.click()
   }"
   call_custom_function_on_raw(page_caller(page), declaration, item, [])
+  |> result.replace(Nil)
+}
+
+// Convenience function to focus an element by selector
+pub fn focus_selector(on page: Page, target selector: String) {
+  use item <- result.try(select(page, selector))
+  focus(page, item)
 }
 
 /// Focus an element.  
@@ -388,6 +395,7 @@ pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
     return this.focus()
   }"
   call_custom_function_on_raw(page_caller(page), declaration, item, [])
+  |> result.replace(Nil)
 }
 
 /// Simulate a keydown event for a given key.  
@@ -431,6 +439,7 @@ pub fn down_key(on page: Page, key key: String) {
         is_system_key: None,
         location: key_data.location,
       )
+      |> result.replace(Nil)
     }
     Error(Nil) -> {
       utils.warn("You are attempting to trigger a key which is not supported
@@ -473,6 +482,7 @@ pub fn up_key(on page: Page, key key: String) {
         is_system_key: None,
         location: key_data.location,
       )
+      |> result.replace(Nil)
     }
     Error(Nil) -> {
       utils.warn("You are attempting to trigger a key which is not supported
@@ -513,6 +523,7 @@ pub fn insert_char(on page: Page, key key: String) {
     is_system_key: None,
     location: None,
   )
+  |> result.replace(Nil)
 }
 
 /// Type text by simulating keypresses for each character in the input string.  

@@ -171,7 +171,30 @@ pub fn main() {
 
 ```
 
-### Using from Elixir
+### Write an Integration Test for a WebApp
+
+```gleam
+import chrobot
+import gleam/dynamic
+import gleeunit/should
+
+pub fn package_search_test() {
+  let assert Ok(browser) = chrobot.launch()
+  use <- chrobot.defer_quit(browser)
+  let assert Ok(page) = chrobot.open(browser, "https://hexdocs.pm/", 10_000)
+  let assert Ok(input_field) = chrobot.await_selector(page, "input#search")
+  let assert Ok(Nil) = chrobot.focus(page, input_field)
+  let assert Ok(Nil) = chrobot.type_text(page, "chrobot")
+  let assert Ok(Nil) = chrobot.press_key(page, "Enter")
+  let assert Ok(result_link) = chrobot.await_selector(page, "#search-results a")
+  let assert Ok(package_href) =
+    chrobot.get_property(page, result_link, "href", dynamic.string)
+  package_href
+  |> should.equal("https://hexdocs.pm/chrobot/")
+}
+```
+
+### Use from Elixir
 
 ```elixir
 # ( output / logging removed for brevity )
