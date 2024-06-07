@@ -3,7 +3,6 @@ import chrobot
 import chrobot/internal/utils
 import chrome
 import gleam/dynamic
-import gleam/erlang/process
 import gleam/io
 import gleam/list
 import gleam/result
