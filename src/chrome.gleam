@@ -30,7 +30,7 @@ import gleam/string
 import gleam/string_builder as sb
 import simplifile as file
 
-const default_timeout: Int = 10_000
+pub const default_timeout: Int = 10_000
 
 // --- PUBLIC API ---
 
@@ -180,6 +180,56 @@ pub fn launch() -> Result(Subject(Message), LaunchError) {
       launch_with_config(BrowserConfig(
         path: resolved_chrome_path,
         args: get_default_chrome_args(),
+        start_timeout: default_timeout,
+        log_level: LogLevelWarnings,
+      ))
+    }
+  }
+}
+
+/// Like [`launch`](#launch), but launches the browser with a visible window, not
+/// in headless mode, which is useful for debugging and development.  
+pub fn launch_window() {
+  case resolve_env_cofig() {
+    Ok(env_config) -> {
+      // Env config vars are set, use them
+      utils.info(
+        "Launching windowed browser using config provided through environment variables",
+      )
+      launch_with_config(BrowserConfig(
+        path: env_config.path,
+        args: env_config.args
+          |> list.filter(fn(arg) {
+            case arg {
+              "--headless" -> False
+              _ -> True
+            }
+          }),
+        start_timeout: env_config.start_timeout,
+        log_level: env_config.log_level,
+      ))
+    }
+    Error(_) -> {
+      // Try local first, then a system installation
+      use resolved_chrome_path <- result.try(result.lazy_or(
+        get_local_chrome_path(),
+        get_system_chrome_path,
+      ))
+      // I think logging this is important to avoid confusion
+      utils.info(
+        "Launching windowed browser from dynamically resolved path: \""
+        <> resolved_chrome_path
+        <> "\"",
+      )
+      launch_with_config(BrowserConfig(
+        path: resolved_chrome_path,
+        args: get_default_chrome_args()
+          |> list.filter(fn(arg) {
+            case arg {
+              "--headless" -> False
+              _ -> True
+            }
+          }),
         start_timeout: default_timeout,
         log_level: LogLevelWarnings,
       ))
@@ -971,7 +1021,8 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
   }
 }
 
-fn resolve_env_cofig() -> Result(BrowserConfig, Nil) {
+@internal
+pub fn resolve_env_cofig() -> Result(BrowserConfig, Nil) {
   use path <- result.try(os.get_env("CHROBOT_BROWSER_PATH"))
   let args = case os.get_env("CHROBOT_BROWSER_ARGS") {
     Ok(args_string) -> string.split(args_string, "\n")

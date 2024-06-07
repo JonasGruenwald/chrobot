@@ -50,19 +50,24 @@ Install as an Elixir dependency with mix
 # in your mix.exs
 defp deps do
   [
-    {:chrobot, "~> 2.2.2", app: false, manager: :rebar3}
+    {:chrobot, "~> 2.2.3", app: false, manager: :rebar3}
   ]
 end
 ```
 
 ### Browser
 
+#### System Installation
+
 Chrobot can use an existing system installation of Google Chrome or Chromium, if you already have one.
 
-Chrobot also comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
+
+#### Browser Install Tool
+
+Chrobot comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
 Chrobot will automatically pick up this local installation when started via the `launch` command, and will prioritise it over a system installation of Google Chrome.
 
-You can run the browser installer utility from gleam like so:
+You can run the browser installer tool from gleam like so:
 
 ```sh
 gleam run -m browser_install
@@ -75,6 +80,25 @@ mix run -e :browser_install.main
 ```
 
 Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
+
+#### GitHub Actions
+
+If you want to use chrobot inside a Github Action, for example to run integration tests, 
+you can use the [setup-chrome](https://github.com/browser-actions/setup-chrome) action to get a Chrome installation, like so:
+
+```yml
+# -- snip --
+- uses: browser-actions/setup-chrome@v1
+  id: setup-chrome
+- run: |
+    ${{ steps.setup-chrome.outputs.chrome-path }} --version
+- run: gleam deps download
+- run: gleam test
+  env:
+    CHROBOT_BROWSER_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+```
+
+If you are using `launch` to start chrobot, it should pick up the Chrome executable from `CHROBOT_BROWSER_PATH`.
 
 ## Examples
 

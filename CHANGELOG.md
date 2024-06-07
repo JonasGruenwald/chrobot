@@ -1,3 +1,7 @@
+## [2.2.3]
+
+- Add `launch_window` function to launch browser in headful mode
+
 ## [2.2.2] 2024-06-07
 
 This update brings basic utilities for integration testing and some conveniences in the high level `chrobot` module

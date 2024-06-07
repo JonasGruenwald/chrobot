@@ -90,6 +90,25 @@ pub fn launch() {
   }
 }
 
+/// Like [`launch`](#launch), but launches the browser with a visible window, not
+/// in headless mode, which is useful for debugging and development.  
+pub fn launch_window() {
+  let launch_result = validate_launch(chrome.launch_window())
+
+  // Some helpful logging for when the browser could not be found
+  case launch_result {
+    Error(chrome.CouldNotFindExecutable) -> {
+      utils.err("Chrobot could not find a chrome executable to launch!\n")
+      utils.hint(
+        "You can install a local version of chrome for testing with this command:",
+      )
+      utils.show_cmd("gleam run -m browser_install")
+      launch_result
+    }
+    other -> other
+  }
+}
+
 /// Launch a browser with the given configuration,
 /// to populate the arguments, use [`chrome.get_default_chrome_args`](/chrobot/chrome.html#get_default_chrome_args).
 /// This function will validate that the browser launched successfully, and the 
