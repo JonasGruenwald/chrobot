@@ -190,7 +190,7 @@ pub fn with_timeout(page: Page, time_out) {
 /// Capture a screenshot of the current page and return it as a base64 encoded string
 /// The Ok(result) of this function can be passed to [`to_file`](#to_file)  
 ///   
-/// If you want to customize the settings of the output image, use [`page.capture_screenshot`](/chrobot/protocol/page#capture_screenshot) directly.
+/// If you want to customize the settings of the output image, use [`page.capture_screenshot`](/chrobot/protocol/page.html#capture_screenshot) directly.
 pub fn screenshot(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   use response <- result.try(page.capture_screenshot(
     page_caller(page),
@@ -208,7 +208,7 @@ pub fn screenshot(page: Page) -> Result(EncodedFile, chrome.RequestError) {
 /// Consider setting a larger timeout, you can use `with_timeout` on your existing `Page` to do this.
 /// The Ok(result) of this function can be passed to `to_file`  
 ///   
-/// If you want to customize the settings of the output document, use [`page.print_to_pdf`](/chrobot/protocol/page#print_to_pdf) directly.
+/// If you want to customize the settings of the output document, use [`page.print_to_pdf`](/chrobot/protocol/page.html#print_to_pdf) directly.
 pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   use response <- result.try(page.print_to_pdf(
     page_caller(page),
