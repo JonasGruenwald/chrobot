@@ -51,19 +51,20 @@ pub type Page {
   )
 }
 
+/// Holds a base64 encoded file and its extension
 pub type EncodedFile {
   EncodedFile(data: String, extension: String)
 }
 
-/// Cleverly try to find a chrome installation and launch it with reasonable defaults.
+/// ✨Cleverly✨ try to find a chrome installation and launch it with reasonable defaults.
 /// 
 /// 1. If `CHROBOT_BROWSER_PATH` is set, use that
 /// 2. If a local chrome installation is found, use that
 /// 3. If a system chrome installation is found, use that
 /// 4. If none of the above, return an error
 /// 
-/// If you want to always use a specific chrome installation, take a look at `launch_with_config` or 
-/// `launch_with_env` to set the path explicitly.
+/// If you want to always use a specific chrome installation, take a look at [`launch_with_config`](#launch_with_config) or 
+/// [`launch_with_env`](#launch_with_env) to set the path explicitly.
 /// 
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
@@ -85,7 +86,7 @@ pub fn launch() {
 }
 
 /// Launch a browser with the given configuration,
-/// to populate the arguments, use `browser.get_default_chrome_args`.
+/// to populate the arguments, use [`chrome.get_default_chrome_args`](/chrobot/chrome#get_default_chrome_args).
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
 /// 
@@ -121,10 +122,10 @@ pub fn launch_with_env() {
 
 /// Open a new page in the browser.
 /// Returns a response when the protocol call succeeds, please use
-/// `await_selector` to determine when the page is ready.  
+/// [`await_selector`](#await_selector) to determine when the page is ready.  
 /// The timeout passed to this function will be attached to the returned
-/// `Page` type to be reused by other functions in this module.  
-/// You can always adjust it using `with_timeout`.
+/// [`Page`](#Page) type to be reused by other functions in this module.  
+/// You can always adjust it using [`with_timeout`](#with_timeout).
 pub fn open(
   with browser_subject: Subject(chrome.Message),
   to url: String,
@@ -163,7 +164,7 @@ pub fn close(page: Page) {
   target.close_target(page_caller(page), page.target_id)
 }
 
-/// Similar to `open`, but creates a new page from HTML that you pass to it.
+/// Similar to [`open`](#open), but creates a new page from HTML that you pass to it.
 /// The page will be created under the `about:blank` URL.
 pub fn create_page(
   with browser: Subject(chrome.Message),
@@ -187,9 +188,9 @@ pub fn with_timeout(page: Page, time_out) {
 }
 
 /// Capture a screenshot of the current page and return it as a base64 encoded string
-/// The Ok(result) of this function can be passed to `to_file`  
+/// The Ok(result) of this function can be passed to [`to_file`](#to_file)  
 ///   
-/// If you want to customize the settings of the output image, use `capture_screenshot` from `protocol/page` directly
+/// If you want to customize the settings of the output image, use [`page.capture_screenshot`](/chrobot/protocol/page#capture_screenshot) directly.
 pub fn screenshot(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   use response <- result.try(page.capture_screenshot(
     page_caller(page),
@@ -207,7 +208,7 @@ pub fn screenshot(page: Page) -> Result(EncodedFile, chrome.RequestError) {
 /// Consider setting a larger timeout, you can use `with_timeout` on your existing `Page` to do this.
 /// The Ok(result) of this function can be passed to `to_file`  
 ///   
-/// If you want to customize the settings of the output document, use `print_to_pdf` from `protocol/page` directly
+/// If you want to customize the settings of the output document, use [`page.print_to_pdf`](/chrobot/protocol/page#print_to_pdf) directly.
 pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   use response <- result.try(page.print_to_pdf(
     page_caller(page),
@@ -231,9 +232,9 @@ pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   Ok(EncodedFile(data: response.data, extension: "pdf"))
 }
 
-// Write an file returned from `screenshot` of `pdf` to a file.
-// File path should not include the file extension, it will be appended automatically.
-// Will return a FileError from the `simplifile` package if not successfull
+/// Write an file returned from [`screenshot`](#screenshot) or [`pdf`](#pdf) to a file.  
+/// File path should not include the file extension, it will be appended automatically!  
+/// Will return a FileError from the `simplifile` package if not successfull
 pub fn to_file(
   input input: EncodedFile,
   path path: String,
@@ -247,8 +248,7 @@ pub fn to_file(
 }
 
 /// Evaluate some JavaScript on the page and return the result,
-/// which will be a `RemoteObject` reference.  
-/// Check the `protocol/runtime` module for more info.
+/// which will be a [`runtime.RemoteObject`](/chrobot/protocol/runtime#RemoteObject) reference.  
 pub fn eval(on page: Page, js expression: String) {
   runtime.evaluate(
     page_caller(page),
@@ -281,7 +281,7 @@ pub fn eval_to_value(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
-/// Like `eval`, but awaits for the result of the evaluation
+/// Like [`eval`](#eval), but awaits for the result of the evaluation
 /// and returns once promise has been resolved
 pub fn eval_async(on page: Page, js expression: String) {
   runtime.evaluate(
@@ -299,7 +299,7 @@ pub fn eval_async(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
-/// Evalute a remote object to a value,
+/// Evalute a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) to a value,
 /// passing in the appropriate decoder function
 pub fn to_value(
   on page: Page,
@@ -323,9 +323,9 @@ pub fn to_value(
 /// Cast a RemoteObject into a value by passing a dynamic decoder.  
 /// This is a convenience for when you know a RemoteObject is returned by value and not ID,
 /// and you want to extract the value from it.  
-/// You can chain this to `eval` or `eval_async` like so:
+/// Because it accepts a Result, you can chain this to [`eval`](#eval) or [`eval_async`](#eval_async) like so:
 /// ```gleam
-/// eval(page, "window.location.href")
+/// eval(page, "window.document.documentElement.outerHTML")
 ///   |> as_value(dynamic.string)
 /// ```
 pub fn as_value(
@@ -342,9 +342,15 @@ pub fn as_value(
   }
 }
 
-/// Assuming the passed remote object reference is an Element,
+/// Assuming the passed [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) reference is an Element,
 /// return an attribute of that element.  
-/// Attributes are always returned as a string.
+/// Attributes are always returned as a string.  
+/// If the attribute is not found, or the item is not an Element, an error will be returned.  
+/// 
+/// ## Example
+/// ```gleam
+/// let assert Ok(foo_data) = get_attribute(page, item, "data-foo")
+/// ```
 pub fn get_attribute(
   on page: Page,
   from item: runtime.RemoteObjectId,
@@ -365,7 +371,8 @@ pub fn get_attribute(
   )
 }
 
-/// Convencience function to simulate a click on an element by selector.
+/// Convencience function to simulate a click on an element by selector.  
+/// See [`click`](#click) for more info.
 pub fn click_selector(on page: Page, target selector: String) {
   use item <- result.try(select(page, selector))
   click(page, item)
@@ -382,13 +389,15 @@ pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
   |> result.replace(Nil)
 }
 
-// Convenience function to focus an element by selector
+/// Convenience function to focus an element by selector.  
+/// See [`focus`](#focus) for more info.  
 pub fn focus_selector(on page: Page, target selector: String) {
   use item <- result.try(select(page, selector))
   focus(page, item)
 }
 
 /// Focus an element.  
+/// Calls [`HTMLElement.focus()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus) via JavaScript.
 pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
   let declaration =
     "function focus_el(){
@@ -454,7 +463,7 @@ it's best to stick to ASCII characters and DOM key names!")
   }
 }
 
-/// Simulate a keydown event for a given key.  
+/// Simulate a keyup event for a given key.  
 /// 
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
@@ -506,13 +515,16 @@ it's best to stick to ASCII characters and DOM key names!")
 /// The keymap is based on the US keyboard layout.  
 /// 
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+/// 
+/// If you want to insert a whole string into an input field, use `type_text` instead.
 pub fn press_key(on page: Page, key key: String) {
   use _ <- result.try(down_key(page, key, 0))
   up_key(page, key, 0)
 }
 
-/// Insert the given character into a focused input field by sending a `char` keyboard event.
-/// Note that this does not trigger a keydown or keyup event, see `press_key` for that.
+/// Insert the given character into a [focus](#focus)ed input field by sending a `char` keyboard event.  
+/// Note that this does not trigger a keydown or keyup event, see [`press_key`](#press_key) for that.  
+/// If you want to insert a whole string into an input field, use [`type_text`](#type_text) instead.  
 pub fn insert_char(on page: Page, key key: String) {
   input.dispatch_key_event(
     page_caller(page),
@@ -539,7 +551,7 @@ pub fn insert_char(on page: Page, key key: String) {
 /// which will not produce keydown or keyup events.  
 /// [⌨️ You can see the key values supported by the virtual keyboard here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)  
 /// 
-/// If you want to type text into an input field, make sure to `focus` it first!  
+/// If you want to type text into an input field, make sure to [`focus`](#focus) it first!  
 pub fn type_text(on page, text input: String) {
   string.to_graphemes(input)
   |> list.map(fn(char) {
@@ -552,7 +564,13 @@ pub fn type_text(on page, text input: String) {
   |> result.replace(Nil)
 }
 
-/// Get a property of a remote object and decode it with the provided decoder
+/// Get a property of a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) and decode it with the provided decoder  
+/// 
+/// ## Example
+/// ```gleam
+/// import gleam/dynamic
+/// let assert Ok(link_target) = get_property(page, item, "href", dynamic.string)
+/// ```
 pub fn get_property(
   on page: Page,
   from item: runtime.RemoteObjectId,
@@ -574,31 +592,42 @@ pub fn get_property(
   )
 }
 
-/// Note: Accesses the `innerText` property, not `textContent`
+/// Get the text content of an element.  
+/// Returns the [`HTMLElement.innerText`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText) property via JavaScript, NOT `Node.textContent`.  
+/// Learn about the differences [here](https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent#differences_from_innertext).
 pub fn get_text(on page: Page, from item: runtime.RemoteObjectId) {
   get_property(page, item, "innerText", dynamic.string)
 }
 
+/// Get the inner HTML of an element.
+/// Returns the [`Element.innerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML) JavaScript property.
 pub fn get_inner_html(on page: Page, from item: runtime.RemoteObjectId) {
   get_property(page, item, "innerHTML", dynamic.string)
 }
 
+/// Get the outer HTML of an element.  
+/// Returns the [`Element.outerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML) JavaScript property.
 pub fn get_outer_html(on page: Page, from item: runtime.RemoteObjectId) {
   get_property(page, item, "outerHTML", dynamic.string)
 }
 
+/// Return the entire HTML of the page as a string.  
+/// Returns `document.documentElement.outerHTML` via JavaScript.
 pub fn get_all_html(on page: Page) {
   eval(page, "window.document.documentElement.outerHTML")
   |> as_value(dynamic.string)
 }
 
+/// Run a selector and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId)
+/// for the first matching element.
 pub fn select(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
   eval(page, selector_code)
   |> handle_object_id_response()
 }
 
-/// Run `querySelectorAll` on the page and return a list of remote object ids
+/// Run `querySelectorAll` on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) items 
+/// for all matching elements.
 pub fn select_all(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
   let result = eval(page, selector_code)
@@ -661,7 +690,7 @@ pub fn select_all(on page: Page, matching selector: String) {
 /// Continously attempt to run a selector, until it succeeds.  
 /// You can use this after opening a page, to wait for the moment it has initialized
 /// enough sufficiently for you to run your automation on it.  
-/// The final result will be single remote object id
+/// The final result will be single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId)
 pub fn await_selector(
   on page: Page,
   select selector: String,
@@ -678,7 +707,7 @@ pub fn await_selector(
 /// Block until the page load event has fired.
 /// Note that with local pages, the load event can often fire 
 /// before the handler is attached.  
-/// It's best to use `await_selector` instead of this
+/// It's best to use [`await_selector`](#await_selector) instead of this
 pub fn await_load_event(browser, page: Page) {
   // Enable Page domain to receive events like ` Page.loadEventFired`
   use _ <- result.try(page.enable(page_caller(page)))
@@ -687,7 +716,7 @@ pub fn await_load_event(browser, page: Page) {
   chrome.listen_once(browser, "Page.loadEventFired", page.time_out)
 }
 
-/// Quit the browser (alias for `chrome.quit`)
+/// Quit the browser (alias for [`chrome.quit`](/chrobot/chrome#quit))
 pub fn quit(browser: Subject(chrome.Message)) {
   chrome.quit(browser)
 }
@@ -733,7 +762,22 @@ fn pass_session(session_id: target.SessionID) -> Option(String) {
   }
 }
 
-/// Create callback to pass to protocol commands from a `Page` 
+/// Create callback to pass to protocol commands from a `Page`  
+/// This is useful when you want to make raw protocol calls  
+/// 
+/// ## Example
+/// ```gleam
+/// import chrobot.{open, page_caller}
+/// import gleam/option.{None}
+/// import protocol/page
+/// pub fn main() {
+///   let assert Ok(browser) = chrobot.launch()
+///   let assert Ok(page) = open(browser, "https://example.com", 5000)
+///   let callback = page_caller(page)
+///   let assert Ok(_) =
+///     page.navigate(callback, "https://gleam.run", None, None, None)
+/// }
+/// ```
 pub fn page_caller(page: Page) {
   fn(method, params) {
     chrome.call(
@@ -746,7 +790,7 @@ pub fn page_caller(page: Page) {
   }
 }
 
-/// Validate that the browser responds to protocol messages, 
+/// Validate that the browser responds to protocol messages,  
 /// and that the protocol version matches the one supported by this library.
 fn validate_launch(
   launch_result: Result(Subject(chrome.Message), chrome.LaunchError),
@@ -796,6 +840,8 @@ fn handle_object_id_response(response) {
   }
 }
 
+/// Type wrapper to let you pass in custom arguments of different types 
+/// to a JavaScript function as a list of the same type
 pub type CallArgument {
   StringArg(value: String)
   IntArg(value: Int)
@@ -821,7 +867,7 @@ fn encode_custom_arguments(input: List(CallArgument)) {
 }
 
 // }
-/// This is a version of `runtime.call_function_on` which allows
+/// This is a version of [`runtime.call_function_on`](/chrobot/protocol/runtime#call_function_on) which allows
 /// passing in arguments, and always returns the result as a value,
 /// which will be decoded by the decoder you pass in
 ///  
