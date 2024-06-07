@@ -400,8 +400,9 @@ pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
 
 /// Simulate a keydown event for a given key.  
 /// 
-/// You can pass in characters, digits and some DOM key names.
-/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn down_key(on page: Page, key key: String) {
   let key_data_result = keymap.get_key_data(key)
   case key_data_result {
@@ -454,8 +455,9 @@ it's best to stick to ASCII characters and DOM key names!")
 
 /// Simulate a keydown event for a given key.  
 /// 
-/// You can pass in ASCII characters, digits and some DOM key names.
-/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)  
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn up_key(on page: Page, key key: String) {
   let key_data_result = keymap.get_key_data(key)
   case key_data_result {
@@ -496,15 +498,18 @@ it's best to stick to ASCII characters and DOM key names!")
 }
 
 /// Simulate a keypress for a given key.  
-/// This will trigger a keydown and keyup event in sequence.
-/// See the `down_key` and `up_key` functions for more information.
+/// This will trigger a keydown and keyup event in sequence.  
+/// 
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn press_key(on page: Page, key key: String) {
   use _ <- result.try(down_key(page, key))
   up_key(page, key)
 }
 
 /// Insert the given character into a focused input field by sending a `char` keyboard event.
-/// Note that it does not trigger a keydown or keyup event, see `press_key` for that.
+/// Note that this does not trigger a keydown or keyup event, see `press_key` for that.
 pub fn insert_char(on page: Page, key key: String) {
   input.dispatch_key_event(
     page_caller(page),
@@ -528,8 +533,9 @@ pub fn insert_char(on page: Page, key key: String) {
 
 /// Type text by simulating keypresses for each character in the input string.  
 /// Note: If a character is not supported by the virtual keyboard, it will be inserted using a char event,
-/// which will not produce keydown or keyup events.
-/// If you want to type text into an input field, make sure to `focus` it first!
+/// which will not produce keydown or keyup events.  
+/// [⌨️ You can see the key values supported by the virtual keyboard here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+/// If you want to type text into an input field, make sure to `focus` it first!  
 pub fn type_text(on page, text input: String) {
   string.to_graphemes(input)
   |> list.map(fn(char) {
