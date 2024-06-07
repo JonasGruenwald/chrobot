@@ -5,7 +5,12 @@
 //// 
 //// - You'll first want to [`launch`](#launch) an instance of the browser and receive a `Subject` which allows
 //// you to send messages to the browser (actor)
-//// - You can [`open`](#open) a [`Page`](#Page), which makes the browser browse to a website, hold on to the returned [`Page`](#Page), and pass it to functions in this module
+//// - You can [`open`](#open) a [`Page`](#Page), which makes the browser browse to a website
+//// - Use [`await_selector`](#await_selector) to wait for an element to appear on the page before you interact with it!
+//// - You can interact with the page by calling functions in this module with the [`Page`](#Page) you received from [`open`](#open)
+//// - For extracting information from the page, select elements with [`select`](#select) or [`select_all`](#select_all), 
+////   then use [`get_text`](#get_text), [`get_attribute`](#get_attribute), [`get_property`](#get_property) or [`get_inner_html`](#get_inner_html)
+//// - To simulate user input, use [`press_key`](#press_key), [`type_text`](#type_text), [`click`](#click) and [`focus`](#focus)
 //// - If you want to make raw protocol calls, you can use [`page_caller`](#page_caller), to create a callback to pass to protocol commands from your [`Page`](#Page)
 //// - When you are done with the browser, you should call [`quit`](#quit) to shut it down gracefully
 //// 
@@ -618,7 +623,8 @@ pub fn get_all_html(on page: Page) {
   |> as_value(dynamic.string)
 }
 
-/// Run a selector and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
+/// Run [`document.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector) on the page
+/// and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
 /// for the first matching element.
 pub fn select(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
@@ -626,7 +632,7 @@ pub fn select(on page: Page, matching selector: String) {
   |> handle_object_id_response()
 }
 
-/// Run `querySelectorAll` on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) items 
+/// Run [`document.querySelectorAll`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) items 
 /// for all matching elements.
 pub fn select_all(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
