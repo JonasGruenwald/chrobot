@@ -50,7 +50,7 @@ Install as an Elixir dependency with mix
 # in your mix.exs
 defp deps do
   [
-    {:chrobot, "~> 2", app: false, manager: :rebar3}
+    {:chrobot, "~> 2.2.2", app: false, manager: :rebar3}
   ]
 end
 ```
@@ -62,9 +62,16 @@ Chrobot can use an existing system installation of Google Chrome or Chromium, if
 Chrobot also comes with a simple utility to install a version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) directly inside your project.
 Chrobot will automatically pick up this local installation when started via the `launch` command, and will prioritise it over a system installation of Google Chrome.
 
-You can run the browser installer utility like so:
+You can run the browser installer utility from gleam like so:
+
 ```sh
 gleam run -m browser_install
+```
+
+Or when using Elixir with Mix:
+
+```sh
+mix run -e :browser_install.main
 ```
 
 Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
@@ -84,7 +91,7 @@ pub fn main() {
     |> chrobot.open("https://gleam.run", 30_000)
   let assert Ok(_) = chrobot.await_selector(page, "body")
   
-  // Take a screeshot and save it as 'hi_lucy.png'
+  // Take a screenshot and save it as 'hi_lucy.png'
   let assert Ok(screenshot) = chrobot.screenshot(page)
   let assert Ok(_) = chrobot.to_file(screenshot, "hi_lucy")
   let assert Ok(_) = chrobot.quit(browser)
@@ -135,7 +142,7 @@ pub fn main() {
     browser
     |> chrobot.create_page(build_page(), 10_000)
 
-  // Store as 'recipe.png'
+  // Store as 'recipe.pdf'
   let assert Ok(doc) = chrobot.pdf(page)
   let assert Ok(_) = chrobot.to_file(doc, "recipe")
   let assert Ok(_) = chrobot.quit(browser)
