@@ -403,7 +403,7 @@ pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
-pub fn down_key(on page: Page, key key: String) {
+pub fn down_key(on page: Page, key key: String, modifiers modifiers: Int) {
   let key_data_result = keymap.get_key_data(key)
   case key_data_result {
     Ok(key_data) -> {
@@ -421,7 +421,7 @@ pub fn down_key(on page: Page, key key: String) {
             None -> input.DispatchKeyEventTypeRawKeyDown
           }
         },
-        modifiers: None,
+        modifiers: Some(modifiers),
         timestamp: None,
         text: text,
         unmodified_text: text,
@@ -458,14 +458,14 @@ it's best to stick to ASCII characters and DOM key names!")
 /// You can pass in latin characters, digits and some DOM key names,
 /// The keymap is based on the US keyboard layout.  
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
-pub fn up_key(on page: Page, key key: String) {
+pub fn up_key(on page: Page, key key: String, modifiers modifiers: Int) {
   let key_data_result = keymap.get_key_data(key)
   case key_data_result {
     Ok(key_data) -> {
       input.dispatch_key_event(
         page_caller(page),
         type_: input.DispatchKeyEventTypeKeyUp,
-        modifiers: None,
+        modifiers: Some(modifiers),
         timestamp: None,
         text: key_data.text,
         unmodified_text: key_data.text,
@@ -504,8 +504,8 @@ it's best to stick to ASCII characters and DOM key names!")
 /// The keymap is based on the US keyboard layout.  
 /// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
 pub fn press_key(on page: Page, key key: String) {
-  use _ <- result.try(down_key(page, key))
-  up_key(page, key)
+  use _ <- result.try(down_key(page, key, 0))
+  up_key(page, key, 0)
 }
 
 /// Insert the given character into a focused input field by sending a `char` keyboard event.
