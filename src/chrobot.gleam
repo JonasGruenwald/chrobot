@@ -21,6 +21,7 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/internal/keymap
 import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
@@ -30,7 +31,9 @@ import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/string
 import protocol
+import protocol/input
 import protocol/page
 import protocol/runtime
 import protocol/target
@@ -362,6 +365,189 @@ pub fn get_attribute(
   )
 }
 
+/// Convencience function to simulate a click on an element by selector.
+pub fn click_selector(on page: Page, target selector: String) {
+  use item <- result.try(select(page, selector))
+  click(page, item)
+}
+
+/// Simulate a click on an element.
+/// Calls [`HTMLElement.click()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click) via JavaScript.
+pub fn click(on page: Page, target item: runtime.RemoteObjectId) {
+  let declaration =
+    "function click_el(){
+    return this.click()
+  }"
+  call_custom_function_on_raw(page_caller(page), declaration, item, [])
+  |> result.replace(Nil)
+}
+
+// Convenience function to focus an element by selector
+pub fn focus_selector(on page: Page, target selector: String) {
+  use item <- result.try(select(page, selector))
+  focus(page, item)
+}
+
+/// Focus an element.  
+pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
+  let declaration =
+    "function focus_el(){
+    return this.focus()
+  }"
+  call_custom_function_on_raw(page_caller(page), declaration, item, [])
+  |> result.replace(Nil)
+}
+
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+pub fn down_key(on page: Page, key key: String) {
+  let key_data_result = keymap.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      let text = {
+        case key_data.text {
+          Some(text) -> Some(text)
+          None -> Some(key)
+        }
+      }
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: {
+          case text {
+            Some(_text) -> input.DispatchKeyEventTypeKeyDown
+            None -> input.DispatchKeyEventTypeRawKeyDown
+          }
+        },
+        modifiers: None,
+        timestamp: None,
+        text: text,
+        unmodified_text: text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+      |> result.replace(Nil)
+    }
+    Error(Nil) -> {
+      utils.warn("You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be pressed down is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!")
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+pub fn up_key(on page: Page, key key: String) {
+  let key_data_result = keymap.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: input.DispatchKeyEventTypeKeyUp,
+        modifiers: None,
+        timestamp: None,
+        text: key_data.text,
+        unmodified_text: key_data.text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+      |> result.replace(Nil)
+    }
+    Error(Nil) -> {
+      utils.warn("You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be released is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!")
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
+/// Simulate a keypress for a given key.  
+/// This will trigger a keydown and keyup event in sequence.  
+/// 
+/// You can pass in latin characters, digits and some DOM key names,
+/// The keymap is based on the US keyboard layout.  
+/// [⌨️ You can see the supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+pub fn press_key(on page: Page, key key: String) {
+  use _ <- result.try(down_key(page, key))
+  up_key(page, key)
+}
+
+/// Insert the given character into a focused input field by sending a `char` keyboard event.
+/// Note that this does not trigger a keydown or keyup event, see `press_key` for that.
+pub fn insert_char(on page: Page, key key: String) {
+  input.dispatch_key_event(
+    page_caller(page),
+    type_: input.DispatchKeyEventTypeChar,
+    modifiers: None,
+    timestamp: None,
+    text: Some(key),
+    unmodified_text: None,
+    key_identifier: None,
+    code: None,
+    key: None,
+    windows_virtual_key_code: None,
+    native_virtual_key_code: None,
+    auto_repeat: None,
+    is_keypad: None,
+    is_system_key: None,
+    location: None,
+  )
+  |> result.replace(Nil)
+}
+
+/// Type text by simulating keypresses for each character in the input string.  
+/// Note: If a character is not supported by the virtual keyboard, it will be inserted using a char event,
+/// which will not produce keydown or keyup events.  
+/// [⌨️ You can see the key values supported by the virtual keyboard here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keymap.gleam)
+/// If you want to type text into an input field, make sure to `focus` it first!  
+pub fn type_text(on page, text input: String) {
+  string.to_graphemes(input)
+  |> list.map(fn(char) {
+    case keymap.get_key_data(char) {
+      Ok(_) -> press_key(page, char)
+      Error(_) -> insert_char(page, char)
+    }
+  })
+  |> result.all()
+  |> result.replace(Nil)
+}
+
 /// Get a property of a remote object and decode it with the provided decoder
 pub fn get_property(
   on page: Page,
@@ -690,5 +876,45 @@ pub fn call_custom_function_on(
       |> result.replace_error(chrome.ProtocolError)
     }
     _ -> Error(chrome.NotFoundError)
+  }
+}
+
+/// This is a version of `call_custom_function_on` which does not attempt
+/// to decode the result as a value and just returns it directly instead.  
+/// Useful when the return value should be discarded or handled in a custom way.
+pub fn call_custom_function_on_raw(
+  callback,
+  function_declaration function_declaration: String,
+  object_id object_id: runtime.RemoteObjectId,
+  args arguments: List(CallArgument),
+) {
+  // Make call
+  let encoded_arguments = encode_custom_arguments(arguments)
+  let payload =
+    Some(
+      json.object([
+        #("functionDeclaration", json.string(function_declaration)),
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+        #("arguments", encoded_arguments),
+        #("returnByValue", json.bool(True)),
+      ]),
+    )
+  // Parse response
+  use result <- result.try(callback("Runtime.callFunctionOn", payload))
+  use decoded_response <- result.try(
+    runtime.decode__call_function_on_response(result)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  // Ensure response contains a value
+  case decoded_response {
+    runtime.CallFunctionOnResponse(_, Some(exception)) -> {
+      Error(chrome.RuntimeException(
+        text: exception.text,
+        line: exception.line_number,
+        column: exception.column_number,
+      ))
+    }
+    _ -> Ok(decoded_response)
   }
 }

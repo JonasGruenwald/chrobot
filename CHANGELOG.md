@@ -1,3 +1,10 @@
+## [2.2.2] 2024-06-07
+
+This update brings basic utilities for integration testing and some conveniences in the high level `chrobot` module
+
+- Add `click` and `focus` functions
+- Add `press_key`, `type_text`, and text input related functions
+
 ## [2.1.2] 2024-05-29  
 
 - Improve message parsing performance A LOT 🚀

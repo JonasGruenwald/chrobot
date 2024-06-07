@@ -2,6 +2,8 @@ import birdie
 import chrobot
 import chrobot/internal/utils
 import chrome
+import gleam/dynamic
+import gleam/erlang/process
 import gleam/io
 import gleam/list
 import gleam/result
@@ -147,4 +149,71 @@ pub fn select_all_test() {
     })
 
   birdie.snap(string.join(hrefs, "\n"), title: "List of links")
+}
+
+pub fn get_property_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, "#demo-checkbox")
+    |> should.be_ok
+
+  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  |> should.be_ok
+  |> should.be_true
+}
+
+pub fn click_test() {
+  use page <- test_utils.with_reference_page()
+
+  // This is just a sanity check, to make sure the checkbox is checked before we click it
+  let object_id =
+    chrobot.select(page, "#demo-checkbox")
+    |> should.be_ok
+
+  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  |> should.be_ok
+  |> should.be_true
+
+  // Click the checkbox
+  chrobot.click(page, object_id)
+  |> should.be_ok
+
+  // After clicking the checkbox, it should be unchecked
+  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  |> should.be_ok
+  |> should.be_false
+}
+
+pub fn type_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, "#demo-text-input")
+    |> should.be_ok
+
+  chrobot.focus(page, object_id)
+  |> should.be_ok
+
+  chrobot.type_text(page, "Hello, World!")
+  |> should.be_ok
+
+  chrobot.get_property(page, object_id, "value", dynamic.string)
+  |> should.be_ok
+  |> should.equal("Hello, World!")
+}
+
+pub fn press_key_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, "#demo-text-input")
+    |> should.be_ok
+
+  chrobot.focus(page, object_id)
+  |> should.be_ok
+
+  chrobot.press_key(page, "Enter")
+  |> should.be_ok
+
+  chrobot.get_property(page, object_id, "value", dynamic.string)
+  |> should.be_ok
+  |> should.equal("ENTER KEY PRESSED")
 }

@@ -90,8 +90,29 @@
     <div id="wobble" title="wobble" data-foo="bar">
       Wobble
     </div>
+
+    <div>
+      <label for="demo-checkbox">This is a demo checkbox to test page interactivity</label>
+      <input type="checkbox" id="demo-checkbox" name="demo-checkbox" value="demo-checkbox" checked>
+    </div>
+
+    <div>
+      <label for="demo-text-input"> This is a demo text input to test page interactivity</label>
+      <input type="text" id="demo-text-input" name="demo-text-input">
+    </div>
   </div>
 
+  <script>
+    document.querySelector("#demo-text-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.target.value = "ENTER KEY PRESSED"
+      }
+      console.log('keydown :', e)
+    })
+    document.querySelector("#demo-text-input").addEventListener("keyup", function (e) {
+      console.log('keyup:', e)
+    })
+  </script>
 </body>
 
 </html>
