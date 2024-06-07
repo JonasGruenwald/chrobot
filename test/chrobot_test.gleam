@@ -200,3 +200,20 @@ pub fn type_test() {
   |> should.be_ok
   |> should.equal("Hello, World!")
 }
+
+pub fn press_key_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, "#demo-text-input")
+    |> should.be_ok
+
+  chrobot.focus(page, object_id)
+  |> should.be_ok
+
+  chrobot.press_key(page, "Enter")
+  |> should.be_ok
+
+  chrobot.get_property(page, object_id, "value", dynamic.string)
+  |> should.be_ok
+  |> should.equal("ENTER KEY PRESSED")
+}

@@ -21,6 +21,7 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/internal/keymap
 import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
@@ -389,10 +390,112 @@ pub fn focus(on page: Page, target item: runtime.RemoteObjectId) {
   call_custom_function_on_raw(page_caller(page), declaration, item, [])
 }
 
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in characters, digits and some DOM key names.
+/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)
+pub fn down_key(on page: Page, key key: String) {
+  let key_data_result = keymap.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      let text = {
+        case key_data.text {
+          Some(text) -> Some(text)
+          None -> Some(key)
+        }
+      }
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: {
+          case text {
+            Some(_text) -> input.DispatchKeyEventTypeKeyDown
+            None -> input.DispatchKeyEventTypeRawKeyDown
+          }
+        },
+        modifiers: None,
+        timestamp: None,
+        text: text,
+        unmodified_text: text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+    }
+    Error(Nil) -> {
+      utils.warn("You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be pressed down is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!")
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
+/// Simulate a keydown event for a given key.  
+/// 
+/// You can pass in ASCII characters, digits and some DOM key names.
+/// [⌨️ You can see all supported key values here](https://github.com/JonasGruenwald/chrobot/blob/main/src/chrobot/internal/keyboard.gleam)  
+pub fn up_key(on page: Page, key key: String) {
+  let key_data_result = keymap.get_key_data(key)
+  case key_data_result {
+    Ok(key_data) -> {
+      input.dispatch_key_event(
+        page_caller(page),
+        type_: input.DispatchKeyEventTypeKeyUp,
+        modifiers: None,
+        timestamp: None,
+        text: key_data.text,
+        unmodified_text: key_data.text,
+        key_identifier: None,
+        code: key_data.code,
+        key: key_data.key,
+        windows_virtual_key_code: key_data.key_code,
+        native_virtual_key_code: None,
+        auto_repeat: None,
+        is_keypad: {
+          case key_data.location {
+            Some(3) -> Some(True)
+            _ -> None
+          }
+        },
+        is_system_key: None,
+        location: key_data.location,
+      )
+    }
+    Error(Nil) -> {
+      utils.warn("You are attempting to trigger a key which is not supported
+by the chrobot virtual keyboard.
+The key to be released is: '" <> key <> "'.
+Chrobot simulates a US keyboard layout,
+it's best to stick to ASCII characters and DOM key names!")
+      Error(chrome.NotFoundError)
+    }
+  }
+}
+
 /// Simulate a keypress for a given key.  
-/// This dispatches a `char` type keyboard event, if you need more fine grained control
-/// take a look at `input.dispatch_key_event` from the `protocol/input` module.
+/// This will trigger a keydown and keyup event in sequence.
+/// See the `down_key` and `up_key` functions for more information.
 pub fn press_key(on page: Page, key key: String) {
+  use _ <- result.try(down_key(page, key))
+  up_key(page, key)
+}
+
+/// Insert the given character into a focused input field by sending a `char` keyboard event.
+/// Note that it does not trigger a keydown or keyup event, see `press_key` for that.
+pub fn insert_char(on page: Page, key key: String) {
   input.dispatch_key_event(
     page_caller(page),
     type_: input.DispatchKeyEventTypeChar,
@@ -413,10 +516,17 @@ pub fn press_key(on page: Page, key key: String) {
 }
 
 /// Type text by simulating keypresses for each character in the input string.  
-/// If you want to type text into an input field, make sure to `focus` it first.
+/// Note: If a character is not supported by the virtual keyboard, it will be inserted using a char event,
+/// which will not produce keydown or keyup events.
+/// If you want to type text into an input field, make sure to `focus` it first!
 pub fn type_text(on page, text input: String) {
   string.to_graphemes(input)
-  |> list.map(fn(char) { press_key(page, char) })
+  |> list.map(fn(char) {
+    case keymap.get_key_data(char) {
+      Ok(_) -> press_key(page, char)
+      Error(_) -> insert_char(page, char)
+    }
+  })
   |> result.all()
   |> result.replace(Nil)
 }

@@ -102,6 +102,17 @@
     </div>
   </div>
 
+  <script>
+    document.querySelector("#demo-text-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.target.value = "ENTER KEY PRESSED"
+      }
+      console.log('keydown :', e)
+    })
+    document.querySelector("#demo-text-input").addEventListener("keyup", function (e) {
+      console.log('keyup:', e)
+    })
+  </script>
 </body>
 
 </html>
