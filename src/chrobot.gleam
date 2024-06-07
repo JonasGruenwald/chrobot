@@ -3,13 +3,13 @@
 //// 
 //// Some basic concepts:
 //// 
-//// - You'll first want to `launch` an instance of the browser and receive a `Subject` which allows
+//// - You'll first want to [`launch`](#launch) an instance of the browser and receive a `Subject` which allows
 //// you to send messages to the browser (actor)
-//// - You can `open` a `Page`, which makes the browser browse to a website, hold on to the returned `Page`, and pass it to functions in this module
-//// - If you want to make raw protocol calls, you can use `page_caller`, to create a callback to pass to protocol commands from your `Page`
-//// - When you are done with the browser, you should call `quit` to shut it down gracefully
+//// - You can [`open`](#open) a [`Page`](#Page), which makes the browser browse to a website, hold on to the returned [`Page`](#Page), and pass it to functions in this module
+//// - If you want to make raw protocol calls, you can use [`page_caller`](#page_caller), to create a callback to pass to protocol commands from your [`Page`](#Page)
+//// - When you are done with the browser, you should call [`quit`](#quit) to shut it down gracefully
 //// 
-//// The functions in this module just make calls to `protocol/`  modules, if you
+//// The functions in this module just make calls to [`protocol/`](/chrobot/protocol.html)  modules, if you
 //// would like to customize the behaviour, take a look at them to see how to make
 //// direct protocol calls and pass different defaults.  
 ////  
@@ -86,7 +86,7 @@ pub fn launch() {
 }
 
 /// Launch a browser with the given configuration,
-/// to populate the arguments, use [`chrome.get_default_chrome_args`](/chrobot/chrome#get_default_chrome_args).
+/// to populate the arguments, use [`chrome.get_default_chrome_args`](/chrobot/chrome.html#get_default_chrome_args).
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
 /// 
@@ -248,7 +248,7 @@ pub fn to_file(
 }
 
 /// Evaluate some JavaScript on the page and return the result,
-/// which will be a [`runtime.RemoteObject`](/chrobot/protocol/runtime#RemoteObject) reference.  
+/// which will be a [`runtime.RemoteObject`](/chrobot/protocol/runtime.html#RemoteObject) reference.  
 pub fn eval(on page: Page, js expression: String) {
   runtime.evaluate(
     page_caller(page),
@@ -299,7 +299,7 @@ pub fn eval_async(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
-/// Evalute a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) to a value,
+/// Evalute a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) to a value,
 /// passing in the appropriate decoder function
 pub fn to_value(
   on page: Page,
@@ -342,7 +342,7 @@ pub fn as_value(
   }
 }
 
-/// Assuming the passed [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) reference is an Element,
+/// Assuming the passed [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) reference is an Element,
 /// return an attribute of that element.  
 /// Attributes are always returned as a string.  
 /// If the attribute is not found, or the item is not an Element, an error will be returned.  
@@ -564,7 +564,7 @@ pub fn type_text(on page, text input: String) {
   |> result.replace(Nil)
 }
 
-/// Get a property of a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) and decode it with the provided decoder  
+/// Get a property of a [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) and decode it with the provided decoder  
 /// 
 /// ## Example
 /// ```gleam
@@ -618,7 +618,7 @@ pub fn get_all_html(on page: Page) {
   |> as_value(dynamic.string)
 }
 
-/// Run a selector and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId)
+/// Run a selector and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
 /// for the first matching element.
 pub fn select(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelector(\"" <> selector <> "\")"
@@ -626,7 +626,7 @@ pub fn select(on page: Page, matching selector: String) {
   |> handle_object_id_response()
 }
 
-/// Run `querySelectorAll` on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId) items 
+/// Run `querySelectorAll` on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) items 
 /// for all matching elements.
 pub fn select_all(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
@@ -690,7 +690,7 @@ pub fn select_all(on page: Page, matching selector: String) {
 /// Continously attempt to run a selector, until it succeeds.  
 /// You can use this after opening a page, to wait for the moment it has initialized
 /// enough sufficiently for you to run your automation on it.  
-/// The final result will be single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime#RemoteObjectId)
+/// The final result will be single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
 pub fn await_selector(
   on page: Page,
   select selector: String,
@@ -716,7 +716,7 @@ pub fn await_load_event(browser, page: Page) {
   chrome.listen_once(browser, "Page.loadEventFired", page.time_out)
 }
 
-/// Quit the browser (alias for [`chrome.quit`](/chrobot/chrome#quit))
+/// Quit the browser (alias for [`chrome.quit`](/chrobot/chrome.html#quit))
 pub fn quit(browser: Subject(chrome.Message)) {
   chrome.quit(browser)
 }
@@ -867,7 +867,7 @@ fn encode_custom_arguments(input: List(CallArgument)) {
 }
 
 // }
-/// This is a version of [`runtime.call_function_on`](/chrobot/protocol/runtime#call_function_on) which allows
+/// This is a version of [`runtime.call_function_on`](/chrobot/protocol/runtime.html#call_function_on) which allows
 /// passing in arguments, and always returns the result as a value,
 /// which will be decoded by the decoder you pass in
 ///  
