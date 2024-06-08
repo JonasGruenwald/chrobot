@@ -90,8 +90,6 @@ you can use the [setup-chrome](https://github.com/browser-actions/setup-chrome) 
 # -- snip --
 - uses: browser-actions/setup-chrome@v1
   id: setup-chrome
-- run: |
-    ${{ steps.setup-chrome.outputs.chrome-path }} --version
 - run: gleam deps download
 - run: gleam test
   env:
