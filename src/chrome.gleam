@@ -189,7 +189,7 @@ pub fn launch() -> Result(Subject(Message), LaunchError) {
 
 /// Like [`launch`](#launch), but launches the browser with a visible window, not
 /// in headless mode, which is useful for debugging and development.  
-pub fn launch_window() {
+pub fn launch_window() -> Result(Subject(Message), LaunchError) {
   case resolve_env_cofig() {
     Ok(env_config) -> {
       // Env config vars are set, use them
@@ -285,7 +285,11 @@ pub fn call(
 
 /// A blocking call that waits for a specified event to arrive once,
 /// and then resolves, removing the event listener.
-pub fn listen_once(browser: Subject(Message), method: String, time_out) {
+pub fn listen_once(
+  browser: Subject(Message),
+  method: String,
+  time_out,
+) -> Result(d.Dynamic, RequestError) {
   let event_subject = process.new_subject()
   let call_response =
     utils.try_call_with_subject(
@@ -304,7 +308,7 @@ pub fn listen_once(browser: Subject(Message), method: String, time_out) {
 
 /// Add an event listener
 /// (Experimental! Event forwarding is not really supported yet)
-pub fn add_listener(browser, method: String) {
+pub fn add_listener(browser, method: String) -> Subject(d.Dynamic) {
   let event_subject = process.new_subject()
   process.send(browser, AddListener(event_subject, method))
   event_subject
@@ -312,12 +316,12 @@ pub fn add_listener(browser, method: String) {
 
 /// Remove an event listener
 /// (Experimental! Event forwarding is not really supported yet)
-pub fn remove_listener(browser, listener: Subject(d.Dynamic)) {
+pub fn remove_listener(browser, listener: Subject(d.Dynamic)) -> Nil {
   process.send(browser, RemoveListener(listener))
 }
 
 /// Allows you to set the log level of a running browser instance
-pub fn set_log_level(browser, level: LogLevel) {
+pub fn set_log_level(browser, level: LogLevel) -> Nil {
   process.send(browser, SetLogLevel(level))
 }
 
@@ -363,7 +367,7 @@ pub fn get_version(
 
 /// Get the default arguments the browser should be started with,
 /// to be used inside the `launch_with_config` function
-pub fn get_default_chrome_args() {
+pub fn get_default_chrome_args() -> List(String) {
   [
     "--headless", "--disable-accelerated-2d-canvas", "--disable-gpu",
     "--allow-pre-commit-input", "--disable-background-networking",
@@ -440,7 +444,7 @@ pub fn get_local_chrome_path_at(base_dir: String) {
 }
 
 /// Try to find a system chrome installation in some obvious places.
-pub fn get_system_chrome_path() {
+pub fn get_system_chrome_path()  {
   case os.family() {
     os.Darwin ->
       get_first_existing_path([

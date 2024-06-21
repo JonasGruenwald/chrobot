@@ -73,7 +73,7 @@ pub type EncodedFile {
 /// 
 /// This function will validate that the browser launched successfully, and the 
 /// protocol version matches the one supported by this library.
-pub fn launch() {
+pub fn launch() -> Result(Subject(chrome.Message), chrome.LaunchError) {
   let launch_result = validate_launch(chrome.launch())
 
   // Some helpful logging for when the browser could not be found
@@ -92,7 +92,7 @@ pub fn launch() {
 
 /// Like [`launch`](#launch), but launches the browser with a visible window, not
 /// in headless mode, which is useful for debugging and development.  
-pub fn launch_window() {
+pub fn launch_window() -> Result(Subject(chrome.Message), chrome.LaunchError) {
   let launch_result = validate_launch(chrome.launch_window())
 
   // Some helpful logging for when the browser could not be found
@@ -124,7 +124,7 @@ pub fn launch_window() {
 /// )
 /// let assert Ok(browser_subject) = launch_with_config(config)
 /// ```
-pub fn launch_with_config(config: chrome.BrowserConfig) {
+pub fn launch_with_config(config: chrome.BrowserConfig) -> Result(Subject(chrome.Message), chrome.LaunchError) {
   validate_launch(chrome.launch_with_config(config))
 }
 
@@ -140,7 +140,7 @@ pub fn launch_with_config(config: chrome.BrowserConfig) {
 /// - `CHROBOT_BROWSER_TIMEOUT` - The timeout in milliseconds to wait for the browser to start, must be an integer
 /// - `CHROBOT_LOG_LEVEL` - The log level to use, one of `silent`, `warnings`, `info`, `debug`
 /// 
-pub fn launch_with_env() {
+pub fn launch_with_env() -> Result(Subject(chrome.Message), chrome.LaunchError) {
   validate_launch(chrome.launch_with_env())
 }
 
@@ -184,7 +184,7 @@ pub fn open(
 }
 
 /// Close the passed page
-pub fn close(page: Page) {
+pub fn close(page: Page) -> Result(dynamic.Dynamic, RequestError) {
   target.close_target(page_caller(page), page.target_id)
 }
 

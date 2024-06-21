@@ -27,3 +27,4 @@ spinner = ">= 1.1.0 and < 2.0.0"
 gleeunit = ">= 1.0.0 and < 2.0.0"
 justin = { path = "./vendor/justin" }
 birdie = ">= 1.1.4 and < 2.0.0"
+mist = ">= 1.2.0 and < 2.0.0"

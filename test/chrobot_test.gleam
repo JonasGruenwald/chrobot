@@ -9,12 +9,15 @@ import gleam/result
 import gleam/string
 import gleeunit
 import gleeunit/should
+import test_server
 import test_utils
 
 /// TEST SETUP
 /// The tests will only run if a browser path is set in the environment variable `CHROBOT_TEST_BROWSER_PATH`.
 pub fn main() {
   let test_browser_path = test_utils.try_get_browser_path()
+  test_server.start()
+
   case test_browser_path {
     Ok(browser_path) -> {
       io.println("Using test browser: " <> browser_path)
@@ -48,6 +51,24 @@ pub fn main() {
       panic as "See output above!"
     }
   }
+}
+
+pub fn open_test() {
+  let browser = test_utils.get_browser_instance()
+  let test_url = test_server.get_url()
+  use <- chrobot.defer_quit(browser)
+
+  let page =
+    chrobot.open(browser, test_url, 10_000)
+    |> should.be_ok()
+
+  chrobot.await_selector(page, "body")
+  |> should.be_ok()
+
+  chrobot.eval(page, "window.location.href")
+  |> chrobot.as_value(dynamic.string)
+  |> should.be_ok()
+  |> should.equal(test_url)
 }
 
 pub fn create_page_test() {
