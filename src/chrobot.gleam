@@ -30,6 +30,7 @@ import chrobot/internal/keymap
 import chrobot/internal/utils
 import chrome.{type RequestError}
 import gleam/bit_array
+import gleam/bool
 import gleam/dynamic
 import gleam/erlang/process.{type Subject}
 import gleam/json
@@ -781,6 +782,10 @@ fn do_poll(
 ) -> Result(a, chrome.RequestError) {
   // available time before current polling attempt
   let available_time = deadline - utils.get_time_ms()
+
+  // We guard against negative time because it would cause a panic in try_await
+  // but realistically this should never happen anyways
+  use <- bool.guard(available_time < 0, Error(chrome.ChromeAgentTimeout))
 
   let result =
     callback
