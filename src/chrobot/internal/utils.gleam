@@ -196,3 +196,6 @@ pub fn try_call_with_subject(
     Ok(res) -> res
   }
 }
+
+@external(erlang, "chrobot_ffi", "get_time_ms")
+pub fn get_time_ms() -> Int

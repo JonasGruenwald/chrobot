@@ -35,6 +35,7 @@ import gleam/erlang/process.{type Subject}
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/otp/task
 import gleam/result
 import gleam/string
 import protocol
@@ -762,21 +763,54 @@ pub fn defer_quit(browser: Subject(chrome.Message), body) {
 }
 
 // ---- UTILS
-const poll_interval = 100
+const poll_delay = 5
 
-// TODO measure time elapsed during function call and take it into account
-/// Periodically try to call the function until it returns a 
-/// result instead of an error.
-/// Note: doesn't handle elapsed time during function call attempt yet
-fn poll(callback: fn() -> Result(a, b), remaining_time: Int) -> Result(a, b) {
-  case callback() {
-    Ok(a) -> Ok(a)
-    Error(b) if remaining_time <= 0 -> {
-      Error(b)
+/// Utility to repeatedly call a browser function until it succeeds or times out.
+pub fn poll(
+  callback: fn() -> Result(a, chrome.RequestError),
+  timeout: Int,
+) -> Result(a, chrome.RequestError) {
+  let deadline = utils.get_time_ms() + timeout
+  do_poll(callback, deadline, None)
+}
+
+fn do_poll(
+  callback: fn() -> Result(a, chrome.RequestError),
+  deadline: Int,
+  previous_error: Option(chrome.RequestError),
+) -> Result(a, chrome.RequestError) {
+  // available time before current polling attempt
+  let available_time = deadline - utils.get_time_ms()
+
+  let result =
+    callback
+    |> task.async()
+    |> task.try_await(available_time)
+
+  // remaining available time after the polling attempt finishes
+  let available_time = deadline - utils.get_time_ms() - poll_delay
+
+  case result {
+    // Task did not return before deadline
+    // A task exit should never happen but we consider it a timeout
+    Error(task.Timeout) | Error(task.Exit(_)) -> {
+      // We return the error from the last failed poll attempt if there was one
+      case previous_error {
+        Some(err) -> Error(err)
+        None -> Error(chrome.ChromeAgentTimeout)
+      }
     }
-    Error(_) -> {
-      process.sleep(poll_interval)
-      poll(callback, remaining_time - poll_interval)
+    // Task returned Ok result, polling is done 
+    // and result is returned
+    Ok(Ok(res)) -> Ok(res)
+    // Task returned an error and we still have time, we continue polling with delay
+    Ok(Error(err)) if available_time > 0 -> {
+      process.sleep(poll_delay)
+      do_poll(callback, deadline, Some(err))
+    }
+    // Task returned an error but the time is up
+    Ok(Error(err)) -> {
+      Error(err)
     }
   }
 }

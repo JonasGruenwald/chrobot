@@ -3,6 +3,7 @@ import chrobot
 import chrobot/internal/utils
 import chrome
 import gleam/dynamic
+import gleam/erlang/process
 import gleam/io
 import gleam/list
 import gleam/result
@@ -296,4 +297,78 @@ pub fn press_key_test() {
   chrobot.get_property(page, object_id, "value", dynamic.string)
   |> should.be_ok
   |> should.equal("ENTER KEY PRESSED")
+}
+
+pub fn poll_test() {
+  let initial_time = utils.get_time_ms()
+
+  // this function will start returning "Success" in 200ms
+  let poll_function = fn() {
+    case utils.get_time_ms() - initial_time {
+      time if time > 200 -> Ok("Success")
+      _ -> Error(chrome.NotFoundError)
+    }
+  }
+
+  chrobot.poll(poll_function, 500)
+  |> should.be_ok()
+  |> should.equal("Success")
+}
+
+pub fn poll_failure_test() {
+  let initial_time = utils.get_time_ms()
+
+  // this function will start returning "Success" in 200ms
+  let poll_function = fn() {
+    case utils.get_time_ms() - initial_time {
+      time if time > 200 -> Ok("Success")
+      _ -> Error(chrome.NotFoundError)
+    }
+  }
+
+  case chrobot.poll(poll_function, 100) {
+    Error(chrome.NotFoundError) -> {
+      should.be_true(True)
+      let elapsed_time = utils.get_time_ms() - initial_time
+      // timeout should be within a 10ms window of accuracy
+      { elapsed_time < 105 && elapsed_time > 95 }
+      |> should.be_true()
+    }
+    _ -> {
+      utils.err("Polling function didn't return the correct error")
+      should.fail()
+    }
+  }
+}
+
+pub fn poll_timeout_failure_test() {
+  let initial_time = utils.get_time_ms()
+
+  // this function will return errors first
+  // and after 100ms it will start blocking for 10s
+  let poll_function = fn() {
+    case utils.get_time_ms() - initial_time {
+      time if time > 100 -> {
+        process.sleep(10_000)
+        Ok("Success")
+      }
+      _ -> Error(chrome.NotFoundError)
+    }
+  }
+
+  // the timeout is 300ms, so the polling function will be interrupted
+  // while it's blocking, it should still return the original error
+  case chrobot.poll(poll_function, 300) {
+    Error(chrome.NotFoundError) -> {
+      should.be_true(True)
+      let elapsed_time = utils.get_time_ms() - initial_time
+      // timeout should be within a 10ms window of accuracy
+      { elapsed_time < 305 && elapsed_time > 295 }
+      |> should.be_true()
+    }
+    _ -> {
+      utils.err("Polling function didn't return the correct error")
+      should.fail()
+    }
+  }
 }

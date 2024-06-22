@@ -1,6 +1,6 @@
 -module(chrobot_ffi).
 -include_lib("kernel/include/file.hrl").
--export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1, run_command/1]).
+-export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1, run_command/1, get_time_ms/0]).
 
 % ---------------------------------------------------
 % RUNTIME
@@ -8,6 +8,7 @@
 
 % FFI to interact with the browser via a port from erlang
 % since gleam does not really support ports yet.
+% module: chrome.gleam
 
 % The port is opened with the option "nouse_stdio"
 % which makes it use file descriptors 3 and 4 for stdin and stdout
@@ -37,6 +38,7 @@ send_to_port(Port, BinaryString) ->
 % ---------------------------------------------------
 
 % Utils for the installer script
+% module: browser_install.gleam
 
 % Get the architecture of the system
 get_arch() ->
@@ -75,3 +77,13 @@ set_executable(FilePath) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+% ---------------------------------------------------
+% UTILITIES
+% ---------------------------------------------------
+
+% Miscelaneous utilities
+% module: chrobot/internal/utils.gleam
+
+get_time_ms() ->
+    os:system_time(millisecond).
