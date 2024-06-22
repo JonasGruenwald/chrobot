@@ -1,0 +1,15 @@
+---
+version: 1.1.5
+title: Opened Sample Page
+file: ./test/chrobot_test.gleam
+test_name: open_test
+---
+<html><head>
+      <title>Chrobot Test Page</title>
+    </head>
+    <body>
+      <h1>Chrobot Test Page</h1>
+      <div id="wibble">wobble</div>
+    
+  
+  </body></html>

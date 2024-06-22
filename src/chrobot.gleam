@@ -124,7 +124,9 @@ pub fn launch_window() -> Result(Subject(chrome.Message), chrome.LaunchError) {
 /// )
 /// let assert Ok(browser_subject) = launch_with_config(config)
 /// ```
-pub fn launch_with_config(config: chrome.BrowserConfig) -> Result(Subject(chrome.Message), chrome.LaunchError) {
+pub fn launch_with_config(
+  config: chrome.BrowserConfig,
+) -> Result(Subject(chrome.Message), chrome.LaunchError) {
   validate_launch(chrome.launch_with_config(config))
 }
 

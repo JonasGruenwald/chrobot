@@ -444,7 +444,7 @@ pub fn get_local_chrome_path_at(base_dir: String) {
 }
 
 /// Try to find a system chrome installation in some obvious places.
-pub fn get_system_chrome_path()  {
+pub fn get_system_chrome_path() {
   case os.family() {
     os.Darwin ->
       get_first_existing_path([

@@ -69,21 +69,81 @@ pub fn open_test() {
   |> chrobot.as_value(dynamic.string)
   |> should.be_ok()
   |> should.equal(test_url)
+
+  chrobot.get_all_html(page)
+  |> should.be_ok()
+  |> birdie.snap(title: "Opened Sample Page")
 }
 
 pub fn create_page_test() {
   let browser = test_utils.get_browser_instance()
   use <- chrobot.defer_quit(browser)
   let reference_html = test_utils.get_reference_html()
-  let _page = should.be_ok(chrobot.create_page(browser, reference_html, 10_000))
+  let page = should.be_ok(chrobot.create_page(browser, reference_html, 10_000))
+
+  chrobot.get_all_html(page)
+  |> should.be_ok()
+  |> birdie.snap(title: "Created Page with Reference HTML")
+}
+
+pub fn eval_test() {
+  use page <- test_utils.with_reference_page()
+  let expression = "2 * Math.PI"
+  chrobot.eval(page, expression)
+  |> chrobot.as_value(dynamic.float)
+  |> should.be_ok()
+  |> should.equal(6.283185307179586)
+}
+
+pub fn eval_async_test() {
+  use page <- test_utils.with_reference_page()
+  let expression =
+    "new Promise((resolve, reject) => setTimeout(() => resolve(42), 50))"
+  chrobot.eval_async(page, expression)
+  |> chrobot.as_value(dynamic.int)
+  |> should.be_ok()
+  |> should.equal(42)
+}
+
+pub fn eval_async_failure_test() {
+  use page <- test_utils.with_reference_page()
+  let expression = "Promise.reject(new Error('This is a test error'))"
+  let result = chrobot.eval_async(page, expression)
+  case result {
+    Error(chrome.RuntimeException(text: text, column: column, line: line)) -> {
+      text
+      |> should.equal("Uncaught (in promise) Error: This is a test error")
+      column
+      |> should.equal(0)
+      line
+      |> should.equal(0)
+    }
+    other -> {
+      utils.err(
+        "Expected a chrome.RuntimeException, got: \n" <> string.inspect(other),
+      )
+      panic as "Test failed! the result was not a chrome.RuntimeException!"
+    }
+  }
 }
 
 pub fn await_selector_test() {
+  use page <- test_utils.with_reference_page()
+  chrobot.await_selector(page, "body")
+  |> should.be_ok()
+}
+
+pub fn await_selector_failure_test() {
   let browser = test_utils.get_browser_instance()
   use <- chrobot.defer_quit(browser)
   let reference_html = test_utils.get_reference_html()
-  let page = should.be_ok(chrobot.create_page(browser, reference_html, 10_000))
-  should.be_ok(chrobot.await_selector(page, "body"))
+  let page =
+    chrobot.create_page(browser, reference_html, 10_000)
+    |> should.be_ok()
+    |> chrobot.with_timeout(100)
+
+  chrobot.await_selector(page, "#bogus")
+  |> should.be_error()
 }
 
 pub fn get_all_html_test() {
