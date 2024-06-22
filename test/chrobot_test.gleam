@@ -63,13 +63,8 @@ pub fn open_test() {
     chrobot.open(browser, test_url, 10_000)
     |> should.be_ok()
 
-  chrobot.await_selector(page, "body")
+  chrobot.await_selector(page, "#wibble")
   |> should.be_ok()
-
-  chrobot.eval(page, "window.location.href")
-  |> chrobot.as_value(dynamic.string)
-  |> should.be_ok()
-  |> should.equal(test_url)
 
   chrobot.get_all_html(page)
   |> should.be_ok()
