@@ -1,3 +1,8 @@
+## [2.2.3] Unreleased
+
+- Implement more accurate polling
+- Make `poll` function part of the public `chrobot` API
+
 ## [2.2.3] 2024-06-08
 
 - Add `launch_window` function to launch browser in headful mode
