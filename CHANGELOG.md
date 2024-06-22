@@ -1,4 +1,4 @@
-## [2.2.3] Unreleased
+## [2.2.4] 2024-06-22
 
 - Implement more accurate polling
 - Make `poll` function part of the public `chrobot` API
