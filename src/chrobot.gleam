@@ -689,16 +689,8 @@ pub fn select_all(on page: Page, matching selector: String) {
             list.filter_map(property_descriptors, fn(prop_descriptor) {
               case prop_descriptor {
                 runtime.PropertyDescriptor(
-                  _,
-                  Some(runtime.RemoteObject(_, _, _, _, _, _, Some(object_id))),
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
+                 value:  Some(runtime.RemoteObject(_, _, _, _, _, _, Some(object_id))),
+                 ..
                 ) -> {
                   Ok(object_id)
                 }
