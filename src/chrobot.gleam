@@ -689,8 +689,11 @@ pub fn select_all(on page: Page, matching selector: String) {
             list.filter_map(property_descriptors, fn(prop_descriptor) {
               case prop_descriptor {
                 runtime.PropertyDescriptor(
-                 value:  Some(runtime.RemoteObject(_, _, _, _, _, _, Some(object_id))),
-                 ..
+                  value: Some(runtime.RemoteObject(
+                    object_id: Some(object_id),
+                    ..,
+                  )),
+                  ..,
                 ) -> {
                   Ok(object_id)
                 }
@@ -888,7 +891,7 @@ fn handle_eval_response(eval_response) {
 
 fn handle_object_id_response(response) {
   case response {
-    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
       Ok(remote_object_id)
     }
     Ok(_) -> {
@@ -977,7 +980,10 @@ pub fn call_custom_function_on(
       ))
     }
     runtime.CallFunctionOnResponse(
-      runtime.RemoteObject(_, _, _, Some(value), _, _, _),
+      runtime.RemoteObject(
+        value: Some(value),
+        ..,
+      ),
       None,
     ) -> {
       value_decoder(value)
