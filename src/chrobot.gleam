@@ -361,7 +361,7 @@ pub fn as_value(
   decoder,
 ) {
   case result {
-    Ok(runtime.RemoteObject(_, _, _, Some(value), _, _, _)) -> {
+    Ok(runtime.RemoteObject(value: Some(value), ..)) -> {
       decoder(value)
       |> result.replace_error(chrome.ProtocolError)
     }
@@ -661,7 +661,7 @@ pub fn select_all(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
   let result = eval(page, selector_code)
   case result {
-    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
       use result_properties <- result.try(runtime.get_properties(
         page_caller(page),
         remote_object_id,
@@ -689,16 +689,11 @@ pub fn select_all(on page: Page, matching selector: String) {
             list.filter_map(property_descriptors, fn(prop_descriptor) {
               case prop_descriptor {
                 runtime.PropertyDescriptor(
-                  _,
-                  Some(runtime.RemoteObject(_, _, _, _, _, _, Some(object_id))),
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _,
+                  value: Some(runtime.RemoteObject(
+                    object_id: Some(object_id),
+                    ..,
+                  )),
+                  ..,
                 ) -> {
                   Ok(object_id)
                 }
@@ -896,7 +891,7 @@ fn handle_eval_response(eval_response) {
 
 fn handle_object_id_response(response) {
   case response {
-    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
       Ok(remote_object_id)
     }
     Ok(_) -> {
@@ -985,7 +980,10 @@ pub fn call_custom_function_on(
       ))
     }
     runtime.CallFunctionOnResponse(
-      runtime.RemoteObject(_, _, _, Some(value), _, _, _),
+      runtime.RemoteObject(
+        value: Some(value),
+        ..,
+      ),
       None,
     ) -> {
       value_decoder(value)
