@@ -361,7 +361,7 @@ pub fn as_value(
   decoder,
 ) {
   case result {
-    Ok(runtime.RemoteObject(_, _, _, Some(value), _, _, _)) -> {
+    Ok(runtime.RemoteObject(value: Some(value), ..)) -> {
       decoder(value)
       |> result.replace_error(chrome.ProtocolError)
     }
@@ -661,7 +661,7 @@ pub fn select_all(on page: Page, matching selector: String) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
   let result = eval(page, selector_code)
   case result {
-    Ok(runtime.RemoteObject(_, _, _, _, _, _, Some(remote_object_id))) -> {
+    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
       use result_properties <- result.try(runtime.get_properties(
         page_caller(page),
         remote_object_id,
