@@ -10,14 +10,14 @@ import gleam/result
 import gleam/string
 import gleeunit
 import gleeunit/should
-import test_server
+import mock_server
 import test_utils
 
 /// TEST SETUP
 /// The tests will only run if a browser path is set in the environment variable `CHROBOT_TEST_BROWSER_PATH`.
 pub fn main() {
   let test_browser_path = test_utils.try_get_browser_path()
-  test_server.start()
+  mock_server.start()
 
   case test_browser_path {
     Ok(browser_path) -> {
@@ -56,7 +56,7 @@ pub fn main() {
 
 pub fn open_test() {
   let browser = test_utils.get_browser_instance()
-  let test_url = test_server.get_url()
+  let test_url = mock_server.get_url()
   use <- chrobot.defer_quit(browser)
 
   let page =

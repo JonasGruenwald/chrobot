@@ -1,4 +1,4 @@
-//// The test server listens on localhost and returns some fixed data,
+//// The mock server listens on localhost and returns some fixed data,
 //// it can be used in tests, to avoid the need to request an external website
 
 import chrobot/internal/utils
