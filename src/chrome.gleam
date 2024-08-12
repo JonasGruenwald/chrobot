@@ -536,10 +536,10 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
 /// Processes an input string and returns a list of complete packets
 /// as well as the updated buffer containing overflow data
 @internal
-pub fn process_port_message(input: String, buffer: sb.StringBuilder) -> #(
-  List(String),
-  sb.StringBuilder,
-) {
+pub fn process_port_message(
+  input: String,
+  buffer: sb.StringBuilder,
+) -> #(List(String), sb.StringBuilder) {
   case string.split(input, "\u{0000}") {
     [unterminated_msg] -> #([], sb.append(buffer, unterminated_msg))
     // Match on this case directly even though it would be handled by the next case

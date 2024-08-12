@@ -742,7 +742,9 @@ pub type ContinueToLocationTargetCallFrames {
 }
 
 @internal
-pub fn encode__continue_to_location_target_call_frames(value__: ContinueToLocationTargetCallFrames) {
+pub fn encode__continue_to_location_target_call_frames(
+  value__: ContinueToLocationTargetCallFrames,
+) {
   case value__ {
     ContinueToLocationTargetCallFramesAny -> "any"
     ContinueToLocationTargetCallFramesCurrent -> "current"
@@ -1094,7 +1096,9 @@ pub type SetInstrumentationBreakpointInstrumentation {
 }
 
 @internal
-pub fn encode__set_instrumentation_breakpoint_instrumentation(value__: SetInstrumentationBreakpointInstrumentation) {
+pub fn encode__set_instrumentation_breakpoint_instrumentation(
+  value__: SetInstrumentationBreakpointInstrumentation,
+) {
   case value__ {
     SetInstrumentationBreakpointInstrumentationBeforeScriptExecution ->
       "beforeScriptExecution"
@@ -1105,7 +1109,9 @@ pub fn encode__set_instrumentation_breakpoint_instrumentation(value__: SetInstru
 }
 
 @internal
-pub fn decode__set_instrumentation_breakpoint_instrumentation(value__: dynamic.Dynamic) {
+pub fn decode__set_instrumentation_breakpoint_instrumentation(
+  value__: dynamic.Dynamic,
+) {
   case dynamic.string(value__) {
     Ok("beforeScriptExecution") ->
       Ok(SetInstrumentationBreakpointInstrumentationBeforeScriptExecution)

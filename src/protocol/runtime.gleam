@@ -63,7 +63,9 @@ pub type SerializationOptionsSerialization {
 }
 
 @internal
-pub fn encode__serialization_options_serialization(value__: SerializationOptionsSerialization) {
+pub fn encode__serialization_options_serialization(
+  value__: SerializationOptionsSerialization,
+) {
   case value__ {
     SerializationOptionsSerializationDeep -> "deep"
     SerializationOptionsSerializationJson -> "json"
@@ -772,7 +774,9 @@ pub type ExecutionContextDescription {
 }
 
 @internal
-pub fn encode__execution_context_description(value__: ExecutionContextDescription) {
+pub fn encode__execution_context_description(
+  value__: ExecutionContextDescription,
+) {
   json.object(
     [
       #("id", encode__execution_context_id(value__.id)),
