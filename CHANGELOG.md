@@ -1,4 +1,4 @@
-## [2.2.5] Unreleased
+## [2.2.5] 2024-08-12
 
 - Upgrade to Gleam 1.4.1
 - Upgrade `simplifile` to 2.0.0
