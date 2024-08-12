@@ -906,7 +906,9 @@ pub type CertificateTransparencyCompliance {
 }
 
 @internal
-pub fn encode__certificate_transparency_compliance(value__: CertificateTransparencyCompliance) {
+pub fn encode__certificate_transparency_compliance(
+  value__: CertificateTransparencyCompliance,
+) {
   case value__ {
     CertificateTransparencyComplianceUnknown -> "unknown"
     CertificateTransparencyComplianceNotCompliant -> "not-compliant"
@@ -1201,7 +1203,9 @@ pub type ServiceWorkerResponseSource {
 }
 
 @internal
-pub fn encode__service_worker_response_source(value__: ServiceWorkerResponseSource) {
+pub fn encode__service_worker_response_source(
+  value__: ServiceWorkerResponseSource,
+) {
   case value__ {
     ServiceWorkerResponseSourceCacheStorage -> "cache-storage"
     ServiceWorkerResponseSourceHttpCache -> "http-cache"

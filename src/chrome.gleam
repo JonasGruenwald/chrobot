@@ -429,7 +429,7 @@ pub fn get_local_chrome_path() {
 
 @internal
 pub fn get_local_chrome_path_at(base_dir: String) {
-  case file.verify_is_directory(base_dir) {
+  case file.is_directory(base_dir) {
     Ok(True) -> {
       let files_res =
         result.replace_error(file.get_files(base_dir), CouldNotFindExecutable)
@@ -536,10 +536,10 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
 /// Processes an input string and returns a list of complete packets
 /// as well as the updated buffer containing overflow data
 @internal
-pub fn process_port_message(input: String, buffer: sb.StringBuilder) -> #(
-  List(String),
-  sb.StringBuilder,
-) {
+pub fn process_port_message(
+  input: String,
+  buffer: sb.StringBuilder,
+) -> #(List(String), sb.StringBuilder) {
   case string.split(input, "\u{0000}") {
     [unterminated_msg] -> #([], sb.append(buffer, unterminated_msg))
     // Match on this case directly even though it would be handled by the next case
@@ -1013,7 +1013,7 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
   let existing_paths =
     paths
     |> list.filter(fn(current) {
-      case file.verify_is_file(current) {
+      case file.is_file(current) {
         Ok(res) -> res
         Error(_) -> False
       }

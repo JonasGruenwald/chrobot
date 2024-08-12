@@ -241,7 +241,9 @@ pub type AuthChallengeResponseResponse {
 }
 
 @internal
-pub fn encode__auth_challenge_response_response(value__: AuthChallengeResponseResponse) {
+pub fn encode__auth_challenge_response_response(
+  value__: AuthChallengeResponseResponse,
+) {
   case value__ {
     AuthChallengeResponseResponseDefault -> "Default"
     AuthChallengeResponseResponseCancelAuth -> "CancelAuth"

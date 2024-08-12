@@ -382,7 +382,9 @@ pub type SetEmulatedVisionDeficiencyType {
 }
 
 @internal
-pub fn encode__set_emulated_vision_deficiency_type(value__: SetEmulatedVisionDeficiencyType) {
+pub fn encode__set_emulated_vision_deficiency_type(
+  value__: SetEmulatedVisionDeficiencyType,
+) {
   case value__ {
     SetEmulatedVisionDeficiencyTypeNone -> "none"
     SetEmulatedVisionDeficiencyTypeBlurredVision -> "blurredVision"

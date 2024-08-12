@@ -425,7 +425,9 @@ pub type DispatchMouseEventPointerType {
 }
 
 @internal
-pub fn encode__dispatch_mouse_event_pointer_type(value__: DispatchMouseEventPointerType) {
+pub fn encode__dispatch_mouse_event_pointer_type(
+  value__: DispatchMouseEventPointerType,
+) {
   case value__ {
     DispatchMouseEventPointerTypeMouse -> "mouse"
     DispatchMouseEventPointerTypePen -> "pen"

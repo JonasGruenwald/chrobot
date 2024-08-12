@@ -260,7 +260,7 @@ pub fn pdf(page: Page) -> Result(EncodedFile, chrome.RequestError) {
   Ok(EncodedFile(data: response.data, extension: "pdf"))
 }
 
-/// Write an file returned from [`screenshot`](#screenshot) or [`pdf`](#pdf) to a file.  
+/// Write a file returned from [`screenshot`](#screenshot) or [`pdf`](#pdf) to a file.  
 /// File path should not include the file extension, it will be appended automatically!  
 /// Will return a FileError from the `simplifile` package if not successfull
 pub fn to_file(
@@ -269,7 +269,7 @@ pub fn to_file(
 ) -> Result(Nil, file.FileError) {
   let res =
     bit_array.base64_decode(input.data)
-    |> result.replace_error(file.Unknown)
+    |> result.replace_error(file.Unknown("Could not decode base64 string"))
 
   use binary <- result.try(res)
   file.write_bits(to: path <> "." <> input.extension, bits: binary)

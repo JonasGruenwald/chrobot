@@ -505,7 +505,9 @@ pub type AddScriptToEvaluateOnNewDocumentResponse {
 }
 
 @internal
-pub fn decode__add_script_to_evaluate_on_new_document_response(value__: dynamic.Dynamic) {
+pub fn decode__add_script_to_evaluate_on_new_document_response(
+  value__: dynamic.Dynamic,
+) {
   use identifier <- result.try(dynamic.field(
     "identifier",
     decode__script_identifier,

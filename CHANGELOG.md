@@ -1,3 +1,8 @@
+## [2.2.5] 2024-08-12
+
+- Upgrade to Gleam 1.4.1
+- Upgrade `simplifile` to 2.0.0
+
 ## [2.2.4] 2024-06-22
 
 - Implement more accurate polling
