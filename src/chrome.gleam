@@ -429,7 +429,7 @@ pub fn get_local_chrome_path() {
 
 @internal
 pub fn get_local_chrome_path_at(base_dir: String) {
-  case file.verify_is_directory(base_dir) {
+  case file.is_directory(base_dir) {
     Ok(True) -> {
       let files_res =
         result.replace_error(file.get_files(base_dir), CouldNotFindExecutable)
@@ -1013,7 +1013,7 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
   let existing_paths =
     paths
     |> list.filter(fn(current) {
-      case file.verify_is_file(current) {
+      case file.is_file(current) {
         Ok(res) -> res
         Error(_) -> False
       }

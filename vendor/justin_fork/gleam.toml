@@ -1,4 +1,4 @@
-name = "justin"
+name = "justin_fork"
 version = "1.0.0"
 description = "Convert between snake_case, camelCase, and other cases in Gleam"
 licences = ["Apache-2.0"]

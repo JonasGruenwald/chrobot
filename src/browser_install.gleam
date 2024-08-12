@@ -449,7 +449,7 @@ fn unzip(from: String, to: String) {
 
   let was_extracted =
     list.map(installation_dir_entries, fn(i) {
-      file.verify_is_directory(path.join(to, i))
+      file.is_directory(path.join(to, i))
     })
     |> list.any(fn(check) {
       case check {
@@ -473,7 +473,7 @@ You might run into permission issues when attempting to run the installed binary
         |> result.replace_error(Nil),
       )
       list.each(installation_files, fn(i) {
-        case file.verify_is_file(i) {
+        case file.is_file(i) {
           Ok(True) -> {
             let _ = set_executable(i)
             Nil

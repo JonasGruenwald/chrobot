@@ -1,6 +1,6 @@
 import gleam/list
 import gleeunit
-import justin
+import justin_fork as justin
 
 pub fn main() {
   gleeunit.main()

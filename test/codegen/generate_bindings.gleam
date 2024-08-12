@@ -35,7 +35,7 @@ import gleam/regex
 import gleam/result
 import gleam/string
 import gleam/string_builder as sb
-import justin.{pascal_case, snake_case}
+import justin_fork.{pascal_case, snake_case}
 import simplifile as file
 
 const root_module_comment = "
