@@ -1,0 +1,9 @@
+---
+version: 1.1.8
+title: List of greetings
+file: ./test/chrobot_test.gleam
+test_name: select_all_from_test
+---
+One
+Two
+Three

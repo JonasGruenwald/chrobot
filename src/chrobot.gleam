@@ -278,7 +278,10 @@ pub fn to_file(
 
 /// Evaluate some JavaScript on the page and return the result,
 /// which will be a [`runtime.RemoteObject`](/chrobot/protocol/runtime.html#RemoteObject) reference.  
-pub fn eval(on page: Page, js expression: String) {
+pub fn eval(
+  on page: Page,
+  js expression: String,
+) -> Result(runtime.RemoteObject, RequestError) {
   runtime.evaluate(
     page_caller(page),
     expression: expression,
@@ -294,7 +297,10 @@ pub fn eval(on page: Page, js expression: String) {
   |> handle_eval_response()
 }
 
-pub fn eval_to_value(on page: Page, js expression: String) {
+pub fn eval_to_value(
+  on page: Page,
+  js expression: String,
+) -> Result(runtime.RemoteObject, RequestError) {
   runtime.evaluate(
     page_caller(page),
     expression: expression,
@@ -659,7 +665,6 @@ pub fn select(on page: Page, matching selector: String) {
 /// Run [`Element.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector) on the given
 /// element and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
 /// for the first matching child element.
-
 pub fn select_from(
   on page: Page,
   from item: runtime.RemoteObjectId,
@@ -684,56 +689,28 @@ pub fn select_all(
   matching selector: String,
 ) -> Result(List(runtime.RemoteObjectId), RequestError) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
-  let result = eval(page, selector_code)
-  case result {
-    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
-      use result_properties <- result.try(runtime.get_properties(
-        page_caller(page),
-        remote_object_id,
-        own_properties: Some(True),
-      ))
+  eval(page, selector_code)
+  |> handle_select_all_response(page)
+}
 
-      case result_properties {
-        runtime.GetPropertiesResponse(
-          result: _,
-          internal_properties: _,
-          exception_details: Some(exception),
-        ) -> {
-          Error(chrome.RuntimeException(
-            text: exception.text,
-            line: exception.line_number,
-            column: exception.column_number,
-          ))
-        }
-        runtime.GetPropertiesResponse(
-          result: property_descriptors,
-          internal_properties: _internal_props,
-          exception_details: None,
-        ) -> {
-          Ok(
-            list.filter_map(property_descriptors, fn(prop_descriptor) {
-              case prop_descriptor {
-                runtime.PropertyDescriptor(
-                  value: Some(runtime.RemoteObject(
-                    object_id: Some(object_id),
-                    ..,
-                  )),
-                  ..,
-                ) -> {
-                  Ok(object_id)
-                }
-                _ -> Error(Nil)
-              }
-            }),
-          )
-        }
-      }
-    }
-    Ok(_) -> {
-      Ok([])
-    }
-    Error(any) -> Error(any)
+/// Run [`Element.querySelectorAll`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll) on the given
+/// element and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) items
+/// for all matching child elements.
+pub fn select_all_from(
+  on page: Page,
+  from item: runtime.RemoteObjectId,
+  matching selector: String,
+) -> Result(List(runtime.RemoteObjectId), RequestError) {
+  let declaration =
+    "function select_all_from(selector)
+  {
+    return this.querySelectorAll(selector)
   }
+"
+  call_custom_function_on_object(page_caller(page), declaration, item, [
+    StringArg(selector),
+  ])
+  |> handle_select_all_response(page)
 }
 
 /// Continously attempt to run a selector, until it succeeds.  
@@ -921,6 +898,61 @@ fn handle_object_id_response(response) {
     }
     Ok(_) -> {
       Error(chrome.NotFoundError)
+    }
+    Error(any) -> Error(any)
+  }
+}
+
+fn handle_select_all_response(
+  result: Result(runtime.RemoteObject, chrome.RequestError),
+  page: Page,
+) -> Result(List(runtime.RemoteObjectId), RequestError) {
+  case result {
+    Ok(runtime.RemoteObject(object_id: Some(remote_object_id), ..)) -> {
+      use result_properties <- result.try(runtime.get_properties(
+        page_caller(page),
+        remote_object_id,
+        own_properties: Some(True),
+      ))
+
+      case result_properties {
+        runtime.GetPropertiesResponse(
+          result: _,
+          internal_properties: _,
+          exception_details: Some(exception),
+        ) -> {
+          Error(chrome.RuntimeException(
+            text: exception.text,
+            line: exception.line_number,
+            column: exception.column_number,
+          ))
+        }
+        runtime.GetPropertiesResponse(
+          result: property_descriptors,
+          internal_properties: _internal_props,
+          exception_details: None,
+        ) -> {
+          Ok(
+            list.filter_map(property_descriptors, fn(prop_descriptor) {
+              case prop_descriptor {
+                runtime.PropertyDescriptor(
+                  value: Some(runtime.RemoteObject(
+                    object_id: Some(object_id),
+                    ..,
+                  )),
+                  ..,
+                ) -> {
+                  Ok(object_id)
+                }
+                _ -> Error(Nil)
+              }
+            }),
+          )
+        }
+      }
+    }
+    Ok(_) -> {
+      Ok([])
     }
     Error(any) -> Error(any)
   }
