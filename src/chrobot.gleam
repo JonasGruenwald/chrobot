@@ -33,6 +33,7 @@ import gleam/bit_array
 import gleam/bool
 import gleam/dynamic
 import gleam/erlang/process.{type Subject}
+import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -655,9 +656,33 @@ pub fn select(on page: Page, matching selector: String) {
   |> handle_object_id_response()
 }
 
+/// Run [`Element.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector) on the given
+/// element and return a single [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId)
+/// for the first matching child element.
+
+pub fn select_from(
+  on page: Page,
+  from item: runtime.RemoteObjectId,
+  matching selector: String,
+) -> Result(runtime.RemoteObjectId, RequestError) {
+  let declaration =
+    "function select_from(selector)
+  {
+    return this.querySelector(selector)
+  }
+"
+  call_custom_function_on_object(page_caller(page), declaration, item, [
+    StringArg(selector),
+  ])
+  |> handle_object_id_response()
+}
+
 /// Run [`document.querySelectorAll`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) on the page and return a list of [`runtime.RemoteObjectId`](/chrobot/protocol/runtime.html#RemoteObjectId) items 
 /// for all matching elements.
-pub fn select_all(on page: Page, matching selector: String) {
+pub fn select_all(
+  on page: Page,
+  matching selector: String,
+) -> Result(List(runtime.RemoteObjectId), RequestError) {
   let selector_code = "window.document.querySelectorAll(\"" <> selector <> "\")"
   let result = eval(page, selector_code)
   case result {
@@ -1030,5 +1055,49 @@ pub fn call_custom_function_on_raw(
       ))
     }
     _ -> Ok(decoded_response)
+  }
+}
+
+/// This is a version of `call_custom_function_on` which returns remote objects instead of values.
+/// Useful when you want to pass the result to another function that expects a remote object.
+pub fn call_custom_function_on_object(
+  callback,
+  function_declaration function_declaration: String,
+  object_id object_id: runtime.RemoteObjectId,
+  args arguments: List(CallArgument),
+) {
+  // Make call
+  let encoded_arguments = encode_custom_arguments(arguments)
+  let payload =
+    Some(
+      json.object([
+        #("functionDeclaration", json.string(function_declaration)),
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+        #("arguments", encoded_arguments),
+        #("returnByValue", json.bool(False)),
+      ]),
+    )
+  // Parse response
+  use result <- result.try(callback("Runtime.callFunctionOn", payload))
+  use decoded_response <- result.try(
+    runtime.decode__call_function_on_response(result)
+    |> result.replace_error(chrome.ProtocolError),
+  )
+
+  // Ensure response contains an object reference
+  case decoded_response {
+    runtime.CallFunctionOnResponse(
+      result: _,
+      exception_details: Some(exception),
+    ) -> {
+      Error(chrome.RuntimeException(
+        text: exception.text,
+        line: exception.line_number,
+        column: exception.column_number,
+      ))
+    }
+    runtime.CallFunctionOnResponse(result: result, exception_details: None) -> {
+      Ok(result)
+    }
   }
 }

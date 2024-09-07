@@ -179,6 +179,24 @@ pub fn select_test() {
   |> should.equal("Wibble")
 }
 
+pub fn select_from_test() {
+  use page <- test_utils.with_reference_page()
+  let object_id =
+    chrobot.select(page, ".greeting")
+    |> should.be_ok
+
+  let inner_object_id =
+    chrobot.select_from(page, object_id, "span")
+    |> should.be_ok
+
+  let text_content =
+    chrobot.get_text(page, inner_object_id)
+    |> should.be_ok
+
+  text_content
+  |> should.equal("Joe")
+}
+
 pub fn get_html_test() {
   use page <- test_utils.with_reference_page()
   let object =
