@@ -50,7 +50,7 @@ Install as an Elixir dependency with mix
 # in your mix.exs
 defp deps do
   [
-    {:chrobot, "~> 2.2.3", app: false, manager: :rebar3}
+    {:chrobot, "~> 3.0.0", app: false, manager: :rebar3}
   ]
 end
 ```
@@ -70,16 +70,16 @@ Chrobot will automatically pick up this local installation when started via the 
 You can run the browser installer tool from gleam like so:
 
 ```sh
-gleam run -m browser_install
+gleam run -m chrobot/install
 ```
 
 Or when using Elixir with Mix:
 
 ```sh
-mix run -e :browser_install.main
+mix run -e :chrobot@install.main
 ```
 
-Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/browser_install.html) – this installation method will not work everywhere and comes with some caveats!
+Please [check the `install` docs for more information](https://hexdocs.pm/chrobot/chrobot/install.html) – this installation method will not work everywhere and comes with some caveats!
 
 #### GitHub Actions
 

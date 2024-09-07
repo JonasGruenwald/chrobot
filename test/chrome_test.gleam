@@ -1,4 +1,4 @@
-import chrome
+import chrobot/chrome
 import gleam/erlang/os
 import gleam/json
 import gleam/list

@@ -1,4 +1,12 @@
-## [2.3.0] 2024-07
+## [3.0.0] 2024-08-07
+
+This update restructures the project to move all modules under the `chrobot` namespace.
+
+- All `protocol` modules are now under `chrobot/protocol`
+- `chrome` is now `chrobot/chrome`
+- `browser_install` is now `chrobot/install`
+
+## [2.3.0] 2024-08-07
 
 - Add query selectors that run on elements (Remote Objects)
 

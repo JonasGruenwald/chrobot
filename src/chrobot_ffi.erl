@@ -8,7 +8,7 @@
 
 % FFI to interact with the browser via a port from erlang
 % since gleam does not really support ports yet.
-% module: chrome.gleam
+% module: chrobot/chrome.gleam
 
 % The port is opened with the option "nouse_stdio"
 % which makes it use file descriptors 3 and 4 for stdin and stdout
@@ -38,7 +38,7 @@ send_to_port(Port, BinaryString) ->
 % ---------------------------------------------------
 
 % Utils for the installer script
-% module: browser_install.gleam
+% module: chrobot/install.gleam
 
 % Get the architecture of the system
 get_arch() ->
