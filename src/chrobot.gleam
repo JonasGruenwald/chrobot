@@ -38,7 +38,6 @@ import gleam/bit_array
 import gleam/bool
 import gleam/dynamic
 import gleam/erlang/process.{type Subject}
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
