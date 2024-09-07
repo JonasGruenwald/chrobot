@@ -1,3 +1,7 @@
+## [2.3.0] 2024-07
+
+- Add query selectors that run on elements (Remote Objects)
+
 ## [2.2.5] 2024-08-12
 
 - Upgrade to Gleam 1.4.1
