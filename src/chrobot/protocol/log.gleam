@@ -11,12 +11,12 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
+import chrobot/protocol/network
+import chrobot/protocol/runtime
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/network
-import protocol/runtime
 
 /// Log entry.
 pub type LogEntry {

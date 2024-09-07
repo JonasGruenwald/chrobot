@@ -10,13 +10,13 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
+import chrobot/protocol/runtime
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/runtime
 
 /// Profile node. Holds callsite information, execution statistics and child nodes.
 pub type ProfileNode {

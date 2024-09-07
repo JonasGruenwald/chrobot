@@ -6,7 +6,7 @@
 //// You may run browser installation directly with 
 //// 
 //// ```sh
-//// gleam run -m browser_install
+//// gleam run -m chrobot/install
 //// ```
 //// When running directly, you can configure the browser version to install by setting the `CHROBOT_TARGET_VERSION` environment variable,
 //// it will default to `latest`. 
@@ -81,8 +81,8 @@
 //// xdg-utils
 //// ```
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
 import filepath as path
 import gleam/dynamic
 import gleam/erlang/os

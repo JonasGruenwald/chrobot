@@ -11,11 +11,11 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
+import chrobot/protocol/dom
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/dom
 
 /// Screen orientation.
 pub type ScreenOrientation {

@@ -11,14 +11,14 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
+import chrobot/protocol/dom
+import chrobot/protocol/runtime
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/dom
-import protocol/runtime
 
 /// DOM breakpoint type.
 pub type DOMBreakpointType {

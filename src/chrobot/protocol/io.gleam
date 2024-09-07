@@ -10,13 +10,13 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
+import chrobot/protocol/runtime
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/runtime
 
 /// This is either obtained from another method or specified as `blob:<uuid>` where
 /// `<uuid>` is an UUID of a Blob.

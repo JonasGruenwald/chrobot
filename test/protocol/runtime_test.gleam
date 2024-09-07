@@ -1,11 +1,11 @@
 import birdie
-import chrome
+import chrobot/chrome
+import chrobot/protocol/runtime
 import gleam/dynamic
 import gleam/json
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleeunit/should
-import protocol/runtime
 import simplifile as file
 
 /// This module havs some types with dynamic values.

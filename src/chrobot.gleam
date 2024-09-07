@@ -26,9 +26,14 @@
 //// to treat the pages you are operating on as a secure context.
 //// 
 
+import chrobot/chrome.{type RequestError}
 import chrobot/internal/keymap
 import chrobot/internal/utils
-import chrome.{type RequestError}
+import chrobot/protocol
+import chrobot/protocol/input
+import chrobot/protocol/page
+import chrobot/protocol/runtime
+import chrobot/protocol/target
 import gleam/bit_array
 import gleam/bool
 import gleam/dynamic
@@ -40,11 +45,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/otp/task
 import gleam/result
 import gleam/string
-import protocol
-import protocol/input
-import protocol/page
-import protocol/runtime
-import protocol/target
 import simplifile as file
 
 /// Holds information about the current page,
@@ -86,7 +86,7 @@ pub fn launch() -> Result(Subject(chrome.Message), chrome.LaunchError) {
       utils.hint(
         "You can install a local version of chrome for testing with this command:",
       )
-      utils.show_cmd("gleam run -m browser_install")
+      utils.show_cmd("gleam run -m chrobot/install")
       launch_result
     }
     other -> other
@@ -105,7 +105,7 @@ pub fn launch_window() -> Result(Subject(chrome.Message), chrome.LaunchError) {
       utils.hint(
         "You can install a local version of chrome for testing with this command:",
       )
-      utils.show_cmd("gleam run -m browser_install")
+      utils.show_cmd("gleam run -m chrobot/install")
       launch_result
     }
     other -> other
@@ -832,7 +832,7 @@ fn pass_session(session_id: target.SessionID) -> Option(String) {
 /// ```gleam
 /// import chrobot.{open, page_caller}
 /// import gleam/option.{None}
-/// import protocol/page
+/// import chrobot/protocol/page
 /// pub fn main() {
 ///   let assert Ok(browser) = chrobot.launch()
 ///   let assert Ok(page) = open(browser, "https://example.com", 5000)

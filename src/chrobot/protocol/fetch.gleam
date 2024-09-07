@@ -10,14 +10,14 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
+import chrobot/protocol/io
+import chrobot/protocol/network
 import gleam/dynamic
 import gleam/json
 import gleam/option
 import gleam/result
-import protocol/io
-import protocol/network
 
 /// Unique request identifier.
 pub type RequestId {

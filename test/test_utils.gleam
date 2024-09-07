@@ -1,7 +1,7 @@
 //// Shared test utilities
 
 import chrobot
-import chrome
+import chrobot/chrome
 import gleam/erlang/os
 import gleeunit/should
 import simplifile as file

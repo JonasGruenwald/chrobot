@@ -11,16 +11,16 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
+import chrobot/protocol/runtime
+import chrobot/protocol/security
 import gleam/dict
 import gleam/dynamic
 import gleam/json
 import gleam/list
 import gleam/option
 import gleam/result
-import protocol/runtime
-import protocol/security
 
 /// Resource type as it was perceived by the rendering engine.
 pub type ResourceType {

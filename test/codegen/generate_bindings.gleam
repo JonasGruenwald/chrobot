@@ -227,12 +227,13 @@ pub fn main() {
   let stable_protocol = get_stable_protocol(protocol, False, False)
   io.println("Stable protocol (experimental items removed):")
   print_protocol_stats(stable_protocol)
-  let target = "src/protocol.gleam"
+  let target = "src/chrobot/protocol.gleam"
   io.println("Writing root protocol module to: " <> target)
   let assert Ok(_) = file.write(gen_root_module(stable_protocol), to: target)
   let assert Ok(_) = file.create_directory_all("src/protocol")
   list.each(stable_protocol.domains, fn(domain) {
-    let target = "src/protocol/" <> snake_case(domain.domain) <> ".gleam"
+    let target =
+      "src/chrobot/protocol/" <> snake_case(domain.domain) <> ".gleam"
     io.println("Writing domain module to: " <> target)
     let assert Ok(_) =
       file.write(gen_domain_module(stable_protocol, domain), to: target)
@@ -957,11 +958,11 @@ fn gen_imports(domain: Domain) {
   let domain_imports =
     option.unwrap(domain.dependencies, [])
     |> list.map(fn(dependency) {
-      "import protocol/" <> snake_case(dependency) <> "\n"
+      "import chrobot/protocol/" <> snake_case(dependency) <> "\n"
     })
 
   [
-    "import chrome\n",
+    "import chrobot/chrome\n",
     "import gleam/dict\n",
     "import gleam/list\n",
     "import gleam/dynamic\n",

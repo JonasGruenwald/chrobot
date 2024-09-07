@@ -10,8 +10,8 @@
 // | Run ` gleam run -m scripts/generate_protocol_bindings.sh` to regenerate.|  
 // ---------------------------------------------------------------------------
 
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
 import gleam/dynamic
 import gleam/json
 import gleam/option

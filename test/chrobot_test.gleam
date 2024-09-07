@@ -1,7 +1,7 @@
 import birdie
 import chrobot
+import chrobot/chrome
 import chrobot/internal/utils
-import chrome
 import gleam/dynamic
 import gleam/erlang/process
 import gleam/io
@@ -46,7 +46,7 @@ pub fn main() {
           utils.hint(
             "Consider installing a local version of chrome for the project:",
           )
-          utils.show_cmd("gleam run -m browser_install")
+          utils.show_cmd("gleam run -m chrobot/install")
         }
       }
       panic as "See output above!"
