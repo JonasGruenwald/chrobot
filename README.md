@@ -50,7 +50,7 @@ Install as an Elixir dependency with mix
 # in your mix.exs
 defp deps do
   [
-    {:chrobot, "~> 2.2.3", app: false, manager: :rebar3}
+    {:chrobot, "~> 3.0.0", app: false, manager: :rebar3}
   ]
 end
 ```
