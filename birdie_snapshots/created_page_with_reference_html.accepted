@@ -1,5 +1,5 @@
 ---
-version: 1.1.5
+version: 1.1.8
 title: Created Page with Reference HTML
 file: ./test/chrobot_test.gleam
 test_name: create_page_test
@@ -86,6 +86,24 @@ test_name: create_page_test
     <div id="wobble" title="wobble" data-foo="bar">
       Wobble
     </div>
+
+    <span>🤖</span>
+
+    <div class="greeting">
+      Hello <span>Joe</span>
+    </div>
+
+    <ol>
+      <li>один</li>
+      <li>два</li>
+      <li>три</li>
+    </ol>
+
+    <ul>
+      <li>One</li>
+      <li>Two</li>
+      <li>Three</li>
+    </ul>
 
     <div>
       <label for="demo-checkbox">This is a demo checkbox to test page interactivity</label>
