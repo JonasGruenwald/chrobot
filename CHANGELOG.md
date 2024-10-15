@@ -1,3 +1,8 @@
+## [3.0.1] 2024-10-15
+
+- Ensure compatibility with gleam 1.5
+- Update dependency ranges (mainly httpc and json)
+
 ## [3.0.0] 2024-08-07
 
 This update restructures the project to move all modules under the `chrobot` namespace.
