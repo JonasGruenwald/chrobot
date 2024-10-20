@@ -24,7 +24,7 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
-import gleam/otp/port.{type Port}
+import gleam/erlang/port.{type Port}
 import gleam/result
 import gleam/string
 import gleam/string_builder as sb
