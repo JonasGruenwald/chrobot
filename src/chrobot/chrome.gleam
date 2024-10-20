@@ -17,6 +17,7 @@ import filepath as path
 import gleam/dynamic as d
 import gleam/erlang/atom
 import gleam/erlang/os
+import gleam/erlang/port.{type Port}
 import gleam/erlang/process.{type Subject}
 import gleam/int
 import gleam/io
@@ -24,7 +25,6 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
-import gleam/erlang/port.{type Port}
 import gleam/result
 import gleam/string
 import gleam/string_builder as sb
