@@ -242,5 +242,5 @@ The full documentation can be found at <https://hexdocs.pm/chrobot>.
 
 🗼 To learn about the high level abstractions, look at the [`chrobot` module documentation](https://hexdocs.pm/chrobot/chrobot.html).
 
-📠 To learn how to use the protocol bindings directly, look at the [`protocol` module documentation](https://hexdocs.pm/chrobot/protocol.html).
+📠 To learn how to use the protocol bindings directly, look at the [`protocol` module documentation](https://hexdocs.pm/chrobot/chrobot/protocol.html).
 
