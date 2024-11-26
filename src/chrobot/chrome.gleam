@@ -86,24 +86,19 @@ pub type LaunchError {
 
 /// Errors that may occur when a protocol request is made
 pub type RequestError {
-  // Port communication failed
+  /// Port communication failed
   PortError
   /// OTP actor timeout
   ChromeAgentTimeout
-
   /// OTP actor down
   ChromeAgentDown
-
   /// The ProtocolError variant is used by `/protocol` domains 
   /// to return a homogeneous error type for all requests.
   ProtocolError
-
   /// This is an error response from the browser itself
   BrowserError(code: Int, message: String, data: String)
-
   /// A requested resource could not be found
   NotFoundError
-
   /// A runtime exception thrown by JavaScript code being evaluated in the browser
   RuntimeException(text: String, line: Int, column: Int)
 }
