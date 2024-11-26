@@ -1,3 +1,7 @@
+## [3.0.3] 2024-11-26
+
+- Update to `gleam_stlidb` 0.44
+
 ## [3.0.2] 2024-10-20
 
 - Use `erlang/port` instead of `otp/port` since it is deprecated

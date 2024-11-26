@@ -1,2 +1,3 @@
 [tools]
-gleam = "1.5.1"
+erlang = "27"
+gleam = "1.6.2"

@@ -3,7 +3,7 @@ import gleam/erlang/os
 import gleam/json
 import gleam/list
 import gleam/option
-import gleam/string_builder as sb
+import gleam/string_tree as sb
 import gleeunit/should
 import test_utils
 

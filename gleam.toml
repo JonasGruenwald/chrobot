@@ -1,5 +1,5 @@
 name = "chrobot"
-version = "3.0.2"
+version = "3.0.3"
 
 description = "A browser automation tool and interface to the Chrome DevTools Protocol."
 licences = ["MIT"]
@@ -12,7 +12,7 @@ pages = [
 ]
 
 [dependencies]
-gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 gleam_json = ">= 1.0.0 and < 3.0.0"
 gleam_erlang = ">= 0.25.0 and < 1.0.0"
 gleam_otp = ">= 0.10.0 and < 1.0.0"
@@ -28,3 +28,4 @@ gleeunit = ">= 1.0.0 and < 2.0.0"
 justin_fork = { path = "./vendor/justin_fork" }
 birdie = ">= 1.1.8 and < 2.0.0"
 mist = ">= 1.2.0 and < 4.0.0"
+gleam_regexp = ">= 1.0.0 and < 2.0.0"

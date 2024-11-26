@@ -2,7 +2,7 @@
 //// it can be used in tests, to avoid the need to request an external website
 
 import chrobot/internal/utils
-import gleam/bytes_builder
+import gleam/bytes_tree
 import gleam/http/request.{type Request}
 import gleam/http/response.{type Response}
 import gleam/int
@@ -20,7 +20,7 @@ pub fn get_url() -> String {
 pub fn start() {
   let not_found =
     response.new(404)
-    |> response.set_body(mist.Bytes(bytes_builder.from_string("Not found!")))
+    |> response.set_body(mist.Bytes(bytes_tree.from_string("Not found!")))
 
   let result =
     fn(req: Request(Connection)) -> Response(ResponseData) {
@@ -62,6 +62,6 @@ fn return_test_page(_request: Request(Connection)) -> Response(ResponseData) {
   "
 
   response.new(200)
-  |> response.set_body(mist.Bytes(bytes_builder.from_string(body)))
+  |> response.set_body(mist.Bytes(bytes_tree.from_string(body)))
   |> response.set_header("content-type", "text/html")
 }

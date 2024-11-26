@@ -31,10 +31,10 @@ import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/regex
+import gleam/regexp
 import gleam/result
 import gleam/string
-import gleam/string_builder as sb
+import gleam/string_tree as st
 import justin_fork.{pascal_case, snake_case}
 import simplifile as file
 
@@ -845,12 +845,12 @@ pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
 // Huge spaghetti mess downstairs, don't look please
 
 fn append_optional(
-  builder: sb.StringBuilder,
+  builder: st.StringTree,
   val: Option(a),
   callback: fn(a) -> String,
 ) {
   case val {
-    Some(a) -> sb.append(builder, callback(a))
+    Some(a) -> st.append(builder, callback(a))
     None -> builder
   }
 }
@@ -930,24 +930,24 @@ fn gen_module_comment(content: String) {
 /// Generate the root module for the protocol bindings
 /// This is just an entrypoint with some documentation, and the version number
 pub fn gen_root_module(protocol: Protocol) {
-  sb.new()
-  |> sb.append(gen_preamble(protocol))
-  |> sb.append(
+  st.new()
+  |> st.append(gen_preamble(protocol))
+  |> st.append(
     "//// For reference: [See the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/",
   )
-  |> sb.append(protocol.version.major)
-  |> sb.append("-")
-  |> sb.append(protocol.version.minor)
-  |> sb.append("/")
-  |> sb.append(")\n\n")
-  |> sb.append(gen_module_comment(root_module_comment))
-  |> sb.append("const version_major = \"" <> protocol.version.major <> "\"\n")
-  |> sb.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
-  |> sb.append(gen_attached_comment(
+  |> st.append(protocol.version.major)
+  |> st.append("-")
+  |> st.append(protocol.version.minor)
+  |> st.append("/")
+  |> st.append(")\n\n")
+  |> st.append(gen_module_comment(root_module_comment))
+  |> st.append("const version_major = \"" <> protocol.version.major <> "\"\n")
+  |> st.append("const version_minor = \"" <> protocol.version.minor <> "\"\n\n")
+  |> st.append(gen_attached_comment(
     "Get the protocol version as a tuple of major and minor version",
   ))
-  |> sb.append("pub fn version() { #(version_major, version_minor)}\n")
-  |> sb.to_string()
+  |> st.append("pub fn version() { #(version_major, version_minor)}\n")
+  |> st.to_string()
 }
 
 fn multiline_module_comment(content: String) {
@@ -976,29 +976,29 @@ fn gen_imports(domain: Domain) {
 }
 
 fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
-  sb.new()
-  |> sb.append("//// ## " <> domain.domain <> " Domain")
-  |> sb.append("  \n////\n")
-  |> sb.append("//// ")
-  |> sb.append(
+  st.new()
+  |> st.append("//// ## " <> domain.domain <> " Domain")
+  |> st.append("  \n////\n")
+  |> st.append("//// ")
+  |> st.append(
     option.unwrap(
       domain.description,
       "This protocol domain has no description.",
     )
     |> multiline_module_comment(),
   )
-  |> sb.append("  \n////\n")
-  |> sb.append(
+  |> st.append("  \n////\n")
+  |> st.append(
     "//// [📖   View this domain on the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/",
   )
-  |> sb.append(protocol.version.major)
-  |> sb.append("-")
-  |> sb.append(protocol.version.minor)
-  |> sb.append("/")
-  |> sb.append(domain.domain)
-  |> sb.append("/)\n\n")
-  |> sb.append(gen_imports(domain))
-  |> sb.append("\n\n")
+  |> st.append(protocol.version.major)
+  |> st.append("-")
+  |> st.append(protocol.version.minor)
+  |> st.append("/")
+  |> st.append(domain.domain)
+  |> st.append("/)\n\n")
+  |> st.append(gen_imports(domain))
+  |> st.append("\n\n")
 }
 
 // Returns the enum definition of the attribute
@@ -1127,29 +1127,29 @@ fn gen_type_body(name: String, t: Type) -> #(String, String) {
   }
 }
 
-fn gen_type_def_body(builder: sb.StringBuilder, t: TypeDefinition) {
+fn gen_type_def_body(builder: st.StringTree, t: TypeDefinition) {
   let #(body, appendage) = gen_type_body(t.id, t.inner)
   builder
   |> append_optional(t.description, gen_attached_comment)
   // ID is already PascalCase!
-  |> sb.append("pub type ")
-  |> sb.append(t.id)
-  |> sb.append("{\n")
-  |> sb.append(body)
-  |> sb.append("}\n\n")
-  |> sb.append(appendage)
-  |> sb.append("\n")
+  |> st.append("pub type ")
+  |> st.append(t.id)
+  |> st.append("{\n")
+  |> st.append(body)
+  |> st.append("}\n\n")
+  |> st.append(appendage)
+  |> st.append("\n")
 }
 
-fn gen_type_def(builder: sb.StringBuilder, t: TypeDefinition) {
+fn gen_type_def(builder: st.StringTree, t: TypeDefinition) {
   gen_type_def_body(builder, t)
-  |> sb.append(gen_type_def_encoder(t))
-  |> sb.append(gen_type_def_decoder(t))
+  |> st.append(gen_type_def_encoder(t))
+  |> st.append(gen_type_def_decoder(t))
 }
 
-fn gen_type_definitions(domain: Domain) -> sb.StringBuilder {
+fn gen_type_definitions(domain: Domain) -> st.StringTree {
   option.unwrap(domain.types, [])
-  |> list.fold(sb.new(), gen_type_def)
+  |> list.fold(st.new(), gen_type_def)
 }
 
 fn internal_fn(name: String, params: String, body: String) {
@@ -1525,7 +1525,7 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
 }
 
 fn gen_command_return_type(command: Command) {
-  let builder = sb.new()
+  let builder = st.new()
   case command.returns {
     Some([]) -> builder
     Some(return_properties) -> {
@@ -1544,7 +1544,7 @@ to represent the response to the command `"
         )
 
       gen_type_def_body(builder, return_type_def)
-      |> sb.append(gen_type_def_decoder(return_type_def))
+      |> st.append(gen_type_def_decoder(return_type_def))
     }
     None -> builder
   }
@@ -1646,44 +1646,44 @@ fn gen_property_list_doc(properties: List(PropertyDefinition)) {
 }
 
 fn gen_command_parameter_docs(command: Command) {
-  sb.new()
+  st.new()
   |> append_optional(command.parameters, fn(_) { "\nParameters:  \n" })
   |> append_optional(command.parameters, fn(i) { gen_property_list_doc(i) })
   |> append_optional(command.parameters, fn(_) { "\nReturns:  \n" })
   |> append_optional(command.returns, fn(i) { gen_property_list_doc(i) })
-  |> sb.to_string()
+  |> st.to_string()
   |> gen_attached_comment()
 }
 
 fn gen_command_function(command: Command, domain: Domain) {
   let #(param_definition, appendage) = gen_command_parameters(command)
-  sb.new()
-  |> sb.append(
+  st.new()
+  |> st.append(
     gen_attached_comment(option.unwrap(
       command.description,
       "This generated protocol command has no description",
     )),
   )
-  |> sb.append(gen_command_parameter_docs(command))
-  |> sb.append("pub fn ")
-  |> sb.append(safe_snake_case(command.name))
-  |> sb.append("(\n")
-  |> sb.append("callback__, \n")
-  |> sb.append(param_definition)
-  |> sb.append("){\n")
-  |> sb.append(gen_command_body(command, domain))
-  |> sb.append("\n}\n")
-  |> sb.append(appendage)
-  |> sb.append("\n")
+  |> st.append(gen_command_parameter_docs(command))
+  |> st.append("pub fn ")
+  |> st.append(safe_snake_case(command.name))
+  |> st.append("(\n")
+  |> st.append("callback__, \n")
+  |> st.append(param_definition)
+  |> st.append("){\n")
+  |> st.append(gen_command_body(command, domain))
+  |> st.append("\n}\n")
+  |> st.append(appendage)
+  |> st.append("\n")
 }
 
 fn gen_commands(domain: Domain) {
-  sb.new()
-  |> sb.append_builder(
-    sb.concat(list.map(domain.commands, gen_command_return_type)),
+  st.new()
+  |> st.append_tree(
+    st.concat(list.map(domain.commands, gen_command_return_type)),
   )
-  |> sb.append_builder(
-    sb.concat(
+  |> st.append_tree(
+    st.concat(
       list.map(domain.commands, fn(c) { gen_command_function(c, domain) }),
     ),
   )
@@ -1695,27 +1695,27 @@ fn gen_commands(domain: Domain) {
 /// the import is considered used.
 /// This should be good enough for our codegen output though.
 fn remove_import_if_unused(
-  builder: sb.StringBuilder,
+  builder: st.StringTree,
   full_string: String,
   import_name: String,
-) -> sb.StringBuilder {
+) -> st.StringTree {
   let assert Ok(import_short_name) =
     string.split(import_name, "/")
     |> list.last
-  let assert Ok(matcher) = regex.from_string(import_short_name <> "\\.\\S+")
-  case regex.check(matcher, full_string) {
-    False -> sb.replace(builder, "import " <> import_name <> "\n", "")
+  let assert Ok(matcher) = regexp.from_string(import_short_name <> "\\.\\S+")
+  case regexp.check(matcher, full_string) {
+    False -> st.replace(builder, "import " <> import_name <> "\n", "")
     True -> builder
   }
 }
 
 /// Remove unused imports from the generated code 
-fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
-  let full_string = sb.to_string(builder)
+fn remove_unused_imports(builder: st.StringTree) -> st.StringTree {
+  let full_string = st.to_string(builder)
   string.split(full_string, "\n")
   |> list.filter_map(fn(line) {
     case string.starts_with(line, "import ") {
-      True -> Ok(string.drop_left(line, 7))
+      True -> Ok(string.drop_start(line, 7))
       False -> Error(Nil)
     }
   })
@@ -1726,11 +1726,11 @@ fn remove_unused_imports(builder: sb.StringBuilder) -> sb.StringBuilder {
 
 @internal
 pub fn gen_domain_module(protocol: Protocol, domain: Domain) {
-  sb.new()
-  |> sb.append(gen_preamble(protocol))
-  |> sb.append_builder(gen_domain_module_header(protocol, domain))
-  |> sb.append_builder(gen_type_definitions(domain))
-  |> sb.append_builder(gen_commands(domain))
+  st.new()
+  |> st.append(gen_preamble(protocol))
+  |> st.append_tree(gen_domain_module_header(protocol, domain))
+  |> st.append_tree(gen_type_definitions(domain))
+  |> st.append_tree(gen_commands(domain))
   |> remove_unused_imports()
-  |> sb.to_string()
+  |> st.to_string()
 }
