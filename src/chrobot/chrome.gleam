@@ -971,7 +971,9 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
           True -> process.send(l.1, params)
           False -> {
             // An event without a listener is dropped
-            log_debug(state, fn() { "Ignored Event:" <> string.inspect(params) })
+            log_debug(state, fn() {
+              "Ignored Event: " <> method <> " " <> string.inspect(params)
+            })
             Nil
           }
         }
