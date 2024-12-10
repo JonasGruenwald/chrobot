@@ -95,6 +95,7 @@ import gleam/list
 import gleam/result
 import gleam/string
 import simplifile as file
+import envoy
 
 const version_list_endpoint = "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
 
@@ -111,8 +112,8 @@ pub fn main() {
 /// and return a generic error if installation fails.
 pub fn install() {
   let target_version =
-    result.unwrap(os.get_env("CHROBOT_TARGET_VERSION"), "latest")
-  let target_path = result.unwrap(os.get_env("CHROBOT_TARGET_PATH"), ".")
+    result.unwrap(envoy.get("CHROBOT_TARGET_VERSION"), "latest")
+  let target_path = result.unwrap(envoy.get("CHROBOT_TARGET_PATH"), ".")
   install_with_config(target_path, target_version)
 }
 

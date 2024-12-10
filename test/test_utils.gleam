@@ -2,15 +2,15 @@
 
 import chrobot
 import chrobot/chrome
-import gleam/erlang/os
 import gleeunit/should
 import simplifile as file
+import envoy
 
 /// Try to get the path to the browser to use for tests
 /// If the CHROBOT_TEST_BROWSER_PATH environment variable is not set, this will return an error
 /// -> use in test setup to validate that the environment variable is set
 pub fn try_get_browser_path() {
-  os.get_env("CHROBOT_TEST_BROWSER_PATH")
+  envoy.get("CHROBOT_TEST_BROWSER_PATH")
 }
 
 /// Get the path to the browser to use for tests

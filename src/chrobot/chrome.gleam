@@ -29,6 +29,7 @@ import gleam/result
 import gleam/string
 import gleam/string_tree as st
 import simplifile as file
+import envoy
 
 pub const default_timeout: Int = 10_000
 
@@ -1029,17 +1030,17 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
 
 @internal
 pub fn resolve_env_cofig() -> Result(BrowserConfig, Nil) {
-  use path <- result.try(os.get_env("CHROBOT_BROWSER_PATH"))
-  let args = case os.get_env("CHROBOT_BROWSER_ARGS") {
+  use path <- result.try(envoy.get("CHROBOT_BROWSER_PATH"))
+  let args = case envoy.get("CHROBOT_BROWSER_ARGS") {
     Ok(args_string) -> string.split(args_string, "\n")
     Error(Nil) -> get_default_chrome_args()
   }
-  let time_out = case os.get_env("CHROBOT_BROWSER_TIMEOUT") {
+  let time_out = case envoy.get("CHROBOT_BROWSER_TIMEOUT") {
     Ok(timeout_string) ->
       result.unwrap(int.parse(timeout_string), default_timeout)
     Error(Nil) -> default_timeout
   }
-  let log_level = case os.get_env("CHROBOT_LOG_LEVEL") {
+  let log_level = case envoy.get("CHROBOT_LOG_LEVEL") {
     Ok("silent") -> LogLevelSilent
     Ok("warnings") -> LogLevelWarnings
     Ok("info") -> LogLevelInfo
