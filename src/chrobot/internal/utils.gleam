@@ -1,3 +1,4 @@
+import envoy
 import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
@@ -5,7 +6,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleam_community/ansi
 import spinner
-import envoy
 
 /// Very very naive but should be fine
 fn term_supports_color() -> Bool {

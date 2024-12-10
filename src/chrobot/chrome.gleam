@@ -13,6 +13,7 @@
 //// 
 
 import chrobot/internal/utils
+import envoy
 import filepath as path
 import gleam/dynamic as d
 import gleam/erlang/atom
@@ -29,7 +30,6 @@ import gleam/result
 import gleam/string
 import gleam/string_tree as st
 import simplifile as file
-import envoy
 
 pub const default_timeout: Int = 10_000
 

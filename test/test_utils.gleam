@@ -2,9 +2,9 @@
 
 import chrobot
 import chrobot/chrome
+import envoy
 import gleeunit/should
 import simplifile as file
-import envoy
 
 /// Try to get the path to the browser to use for tests
 /// If the CHROBOT_TEST_BROWSER_PATH environment variable is not set, this will return an error

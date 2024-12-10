@@ -83,6 +83,7 @@
 
 import chrobot/chrome
 import chrobot/internal/utils
+import envoy
 import filepath as path
 import gleam/dynamic
 import gleam/erlang/os
@@ -95,7 +96,6 @@ import gleam/list
 import gleam/result
 import gleam/string
 import simplifile as file
-import envoy
 
 const version_list_endpoint = "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
 
