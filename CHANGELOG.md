@@ -1,3 +1,8 @@
+## [3.0.4] 2024-11-26
+
+- Move to `envoy` since `gleam_erlang` `os.get_env` was removed
+- Update to stdlib 0.47
+
 ## [3.0.3] 2024-11-26
 
 - Update to `gleam_stlidb` 0.44
