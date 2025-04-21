@@ -25,6 +25,7 @@
 
 // TODO: Attach comments to variants generated in type definitions
 
+import chrobot/internal/utils
 import gleam/dynamic.{field, optional_field} as d
 import gleam/int
 import gleam/io
@@ -1571,7 +1572,7 @@ fn gen_command_parameters(command: Command) {
       let param_definitions =
         list.map(param_definitions, fn(d) {
           let assert Ok(#(parameter_name, _)) =
-            list.pop(string.split(d, ":"), fn(_) { True })
+            utils.find_remove(string.split(d, ":"), fn(_) { True })
           parameter_name <> " " <> d
         })
 

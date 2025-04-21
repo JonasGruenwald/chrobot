@@ -1,4 +1,6 @@
 import envoy
+import gleam/dynamic/decode
+import gleam/erlang/atom
 import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
@@ -198,6 +200,7 @@ pub fn try_call_with_subject(
   }
 }
 
+/// (Taken from the old gleam_stlib where it was `list.pop_map`)
 /// Removes the first element in a given list for which the given function returns
 /// `Ok(new_value)`, then returns the wrapped `new_value` as well as list with the value removed.
 ///
@@ -238,6 +241,47 @@ fn find_map_remove_loop(
       case mapper(x) {
         Ok(y) -> Ok(#(y, list.append(list.reverse(checked), rest)))
         Error(_) -> find_map_remove_loop(rest, mapper, [x, ..checked])
+      }
+  }
+}
+
+/// (Taken from the old gleam_stlib where it was `list.pop`)
+/// 
+/// Removes the first element in a given list for which the predicate function returns `True`.
+///
+/// Returns `Error(Nil)` if no such element is found.
+///
+/// ## Examples
+///
+/// ```gleam
+/// find_remove([1, 2, 3], fn(x) { x > 2 })
+/// // -> Ok(#(3, [1, 2]))
+/// ```
+///
+/// ```gleam
+/// find_remove([1, 2, 3], fn(x) { x > 4 })
+/// // -> Error(Nil)
+/// ```
+///
+/// ```gleam
+/// find_remove([], fn(_) { True })
+/// // -> Error(Nil)
+/// ```
+///
+pub fn find_remove(
+  in list: List(a),
+  one_that is_desired: fn(a) -> Bool,
+) -> Result(#(a, List(a)), Nil) {
+  find_remove_loop(list, is_desired, [])
+}
+
+fn find_remove_loop(haystack, predicate, checked) {
+  case haystack {
+    [] -> Error(Nil)
+    [x, ..rest] ->
+      case predicate(x) {
+        True -> Ok(#(x, list.append(list.reverse(checked), rest)))
+        False -> find_remove_loop(rest, predicate, [x, ..checked])
       }
   }
 }

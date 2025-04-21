@@ -509,34 +509,44 @@ fn create_init_fn(cfg: BrowserConfig) {
 
 // --- MESSAGE HANDLING ---
 
-/// Map a raw message from the port to a message that the actor can handle
-fn map_port_message(message: d.Dynamic) -> Message {
-  // This matches a data message from the port like {data, "string"}
-  // not ideal but actually should be fine since data messages are the only messages 
-  // from the port that will arrive as a tuple with a string as the second element,
-  // and these are the main messages we are interested in and want to handle quickly.
-  //
-  // other messages will be atoms (closed/connected) and {exit_code, int}
-  // which are handled by the fallback map function below
-  case decode.run(message, decode.at([1], decode.string)) {
-    Ok(data) -> PortResponse(data)
-    Error(_) -> map_non_data_port_msg(message)
-  }
+type RawPortMessage {
+  RawPortMessageData(String)
+  RawPortMessageExit(Int)
+  RawPortMessageUnexpected(d.Dynamic)
 }
 
-/// Handle a message from the port that is not a data message.
-/// Right now we are handling exit_code messages, which tell us that the port 
-/// has exited or failed to properly start.
-fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
-  let decoded_msg = d.tuple2(atom.from_dynamic, d.int)(msg)
-  case decoded_msg {
-    Ok(#(atom_exit_status, exit_status)) -> {
-      case atom_exit_status == atom.create_from_string("exit_status") {
-        True -> PortExit(exit_status)
-        False -> UnexpectedPortMessage(msg)
-      }
+/// Map a raw message from the port to a message that the actor can handle
+fn map_port_message(message: d.Dynamic) -> Message {
+  let data_decoder = {
+    use message <- decode.field(1, decode.string)
+    decode.success(RawPortMessageData(message))
+  }
+
+  let exit_decoder = {
+    use exit_status <- decode.field(1, decode.int)
+    decode.success(RawPortMessageExit(exit_status))
+  }
+
+  let unexpected_decoder = {
+    use data <- decode.then(decode.dynamic)
+    decode.success(RawPortMessageUnexpected(data))
+  }
+
+  let decoder = {
+    let atom_data = atom.create_from_string("data")
+    let atom_exit_status = atom.create_from_string("exit_status")
+    use atom_tag <- decode.field(0, decode.dynamic)
+    case atom.from_dynamic(atom_tag) {
+      Ok(tag) if tag == atom_data -> data_decoder
+      Ok(tag) if tag == atom_exit_status -> exit_decoder
+      Ok(_) | Error(_) -> unexpected_decoder
     }
-    Error(_) -> UnexpectedPortMessage(msg)
+  }
+  case decode.run(message, decoder) {
+    Ok(RawPortMessageData(data)) -> PortResponse(data)
+    Ok(RawPortMessageExit(exit_status)) -> PortExit(exit_status)
+    Ok(RawPortMessageUnexpected(other)) -> UnexpectedPortMessage(other)
+    Error(_) -> UnexpectedPortMessage(message)
   }
 }
 
