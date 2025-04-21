@@ -16,6 +16,7 @@ import chrobot/internal/utils
 import envoy
 import filepath as path
 import gleam/dynamic as d
+import gleam/dynamic/decode
 import gleam/erlang/atom
 import gleam/erlang/os
 import gleam/erlang/port.{type Port}
@@ -139,7 +140,7 @@ pub fn launch_with_config(
     Ok(browser) -> Ok(browser)
     Error(err) -> {
       io.println("Failed to start browser")
-      io.debug(err)
+      io.println(string.inspect(err))
       Error(FailedToStart)
     }
   }
@@ -269,7 +270,7 @@ pub fn quit(browser: Subject(Message)) {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
   let _ = process.send_after(browser, default_timeout * 2, Kill)
   // invoke graceful shutdown of the browser
-  process.try_call(browser, Shutdown(_), default_timeout)
+  process.try_call(browser, Shutdown, default_timeout)
 }
 
 /// Issue a protocol call to the browser and expect a response
@@ -351,16 +352,21 @@ pub fn get_version(
     None,
     default_timeout,
   ))
-  let version_decoder =
-    d.decode5(
-      BrowserVersion,
-      d.field("protocolVersion", d.string),
-      d.field("product", d.string),
-      d.field("revision", d.string),
-      d.field("userAgent", d.string),
-      d.field("jsVersion", d.string),
-    )
-  case version_decoder(res) {
+  let version_decoder = {
+    use protocol_version <- decode.field("protocolVersion", decode.string)
+    use product <- decode.field("product", decode.string)
+    use revision <- decode.field("revision", decode.string)
+    use user_agent <- decode.field("userAgent", decode.string)
+    use js_version <- decode.field("jsVersion", decode.string)
+    decode.success(BrowserVersion(
+      protocol_version:,
+      product:,
+      revision:,
+      user_agent:,
+      js_version:,
+    ))
+  }
+  case decode.run(res, version_decoder) {
     Ok(version) -> Ok(version)
     Error(_) -> Error(ProtocolError)
   }
@@ -494,7 +500,7 @@ fn create_init_fn(cfg: BrowserConfig) {
       }
       Error(err) -> {
         utils.err("Browser failed to start!")
-        io.debug(err)
+        io.println(string.inspect(err))
         actor.Failed("Browser did not start")
       }
     }
@@ -512,7 +518,7 @@ fn map_port_message(message: d.Dynamic) -> Message {
   //
   // other messages will be atoms (closed/connected) and {exit_code, int}
   // which are handled by the fallback map function below
-  case d.element(1, d.string)(message) {
+  case decode.run(message, decode.at([1], decode.string)) {
     Ok(data) -> PortResponse(data)
     Error(_) -> map_non_data_port_msg(message)
   }
@@ -840,7 +846,7 @@ fn answer_request(
 ) -> List(PendingRequest) {
   // Request is selected from the list and removed based on id
   let found_request =
-    list.pop_map(state.unanswered_requests, fn(req) {
+    utils.find_map_remove(state.unanswered_requests, fn(req) {
       case req.id == id {
         True -> Ok(req)
         False -> Error(Nil)
@@ -869,7 +875,7 @@ fn answer_failed_request(
 ) -> List(PendingRequest) {
   // Request is selected from the list and removed based on id
   let found_request =
-    list.pop_map(state.unanswered_requests, fn(req) {
+    utils.find_map_remove(state.unanswered_requests, fn(req) {
       case req.id == id {
         True -> Ok(req)
         False -> Error(Nil)

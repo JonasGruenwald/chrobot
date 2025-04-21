@@ -2,6 +2,7 @@ import envoy
 import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
+import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleam_community/ansi
@@ -194,6 +195,50 @@ pub fn try_call_with_subject(
   case result {
     Error(Nil) -> Error(p.CallTimeout)
     Ok(res) -> res
+  }
+}
+
+/// Removes the first element in a given list for which the given function returns
+/// `Ok(new_value)`, then returns the wrapped `new_value` as well as list with the value removed.
+///
+/// Returns `Error(Nil)` if no such element is found.
+///
+/// ## Examples
+///
+/// ```gleam
+/// find_map_remove([[], [2], [3]], first)
+/// // -> Ok(#(2, [[], [3]]))
+/// ```
+///
+/// ```gleam
+/// find_map_remove([[], []], first)
+/// // -> Error(Nil)
+/// ```
+///
+/// ```gleam
+/// find_map_remove([], first)
+/// // -> Error(Nil)
+/// ```
+///
+pub fn find_map_remove(
+  in haystack: List(a),
+  one_that is_desired: fn(a) -> Result(b, c),
+) -> Result(#(b, List(a)), Nil) {
+  find_map_remove_loop(haystack, is_desired, [])
+}
+
+fn find_map_remove_loop(
+  list: List(a),
+  mapper: fn(a) -> Result(b, e),
+  checked: List(a),
+) -> Result(#(b, List(a)), Nil) {
+  case list {
+    [] -> Error(Nil)
+    [x, ..rest] ->
+      case mapper(x) {
+        Ok(y) -> Ok(#(y, list.append(list.reverse(checked), rest)))
+        Error(_) -> find_map_remove_loop(rest, mapper, [x, ..checked])
+      }
   }
 }
 
