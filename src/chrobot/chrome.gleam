@@ -713,7 +713,7 @@ fn loop(message: Message, state: BrowserState) {
         state,
         "Got an unexpected message from the port! This should not happen!",
       )
-      io.debug(msg)
+      io.println(string.inspect(msg))
       actor.continue(state)
     }
     Shutdown(client) -> {
@@ -829,7 +829,7 @@ fn handle_send(state: BrowserState, method: String, params: Option(Json)) {
   case send_to_browser(state, payload) {
     Error(_) -> {
       log_warn(state, "Request sent to browser was unsuccessful!")
-      io.debug(payload)
+      io.println(string.inspect(payload))
       Nil
     }
     Ok(_) -> {
@@ -938,24 +938,21 @@ type RawBrowserError {
 /// Handle a message from the browser, delivered via the port.
 /// The message can be a response to a request or an event
 fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
-  let error_decoder =
-    d.decode3(
-      RawBrowserError,
-      d.optional_field("code", d.int),
-      d.optional_field("message", d.string),
-      d.optional_field("data", d.string),
-    )
-  // The decoder contains all possible fields of the response, event or request response
-  let response_decoder =
-    d.decode5(
-      BrowserResponse,
-      d.optional_field("id", d.int),
-      d.optional_field("result", d.dynamic),
-      d.optional_field("method", d.string),
-      d.optional_field("params", d.dynamic),
-      d.optional_field("error", error_decoder),
-    )
-  case json.decode(response, response_decoder) {
+  let error_decoder = {
+    use code <- decode.optional_field("code", None, decode.optional(decode.int))
+    use message <- decode.optional_field("message", None, decode.optional(decode.string))
+    use data <- decode.optional_field("data", None, decode.optional(decode.string))
+    decode.success(RawBrowserError(code:, message:, data:))
+  }
+  let response_decoder = {
+    use id <- decode.optional_field("id", None, decode.optional(decode.int))
+    use result <- decode.optional_field("result", None, decode.optional(decode.dynamic))
+    use method <- decode.optional_field("method", None, decode.optional(decode.string))
+    use params <- decode.optional_field("params", None, decode.optional(decode.dynamic))
+    use error <- decode.optional_field("error", None, decode.optional(error_decoder))
+    decode.success(BrowserResponse(id:, result:, method:, params:, error:))
+  }
+  case json.parse(response, response_decoder) {
     Ok(BrowserResponse(Some(id), Some(result), None, None, None)) -> {
       // A response to a request -> should be sent to the client
       BrowserState(
@@ -1002,7 +999,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         state,
         "Received an unexpectedly formatted response from the browser",
       )
-      io.debug(response)
+      io.println(string.inspect(response))
       state
     }
     Error(e) -> {
@@ -1010,7 +1007,7 @@ fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
         state,
         "Failed to decode data from port message, ignoring! Resonse and error:",
       )
-      io.debug(#(response, e))
+      io.println(string.inspect(#(response, e)))
       state
     }
   }
