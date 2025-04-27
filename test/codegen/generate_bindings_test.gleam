@@ -82,9 +82,6 @@ pub fn gen_enum_encoder_decoder_test() {
 }
 
 /// Just run all the functions, see if anything panics.
-/// We could snapshot the output here, but then again the output is just the codegen
-/// that's written to `protocol/*` and committed to vcs so we already have snapshots of 
-/// it and would just duplicate those.
 pub fn general_bindings_gen_test() {
   let assert Ok(browser_protocol) =
     parse_protocol("./assets/browser_protocol.json")
@@ -97,4 +94,27 @@ pub fn general_bindings_gen_test() {
   list.each(stable_protocol.domains, fn(domain) {
     gen_domain_module(stable_protocol, domain)
   })
+}
+
+pub fn gen_bindings_target_test() {
+  let assert Ok(browser_protocol) =
+    parse_protocol("./assets/browser_protocol.json")
+  let stable_protocol = get_stable_protocol(browser_protocol, False, False)
+  let assert Ok(target_domain) =
+    stable_protocol.domains
+    |> list.find(fn(d) { d.domain == "Target" })
+
+  gen_domain_module(stable_protocol, target_domain)
+  |> birdie.snap(title: "Target domain module")
+}
+
+pub fn gen_bindings_runtime_test() {
+  let assert Ok(js_protocol) =
+    parse_protocol("./assets/js_protocol.json")
+  let stable_protocol = get_stable_protocol(js_protocol, False, False)
+  let assert Ok(runtime_domain) =
+    stable_protocol.domains
+    |> list.find(fn(d) { d.domain == "Runtime" })
+  gen_domain_module(stable_protocol, runtime_domain)
+  |> birdie.snap(title: "Runtime domain module")
 }
