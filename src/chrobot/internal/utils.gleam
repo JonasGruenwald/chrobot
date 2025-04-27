@@ -1,6 +1,4 @@
 import envoy
-import gleam/dynamic/decode
-import gleam/erlang/atom
 import gleam/erlang/process.{type CallError, type Subject} as p
 import gleam/io
 import gleam/json
