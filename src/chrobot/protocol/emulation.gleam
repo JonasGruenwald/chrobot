@@ -12,10 +12,9 @@
 
 import chrobot/internal/utils
 import chrobot/protocol/dom
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
-import gleam/result
 
 /// Screen orientation.
 pub type ScreenOrientation {
@@ -48,21 +47,23 @@ pub fn encode__screen_orientation_type(value__: ScreenOrientationType) {
 }
 
 @internal
-pub fn decode__screen_orientation_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("portraitPrimary") -> Ok(ScreenOrientationTypePortraitPrimary)
-    Ok("portraitSecondary") -> Ok(ScreenOrientationTypePortraitSecondary)
-    Ok("landscapePrimary") -> Ok(ScreenOrientationTypeLandscapePrimary)
-    Ok("landscapeSecondary") -> Ok(ScreenOrientationTypeLandscapeSecondary)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__screen_orientation_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "portraitPrimary" -> decode.success(ScreenOrientationTypePortraitPrimary)
+      "portraitSecondary" ->
+        decode.success(ScreenOrientationTypePortraitSecondary)
+      "landscapePrimary" ->
+        decode.success(ScreenOrientationTypeLandscapePrimary)
+      "landscapeSecondary" ->
+        decode.success(ScreenOrientationTypeLandscapeSecondary)
+      _ ->
+        decode.failure(
+          ScreenOrientationTypePortraitPrimary,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -75,13 +76,13 @@ pub fn encode__screen_orientation(value__: ScreenOrientation) {
 }
 
 @internal
-pub fn decode__screen_orientation(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", decode__screen_orientation_type)(
-    value__,
-  ))
-  use angle <- result.try(dynamic.field("angle", dynamic.int)(value__))
+pub fn decode__screen_orientation() {
+  {
+    use type_ <- decode.field("type", decode__screen_orientation_type())
+    use angle <- decode.field("angle", decode.int)
 
-  Ok(ScreenOrientation(type_: type_, angle: angle))
+    decode.success(ScreenOrientation(type_: type_, angle: angle))
+  }
 }
 
 pub type DisplayFeature {
@@ -115,19 +116,15 @@ pub fn encode__display_feature_orientation(value__: DisplayFeatureOrientation) {
 }
 
 @internal
-pub fn decode__display_feature_orientation(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("vertical") -> Ok(DisplayFeatureOrientationVertical)
-    Ok("horizontal") -> Ok(DisplayFeatureOrientationHorizontal)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__display_feature_orientation() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "vertical" -> decode.success(DisplayFeatureOrientationVertical)
+      "horizontal" -> decode.success(DisplayFeatureOrientationHorizontal)
+      _ ->
+        decode.failure(DisplayFeatureOrientationVertical, "valid enum property")
+    }
   }
 }
 
@@ -141,21 +138,21 @@ pub fn encode__display_feature(value__: DisplayFeature) {
 }
 
 @internal
-pub fn decode__display_feature(value__: dynamic.Dynamic) {
-  use orientation <- result.try(dynamic.field(
-    "orientation",
-    decode__display_feature_orientation,
-  )(value__))
-  use offset <- result.try(dynamic.field("offset", dynamic.int)(value__))
-  use mask_length <- result.try(dynamic.field("maskLength", dynamic.int)(
-    value__,
-  ))
+pub fn decode__display_feature() {
+  {
+    use orientation <- decode.field(
+      "orientation",
+      decode__display_feature_orientation(),
+    )
+    use offset <- decode.field("offset", decode.int)
+    use mask_length <- decode.field("maskLength", decode.int)
 
-  Ok(DisplayFeature(
-    orientation: orientation,
-    offset: offset,
-    mask_length: mask_length,
-  ))
+    decode.success(DisplayFeature(
+      orientation: orientation,
+      offset: offset,
+      mask_length: mask_length,
+    ))
+  }
 }
 
 pub type DevicePosture {
@@ -182,34 +179,31 @@ pub fn encode__device_posture_type(value__: DevicePostureType) {
 }
 
 @internal
-pub fn decode__device_posture_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("continuous") -> Ok(DevicePostureTypeContinuous)
-    Ok("folded") -> Ok(DevicePostureTypeFolded)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__device_posture_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "continuous" -> decode.success(DevicePostureTypeContinuous)
+      "folded" -> decode.success(DevicePostureTypeFolded)
+      _ -> decode.failure(DevicePostureTypeContinuous, "valid enum property")
+    }
   }
 }
 
 @internal
 pub fn encode__device_posture(value__: DevicePosture) {
-  json.object([#("type", encode__device_posture_type(value__.type_))])
+  json.object([
+    #("type", encode__device_posture_type(value__.type_)),
+  ])
 }
 
 @internal
-pub fn decode__device_posture(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", decode__device_posture_type)(
-    value__,
-  ))
+pub fn decode__device_posture() {
+  {
+    use type_ <- decode.field("type", decode__device_posture_type())
 
-  Ok(DevicePosture(type_: type_))
+    decode.success(DevicePosture(type_: type_))
+  }
 }
 
 pub type MediaFeature {
@@ -225,11 +219,13 @@ pub fn encode__media_feature(value__: MediaFeature) {
 }
 
 @internal
-pub fn decode__media_feature(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
+pub fn decode__media_feature() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.string)
 
-  Ok(MediaFeature(name: name, value: value))
+    decode.success(MediaFeature(name: name, value: value))
+  }
 }
 
 /// Clears the overridden device metrics.
@@ -254,7 +250,11 @@ pub fn clear_geolocation_override(callback__) {
 pub fn set_cpu_throttling_rate(callback__, rate rate: Float) {
   callback__(
     "Emulation.setCPUThrottlingRate",
-    option.Some(json.object([#("rate", json.float(rate))])),
+    option.Some(
+      json.object([
+        #("rate", json.float(rate)),
+      ]),
+    ),
   )
 }
 
@@ -398,24 +398,27 @@ pub fn encode__set_emulated_vision_deficiency_type(
 }
 
 @internal
-pub fn decode__set_emulated_vision_deficiency_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("none") -> Ok(SetEmulatedVisionDeficiencyTypeNone)
-    Ok("blurredVision") -> Ok(SetEmulatedVisionDeficiencyTypeBlurredVision)
-    Ok("reducedContrast") -> Ok(SetEmulatedVisionDeficiencyTypeReducedContrast)
-    Ok("achromatopsia") -> Ok(SetEmulatedVisionDeficiencyTypeAchromatopsia)
-    Ok("deuteranopia") -> Ok(SetEmulatedVisionDeficiencyTypeDeuteranopia)
-    Ok("protanopia") -> Ok(SetEmulatedVisionDeficiencyTypeProtanopia)
-    Ok("tritanopia") -> Ok(SetEmulatedVisionDeficiencyTypeTritanopia)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__set_emulated_vision_deficiency_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "none" -> decode.success(SetEmulatedVisionDeficiencyTypeNone)
+      "blurredVision" ->
+        decode.success(SetEmulatedVisionDeficiencyTypeBlurredVision)
+      "reducedContrast" ->
+        decode.success(SetEmulatedVisionDeficiencyTypeReducedContrast)
+      "achromatopsia" ->
+        decode.success(SetEmulatedVisionDeficiencyTypeAchromatopsia)
+      "deuteranopia" ->
+        decode.success(SetEmulatedVisionDeficiencyTypeDeuteranopia)
+      "protanopia" -> decode.success(SetEmulatedVisionDeficiencyTypeProtanopia)
+      "tritanopia" -> decode.success(SetEmulatedVisionDeficiencyTypeTritanopia)
+      _ ->
+        decode.failure(
+          SetEmulatedVisionDeficiencyTypeNone,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -492,7 +495,11 @@ pub fn clear_idle_override(callback__) {
 pub fn set_script_execution_disabled(callback__, value value: Bool) {
   callback__(
     "Emulation.setScriptExecutionDisabled",
-    option.Some(json.object([#("value", json.bool(value))])),
+    option.Some(
+      json.object([
+        #("value", json.bool(value)),
+      ]),
+    ),
   )
 }
 
@@ -512,7 +519,9 @@ pub fn set_touch_emulation_enabled(
   callback__(
     "Emulation.setTouchEmulationEnabled",
     option.Some(json.object(
-      [#("enabled", json.bool(enabled))]
+      [
+        #("enabled", json.bool(enabled)),
+      ]
       |> utils.add_optional(max_touch_points, fn(inner_value__) {
         #("maxTouchPoints", json.int(inner_value__))
       }),
@@ -532,7 +541,11 @@ pub fn set_touch_emulation_enabled(
 pub fn set_timezone_override(callback__, timezone_id timezone_id: String) {
   callback__(
     "Emulation.setTimezoneOverride",
-    option.Some(json.object([#("timezoneId", json.string(timezone_id))])),
+    option.Some(
+      json.object([
+        #("timezoneId", json.string(timezone_id)),
+      ]),
+    ),
   )
 }
 
@@ -555,7 +568,9 @@ pub fn set_user_agent_override(
   callback__(
     "Emulation.setUserAgentOverride",
     option.Some(json.object(
-      [#("userAgent", json.string(user_agent))]
+      [
+        #("userAgent", json.string(user_agent)),
+      ]
       |> utils.add_optional(accept_language, fn(inner_value__) {
         #("acceptLanguage", json.string(inner_value__))
       })

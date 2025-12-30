@@ -13,7 +13,7 @@
 import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -32,8 +32,11 @@ pub fn encode__stream_handle(value__: StreamHandle) {
 }
 
 @internal
-pub fn decode__stream_handle(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(StreamHandle, dynamic.string)
+pub fn decode__stream_handle() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(StreamHandle(value__))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -50,15 +53,22 @@ pub type ReadResponse {
 }
 
 @internal
-pub fn decode__read_response(value__: dynamic.Dynamic) {
-  use base64_encoded <- result.try(dynamic.optional_field(
-    "base64Encoded",
-    dynamic.bool,
-  )(value__))
-  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
-  use eof <- result.try(dynamic.field("eof", dynamic.bool)(value__))
+pub fn decode__read_response() {
+  {
+    use base64_encoded <- decode.optional_field(
+      "base64Encoded",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use data <- decode.field("data", decode.string)
+    use eof <- decode.field("eof", decode.bool)
 
-  Ok(ReadResponse(base64_encoded: base64_encoded, data: data, eof: eof))
+    decode.success(ReadResponse(
+      base64_encoded: base64_encoded,
+      data: data,
+      eof: eof,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -71,10 +81,12 @@ pub type ResolveBlobResponse {
 }
 
 @internal
-pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
-  use uuid <- result.try(dynamic.field("uuid", dynamic.string)(value__))
+pub fn decode__resolve_blob_response() {
+  {
+    use uuid <- decode.field("uuid", decode.string)
 
-  Ok(ResolveBlobResponse(uuid: uuid))
+    decode.success(ResolveBlobResponse(uuid: uuid))
+  }
 }
 
 /// Close the stream, discard any temporary backing storage.
@@ -87,7 +99,11 @@ pub fn decode__resolve_blob_response(value__: dynamic.Dynamic) {
 pub fn close(callback__, handle handle: StreamHandle) {
   callback__(
     "IO.close",
-    option.Some(json.object([#("handle", encode__stream_handle(handle))])),
+    option.Some(
+      json.object([
+        #("handle", encode__stream_handle(handle)),
+      ]),
+    ),
   )
 }
 
@@ -113,7 +129,9 @@ pub fn read(
   use result__ <- result.try(callback__(
     "IO.read",
     option.Some(json.object(
-      [#("handle", encode__stream_handle(handle))]
+      [
+        #("handle", encode__stream_handle(handle)),
+      ]
       |> utils.add_optional(offset, fn(inner_value__) {
         #("offset", json.int(inner_value__))
       })
@@ -123,7 +141,7 @@ pub fn read(
     )),
   ))
 
-  decode__read_response(result__)
+  decode.run(result__, decode__read_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -139,10 +157,12 @@ pub fn resolve_blob(callback__, object_id object_id: runtime.RemoteObjectId) {
   use result__ <- result.try(callback__(
     "IO.resolveBlob",
     option.Some(
-      json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
+      json.object([
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+      ]),
     ),
   ))
 
-  decode__resolve_blob_response(result__)
+  decode.run(result__, decode__resolve_blob_response())
   |> result.replace_error(chrome.ProtocolError)
 }

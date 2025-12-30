@@ -2,7 +2,7 @@ import birdie
 import chrobot
 import chrobot/chrome
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/erlang/process
 import gleam/io
 import gleam/list
@@ -86,7 +86,7 @@ pub fn eval_test() {
   use page <- test_utils.with_reference_page()
   let expression = "2 * Math.PI"
   chrobot.eval(page, expression)
-  |> chrobot.as_value(dynamic.float)
+  |> chrobot.as_value(decode.run(_, decode.float))
   |> should.be_ok()
   |> should.equal(6.283185307179586)
 }
@@ -96,7 +96,7 @@ pub fn eval_async_test() {
   let expression =
     "new Promise((resolve, reject) => setTimeout(() => resolve(42), 50))"
   chrobot.eval_async(page, expression)
-  |> chrobot.as_value(dynamic.int)
+  |> chrobot.as_value(decode.run(_, decode.int))
   |> should.be_ok()
   |> should.equal(42)
 }
@@ -148,13 +148,13 @@ pub fn get_all_html_test() {
   let dummy_html =
     "<html><body>
   <p>
-  I am HTML 
+  I am HTML
   </p>
   <p>
-  I am the hyperstructure 
+  I am the hyperstructure
   </p>
   <p>
-  I am linked to you 
+  I am linked to you
   </p>
   </body></html>"
   let page =
@@ -271,7 +271,7 @@ pub fn get_property_test() {
     chrobot.select(page, "#demo-checkbox")
     |> should.be_ok
 
-  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
   |> should.be_ok
   |> should.be_true
 }
@@ -284,7 +284,7 @@ pub fn click_test() {
     chrobot.select(page, "#demo-checkbox")
     |> should.be_ok
 
-  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
   |> should.be_ok
   |> should.be_true
 
@@ -293,7 +293,7 @@ pub fn click_test() {
   |> should.be_ok
 
   // After clicking the checkbox, it should be unchecked
-  chrobot.get_property(page, object_id, "checked", dynamic.bool)
+  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
   |> should.be_ok
   |> should.be_false
 }
@@ -310,7 +310,7 @@ pub fn type_test() {
   chrobot.type_text(page, "Hello, World!")
   |> should.be_ok
 
-  chrobot.get_property(page, object_id, "value", dynamic.string)
+  chrobot.get_property(page, object_id, "value", decode.run(_, decode.string))
   |> should.be_ok
   |> should.equal("Hello, World!")
 }
@@ -327,7 +327,7 @@ pub fn press_key_test() {
   chrobot.press_key(page, "Enter")
   |> should.be_ok
 
-  chrobot.get_property(page, object_id, "value", dynamic.string)
+  chrobot.get_property(page, object_id, "value", decode.run(_, decode.string))
   |> should.be_ok
   |> should.equal("ENTER KEY PRESSED")
 }

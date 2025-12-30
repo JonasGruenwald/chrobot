@@ -1,5 +1,5 @@
 ---
-version: 1.2.6
+version: 1.5.3
 title: Runtime domain module
 file: ./test/codegen/generate_bindings_test.gleam
 test_name: gen_bindings_runtime_test
@@ -22,11 +22,12 @@ test_name: gen_bindings_runtime_test
 
 import chrobot/chrome
 import gleam/dict
-import gleam/list
 import gleam/dynamic
-import gleam/result
-import gleam/option
+import gleam/dynamic/decode
 import gleam/json
+import gleam/list
+import gleam/option
+import gleam/result
 import chrobot/internal/utils
 
 
@@ -45,8 +46,11 @@ ScriptId(inner_value__) -> json.string(inner_value__)
 }}
 @internal
 pub fn decode__script_id(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(ScriptId, dynamic.string)}
+) {
+{
+use value__ <- decode.then(decode.string)
+decode.success(ScriptId(value__))
+}}
 /// Represents options for serialization. Overrides `generatePreview` and `returnByValue`.
 pub type SerializationOptions{
 SerializationOptions (
@@ -62,7 +66,7 @@ additional_parameters: option.Option(dict.Dict(String,String)),
 )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `serialization` of `SerializationOptions`
 
 pub type SerializationOptionsSerialization{SerializationOptionsSerializationDeep
@@ -83,15 +87,16 @@ SerializationOptionsSerializationIdOnly -> "idOnly"
 
 @internal
 pub fn decode__serialization_options_serialization(
-value__: dynamic.Dynamic
 ) {
-case dynamic.string(value__){
-Ok("deep") -> Ok(SerializationOptionsSerializationDeep)
-Ok("json") -> Ok(SerializationOptionsSerializationJson)
-Ok("idOnly") -> Ok(SerializationOptionsSerializationIdOnly)
-Error(error) -> Error(error)
-Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
+{
+use value__ <- decode.then(decode.string)
+case value__ {
+"deep" -> decode.success(SerializationOptionsSerializationDeep)
+"json" -> decode.success(SerializationOptionsSerializationJson)
+"idOnly" -> decode.success(SerializationOptionsSerializationIdOnly)
+_ -> decode.failure(SerializationOptionsSerializationDeep, "valid enum property")
 }
+}}
 
 
 @internal
@@ -107,16 +112,18 @@ json.object([
 )}
 @internal
 pub fn decode__serialization_options(
-value__: dynamic.Dynamic) {
-use serialization <- result.try(dynamic.field("serialization",decode__serialization_options_serialization)(value__))
-use max_depth <- result.try(dynamic.optional_field("maxDepth",dynamic.int)(value__))
-use additional_parameters <- result.try(dynamic.optional_field("additionalParameters",dynamic.dict(dynamic.string, dynamic.string))(value__))
+) {
+{
+use serialization <- decode.field("serialization", decode__serialization_options_serialization())
+use max_depth <- decode.optional_field("maxDepth", option.None, decode.optional(decode.int))
+use additional_parameters <- decode.optional_field("additionalParameters", option.None, decode.optional(decode.dict(decode.string, decode.string)))
 
-Ok(SerializationOptions(
+decode.success(SerializationOptions(
 serialization:serialization,
 max_depth:max_depth,
 additional_parameters:additional_parameters,
-))}
+))
+}}
 /// Represents deep serialized value.
 pub type DeepSerializedValue{
 DeepSerializedValue (
@@ -131,7 +138,7 @@ weak_local_object_reference: option.Option(Int),
 )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `DeepSerializedValue`
 
 pub type DeepSerializedValueType{DeepSerializedValueTypeUndefined
@@ -194,36 +201,37 @@ DeepSerializedValueTypeGenerator -> "generator"
 
 @internal
 pub fn decode__deep_serialized_value_type(
-value__: dynamic.Dynamic
 ) {
-case dynamic.string(value__){
-Ok("undefined") -> Ok(DeepSerializedValueTypeUndefined)
-Ok("null") -> Ok(DeepSerializedValueTypeNull)
-Ok("string") -> Ok(DeepSerializedValueTypeString)
-Ok("number") -> Ok(DeepSerializedValueTypeNumber)
-Ok("boolean") -> Ok(DeepSerializedValueTypeBoolean)
-Ok("bigint") -> Ok(DeepSerializedValueTypeBigint)
-Ok("regexp") -> Ok(DeepSerializedValueTypeRegexp)
-Ok("date") -> Ok(DeepSerializedValueTypeDate)
-Ok("symbol") -> Ok(DeepSerializedValueTypeSymbol)
-Ok("array") -> Ok(DeepSerializedValueTypeArray)
-Ok("object") -> Ok(DeepSerializedValueTypeObject)
-Ok("function") -> Ok(DeepSerializedValueTypeFunction)
-Ok("map") -> Ok(DeepSerializedValueTypeMap)
-Ok("set") -> Ok(DeepSerializedValueTypeSet)
-Ok("weakmap") -> Ok(DeepSerializedValueTypeWeakmap)
-Ok("weakset") -> Ok(DeepSerializedValueTypeWeakset)
-Ok("error") -> Ok(DeepSerializedValueTypeError)
-Ok("proxy") -> Ok(DeepSerializedValueTypeProxy)
-Ok("promise") -> Ok(DeepSerializedValueTypePromise)
-Ok("typedarray") -> Ok(DeepSerializedValueTypeTypedarray)
-Ok("arraybuffer") -> Ok(DeepSerializedValueTypeArraybuffer)
-Ok("node") -> Ok(DeepSerializedValueTypeNode)
-Ok("window") -> Ok(DeepSerializedValueTypeWindow)
-Ok("generator") -> Ok(DeepSerializedValueTypeGenerator)
-Error(error) -> Error(error)
-Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
+{
+use value__ <- decode.then(decode.string)
+case value__ {
+"undefined" -> decode.success(DeepSerializedValueTypeUndefined)
+"null" -> decode.success(DeepSerializedValueTypeNull)
+"string" -> decode.success(DeepSerializedValueTypeString)
+"number" -> decode.success(DeepSerializedValueTypeNumber)
+"boolean" -> decode.success(DeepSerializedValueTypeBoolean)
+"bigint" -> decode.success(DeepSerializedValueTypeBigint)
+"regexp" -> decode.success(DeepSerializedValueTypeRegexp)
+"date" -> decode.success(DeepSerializedValueTypeDate)
+"symbol" -> decode.success(DeepSerializedValueTypeSymbol)
+"array" -> decode.success(DeepSerializedValueTypeArray)
+"object" -> decode.success(DeepSerializedValueTypeObject)
+"function" -> decode.success(DeepSerializedValueTypeFunction)
+"map" -> decode.success(DeepSerializedValueTypeMap)
+"set" -> decode.success(DeepSerializedValueTypeSet)
+"weakmap" -> decode.success(DeepSerializedValueTypeWeakmap)
+"weakset" -> decode.success(DeepSerializedValueTypeWeakset)
+"error" -> decode.success(DeepSerializedValueTypeError)
+"proxy" -> decode.success(DeepSerializedValueTypeProxy)
+"promise" -> decode.success(DeepSerializedValueTypePromise)
+"typedarray" -> decode.success(DeepSerializedValueTypeTypedarray)
+"arraybuffer" -> decode.success(DeepSerializedValueTypeArraybuffer)
+"node" -> decode.success(DeepSerializedValueTypeNode)
+"window" -> decode.success(DeepSerializedValueTypeWindow)
+"generator" -> decode.success(DeepSerializedValueTypeGenerator)
+_ -> decode.failure(DeepSerializedValueTypeUndefined, "valid enum property")
 }
+}}
 
 
 @internal
@@ -238,18 +246,20 @@ json.object([
 )}
 @internal
 pub fn decode__deep_serialized_value(
-value__: dynamic.Dynamic) {
-use type_ <- result.try(dynamic.field("type",decode__deep_serialized_value_type)(value__))
-use value <- result.try(dynamic.optional_field("value",dynamic.dynamic)(value__))
-use object_id <- result.try(dynamic.optional_field("objectId",dynamic.string)(value__))
-use weak_local_object_reference <- result.try(dynamic.optional_field("weakLocalObjectReference",dynamic.int)(value__))
+) {
+{
+use type_ <- decode.field("type", decode__deep_serialized_value_type())
+use value <- decode.optional_field("value", option.None, decode.dynamic |> decode.map(option.Some))
+use object_id <- decode.optional_field("objectId", option.None, decode.optional(decode.string))
+use weak_local_object_reference <- decode.optional_field("weakLocalObjectReference", option.None, decode.optional(decode.int))
 
-Ok(DeepSerializedValue(
+decode.success(DeepSerializedValue(
 type_:type_,
 value:value,
 object_id:object_id,
 weak_local_object_reference:weak_local_object_reference,
-))}
+))
+}}
 /// Unique object identifier.
 pub type RemoteObjectId{
 RemoteObjectId(String)
@@ -265,8 +275,11 @@ RemoteObjectId(inner_value__) -> json.string(inner_value__)
 }}
 @internal
 pub fn decode__remote_object_id(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(RemoteObjectId, dynamic.string)}
+) {
+{
+use value__ <- decode.then(decode.string)
+decode.success(RemoteObjectId(value__))
+}}
 /// Primitive value which cannot be JSON-stringified. Includes values `-0`, `NaN`, `Infinity`,
 /// `-Infinity`, and bigint literals.
 pub type UnserializableValue{
@@ -283,8 +296,11 @@ UnserializableValue(inner_value__) -> json.string(inner_value__)
 }}
 @internal
 pub fn decode__unserializable_value(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(UnserializableValue, dynamic.string)}
+) {
+{
+use value__ <- decode.then(decode.string)
+decode.success(UnserializableValue(value__))
+}}
 /// Mirror object referencing original JavaScript object.
 pub type RemoteObject{
 RemoteObject (
@@ -315,7 +331,7 @@ object_id: option.Option(RemoteObjectId),
 )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `RemoteObject`
 
 pub type RemoteObjectType{RemoteObjectTypeObject
@@ -346,22 +362,23 @@ RemoteObjectTypeBigint -> "bigint"
 
 @internal
 pub fn decode__remote_object_type(
-value__: dynamic.Dynamic
 ) {
-case dynamic.string(value__){
-Ok("object") -> Ok(RemoteObjectTypeObject)
-Ok("function") -> Ok(RemoteObjectTypeFunction)
-Ok("undefined") -> Ok(RemoteObjectTypeUndefined)
-Ok("string") -> Ok(RemoteObjectTypeString)
-Ok("number") -> Ok(RemoteObjectTypeNumber)
-Ok("boolean") -> Ok(RemoteObjectTypeBoolean)
-Ok("symbol") -> Ok(RemoteObjectTypeSymbol)
-Ok("bigint") -> Ok(RemoteObjectTypeBigint)
-Error(error) -> Error(error)
-Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
+{
+use value__ <- decode.then(decode.string)
+case value__ {
+"object" -> decode.success(RemoteObjectTypeObject)
+"function" -> decode.success(RemoteObjectTypeFunction)
+"undefined" -> decode.success(RemoteObjectTypeUndefined)
+"string" -> decode.success(RemoteObjectTypeString)
+"number" -> decode.success(RemoteObjectTypeNumber)
+"boolean" -> decode.success(RemoteObjectTypeBoolean)
+"symbol" -> decode.success(RemoteObjectTypeSymbol)
+"bigint" -> decode.success(RemoteObjectTypeBigint)
+_ -> decode.failure(RemoteObjectTypeObject, "valid enum property")
 }
+}}
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `subtype` of `RemoteObject`
 
 pub type RemoteObjectSubtype{RemoteObjectSubtypeArray
@@ -414,31 +431,32 @@ RemoteObjectSubtypeWasmvalue -> "wasmvalue"
 
 @internal
 pub fn decode__remote_object_subtype(
-value__: dynamic.Dynamic
 ) {
-case dynamic.string(value__){
-Ok("array") -> Ok(RemoteObjectSubtypeArray)
-Ok("null") -> Ok(RemoteObjectSubtypeNull)
-Ok("node") -> Ok(RemoteObjectSubtypeNode)
-Ok("regexp") -> Ok(RemoteObjectSubtypeRegexp)
-Ok("date") -> Ok(RemoteObjectSubtypeDate)
-Ok("map") -> Ok(RemoteObjectSubtypeMap)
-Ok("set") -> Ok(RemoteObjectSubtypeSet)
-Ok("weakmap") -> Ok(RemoteObjectSubtypeWeakmap)
-Ok("weakset") -> Ok(RemoteObjectSubtypeWeakset)
-Ok("iterator") -> Ok(RemoteObjectSubtypeIterator)
-Ok("generator") -> Ok(RemoteObjectSubtypeGenerator)
-Ok("error") -> Ok(RemoteObjectSubtypeError)
-Ok("proxy") -> Ok(RemoteObjectSubtypeProxy)
-Ok("promise") -> Ok(RemoteObjectSubtypePromise)
-Ok("typedarray") -> Ok(RemoteObjectSubtypeTypedarray)
-Ok("arraybuffer") -> Ok(RemoteObjectSubtypeArraybuffer)
-Ok("dataview") -> Ok(RemoteObjectSubtypeDataview)
-Ok("webassemblymemory") -> Ok(RemoteObjectSubtypeWebassemblymemory)
-Ok("wasmvalue") -> Ok(RemoteObjectSubtypeWasmvalue)
-Error(error) -> Error(error)
-Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
+{
+use value__ <- decode.then(decode.string)
+case value__ {
+"array" -> decode.success(RemoteObjectSubtypeArray)
+"null" -> decode.success(RemoteObjectSubtypeNull)
+"node" -> decode.success(RemoteObjectSubtypeNode)
+"regexp" -> decode.success(RemoteObjectSubtypeRegexp)
+"date" -> decode.success(RemoteObjectSubtypeDate)
+"map" -> decode.success(RemoteObjectSubtypeMap)
+"set" -> decode.success(RemoteObjectSubtypeSet)
+"weakmap" -> decode.success(RemoteObjectSubtypeWeakmap)
+"weakset" -> decode.success(RemoteObjectSubtypeWeakset)
+"iterator" -> decode.success(RemoteObjectSubtypeIterator)
+"generator" -> decode.success(RemoteObjectSubtypeGenerator)
+"error" -> decode.success(RemoteObjectSubtypeError)
+"proxy" -> decode.success(RemoteObjectSubtypeProxy)
+"promise" -> decode.success(RemoteObjectSubtypePromise)
+"typedarray" -> decode.success(RemoteObjectSubtypeTypedarray)
+"arraybuffer" -> decode.success(RemoteObjectSubtypeArraybuffer)
+"dataview" -> decode.success(RemoteObjectSubtypeDataview)
+"webassemblymemory" -> decode.success(RemoteObjectSubtypeWebassemblymemory)
+"wasmvalue" -> decode.success(RemoteObjectSubtypeWasmvalue)
+_ -> decode.failure(RemoteObjectSubtypeArray, "valid enum property")
 }
+}}
 
 
 @internal
@@ -456,16 +474,17 @@ json.object([
 )}
 @internal
 pub fn decode__remote_object(
-value__: dynamic.Dynamic) {
-use type_ <- result.try(dynamic.field("type",decode__remote_object_type)(value__))
-use subtype <- result.try(dynamic.optional_field("subtype",decode__remote_object_subtype)(value__))
-use class_name <- result.try(dynamic.optional_field("className",dynamic.string)(value__))
-use value <- result.try(dynamic.optional_field("value",dynamic.dynamic)(value__))
-use unserializable_value <- result.try(dynamic.optional_field("unserializableValue",decode__unserializable_value)(value__))
-use description <- result.try(dynamic.optional_field("description",dynamic.string)(value__))
-use object_id <- result.try(dynamic.optional_field("objectId",decode__remote_object_id)(value__))
+) {
+{
+use type_ <- decode.field("type", decode__remote_object_type())
+use subtype <- decode.optional_field("subtype", option.None, decode.optional(decode__remote_object_subtype()))
+use class_name <- decode.optional_field("className", option.None, decode.optional(decode.string))
+use value <- decode.optional_field("value", option.None, decode.dynamic |> decode.map(option.Some))
+use unserializable_value <- decode.optional_field("unserializableValue", option.None, decode.optional(decode__unserializable_value()))
+use description <- decode.optional_field("description", option.None, decode.optional(decode.string))
+use object_id <- decode.optional_field("objectId", option.None, decode.optional(decode__remote_object_id()))
 
-Ok(RemoteObject(
+decode.success(RemoteObject(
 type_:type_,
 subtype:subtype,
 class_name:class_name,
@@ -473,7 +492,8 @@ value:value,
 unserializable_value:unserializable_value,
 description:description,
 object_id:object_id,
-))}
+))
+}}
 /// Object property descriptor.
 pub type PropertyDescriptor{
 PropertyDescriptor (
@@ -533,19 +553,20 @@ json.object([
 )}
 @internal
 pub fn decode__property_descriptor(
-value__: dynamic.Dynamic) {
-use name <- result.try(dynamic.field("name",dynamic.string)(value__))
-use value <- result.try(dynamic.optional_field("value",decode__remote_object)(value__))
-use writable <- result.try(dynamic.optional_field("writable",dynamic.bool)(value__))
-use get <- result.try(dynamic.optional_field("get",decode__remote_object)(value__))
-use set <- result.try(dynamic.optional_field("set",decode__remote_object)(value__))
-use configurable <- result.try(dynamic.field("configurable",dynamic.bool)(value__))
-use enumerable <- result.try(dynamic.field("enumerable",dynamic.bool)(value__))
-use was_thrown <- result.try(dynamic.optional_field("wasThrown",dynamic.bool)(value__))
-use is_own <- result.try(dynamic.optional_field("isOwn",dynamic.bool)(value__))
-use symbol <- result.try(dynamic.optional_field("symbol",decode__remote_object)(value__))
+) {
+{
+use name <- decode.field("name", decode.string)
+use value <- decode.optional_field("value", option.None, decode.optional(decode__remote_object()))
+use writable <- decode.optional_field("writable", option.None, decode.optional(decode.bool))
+use get <- decode.optional_field("get", option.None, decode.optional(decode__remote_object()))
+use set <- decode.optional_field("set", option.None, decode.optional(decode__remote_object()))
+use configurable <- decode.field("configurable", decode.bool)
+use enumerable <- decode.field("enumerable", decode.bool)
+use was_thrown <- decode.optional_field("wasThrown", option.None, decode.optional(decode.bool))
+use is_own <- decode.optional_field("isOwn", option.None, decode.optional(decode.bool))
+use symbol <- decode.optional_field("symbol", option.None, decode.optional(decode__remote_object()))
 
-Ok(PropertyDescriptor(
+decode.success(PropertyDescriptor(
 name:name,
 value:value,
 writable:writable,
@@ -556,7 +577,8 @@ enumerable:enumerable,
 was_thrown:was_thrown,
 is_own:is_own,
 symbol:symbol,
-))}
+))
+}}
 /// Object internal property descriptor. This property isn't normally visible in JavaScript code.
 pub type InternalPropertyDescriptor{
 InternalPropertyDescriptor (
@@ -580,14 +602,16 @@ json.object([
 )}
 @internal
 pub fn decode__internal_property_descriptor(
-value__: dynamic.Dynamic) {
-use name <- result.try(dynamic.field("name",dynamic.string)(value__))
-use value <- result.try(dynamic.optional_field("value",decode__remote_object)(value__))
+) {
+{
+use name <- decode.field("name", decode.string)
+use value <- decode.optional_field("value", option.None, decode.optional(decode__remote_object()))
 
-Ok(InternalPropertyDescriptor(
+decode.success(InternalPropertyDescriptor(
 name:name,
 value:value,
-))}
+))
+}}
 /// Represents function call argument. Either remote object id `objectId`, primitive `value`,
 /// unserializable primitive value or neither of (for undefined) them should be specified.
 pub type CallArgument{
@@ -616,16 +640,18 @@ json.object([
 )}
 @internal
 pub fn decode__call_argument(
-value__: dynamic.Dynamic) {
-use value <- result.try(dynamic.optional_field("value",dynamic.dynamic)(value__))
-use unserializable_value <- result.try(dynamic.optional_field("unserializableValue",decode__unserializable_value)(value__))
-use object_id <- result.try(dynamic.optional_field("objectId",decode__remote_object_id)(value__))
+) {
+{
+use value <- decode.optional_field("value", option.None, decode.dynamic |> decode.map(option.Some))
+use unserializable_value <- decode.optional_field("unserializableValue", option.None, decode.optional(decode__unserializable_value()))
+use object_id <- decode.optional_field("objectId", option.None, decode.optional(decode__remote_object_id()))
 
-Ok(CallArgument(
+decode.success(CallArgument(
 value:value,
 unserializable_value:unserializable_value,
 object_id:object_id,
-))}
+))
+}}
 /// Id of an execution context.
 pub type ExecutionContextId{
 ExecutionContextId(Int)
@@ -641,8 +667,11 @@ ExecutionContextId(inner_value__) -> json.int(inner_value__)
 }}
 @internal
 pub fn decode__execution_context_id(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(ExecutionContextId, dynamic.int)}
+) {
+{
+use value__ <- decode.then(decode.int)
+decode.success(ExecutionContextId(value__))
+}}
 /// Description of an isolated world.
 pub type ExecutionContextDescription{
 ExecutionContextDescription (
@@ -677,18 +706,20 @@ json.object([
 )}
 @internal
 pub fn decode__execution_context_description(
-value__: dynamic.Dynamic) {
-use id <- result.try(dynamic.field("id",decode__execution_context_id)(value__))
-use origin <- result.try(dynamic.field("origin",dynamic.string)(value__))
-use name <- result.try(dynamic.field("name",dynamic.string)(value__))
-use aux_data <- result.try(dynamic.optional_field("auxData",dynamic.dict(dynamic.string, dynamic.string))(value__))
+) {
+{
+use id <- decode.field("id", decode__execution_context_id())
+use origin <- decode.field("origin", decode.string)
+use name <- decode.field("name", decode.string)
+use aux_data <- decode.optional_field("auxData", option.None, decode.optional(decode.dict(decode.string, decode.string)))
 
-Ok(ExecutionContextDescription(
+decode.success(ExecutionContextDescription(
 id:id,
 origin:origin,
 name:name,
 aux_data:aux_data,
-))}
+))
+}}
 /// Detailed information about exception (or error) that was thrown during script compilation or
 /// execution.
 pub type ExceptionDetails{
@@ -741,18 +772,19 @@ json.object([
 )}
 @internal
 pub fn decode__exception_details(
-value__: dynamic.Dynamic) {
-use exception_id <- result.try(dynamic.field("exceptionId",dynamic.int)(value__))
-use text <- result.try(dynamic.field("text",dynamic.string)(value__))
-use line_number <- result.try(dynamic.field("lineNumber",dynamic.int)(value__))
-use column_number <- result.try(dynamic.field("columnNumber",dynamic.int)(value__))
-use script_id <- result.try(dynamic.optional_field("scriptId",decode__script_id)(value__))
-use url <- result.try(dynamic.optional_field("url",dynamic.string)(value__))
-use stack_trace <- result.try(dynamic.optional_field("stackTrace",decode__stack_trace)(value__))
-use exception <- result.try(dynamic.optional_field("exception",decode__remote_object)(value__))
-use execution_context_id <- result.try(dynamic.optional_field("executionContextId",decode__execution_context_id)(value__))
+) {
+{
+use exception_id <- decode.field("exceptionId", decode.int)
+use text <- decode.field("text", decode.string)
+use line_number <- decode.field("lineNumber", decode.int)
+use column_number <- decode.field("columnNumber", decode.int)
+use script_id <- decode.optional_field("scriptId", option.None, decode.optional(decode__script_id()))
+use url <- decode.optional_field("url", option.None, decode.optional(decode.string))
+use stack_trace <- decode.optional_field("stackTrace", option.None, decode.optional(decode__stack_trace()))
+use exception <- decode.optional_field("exception", option.None, decode.optional(decode__remote_object()))
+use execution_context_id <- decode.optional_field("executionContextId", option.None, decode.optional(decode__execution_context_id()))
 
-Ok(ExceptionDetails(
+decode.success(ExceptionDetails(
 exception_id:exception_id,
 text:text,
 line_number:line_number,
@@ -762,7 +794,8 @@ url:url,
 stack_trace:stack_trace,
 exception:exception,
 execution_context_id:execution_context_id,
-))}
+))
+}}
 /// Number of milliseconds since epoch.
 pub type Timestamp{
 Timestamp(Float)
@@ -778,8 +811,11 @@ Timestamp(inner_value__) -> json.float(inner_value__)
 }}
 @internal
 pub fn decode__timestamp(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(Timestamp, dynamic.float)}
+) {
+{
+use value__ <- decode.then(decode.float)
+decode.success(Timestamp(value__))
+}}
 /// Number of milliseconds.
 pub type TimeDelta{
 TimeDelta(Float)
@@ -795,8 +831,11 @@ TimeDelta(inner_value__) -> json.float(inner_value__)
 }}
 @internal
 pub fn decode__time_delta(
-value__: dynamic.Dynamic) {
-value__ |> dynamic.decode1(TimeDelta, dynamic.float)}
+) {
+{
+use value__ <- decode.then(decode.float)
+decode.success(TimeDelta(value__))
+}}
 /// Stack entry for runtime errors and assertions.
 pub type CallFrame{
 CallFrame (
@@ -832,20 +871,22 @@ json.object([
 ])}
 @internal
 pub fn decode__call_frame(
-value__: dynamic.Dynamic) {
-use function_name <- result.try(dynamic.field("functionName",dynamic.string)(value__))
-use script_id <- result.try(dynamic.field("scriptId",decode__script_id)(value__))
-use url <- result.try(dynamic.field("url",dynamic.string)(value__))
-use line_number <- result.try(dynamic.field("lineNumber",dynamic.int)(value__))
-use column_number <- result.try(dynamic.field("columnNumber",dynamic.int)(value__))
+) {
+{
+use function_name <- decode.field("functionName", decode.string)
+use script_id <- decode.field("scriptId", decode__script_id())
+use url <- decode.field("url", decode.string)
+use line_number <- decode.field("lineNumber", decode.int)
+use column_number <- decode.field("columnNumber", decode.int)
 
-Ok(CallFrame(
+decode.success(CallFrame(
 function_name:function_name,
 script_id:script_id,
 url:url,
 line_number:line_number,
 column_number:column_number,
-))}
+))
+}}
 /// Call frames for assertions or error messages.
 pub type StackTrace{
 StackTrace (
@@ -874,16 +915,18 @@ json.object([
 )}
 @internal
 pub fn decode__stack_trace(
-value__: dynamic.Dynamic) {
-use description <- result.try(dynamic.optional_field("description",dynamic.string)(value__))
-use call_frames <- result.try(dynamic.field("callFrames",dynamic.list(decode__call_frame))(value__))
-use parent <- result.try(dynamic.optional_field("parent",decode__stack_trace)(value__))
+) {
+{
+use description <- decode.optional_field("description", option.None, decode.optional(decode.string))
+use call_frames <- decode.field("callFrames", decode.list(decode__call_frame()))
+use parent <- decode.optional_field("parent", option.None, decode.optional(decode__stack_trace()))
 
-Ok(StackTrace(
+decode.success(StackTrace(
 description:description,
 call_frames:call_frames,
 parent:parent,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `await_promise`
 pub type AwaitPromiseResponse{
@@ -900,14 +943,16 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__await_promise_response(
-value__: dynamic.Dynamic) {
-use result <- result.try(dynamic.field("result",decode__remote_object)(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use result <- decode.field("result", decode__remote_object())
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(AwaitPromiseResponse(
+decode.success(AwaitPromiseResponse(
 result:result,
 exception_details:exception_details,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `call_function_on`
 pub type CallFunctionOnResponse{
@@ -924,14 +969,16 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__call_function_on_response(
-value__: dynamic.Dynamic) {
-use result <- result.try(dynamic.field("result",decode__remote_object)(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use result <- decode.field("result", decode__remote_object())
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(CallFunctionOnResponse(
+decode.success(CallFunctionOnResponse(
 result:result,
 exception_details:exception_details,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `compile_script`
 pub type CompileScriptResponse{
@@ -948,14 +995,16 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__compile_script_response(
-value__: dynamic.Dynamic) {
-use script_id <- result.try(dynamic.optional_field("scriptId",decode__script_id)(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use script_id <- decode.optional_field("scriptId", option.None, decode.optional(decode__script_id()))
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(CompileScriptResponse(
+decode.success(CompileScriptResponse(
 script_id:script_id,
 exception_details:exception_details,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `evaluate`
 pub type EvaluateResponse{
@@ -972,14 +1021,16 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__evaluate_response(
-value__: dynamic.Dynamic) {
-use result <- result.try(dynamic.field("result",decode__remote_object)(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use result <- decode.field("result", decode__remote_object())
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(EvaluateResponse(
+decode.success(EvaluateResponse(
 result:result,
 exception_details:exception_details,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `get_properties`
 pub type GetPropertiesResponse{
@@ -999,16 +1050,18 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__get_properties_response(
-value__: dynamic.Dynamic) {
-use result <- result.try(dynamic.field("result",dynamic.list(decode__property_descriptor))(value__))
-use internal_properties <- result.try(dynamic.optional_field("internalProperties",dynamic.list(decode__internal_property_descriptor))(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use result <- decode.field("result", decode.list(decode__property_descriptor()))
+use internal_properties <- decode.optional_field("internalProperties", option.None, decode.optional(decode.list(decode__internal_property_descriptor())))
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(GetPropertiesResponse(
+decode.success(GetPropertiesResponse(
 result:result,
 internal_properties:internal_properties,
 exception_details:exception_details,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `global_lexical_scope_names`
 pub type GlobalLexicalScopeNamesResponse{
@@ -1020,12 +1073,14 @@ names: List(String),
 
 @internal
 pub fn decode__global_lexical_scope_names_response(
-value__: dynamic.Dynamic) {
-use names <- result.try(dynamic.field("names",dynamic.list(dynamic.string))(value__))
+) {
+{
+use names <- decode.field("names", decode.list(decode.string))
 
-Ok(GlobalLexicalScopeNamesResponse(
+decode.success(GlobalLexicalScopeNamesResponse(
 names:names,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `query_objects`
 pub type QueryObjectsResponse{
@@ -1039,12 +1094,14 @@ objects: RemoteObject,
 
 @internal
 pub fn decode__query_objects_response(
-value__: dynamic.Dynamic) {
-use objects <- result.try(dynamic.field("objects",decode__remote_object)(value__))
+) {
+{
+use objects <- decode.field("objects", decode__remote_object())
 
-Ok(QueryObjectsResponse(
+decode.success(QueryObjectsResponse(
 objects:objects,
-))}
+))
+}}
 /// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the response to the command `run_script`
 pub type RunScriptResponse{
@@ -1061,14 +1118,16 @@ exception_details: option.Option(ExceptionDetails),
 
 @internal
 pub fn decode__run_script_response(
-value__: dynamic.Dynamic) {
-use result <- result.try(dynamic.field("result",decode__remote_object)(value__))
-use exception_details <- result.try(dynamic.optional_field("exceptionDetails",decode__exception_details)(value__))
+) {
+{
+use result <- decode.field("result", decode__remote_object())
+use exception_details <- decode.optional_field("exceptionDetails", option.None, decode.optional(decode__exception_details()))
 
-Ok(RunScriptResponse(
+decode.success(RunScriptResponse(
 result:result,
 exception_details:exception_details,
-))}
+))
+}}
 /// Add handler to promise with given promise object id.
 /// 
 /// Parameters:  
@@ -1092,7 +1151,7 @@ use result__ <- result.try(callback__("Runtime.awaitPromise", option.Some(json.o
 )))
 )
 
-decode__await_promise_response(result__)
+decode.run(result__, decode__await_promise_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1146,7 +1205,7 @@ use result__ <- result.try(callback__("Runtime.callFunctionOn", option.Some(json
 )))
 )
 
-decode__call_function_on_response(result__)
+decode.run(result__, decode__call_function_on_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1178,7 +1237,7 @@ use result__ <- result.try(callback__("Runtime.compileScript", option.Some(json.
 )))
 )
 
-decode__compile_script_response(result__)
+decode.run(result__, decode__compile_script_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1259,7 +1318,7 @@ use result__ <- result.try(callback__("Runtime.evaluate", option.Some(json.objec
 )))
 )
 
-decode__evaluate_response(result__)
+decode.run(result__, decode__evaluate_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1287,7 +1346,7 @@ use result__ <- result.try(callback__("Runtime.getProperties", option.Some(json.
 )))
 )
 
-decode__get_properties_response(result__)
+decode.run(result__, decode__get_properties_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1308,7 +1367,7 @@ use result__ <- result.try(callback__("Runtime.globalLexicalScopeNames", option.
 )))
 )
 
-decode__global_lexical_scope_names_response(result__)
+decode.run(result__, decode__global_lexical_scope_names_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1332,7 +1391,7 @@ use result__ <- result.try(callback__("Runtime.queryObjects", option.Some(json.o
 )))
 )
 
-decode__query_objects_response(result__)
+decode.run(result__, decode__query_objects_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1422,7 +1481,7 @@ use result__ <- result.try(callback__("Runtime.runScript", option.Some(json.obje
 )))
 )
 
-decode__run_script_response(result__)
+decode.run(result__, decode__run_script_response())
 |> result.replace_error(chrome.ProtocolError)
 
 }
@@ -1491,4 +1550,5 @@ callback__("Runtime.removeBinding", option.Some(json.object([#("name", json.stri
 
 
 }
+
 

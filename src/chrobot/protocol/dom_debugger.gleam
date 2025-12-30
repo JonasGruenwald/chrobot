@@ -15,7 +15,7 @@ import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/dom
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -38,20 +38,16 @@ pub fn encode__dom_breakpoint_type(value__: DOMBreakpointType) {
 }
 
 @internal
-pub fn decode__dom_breakpoint_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("subtree-modified") -> Ok(DOMBreakpointTypeSubtreeModified)
-    Ok("attribute-modified") -> Ok(DOMBreakpointTypeAttributeModified)
-    Ok("node-removed") -> Ok(DOMBreakpointTypeNodeRemoved)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dom_breakpoint_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "subtree-modified" -> decode.success(DOMBreakpointTypeSubtreeModified)
+      "attribute-modified" -> decode.success(DOMBreakpointTypeAttributeModified)
+      "node-removed" -> decode.success(DOMBreakpointTypeNodeRemoved)
+      _ ->
+        decode.failure(DOMBreakpointTypeSubtreeModified, "valid enum property")
+    }
   }
 }
 
@@ -106,48 +102,44 @@ pub fn encode__event_listener(value__: EventListener) {
 }
 
 @internal
-pub fn decode__event_listener(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", dynamic.string)(value__))
-  use use_capture <- result.try(dynamic.field("useCapture", dynamic.bool)(
-    value__,
-  ))
-  use passive <- result.try(dynamic.field("passive", dynamic.bool)(value__))
-  use once <- result.try(dynamic.field("once", dynamic.bool)(value__))
-  use script_id <- result.try(dynamic.field(
-    "scriptId",
-    runtime.decode__script_id,
-  )(value__))
-  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
-    value__,
-  ))
-  use column_number <- result.try(dynamic.field("columnNumber", dynamic.int)(
-    value__,
-  ))
-  use handler <- result.try(dynamic.optional_field(
-    "handler",
-    runtime.decode__remote_object,
-  )(value__))
-  use original_handler <- result.try(dynamic.optional_field(
-    "originalHandler",
-    runtime.decode__remote_object,
-  )(value__))
-  use backend_node_id <- result.try(dynamic.optional_field(
-    "backendNodeId",
-    dom.decode__backend_node_id,
-  )(value__))
+pub fn decode__event_listener() {
+  {
+    use type_ <- decode.field("type", decode.string)
+    use use_capture <- decode.field("useCapture", decode.bool)
+    use passive <- decode.field("passive", decode.bool)
+    use once <- decode.field("once", decode.bool)
+    use script_id <- decode.field("scriptId", runtime.decode__script_id())
+    use line_number <- decode.field("lineNumber", decode.int)
+    use column_number <- decode.field("columnNumber", decode.int)
+    use handler <- decode.optional_field(
+      "handler",
+      option.None,
+      decode.optional(runtime.decode__remote_object()),
+    )
+    use original_handler <- decode.optional_field(
+      "originalHandler",
+      option.None,
+      decode.optional(runtime.decode__remote_object()),
+    )
+    use backend_node_id <- decode.optional_field(
+      "backendNodeId",
+      option.None,
+      decode.optional(dom.decode__backend_node_id()),
+    )
 
-  Ok(EventListener(
-    type_: type_,
-    use_capture: use_capture,
-    passive: passive,
-    once: once,
-    script_id: script_id,
-    line_number: line_number,
-    column_number: column_number,
-    handler: handler,
-    original_handler: original_handler,
-    backend_node_id: backend_node_id,
-  ))
+    decode.success(EventListener(
+      type_: type_,
+      use_capture: use_capture,
+      passive: passive,
+      once: once,
+      script_id: script_id,
+      line_number: line_number,
+      column_number: column_number,
+      handler: handler,
+      original_handler: original_handler,
+      backend_node_id: backend_node_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -160,13 +152,15 @@ pub type GetEventListenersResponse {
 }
 
 @internal
-pub fn decode__get_event_listeners_response(value__: dynamic.Dynamic) {
-  use listeners <- result.try(dynamic.field(
-    "listeners",
-    dynamic.list(decode__event_listener),
-  )(value__))
+pub fn decode__get_event_listeners_response() {
+  {
+    use listeners <- decode.field(
+      "listeners",
+      decode.list(decode__event_listener()),
+    )
 
-  Ok(GetEventListenersResponse(listeners: listeners))
+    decode.success(GetEventListenersResponse(listeners: listeners))
+  }
 }
 
 /// Returns event listeners of the given object.
@@ -190,7 +184,9 @@ pub fn get_event_listeners(
   use result__ <- result.try(callback__(
     "DOMDebugger.getEventListeners",
     option.Some(json.object(
-      [#("objectId", runtime.encode__remote_object_id(object_id))]
+      [
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+      ]
       |> utils.add_optional(depth, fn(inner_value__) {
         #("depth", json.int(inner_value__))
       })
@@ -200,7 +196,7 @@ pub fn get_event_listeners(
     )),
   ))
 
-  decode__get_event_listeners_response(result__)
+  decode.run(result__, decode__get_event_listeners_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -241,7 +237,11 @@ pub fn remove_event_listener_breakpoint(
 ) {
   callback__(
     "DOMDebugger.removeEventListenerBreakpoint",
-    option.Some(json.object([#("eventName", json.string(event_name))])),
+    option.Some(
+      json.object([
+        #("eventName", json.string(event_name)),
+      ]),
+    ),
   )
 }
 
@@ -255,7 +255,11 @@ pub fn remove_event_listener_breakpoint(
 pub fn remove_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.removeXHRBreakpoint",
-    option.Some(json.object([#("url", json.string(url))])),
+    option.Some(
+      json.object([
+        #("url", json.string(url)),
+      ]),
+    ),
   )
 }
 
@@ -293,7 +297,11 @@ pub fn set_dom_breakpoint(
 pub fn set_event_listener_breakpoint(callback__, event_name event_name: String) {
   callback__(
     "DOMDebugger.setEventListenerBreakpoint",
-    option.Some(json.object([#("eventName", json.string(event_name))])),
+    option.Some(
+      json.object([
+        #("eventName", json.string(event_name)),
+      ]),
+    ),
   )
 }
 
@@ -307,6 +315,10 @@ pub fn set_event_listener_breakpoint(callback__, event_name event_name: String) 
 pub fn set_xhr_breakpoint(callback__, url url: String) {
   callback__(
     "DOMDebugger.setXHRBreakpoint",
-    option.Some(json.object([#("url", json.string(url))])),
+    option.Some(
+      json.object([
+        #("url", json.string(url)),
+      ]),
+    ),
   )
 }

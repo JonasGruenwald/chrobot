@@ -1,17 +1,19 @@
 ---
-version: 1.1.4
+version: 1.5.3
 title: Enum decoder function
-file: ./test/internal/generate_bindings_test.gleam
+file: ./test/codegen/generate_bindings_test.gleam
 test_name: gen_enum_encoder_decoder_test
 ---
 @internal
 pub fn decode__certificate_transparency_compliance(
-value__: dynamic.Dynamic
 ) {
-case dynamic.string(value__){
-Ok("unknown") -> Ok(CertificateTransparencyComplianceUnknown)
-Ok("not-compliant") -> Ok(CertificateTransparencyComplianceNotCompliant)
-Ok("compliant") -> Ok(CertificateTransparencyComplianceCompliant)
-Error(error) -> Error(error)
-Ok(other) -> Error([dynamic.DecodeError(expected: "valid enum property", found:other, path: ["enum decoder"])])}
+{
+use value__ <- decode.then(decode.string)
+case value__ {
+"unknown" -> decode.success(CertificateTransparencyComplianceUnknown)
+"not-compliant" -> decode.success(CertificateTransparencyComplianceNotCompliant)
+"compliant" -> decode.success(CertificateTransparencyComplianceCompliant)
+_ -> decode.failure(CertificateTransparencyComplianceUnknown, "valid enum property")
 }
+}}
+

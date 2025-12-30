@@ -1,5 +1,5 @@
 import chrobot/chrome
-import gleam/erlang/os
+import chrobot/internal/os
 import gleam/json
 import gleam/list
 import gleam/option

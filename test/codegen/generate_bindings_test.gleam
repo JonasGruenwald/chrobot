@@ -90,7 +90,7 @@ pub fn general_bindings_gen_test() {
     merge_protocols(browser_protocol, js_protocol)
     |> apply_protocol_patches()
   let stable_protocol = get_stable_protocol(protocol, False, False)
-  gen_root_module(stable_protocol)
+  let _ = gen_root_module(stable_protocol)
   list.each(stable_protocol.domains, fn(domain) {
     gen_domain_module(stable_protocol, domain)
   })
@@ -109,8 +109,7 @@ pub fn gen_bindings_target_test() {
 }
 
 pub fn gen_bindings_runtime_test() {
-  let assert Ok(js_protocol) =
-    parse_protocol("./assets/js_protocol.json")
+  let assert Ok(js_protocol) = parse_protocol("./assets/js_protocol.json")
   let stable_protocol = get_stable_protocol(js_protocol, False, False)
   let assert Ok(runtime_domain) =
     stable_protocol.domains

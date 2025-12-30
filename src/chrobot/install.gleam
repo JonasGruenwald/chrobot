@@ -1,46 +1,46 @@
 //// This module provides basic browser installation functionality, allowing you
 //// to install a local version of [Google Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) in the current directory on macOS and Linux.
-//// 
+////
 //// ## Usage
-////  
-//// You may run browser installation directly with 
-//// 
+////
+//// You may run browser installation directly with
+////
 //// ```sh
 //// gleam run -m chrobot/install
 //// ```
 //// When running directly, you can configure the browser version to install by setting the `CHROBOT_TARGET_VERSION` environment variable,
-//// it will default to `latest`. 
+//// it will default to `latest`.
 //// You may also set the directory to install under, with `CHROBOT_TARGET_PATH`.
-//// 
+////
 //// The browser will be installed into a directory called `chrome` under the target directory.
 //// There is no support for managing multiple browser installations, if an installation is already present for the same version,
 //// the script will overwrite it.
-//// 
+////
 //// To uninstall browsers installed by this tool just remove the `chrome` directory created by it, or delete an individual browser
 //// installation from inside it.
-//// 
+////
 //// ## Caveats
-//// 
+////
 //// This module attempts to rudimentarily mimic the functionality of the [puppeteer install script](https://pptr.dev/browsers-api),
 //// the only goal is to have a quick and convenient way to install browsers locally, for more advanced management of browser
 //// installations, please seek out other tools.
-//// 
+////
 //// Supported platforms are limited by what the Google Chrome for Testing distribution supports, which is currently:
-//// 
+////
 //// * linux64
 //// * mac-arm64
 //// * mac-x64
 //// * win32
 //// * win64
-//// 
+////
 //// Notably, this distribution **unfortunately does not support ARM64 on Linux**.
-//// 
+////
 //// ### Linux Dependencies
-//// 
+////
 //// The tool does **not** install dependencies on Linux, you must install them yourself.
-//// 
+////
 //// On debian / ubuntu based systems you may install dependencies with the following command:
-//// 
+////
 //// ```sh
 //// sudo apt-get update && sudo apt-get install -y \
 //// ca-certificates \
@@ -82,11 +82,11 @@
 //// ```
 
 import chrobot/chrome
+import chrobot/internal/os
 import chrobot/internal/utils
 import envoy
 import filepath as path
-import gleam/dynamic
-import gleam/erlang/os
+import gleam/dynamic/decode
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
@@ -144,7 +144,7 @@ pub fn install_with_config(
         "You already have a local Chrome installation at this path:\n"
         <> local_chrome_path
         <> "
-Chrobot does not support managing multiple browser installations, 
+Chrobot does not support managing multiple browser installations,
 you are encouraged to remove old installations manually if you no longer need them.",
       )
     }
@@ -171,13 +171,8 @@ you are encouraged to remove old installations manually if you no longer need th
     "Version list request returned a response that is not JSON.",
   )
 
-  use payload <- assert_ok(
-    json.decode(res.body, dynamic.dynamic),
-    "Failed to parse version list JSON",
-  )
-
   use version_list <- assert_ok(
-    parse_version_list(payload),
+    json.parse(res.body, using: parse_version_list_decoder()),
     "Failed to decode version list JSON - Maybe the API has changed or is down?",
   )
 
@@ -252,7 +247,7 @@ you are encouraged to remove old installations manually if you no longer need th
     "Failed to remove downloaded .zip archive! The installation should otherwise have succeeded.",
   )
 
-  // Find the executable binary 
+  // Find the executable binary
   use haystack <- assert_ok(
     file.get_files(installation_dir),
     "Failed to scan installation directory for executable",
@@ -330,25 +325,23 @@ fn select_download(version: VersionItem, platform: String) {
   list.find(version.downloads, fn(item) { item.platform == platform })
 }
 
-fn parse_version_list(input: dynamic.Dynamic) {
-  let download_item_decoder =
-    dynamic.decode2(
-      DownloadItem,
-      dynamic.field("platform", dynamic.string),
-      dynamic.field("url", dynamic.string),
-    )
-  let download_list_item_decoder = fn(list_item: dynamic.Dynamic) {
-    dynamic.field("chrome", dynamic.list(download_item_decoder))(list_item)
+fn parse_version_list_decoder() -> decode.Decoder(List(VersionItem)) {
+  let download_item_decoder = {
+    use platform <- decode.field("platform", decode.string)
+    use url <- decode.field("url", decode.string)
+    decode.success(DownloadItem(platform:, url:))
   }
-  let version_item_decoder =
-    dynamic.decode3(
-      VersionItem,
-      dynamic.field("version", dynamic.string),
-      dynamic.field("revision", dynamic.string),
-      dynamic.field("downloads", download_list_item_decoder),
-    )
+  let download_list_item_decoder = {
+    decode.field("chrome", decode.list(download_item_decoder), decode.success)
+  }
+  let version_item_decoder = {
+    use version <- decode.field("version", decode.string)
+    use revision <- decode.field("revision", decode.string)
+    use downloads <- decode.field("downloads", download_list_item_decoder)
+    decode.success(VersionItem(version:, revision:, downloads:))
+  }
 
-  dynamic.field("versions", dynamic.list(version_item_decoder))(input)
+  decode.field("versions", decode.list(version_item_decoder), decode.success)
 }
 
 fn resolve_platform() -> Result(String, String) {
@@ -372,13 +365,13 @@ you must install them yourself! Please check the docs of the install module for 
     }
     os.WindowsNt, _ -> {
       utils.warn(
-        "The installer thinks you are on a 32-bit Windows system and is installing 32-bit Chrome, 
+        "The installer thinks you are on a 32-bit Windows system and is installing 32-bit Chrome,
 this is unusual, please verify this is correct",
       )
       Ok("win32")
     }
     _, architecture -> {
-      utils.err("Could not resolve an appropriate platform for your system. 
+      utils.err("Could not resolve an appropriate platform for your system.
 Please note that the available platforms are limited by what Google Chrome for Testing supports,
 notably, ARM64 on Linux is unfortunately not supported at the moment.
 Your architecture is: " <> architecture <> ".")
@@ -413,7 +406,7 @@ fn assert_ok(
     Error(err) -> {
       io.println("")
       utils.err(human_error)
-      io.debug(err)
+      echo err
       Error(InstallationError)
     }
   }
@@ -434,9 +427,9 @@ fn assert_true(
   }
 }
 
-/// Attempt unzip of the downloaded file  
+/// Attempt unzip of the downloaded file
 /// Notes:
-/// The erlang standard library unzip function, does not restore file permissions, and 
+/// The erlang standard library unzip function, does not restore file permissions, and
 /// chrome consists of a bunch of executables, setting them all to executable
 /// manually is a bit annoying.
 /// Therefore, we try to use the system unzip command via a shell instead,

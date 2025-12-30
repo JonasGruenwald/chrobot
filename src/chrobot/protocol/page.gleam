@@ -15,7 +15,7 @@ import chrobot/internal/utils
 import chrobot/protocol/dom
 import chrobot/protocol/network
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -33,8 +33,11 @@ pub fn encode__frame_id(value__: FrameId) {
 }
 
 @internal
-pub fn decode__frame_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(FrameId, dynamic.string)
+pub fn decode__frame_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(FrameId(value__))
+  }
 }
 
 /// Information about the Frame on the page.
@@ -77,33 +80,34 @@ pub fn encode__frame(value__: Frame) {
 }
 
 @internal
-pub fn decode__frame(value__: dynamic.Dynamic) {
-  use id <- result.try(dynamic.field("id", decode__frame_id)(value__))
-  use parent_id <- result.try(dynamic.optional_field(
-    "parentId",
-    decode__frame_id,
-  )(value__))
-  use loader_id <- result.try(dynamic.field(
-    "loaderId",
-    network.decode__loader_id,
-  )(value__))
-  use name <- result.try(dynamic.optional_field("name", dynamic.string)(value__))
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use security_origin <- result.try(dynamic.field(
-    "securityOrigin",
-    dynamic.string,
-  )(value__))
-  use mime_type <- result.try(dynamic.field("mimeType", dynamic.string)(value__))
+pub fn decode__frame() {
+  {
+    use id <- decode.field("id", decode__frame_id())
+    use parent_id <- decode.optional_field(
+      "parentId",
+      option.None,
+      decode.optional(decode__frame_id()),
+    )
+    use loader_id <- decode.field("loaderId", network.decode__loader_id())
+    use name <- decode.optional_field(
+      "name",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use url <- decode.field("url", decode.string)
+    use security_origin <- decode.field("securityOrigin", decode.string)
+    use mime_type <- decode.field("mimeType", decode.string)
 
-  Ok(Frame(
-    id: id,
-    parent_id: parent_id,
-    loader_id: loader_id,
-    name: name,
-    url: url,
-    security_origin: security_origin,
-    mime_type: mime_type,
-  ))
+    decode.success(Frame(
+      id: id,
+      parent_id: parent_id,
+      loader_id: loader_id,
+      name: name,
+      url: url,
+      security_origin: security_origin,
+      mime_type: mime_type,
+    ))
+  }
 }
 
 /// Information about the Frame hierarchy.
@@ -119,7 +123,9 @@ pub type FrameTree {
 @internal
 pub fn encode__frame_tree(value__: FrameTree) {
   json.object(
-    [#("frame", encode__frame(value__.frame))]
+    [
+      #("frame", encode__frame(value__.frame)),
+    ]
     |> utils.add_optional(value__.child_frames, fn(inner_value__) {
       #("childFrames", json.array(inner_value__, of: encode__frame_tree))
     }),
@@ -127,14 +133,17 @@ pub fn encode__frame_tree(value__: FrameTree) {
 }
 
 @internal
-pub fn decode__frame_tree(value__: dynamic.Dynamic) {
-  use frame <- result.try(dynamic.field("frame", decode__frame)(value__))
-  use child_frames <- result.try(dynamic.optional_field(
-    "childFrames",
-    dynamic.list(decode__frame_tree),
-  )(value__))
+pub fn decode__frame_tree() {
+  {
+    use frame <- decode.field("frame", decode__frame())
+    use child_frames <- decode.optional_field(
+      "childFrames",
+      option.None,
+      decode.optional(decode.list(decode__frame_tree())),
+    )
 
-  Ok(FrameTree(frame: frame, child_frames: child_frames))
+    decode.success(FrameTree(frame: frame, child_frames: child_frames))
+  }
 }
 
 /// Unique script identifier.
@@ -150,8 +159,11 @@ pub fn encode__script_identifier(value__: ScriptIdentifier) {
 }
 
 @internal
-pub fn decode__script_identifier(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(ScriptIdentifier, dynamic.string)
+pub fn decode__script_identifier() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(ScriptIdentifier(value__))
+  }
 }
 
 /// Transition type.
@@ -192,30 +204,25 @@ pub fn encode__transition_type(value__: TransitionType) {
 }
 
 @internal
-pub fn decode__transition_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("link") -> Ok(TransitionTypeLink)
-    Ok("typed") -> Ok(TransitionTypeTyped)
-    Ok("address_bar") -> Ok(TransitionTypeAddressBar)
-    Ok("auto_bookmark") -> Ok(TransitionTypeAutoBookmark)
-    Ok("auto_subframe") -> Ok(TransitionTypeAutoSubframe)
-    Ok("manual_subframe") -> Ok(TransitionTypeManualSubframe)
-    Ok("generated") -> Ok(TransitionTypeGenerated)
-    Ok("auto_toplevel") -> Ok(TransitionTypeAutoToplevel)
-    Ok("form_submit") -> Ok(TransitionTypeFormSubmit)
-    Ok("reload") -> Ok(TransitionTypeReload)
-    Ok("keyword") -> Ok(TransitionTypeKeyword)
-    Ok("keyword_generated") -> Ok(TransitionTypeKeywordGenerated)
-    Ok("other") -> Ok(TransitionTypeOther)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__transition_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "link" -> decode.success(TransitionTypeLink)
+      "typed" -> decode.success(TransitionTypeTyped)
+      "address_bar" -> decode.success(TransitionTypeAddressBar)
+      "auto_bookmark" -> decode.success(TransitionTypeAutoBookmark)
+      "auto_subframe" -> decode.success(TransitionTypeAutoSubframe)
+      "manual_subframe" -> decode.success(TransitionTypeManualSubframe)
+      "generated" -> decode.success(TransitionTypeGenerated)
+      "auto_toplevel" -> decode.success(TransitionTypeAutoToplevel)
+      "form_submit" -> decode.success(TransitionTypeFormSubmit)
+      "reload" -> decode.success(TransitionTypeReload)
+      "keyword" -> decode.success(TransitionTypeKeyword)
+      "keyword_generated" -> decode.success(TransitionTypeKeywordGenerated)
+      "other" -> decode.success(TransitionTypeOther)
+      _ -> decode.failure(TransitionTypeLink, "valid enum property")
+    }
   }
 }
 
@@ -247,25 +254,25 @@ pub fn encode__navigation_entry(value__: NavigationEntry) {
 }
 
 @internal
-pub fn decode__navigation_entry(value__: dynamic.Dynamic) {
-  use id <- result.try(dynamic.field("id", dynamic.int)(value__))
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use user_typed_url <- result.try(dynamic.field("userTypedURL", dynamic.string)(
-    value__,
-  ))
-  use title <- result.try(dynamic.field("title", dynamic.string)(value__))
-  use transition_type <- result.try(dynamic.field(
-    "transitionType",
-    decode__transition_type,
-  )(value__))
+pub fn decode__navigation_entry() {
+  {
+    use id <- decode.field("id", decode.int)
+    use url <- decode.field("url", decode.string)
+    use user_typed_url <- decode.field("userTypedURL", decode.string)
+    use title <- decode.field("title", decode.string)
+    use transition_type <- decode.field(
+      "transitionType",
+      decode__transition_type(),
+    )
 
-  Ok(NavigationEntry(
-    id: id,
-    url: url,
-    user_typed_url: user_typed_url,
-    title: title,
-    transition_type: transition_type,
-  ))
+    decode.success(NavigationEntry(
+      id: id,
+      url: url,
+      user_typed_url: user_typed_url,
+      title: title,
+      transition_type: transition_type,
+    ))
+  }
 }
 
 /// Javascript dialog type.
@@ -288,21 +295,16 @@ pub fn encode__dialog_type(value__: DialogType) {
 }
 
 @internal
-pub fn decode__dialog_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("alert") -> Ok(DialogTypeAlert)
-    Ok("confirm") -> Ok(DialogTypeConfirm)
-    Ok("prompt") -> Ok(DialogTypePrompt)
-    Ok("beforeunload") -> Ok(DialogTypeBeforeunload)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dialog_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "alert" -> decode.success(DialogTypeAlert)
+      "confirm" -> decode.success(DialogTypeConfirm)
+      "prompt" -> decode.success(DialogTypePrompt)
+      "beforeunload" -> decode.success(DialogTypeBeforeunload)
+      _ -> decode.failure(DialogTypeAlert, "valid enum property")
+    }
   }
 }
 
@@ -331,18 +333,20 @@ pub fn encode__app_manifest_error(value__: AppManifestError) {
 }
 
 @internal
-pub fn decode__app_manifest_error(value__: dynamic.Dynamic) {
-  use message <- result.try(dynamic.field("message", dynamic.string)(value__))
-  use critical <- result.try(dynamic.field("critical", dynamic.int)(value__))
-  use line <- result.try(dynamic.field("line", dynamic.int)(value__))
-  use column <- result.try(dynamic.field("column", dynamic.int)(value__))
+pub fn decode__app_manifest_error() {
+  {
+    use message <- decode.field("message", decode.string)
+    use critical <- decode.field("critical", decode.int)
+    use line <- decode.field("line", decode.int)
+    use column <- decode.field("column", decode.int)
 
-  Ok(AppManifestError(
-    message: message,
-    critical: critical,
-    line: line,
-    column: column,
-  ))
+    decode.success(AppManifestError(
+      message: message,
+      critical: critical,
+      line: line,
+      column: column,
+    ))
+  }
 }
 
 /// Layout viewport position and dimensions.
@@ -370,22 +374,20 @@ pub fn encode__layout_viewport(value__: LayoutViewport) {
 }
 
 @internal
-pub fn decode__layout_viewport(value__: dynamic.Dynamic) {
-  use page_x <- result.try(dynamic.field("pageX", dynamic.int)(value__))
-  use page_y <- result.try(dynamic.field("pageY", dynamic.int)(value__))
-  use client_width <- result.try(dynamic.field("clientWidth", dynamic.int)(
-    value__,
-  ))
-  use client_height <- result.try(dynamic.field("clientHeight", dynamic.int)(
-    value__,
-  ))
+pub fn decode__layout_viewport() {
+  {
+    use page_x <- decode.field("pageX", decode.int)
+    use page_y <- decode.field("pageY", decode.int)
+    use client_width <- decode.field("clientWidth", decode.int)
+    use client_height <- decode.field("clientHeight", decode.int)
 
-  Ok(LayoutViewport(
-    page_x: page_x,
-    page_y: page_y,
-    client_width: client_width,
-    client_height: client_height,
-  ))
+    decode.success(LayoutViewport(
+      page_x: page_x,
+      page_y: page_y,
+      client_width: client_width,
+      client_height: client_height,
+    ))
+  }
 }
 
 /// Visual viewport position, dimensions, and scale.
@@ -429,30 +431,32 @@ pub fn encode__visual_viewport(value__: VisualViewport) {
 }
 
 @internal
-pub fn decode__visual_viewport(value__: dynamic.Dynamic) {
-  use offset_x <- result.try(dynamic.field("offsetX", dynamic.float)(value__))
-  use offset_y <- result.try(dynamic.field("offsetY", dynamic.float)(value__))
-  use page_x <- result.try(dynamic.field("pageX", dynamic.float)(value__))
-  use page_y <- result.try(dynamic.field("pageY", dynamic.float)(value__))
-  use client_width <- result.try(dynamic.field("clientWidth", dynamic.float)(
-    value__,
-  ))
-  use client_height <- result.try(dynamic.field("clientHeight", dynamic.float)(
-    value__,
-  ))
-  use scale <- result.try(dynamic.field("scale", dynamic.float)(value__))
-  use zoom <- result.try(dynamic.optional_field("zoom", dynamic.float)(value__))
+pub fn decode__visual_viewport() {
+  {
+    use offset_x <- decode.field("offsetX", decode.float)
+    use offset_y <- decode.field("offsetY", decode.float)
+    use page_x <- decode.field("pageX", decode.float)
+    use page_y <- decode.field("pageY", decode.float)
+    use client_width <- decode.field("clientWidth", decode.float)
+    use client_height <- decode.field("clientHeight", decode.float)
+    use scale <- decode.field("scale", decode.float)
+    use zoom <- decode.optional_field(
+      "zoom",
+      option.None,
+      decode.optional(decode.float),
+    )
 
-  Ok(VisualViewport(
-    offset_x: offset_x,
-    offset_y: offset_y,
-    page_x: page_x,
-    page_y: page_y,
-    client_width: client_width,
-    client_height: client_height,
-    scale: scale,
-    zoom: zoom,
-  ))
+    decode.success(VisualViewport(
+      offset_x: offset_x,
+      offset_y: offset_y,
+      page_x: page_x,
+      page_y: page_y,
+      client_width: client_width,
+      client_height: client_height,
+      scale: scale,
+      zoom: zoom,
+    ))
+  }
 }
 
 /// Viewport for capturing screenshot.
@@ -483,14 +487,22 @@ pub fn encode__viewport(value__: Viewport) {
 }
 
 @internal
-pub fn decode__viewport(value__: dynamic.Dynamic) {
-  use x <- result.try(dynamic.field("x", dynamic.float)(value__))
-  use y <- result.try(dynamic.field("y", dynamic.float)(value__))
-  use width <- result.try(dynamic.field("width", dynamic.float)(value__))
-  use height <- result.try(dynamic.field("height", dynamic.float)(value__))
-  use scale <- result.try(dynamic.field("scale", dynamic.float)(value__))
+pub fn decode__viewport() {
+  {
+    use x <- decode.field("x", decode.float)
+    use y <- decode.field("y", decode.float)
+    use width <- decode.field("width", decode.float)
+    use height <- decode.field("height", decode.float)
+    use scale <- decode.field("scale", decode.float)
 
-  Ok(Viewport(x: x, y: y, width: width, height: height, scale: scale))
+    decode.success(Viewport(
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      scale: scale,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -503,15 +515,14 @@ pub type AddScriptToEvaluateOnNewDocumentResponse {
 }
 
 @internal
-pub fn decode__add_script_to_evaluate_on_new_document_response(
-  value__: dynamic.Dynamic,
-) {
-  use identifier <- result.try(dynamic.field(
-    "identifier",
-    decode__script_identifier,
-  )(value__))
+pub fn decode__add_script_to_evaluate_on_new_document_response() {
+  {
+    use identifier <- decode.field("identifier", decode__script_identifier())
 
-  Ok(AddScriptToEvaluateOnNewDocumentResponse(identifier: identifier))
+    decode.success(AddScriptToEvaluateOnNewDocumentResponse(
+      identifier: identifier,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -524,10 +535,12 @@ pub type CaptureScreenshotResponse {
 }
 
 @internal
-pub fn decode__capture_screenshot_response(value__: dynamic.Dynamic) {
-  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
+pub fn decode__capture_screenshot_response() {
+  {
+    use data <- decode.field("data", decode.string)
 
-  Ok(CaptureScreenshotResponse(data: data))
+    decode.success(CaptureScreenshotResponse(data: data))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -540,13 +553,17 @@ pub type CreateIsolatedWorldResponse {
 }
 
 @internal
-pub fn decode__create_isolated_world_response(value__: dynamic.Dynamic) {
-  use execution_context_id <- result.try(dynamic.field(
-    "executionContextId",
-    runtime.decode__execution_context_id,
-  )(value__))
+pub fn decode__create_isolated_world_response() {
+  {
+    use execution_context_id <- decode.field(
+      "executionContextId",
+      runtime.decode__execution_context_id(),
+    )
 
-  Ok(CreateIsolatedWorldResponse(execution_context_id: execution_context_id))
+    decode.success(CreateIsolatedWorldResponse(
+      execution_context_id: execution_context_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -562,15 +579,21 @@ pub type GetAppManifestResponse {
 }
 
 @internal
-pub fn decode__get_app_manifest_response(value__: dynamic.Dynamic) {
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use errors <- result.try(dynamic.field(
-    "errors",
-    dynamic.list(decode__app_manifest_error),
-  )(value__))
-  use data <- result.try(dynamic.optional_field("data", dynamic.string)(value__))
+pub fn decode__get_app_manifest_response() {
+  {
+    use url <- decode.field("url", decode.string)
+    use errors <- decode.field(
+      "errors",
+      decode.list(decode__app_manifest_error()),
+    )
+    use data <- decode.optional_field(
+      "data",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(GetAppManifestResponse(url: url, errors: errors, data: data))
+    decode.success(GetAppManifestResponse(url: url, errors: errors, data: data))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -583,12 +606,12 @@ pub type GetFrameTreeResponse {
 }
 
 @internal
-pub fn decode__get_frame_tree_response(value__: dynamic.Dynamic) {
-  use frame_tree <- result.try(dynamic.field("frameTree", decode__frame_tree)(
-    value__,
-  ))
+pub fn decode__get_frame_tree_response() {
+  {
+    use frame_tree <- decode.field("frameTree", decode__frame_tree())
 
-  Ok(GetFrameTreeResponse(frame_tree: frame_tree))
+    decode.success(GetFrameTreeResponse(frame_tree: frame_tree))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -605,25 +628,24 @@ pub type GetLayoutMetricsResponse {
 }
 
 @internal
-pub fn decode__get_layout_metrics_response(value__: dynamic.Dynamic) {
-  use css_layout_viewport <- result.try(dynamic.field(
-    "cssLayoutViewport",
-    decode__layout_viewport,
-  )(value__))
-  use css_visual_viewport <- result.try(dynamic.field(
-    "cssVisualViewport",
-    decode__visual_viewport,
-  )(value__))
-  use css_content_size <- result.try(dynamic.field(
-    "cssContentSize",
-    dom.decode__rect,
-  )(value__))
+pub fn decode__get_layout_metrics_response() {
+  {
+    use css_layout_viewport <- decode.field(
+      "cssLayoutViewport",
+      decode__layout_viewport(),
+    )
+    use css_visual_viewport <- decode.field(
+      "cssVisualViewport",
+      decode__visual_viewport(),
+    )
+    use css_content_size <- decode.field("cssContentSize", dom.decode__rect())
 
-  Ok(GetLayoutMetricsResponse(
-    css_layout_viewport: css_layout_viewport,
-    css_visual_viewport: css_visual_viewport,
-    css_content_size: css_content_size,
-  ))
+    decode.success(GetLayoutMetricsResponse(
+      css_layout_viewport: css_layout_viewport,
+      css_visual_viewport: css_visual_viewport,
+      css_content_size: css_content_size,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -638,19 +660,19 @@ pub type GetNavigationHistoryResponse {
 }
 
 @internal
-pub fn decode__get_navigation_history_response(value__: dynamic.Dynamic) {
-  use current_index <- result.try(dynamic.field("currentIndex", dynamic.int)(
-    value__,
-  ))
-  use entries <- result.try(dynamic.field(
-    "entries",
-    dynamic.list(decode__navigation_entry),
-  )(value__))
+pub fn decode__get_navigation_history_response() {
+  {
+    use current_index <- decode.field("currentIndex", decode.int)
+    use entries <- decode.field(
+      "entries",
+      decode.list(decode__navigation_entry()),
+    )
 
-  Ok(GetNavigationHistoryResponse(
-    current_index: current_index,
-    entries: entries,
-  ))
+    decode.success(GetNavigationHistoryResponse(
+      current_index: current_index,
+      entries: entries,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -668,22 +690,26 @@ pub type NavigateResponse {
 }
 
 @internal
-pub fn decode__navigate_response(value__: dynamic.Dynamic) {
-  use frame_id <- result.try(dynamic.field("frameId", decode__frame_id)(value__))
-  use loader_id <- result.try(dynamic.optional_field(
-    "loaderId",
-    network.decode__loader_id,
-  )(value__))
-  use error_text <- result.try(dynamic.optional_field(
-    "errorText",
-    dynamic.string,
-  )(value__))
+pub fn decode__navigate_response() {
+  {
+    use frame_id <- decode.field("frameId", decode__frame_id())
+    use loader_id <- decode.optional_field(
+      "loaderId",
+      option.None,
+      decode.optional(network.decode__loader_id()),
+    )
+    use error_text <- decode.optional_field(
+      "errorText",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(NavigateResponse(
-    frame_id: frame_id,
-    loader_id: loader_id,
-    error_text: error_text,
-  ))
+    decode.success(NavigateResponse(
+      frame_id: frame_id,
+      loader_id: loader_id,
+      error_text: error_text,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -696,10 +722,12 @@ pub type PrintToPdfResponse {
 }
 
 @internal
-pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
-  use data <- result.try(dynamic.field("data", dynamic.string)(value__))
+pub fn decode__print_to_pdf_response() {
+  {
+    use data <- decode.field("data", decode.string)
 
-  Ok(PrintToPdfResponse(data: data))
+    decode.success(PrintToPdfResponse(data: data))
+  }
 }
 
 /// Evaluates given script in every frame upon creation (before loading frame's scripts).
@@ -713,10 +741,17 @@ pub fn decode__print_to_pdf_response(value__: dynamic.Dynamic) {
 pub fn add_script_to_evaluate_on_new_document(callback__, source source: String) {
   use result__ <- result.try(callback__(
     "Page.addScriptToEvaluateOnNewDocument",
-    option.Some(json.object([#("source", json.string(source))])),
+    option.Some(
+      json.object([
+        #("source", json.string(source)),
+      ]),
+    ),
   ))
 
-  decode__add_script_to_evaluate_on_new_document_response(result__)
+  decode.run(
+    result__,
+    decode__add_script_to_evaluate_on_new_document_response(),
+  )
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -758,7 +793,7 @@ pub fn capture_screenshot(
     )),
   ))
 
-  decode__capture_screenshot_response(result__)
+  decode.run(result__, decode__capture_screenshot_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -781,20 +816,15 @@ pub fn encode__capture_screenshot_format(value__: CaptureScreenshotFormat) {
 }
 
 @internal
-pub fn decode__capture_screenshot_format(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("jpeg") -> Ok(CaptureScreenshotFormatJpeg)
-    Ok("png") -> Ok(CaptureScreenshotFormatPng)
-    Ok("webp") -> Ok(CaptureScreenshotFormatWebp)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__capture_screenshot_format() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "jpeg" -> decode.success(CaptureScreenshotFormatJpeg)
+      "png" -> decode.success(CaptureScreenshotFormatPng)
+      "webp" -> decode.success(CaptureScreenshotFormatWebp)
+      _ -> decode.failure(CaptureScreenshotFormatJpeg, "valid enum property")
+    }
   }
 }
 
@@ -818,7 +848,9 @@ pub fn create_isolated_world(
   use result__ <- result.try(callback__(
     "Page.createIsolatedWorld",
     option.Some(json.object(
-      [#("frameId", encode__frame_id(frame_id))]
+      [
+        #("frameId", encode__frame_id(frame_id)),
+      ]
       |> utils.add_optional(world_name, fn(inner_value__) {
         #("worldName", json.string(inner_value__))
       })
@@ -828,7 +860,7 @@ pub fn create_isolated_world(
     )),
   ))
 
-  decode__create_isolated_world_response(result__)
+  decode.run(result__, decode__create_isolated_world_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -872,7 +904,7 @@ pub fn get_app_manifest(
     )),
   ))
 
-  decode__get_app_manifest_response(result__)
+  decode.run(result__, decode__get_app_manifest_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -882,7 +914,7 @@ pub fn get_app_manifest(
 pub fn get_frame_tree(callback__) {
   use result__ <- result.try(callback__("Page.getFrameTree", option.None))
 
-  decode__get_frame_tree_response(result__)
+  decode.run(result__, decode__get_frame_tree_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -894,7 +926,7 @@ pub fn get_frame_tree(callback__) {
 pub fn get_layout_metrics(callback__) {
   use result__ <- result.try(callback__("Page.getLayoutMetrics", option.None))
 
-  decode__get_layout_metrics_response(result__)
+  decode.run(result__, decode__get_layout_metrics_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -908,7 +940,7 @@ pub fn get_navigation_history(callback__) {
     option.None,
   ))
 
-  decode__get_navigation_history_response(result__)
+  decode.run(result__, decode__get_navigation_history_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -935,7 +967,9 @@ pub fn handle_java_script_dialog(
   callback__(
     "Page.handleJavaScriptDialog",
     option.Some(json.object(
-      [#("accept", json.bool(accept))]
+      [
+        #("accept", json.bool(accept)),
+      ]
       |> utils.add_optional(prompt_text, fn(inner_value__) {
         #("promptText", json.string(inner_value__))
       }),
@@ -967,7 +1001,9 @@ pub fn navigate(
   use result__ <- result.try(callback__(
     "Page.navigate",
     option.Some(json.object(
-      [#("url", json.string(url))]
+      [
+        #("url", json.string(url)),
+      ]
       |> utils.add_optional(referrer, fn(inner_value__) {
         #("referrer", json.string(inner_value__))
       })
@@ -980,7 +1016,7 @@ pub fn navigate(
     )),
   ))
 
-  decode__navigate_response(result__)
+  decode.run(result__, decode__navigate_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -994,7 +1030,11 @@ pub fn navigate(
 pub fn navigate_to_history_entry(callback__, entry_id entry_id: Int) {
   callback__(
     "Page.navigateToHistoryEntry",
-    option.Some(json.object([#("entryId", json.int(entry_id))])),
+    option.Some(
+      json.object([
+        #("entryId", json.int(entry_id)),
+      ]),
+    ),
   )
 }
 
@@ -1101,7 +1141,7 @@ pub fn print_to_pdf(
     )),
   ))
 
-  decode__print_to_pdf_response(result__)
+  decode.run(result__, decode__print_to_pdf_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1147,7 +1187,9 @@ pub fn remove_script_to_evaluate_on_new_document(
   callback__(
     "Page.removeScriptToEvaluateOnNewDocument",
     option.Some(
-      json.object([#("identifier", encode__script_identifier(identifier))]),
+      json.object([
+        #("identifier", encode__script_identifier(identifier)),
+      ]),
     ),
   )
 }
@@ -1162,7 +1204,11 @@ pub fn remove_script_to_evaluate_on_new_document(
 pub fn set_bypass_csp(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setBypassCSP",
-    option.Some(json.object([#("enabled", json.bool(enabled))])),
+    option.Some(
+      json.object([
+        #("enabled", json.bool(enabled)),
+      ]),
+    ),
   )
 }
 
@@ -1200,7 +1246,11 @@ pub fn set_document_content(
 pub fn set_lifecycle_events_enabled(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setLifecycleEventsEnabled",
-    option.Some(json.object([#("enabled", json.bool(enabled))])),
+    option.Some(
+      json.object([
+        #("enabled", json.bool(enabled)),
+      ]),
+    ),
   )
 }
 
@@ -1228,6 +1278,10 @@ pub fn close(callback__) {
 pub fn set_intercept_file_chooser_dialog(callback__, enabled enabled: Bool) {
   callback__(
     "Page.setInterceptFileChooserDialog",
-    option.Some(json.object([#("enabled", json.bool(enabled))])),
+    option.Some(
+      json.object([
+        #("enabled", json.bool(enabled)),
+      ]),
+    ),
   )
 }

@@ -12,13 +12,13 @@
 //// which perform additional checks and validations.
 //// 
 
+import chrobot/internal/os
 import chrobot/internal/utils
 import envoy
 import filepath as path
 import gleam/dynamic as d
 import gleam/dynamic/decode
 import gleam/erlang/atom
-import gleam/erlang/os
 import gleam/erlang/port.{type Port}
 import gleam/erlang/process.{type Subject}
 import gleam/int
@@ -130,17 +130,14 @@ pub fn launch_with_config(
   cfg: BrowserConfig,
 ) -> Result(Subject(Message), LaunchError) {
   let launch_result =
-    actor.start_spec(actor.Spec(
-      init: create_init_fn(cfg),
-      loop: loop,
-      init_timeout: cfg.start_timeout,
-    ))
+    actor.new_with_initialiser(cfg.start_timeout, create_init_fn(cfg))
+    |> actor.on_message(loop)
+    |> actor.start()
 
   case launch_result {
-    Ok(browser) -> Ok(browser)
+    Ok(started) -> Ok(started.data)
     Error(err) -> {
-      io.println("Failed to start browser")
-      io.println(string.inspect(err))
+      io.println("Failed to start browser: " <> string.inspect(err))
       Error(FailedToStart)
     }
   }
@@ -266,11 +263,12 @@ pub fn launch_with_env() -> Result(Subject(Message), LaunchError) {
 /// This function will attempt graceful shutdown, if the browser does not respond in time,
 /// it will also send a kill signal to the actor to force it to shut down.
 /// The result typing reflects the success of graceful shutdown.
-pub fn quit(browser: Subject(Message)) {
+pub fn quit(browser: Subject(Message)) -> Result(Nil, RequestError) {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
   let _ = process.send_after(browser, default_timeout * 2, Kill)
   // invoke graceful shutdown of the browser
-  process.try_call(browser, Shutdown, default_timeout)
+  utils.try_call(browser, Shutdown, default_timeout)
+  |> result.map_error(map_call_error)
 }
 
 /// Issue a protocol call to the browser and expect a response
@@ -281,8 +279,10 @@ pub fn call(
   session_id: Option(String),
   time_out,
 ) -> Result(d.Dynamic, RequestError) {
-  process.try_call(browser, Call(_, method, params, session_id), time_out)
-  |> transform_call_response()
+  case utils.try_call(browser, Call(_, method, params, session_id), time_out) {
+    Ok(nested_result) -> nested_result
+    Error(err) -> Error(map_call_error(err))
+  }
 }
 
 /// A blocking call that waits for a specified event to arrive once,
@@ -301,11 +301,8 @@ pub fn listen_once(
       time_out,
     )
   process.send(browser, RemoveListener(event_subject))
-  case call_response {
-    Ok(res) -> Ok(res)
-    Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
-    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
-  }
+  call_response
+  |> result.map_error(map_call_error)
 }
 
 /// Add an event listener
@@ -480,9 +477,9 @@ pub fn get_system_chrome_path() {
 
 // --- INITIALIZATION ---
 
-/// Returns a function that can be passed to the actor spec to initialize the actor
+/// Returns a function that can be passed to the actor initialiser
 fn create_init_fn(cfg: BrowserConfig) {
-  fn() {
+  fn(subject: Subject(Message)) {
     let cmd = cfg.path
     let args = ["--remote-debugging-pipe", ..cfg.args]
     let res = open_browser_port(cmd, args)
@@ -492,16 +489,23 @@ fn create_init_fn(cfg: BrowserConfig) {
         let initial_state =
           BrowserState(instance, 0, [], [], st.new(), None, cfg.log_level)
         log_info(initial_state, "Port opened successfully, actor initialized")
-        actor.Ready(
-          initial_state,
+
+        // Create a selector for port messages AND the actor subject
+        // Both must be included when using actor.selecting()
+        let selector =
           process.new_selector()
-            |> process.selecting_record2(port, map_port_message),
-        )
+          |> process.select_record(port, 1, map_port_message)
+          |> process.select(subject)
+
+        actor.initialised(initial_state)
+        |> actor.selecting(selector)
+        |> actor.returning(subject)
+        |> Ok
       }
       Error(err) -> {
         utils.err("Browser failed to start!")
-        io.println(string.inspect(err))
-        actor.Failed("Browser did not start")
+        io.println("Error: " <> string.inspect(err))
+        Error("Browser did not start")
       }
     }
   }
@@ -509,44 +513,37 @@ fn create_init_fn(cfg: BrowserConfig) {
 
 // --- MESSAGE HANDLING ---
 
-type RawPortMessage {
-  RawPortMessageData(String)
-  RawPortMessageExit(Int)
-  RawPortMessageUnexpected(d.Dynamic)
-}
-
 /// Map a raw message from the port to a message that the actor can handle
 fn map_port_message(message: d.Dynamic) -> Message {
-  let data_decoder = {
-    use message <- decode.field(1, decode.string)
-    decode.success(RawPortMessageData(message))
+  // Port messages arrive as {Port, {data, "string"}} or {Port, {exit_status, int}}
+  // select_record passes the WHOLE tuple to this function.
+  // We decode at [1, 1] to get the string from {Port, {data, "string"}}
+  case decode.run(message, decode.at([1, 1], decode.string)) {
+    Ok(data) -> PortResponse(data)
+    Error(_) -> map_non_data_port_msg(message)
   }
+}
 
-  let exit_decoder = {
-    use exit_status <- decode.field(1, decode.int)
-    decode.success(RawPortMessageExit(exit_status))
+/// Handle a message from the port that is not a data message.
+/// Right now we are handling exit_code messages, which tell us that the port
+/// has exited or failed to properly start.
+/// Port messages arrive as {Port, {exit_status, int}} - we need to decode at [1]
+fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
+  // Decode the inner tuple at index 1: {exit_status, int}
+  let inner_decoder = {
+    use atom_val <- decode.field(0, atom.decoder())
+    use int_val <- decode.field(1, decode.int)
+    decode.success(#(atom_val, int_val))
   }
-
-  let unexpected_decoder = {
-    use data <- decode.then(decode.dynamic)
-    decode.success(RawPortMessageUnexpected(data))
-  }
-
-  let decoder = {
-    let atom_data = atom.create_from_string("data")
-    let atom_exit_status = atom.create_from_string("exit_status")
-    use atom_tag <- decode.field(0, decode.dynamic)
-    case atom.from_dynamic(atom_tag) {
-      Ok(tag) if tag == atom_data -> data_decoder
-      Ok(tag) if tag == atom_exit_status -> exit_decoder
-      Ok(_) | Error(_) -> unexpected_decoder
+  let tuple_decoder = decode.at([1], inner_decoder)
+  case decode.run(msg, tuple_decoder) {
+    Ok(#(atom_exit_status, exit_status)) -> {
+      case atom_exit_status == atom.create("exit_status") {
+        True -> PortExit(exit_status)
+        False -> UnexpectedPortMessage(msg)
+      }
     }
-  }
-  case decode.run(message, decoder) {
-    Ok(RawPortMessageData(data)) -> PortResponse(data)
-    Ok(RawPortMessageExit(exit_status)) -> PortExit(exit_status)
-    Ok(RawPortMessageUnexpected(other)) -> UnexpectedPortMessage(other)
-    Error(_) -> UnexpectedPortMessage(message)
+    Error(_) -> UnexpectedPortMessage(msg)
   }
 }
 
@@ -641,14 +638,14 @@ type PendingRequest {
 }
 
 /// The main loop of the actor, handling all messages
-fn loop(message: Message, state: BrowserState) {
+fn loop(state: BrowserState, message: Message) {
   case message {
     Kill -> {
       log_warn(
         state,
         "Received kill signal, actor is shutting down, this is unuasual and means the browser did not respond to a shutdown request in time!",
       )
-      actor.Stop(process.Normal)
+      actor.stop()
     }
     Call(client, method, params, session_id) -> {
       // Handle call leaves the calling process hanging until a response is received
@@ -741,7 +738,7 @@ fn loop(message: Message, state: BrowserState) {
             "Browser exited after shtudown request, actor is shutting down",
           )
           process.send(client, Nil)
-          actor.Stop(process.Normal)
+          actor.stop()
         }
         _ -> {
           log_warn(
@@ -750,7 +747,7 @@ fn loop(message: Message, state: BrowserState) {
               <> string.inspect(exit_status)
               <> " browser actor is shutting down abnormally",
           )
-          actor.Stop(process.Abnormal(reason: "browser exited abnormally"))
+          actor.stop_abnormal("browser exited abnormally")
         }
       }
     }
@@ -940,16 +937,40 @@ type RawBrowserError {
 fn handle_port_response(state: BrowserState, response: String) -> BrowserState {
   let error_decoder = {
     use code <- decode.optional_field("code", None, decode.optional(decode.int))
-    use message <- decode.optional_field("message", None, decode.optional(decode.string))
-    use data <- decode.optional_field("data", None, decode.optional(decode.string))
+    use message <- decode.optional_field(
+      "message",
+      None,
+      decode.optional(decode.string),
+    )
+    use data <- decode.optional_field(
+      "data",
+      None,
+      decode.optional(decode.string),
+    )
     decode.success(RawBrowserError(code:, message:, data:))
   }
   let response_decoder = {
     use id <- decode.optional_field("id", None, decode.optional(decode.int))
-    use result <- decode.optional_field("result", None, decode.optional(decode.dynamic))
-    use method <- decode.optional_field("method", None, decode.optional(decode.string))
-    use params <- decode.optional_field("params", None, decode.optional(decode.dynamic))
-    use error <- decode.optional_field("error", None, decode.optional(error_decoder))
+    use result <- decode.optional_field(
+      "result",
+      None,
+      decode.optional(decode.dynamic),
+    )
+    use method <- decode.optional_field(
+      "method",
+      None,
+      decode.optional(decode.string),
+    )
+    use params <- decode.optional_field(
+      "params",
+      None,
+      decode.optional(decode.dynamic),
+    )
+    use error <- decode.optional_field(
+      "error",
+      None,
+      decode.optional(error_decoder),
+    )
     decode.success(BrowserResponse(id:, result:, method:, params:, error:))
   }
   case json.parse(response, response_decoder) {
@@ -1103,11 +1124,10 @@ fn log_debug(state: BrowserState, callback: fn() -> String) {
   }
 }
 
-fn transform_call_response(call_response) {
-  case call_response {
-    Error(process.CalleeDown(_reason)) -> Error(ChromeAgentDown)
-    Error(process.CallTimeout) -> Error(ChromeAgentTimeout)
-    Ok(nested_result) -> nested_result
+fn map_call_error(err: utils.CallError) -> RequestError {
+  case err {
+    utils.CallTimeout -> ChromeAgentTimeout
+    utils.CalleeDown(..) -> ChromeAgentDown
   }
 }
 

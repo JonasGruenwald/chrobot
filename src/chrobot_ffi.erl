@@ -1,6 +1,6 @@
 -module(chrobot_ffi).
 -include_lib("kernel/include/file.hrl").
--export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1, run_command/1, get_time_ms/0]).
+-export([open_browser_port/2, send_to_port/2, get_arch/0, unzip/2, set_executable/1, run_command/1, get_time_ms/0, get_os_type/0]).
 
 % ---------------------------------------------------
 % RUNTIME
@@ -87,3 +87,7 @@ set_executable(FilePath) ->
 
 get_time_ms() ->
     os:system_time(millisecond).
+
+get_os_type() ->
+    {Family, Name} = os:type(),
+    {atom_to_binary(Family), atom_to_binary(Name)}.

@@ -14,7 +14,7 @@ import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/io
 import chrobot/protocol/network
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -32,8 +32,11 @@ pub fn encode__request_id(value__: RequestId) {
 }
 
 @internal
-pub fn decode__request_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(RequestId, dynamic.string)
+pub fn decode__request_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(RequestId(value__))
+  }
 }
 
 /// Stages of the request to handle. Request will intercept before the request is
@@ -54,19 +57,14 @@ pub fn encode__request_stage(value__: RequestStage) {
 }
 
 @internal
-pub fn decode__request_stage(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Request") -> Ok(RequestStageRequest)
-    Ok("Response") -> Ok(RequestStageResponse)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__request_stage() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Request" -> decode.success(RequestStageRequest)
+      "Response" -> decode.success(RequestStageResponse)
+      _ -> decode.failure(RequestStageRequest, "valid enum property")
+    }
   }
 }
 
@@ -99,25 +97,30 @@ pub fn encode__request_pattern(value__: RequestPattern) {
 }
 
 @internal
-pub fn decode__request_pattern(value__: dynamic.Dynamic) {
-  use url_pattern <- result.try(dynamic.optional_field(
-    "urlPattern",
-    dynamic.string,
-  )(value__))
-  use resource_type <- result.try(dynamic.optional_field(
-    "resourceType",
-    network.decode__resource_type,
-  )(value__))
-  use request_stage <- result.try(dynamic.optional_field(
-    "requestStage",
-    decode__request_stage,
-  )(value__))
+pub fn decode__request_pattern() {
+  {
+    use url_pattern <- decode.optional_field(
+      "urlPattern",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use resource_type <- decode.optional_field(
+      "resourceType",
+      option.None,
+      decode.optional(network.decode__resource_type()),
+    )
+    use request_stage <- decode.optional_field(
+      "requestStage",
+      option.None,
+      decode.optional(decode__request_stage()),
+    )
 
-  Ok(RequestPattern(
-    url_pattern: url_pattern,
-    resource_type: resource_type,
-    request_stage: request_stage,
-  ))
+    decode.success(RequestPattern(
+      url_pattern: url_pattern,
+      resource_type: resource_type,
+      request_stage: request_stage,
+    ))
+  }
 }
 
 /// Response HTTP header entry
@@ -134,11 +137,13 @@ pub fn encode__header_entry(value__: HeaderEntry) {
 }
 
 @internal
-pub fn decode__header_entry(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
+pub fn decode__header_entry() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.string)
 
-  Ok(HeaderEntry(name: name, value: value))
+    decode.success(HeaderEntry(name: name, value: value))
+  }
 }
 
 /// Authorization challenge for HTTP status code 401 or 407.
@@ -172,19 +177,14 @@ pub fn encode__auth_challenge_source(value__: AuthChallengeSource) {
 }
 
 @internal
-pub fn decode__auth_challenge_source(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Server") -> Ok(AuthChallengeSourceServer)
-    Ok("Proxy") -> Ok(AuthChallengeSourceProxy)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__auth_challenge_source() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Server" -> decode.success(AuthChallengeSourceServer)
+      "Proxy" -> decode.success(AuthChallengeSourceProxy)
+      _ -> decode.failure(AuthChallengeSourceServer, "valid enum property")
+    }
   }
 }
 
@@ -203,16 +203,24 @@ pub fn encode__auth_challenge(value__: AuthChallenge) {
 }
 
 @internal
-pub fn decode__auth_challenge(value__: dynamic.Dynamic) {
-  use source <- result.try(dynamic.optional_field(
-    "source",
-    decode__auth_challenge_source,
-  )(value__))
-  use origin <- result.try(dynamic.field("origin", dynamic.string)(value__))
-  use scheme <- result.try(dynamic.field("scheme", dynamic.string)(value__))
-  use realm <- result.try(dynamic.field("realm", dynamic.string)(value__))
+pub fn decode__auth_challenge() {
+  {
+    use source <- decode.optional_field(
+      "source",
+      option.None,
+      decode.optional(decode__auth_challenge_source()),
+    )
+    use origin <- decode.field("origin", decode.string)
+    use scheme <- decode.field("scheme", decode.string)
+    use realm <- decode.field("realm", decode.string)
 
-  Ok(AuthChallenge(source: source, origin: origin, scheme: scheme, realm: realm))
+    decode.success(AuthChallenge(
+      source: source,
+      origin: origin,
+      scheme: scheme,
+      realm: realm,
+    ))
+  }
 }
 
 /// Response to an AuthChallenge.
@@ -252,28 +260,29 @@ pub fn encode__auth_challenge_response_response(
 }
 
 @internal
-pub fn decode__auth_challenge_response_response(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Default") -> Ok(AuthChallengeResponseResponseDefault)
-    Ok("CancelAuth") -> Ok(AuthChallengeResponseResponseCancelAuth)
-    Ok("ProvideCredentials") ->
-      Ok(AuthChallengeResponseResponseProvideCredentials)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__auth_challenge_response_response() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Default" -> decode.success(AuthChallengeResponseResponseDefault)
+      "CancelAuth" -> decode.success(AuthChallengeResponseResponseCancelAuth)
+      "ProvideCredentials" ->
+        decode.success(AuthChallengeResponseResponseProvideCredentials)
+      _ ->
+        decode.failure(
+          AuthChallengeResponseResponseDefault,
+          "valid enum property",
+        )
+    }
   }
 }
 
 @internal
 pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
   json.object(
-    [#("response", encode__auth_challenge_response_response(value__.response))]
+    [
+      #("response", encode__auth_challenge_response_response(value__.response)),
+    ]
     |> utils.add_optional(value__.username, fn(inner_value__) {
       #("username", json.string(inner_value__))
     })
@@ -284,23 +293,29 @@ pub fn encode__auth_challenge_response(value__: AuthChallengeResponse) {
 }
 
 @internal
-pub fn decode__auth_challenge_response(value__: dynamic.Dynamic) {
-  use response <- result.try(dynamic.field(
-    "response",
-    decode__auth_challenge_response_response,
-  )(value__))
-  use username <- result.try(dynamic.optional_field("username", dynamic.string)(
-    value__,
-  ))
-  use password <- result.try(dynamic.optional_field("password", dynamic.string)(
-    value__,
-  ))
+pub fn decode__auth_challenge_response() {
+  {
+    use response <- decode.field(
+      "response",
+      decode__auth_challenge_response_response(),
+    )
+    use username <- decode.optional_field(
+      "username",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use password <- decode.optional_field(
+      "password",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(AuthChallengeResponse(
-    response: response,
-    username: username,
-    password: password,
-  ))
+    decode.success(AuthChallengeResponse(
+      response: response,
+      username: username,
+      password: password,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -315,13 +330,16 @@ pub type GetResponseBodyResponse {
 }
 
 @internal
-pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
-  use body <- result.try(dynamic.field("body", dynamic.string)(value__))
-  use base64_encoded <- result.try(dynamic.field("base64Encoded", dynamic.bool)(
-    value__,
-  ))
+pub fn decode__get_response_body_response() {
+  {
+    use body <- decode.field("body", decode.string)
+    use base64_encoded <- decode.field("base64Encoded", decode.bool)
 
-  Ok(GetResponseBodyResponse(body: body, base64_encoded: base64_encoded))
+    decode.success(GetResponseBodyResponse(
+      body: body,
+      base64_encoded: base64_encoded,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -331,12 +349,12 @@ pub type TakeResponseBodyAsStreamResponse {
 }
 
 @internal
-pub fn decode__take_response_body_as_stream_response(value__: dynamic.Dynamic) {
-  use stream <- result.try(dynamic.field("stream", io.decode__stream_handle)(
-    value__,
-  ))
+pub fn decode__take_response_body_as_stream_response() {
+  {
+    use stream <- decode.field("stream", io.decode__stream_handle())
 
-  Ok(TakeResponseBodyAsStreamResponse(stream: stream))
+    decode.success(TakeResponseBodyAsStreamResponse(stream: stream))
+  }
 }
 
 /// Disables the fetch domain.
@@ -477,7 +495,9 @@ pub fn continue_request(
   callback__(
     "Fetch.continueRequest",
     option.Some(json.object(
-      [#("requestId", encode__request_id(request_id))]
+      [
+        #("requestId", encode__request_id(request_id)),
+      ]
       |> utils.add_optional(url, fn(inner_value__) {
         #("url", json.string(inner_value__))
       })
@@ -542,10 +562,14 @@ pub fn continue_with_auth(
 pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Fetch.getResponseBody",
-    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+      ]),
+    ),
   ))
 
-  decode__get_response_body_response(result__)
+  decode.run(result__, decode__get_response_body_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -572,9 +596,13 @@ pub fn take_response_body_as_stream(
 ) {
   use result__ <- result.try(callback__(
     "Fetch.takeResponseBodyAsStream",
-    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+      ]),
+    ),
   ))
 
-  decode__take_response_body_as_stream_response(result__)
+  decode.run(result__, decode__take_response_body_as_stream_response())
   |> result.replace_error(chrome.ProtocolError)
 }

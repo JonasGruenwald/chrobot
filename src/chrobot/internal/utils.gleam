@@ -1,5 +1,5 @@
 import envoy
-import gleam/erlang/process.{type CallError, type Subject} as p
+import gleam/erlang/process.{type Subject} as p
 import gleam/io
 import gleam/json
 import gleam/list
@@ -7,6 +7,12 @@ import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleam_community/ansi
 import spinner
+
+/// Errors that can occur when calling a process
+pub type CallError {
+  CallTimeout
+  CalleeDown(reason: p.ExitReason)
+}
 
 /// Very very naive but should be fine
 fn term_supports_color() -> Bool {
@@ -171,31 +177,50 @@ pub fn try_call_with_subject(
   make_request: fn(Subject(response)) -> request,
   reply_subject: Subject(response),
   within timeout: Int,
-) -> Result(response, CallError(response)) {
-  // Monitor the callee process so we can tell if it goes down (meaning we
-  // won't get a reply)
-  let monitor = p.monitor_process(p.subject_owner(subject))
+) -> Result(response, CallError) {
+  // Get the owner PID of the subject - if it fails, the process is down
+  case p.subject_owner(subject) {
+    Error(Nil) -> Error(CalleeDown(reason: p.Normal))
+    Ok(owner_pid) -> {
+      // Monitor the callee process so we can tell if it goes down (meaning we
+      // won't get a reply)
+      let monitor = p.monitor(owner_pid)
 
-  // Send the request to the process over the channel
-  p.send(subject, make_request(reply_subject))
+      // Send the request to the process over the channel
+      p.send(subject, make_request(reply_subject))
 
-  // Await a reply or handle failure modes (timeout, process down, etc)
-  let result =
-    p.new_selector()
-    |> p.selecting(reply_subject, Ok)
-    |> p.selecting_process_down(monitor, fn(down: p.ProcessDown) {
-      Error(p.CalleeDown(reason: down.reason))
-    })
-    |> p.select(timeout)
+      // Await a reply or handle failure modes (timeout, process down, etc)
+      let result =
+        p.new_selector()
+        |> p.select_map(reply_subject, Ok)
+        |> p.select_specific_monitor(monitor, fn(down: p.Down) {
+          case down {
+            p.ProcessDown(reason: reason, ..) -> Error(CalleeDown(reason:))
+            p.PortDown(reason: reason, ..) -> Error(CalleeDown(reason:))
+          }
+        })
+        |> p.selector_receive(within: timeout)
 
-  // Demonitor the process and close the channels as we're done
-  p.demonitor_process(monitor)
+      // Demonitor the process and close the channels as we're done
+      p.demonitor_process(monitor)
 
-  // Prepare an appropriate error (if present) for the caller
-  case result {
-    Error(Nil) -> Error(p.CallTimeout)
-    Ok(res) -> res
+      // Prepare an appropriate error (if present) for the caller
+      case result {
+        Error(Nil) -> Error(CallTimeout)
+        Ok(res) -> res
+      }
+    }
   }
+}
+
+/// A version of process.call that returns a Result instead of panicking
+pub fn try_call(
+  subject: Subject(request),
+  make_request: fn(Subject(response)) -> request,
+  within timeout: Int,
+) -> Result(response, CallError) {
+  let reply_subject = p.new_subject()
+  try_call_with_subject(subject, make_request, reply_subject, timeout)
 }
 
 /// (Taken from the old gleam_stlib where it was `list.pop_map`)
@@ -244,7 +269,7 @@ fn find_map_remove_loop(
 }
 
 /// (Taken from the old gleam_stlib where it was `list.pop`)
-/// 
+///
 /// Removes the first element in a given list for which the predicate function returns `True`.
 ///
 /// Returns `Error(Nil)` if no such element is found.
