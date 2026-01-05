@@ -28,7 +28,6 @@
 
 import chrobot/chrome.{type RequestError}
 import chrobot/internal/keymap
-import chrobot/internal/task
 import chrobot/internal/utils
 import chrobot/protocol
 import chrobot/protocol/input
@@ -40,6 +39,7 @@ import gleam/bool
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/erlang/process.{type Subject}
+import gleam/function
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -784,33 +784,34 @@ fn do_poll(
   // but realistically this should never happen anyways
   use <- bool.guard(available_time < 0, Error(chrome.ChromeAgentTimeout))
 
-  let result =
-    callback
-    |> task.async()
-    |> task.try_await(available_time)
+  let subject = process.new_subject()
+  process.spawn(fn() { process.send(subject, callback()) })
+
+  let selector =
+    process.new_selector()
+    |> process.select_map(subject, function.identity)
+  let result = process.selector_receive(from: selector, within: available_time)
 
   // remaining available time after the polling attempt finishes
   let available_time = deadline - utils.get_time_ms() - poll_delay
 
   case result {
-    // Task did not return before deadline
-    // A task exit should never happen but we consider it a timeout
-    Error(task.Timeout) | Error(task.Exit(_)) -> {
+    // Callback did not return before deadline (timeout)
+    Error(Nil) -> {
       // We return the error from the last failed poll attempt if there was one
       case previous_error {
         Some(err) -> Error(err)
         None -> Error(chrome.ChromeAgentTimeout)
       }
     }
-    // Task returned Ok result, polling is done
-    // and result is returned
+    // Callback returned Ok result, polling is done
     Ok(Ok(res)) -> Ok(res)
-    // Task returned an error and we still have time, we continue polling with delay
+    // Callback returned an error and we still have time, we continue polling with delay
     Ok(Error(err)) if available_time > 0 -> {
       process.sleep(poll_delay)
       do_poll(callback, deadline, Some(err))
     }
-    // Task returned an error but the time is up
+    // Callback returned an error but the time is up
     Ok(Error(err)) -> {
       Error(err)
     }
