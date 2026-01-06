@@ -24,15 +24,10 @@ pub fn get_browser_path() {
 
 pub fn get_browser_instance() {
   let browser_path = get_browser_path()
-  let base_args = chrome.get_default_chrome_args()
-  let args = case envoy.get("CI") {
-    Ok(_) -> ["--no-sandbox", ..base_args]
-    Error(_) -> base_args
-  }
   let config =
     chrome.BrowserConfig(
       path: browser_path,
-      args: args,
+      args: chrome.get_default_chrome_args(),
       start_timeout: 5000,
       log_level: chrome.LogLevelWarnings,
     )
