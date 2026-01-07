@@ -2,57 +2,57 @@
 //// For reference: [See the DevTools Protocol API Docs](https://chromedevtools.github.io/devtools-protocol/1-3/)
 //// 
 //// This is the protocol definition entrypoint, it contains an overview of the protocol structure,
-//// and a function to retrieve the version of the protocol used to generate the current bindings.  
-//// The protocol version is also displayed in the box above, which appears on every generated module.  
+//// and a function to retrieve the version of the protocol used to generate the current bindings.
+//// The protocol version is also displayed in the box above, which appears on every generated module.
 //// 
 //// ## ⚠️ Really Important Notes
-////    
-//// 1) It's best never to work with the DOM domain for automation, 
-//// [an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
+//// 
+//// 1) It's best never to work with the DOM domain for automation,
+//// [an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).
 //// Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
-////   
-//// 2) Unfortunately, I haven't found a good way to map dynamic properties to gleam attributes bidirectionally.  
-//// **This means all dynamic values you supply to commands will be silently dropped**!  
-//// It's important to realize this to avoid confusion, for example in `runtime.call_function_on` 
-//// you may want to supply arguments which can be any value, but it won't work.  
+//// 
+//// 2) Unfortunately, I haven't found a good way to map dynamic properties to gleam attributes bidirectionally.
+//// **This means all dynamic values you supply to commands will be silently dropped**!
+//// It's important to realize this to avoid confusion, for example in `runtime.call_function_on`
+//// you may want to supply arguments which can be any value, but it won't work.
 //// The only path to do that as far as I can tell, is write the protocol call logic yourself,
-//// perhaps taking the codegen code as a basis.  
+//// perhaps taking the codegen code as a basis.
 //// Check the `call_custom_function_on` function from `chrobot` which does this for the mentioned function
 //// 
 //// ## Structure
 //// 
-//// Each domain in the protocol is represented as a module under `protocol/`. 
+//// Each domain in the protocol is represented as a module under `protocol/`.
 //// 
-//// In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol), 
+//// In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol),
 //// however there are some little adjustments that needed to be made, to make the protocol schema usable, mainly due to
-//// what I believe are minor bugs in the protocol.  
+//// what I believe are minor bugs in the protocol.
 //// To see these changes, check the `apply_protocol_patches` function in `chrobot/internal/generate_bindings`.
 //// 
 //// Domains may depend on the types of other domains, these dependencies are mirrored in the generated bindings where possible.
 //// In some case, type references to other modules have been replaced by the respective inner type, because the references would
 //// create a circular dependency.
 //// 
-//// ## Types 
+//// ## Types
 //// 
 //// The generated bindings include a mirror of the type defitions of each type in the protocol spec,
 //// alongside with an `encode__` function to encode the type into JSON in order to send it to the browser
 //// and a `decode__` function in order to decode the type out of a payload sent from the browser. Encoders and
 //// decoders are marked internal and should be used through command functions which are described below.
 //// 
-//// Notes:  
+//// Notes:
 //// - Some object properties in the protocol have the type `any`, in this case the value is considered as dynamic
 //// by decoders, and encoders will not encode it, setting it to `null` instead in the payload
-//// - Object types that don't specify any properties are treated as a `Dict(String,String)` 
+//// - Object types that don't specify any properties are treated as a `Dict(String,String)`
 //// 
-//// Additional type definitions and encoders / decoders are generated, 
-//// for any enumerable property in the protocol, as well as the return values of commands.  
-//// These special type definitions are marked with a comment to indicate 
+//// Additional type definitions and encoders / decoders are generated,
+//// for any enumerable property in the protocol, as well as the return values of commands.
+//// These special type definitions are marked with a comment to indicate
 //// the fact that they are not part of the protocol spec, but rather generated dynamically to support the bindings.
 //// 
 //// 
 //// ## Commands
 //// 
-//// A function is generated for each command, named after the command (in snake case).  
+//// A function is generated for each command, named after the command (in snake case).
 //// The function handles both encoding the parameters to sent to the browser via the protocol, and decoding the response.
 //// A `ProtocolError` error is returned if the decoding fails, this would mean there is a bug in the protocol
 //// or the generated bindings.
@@ -63,7 +63,7 @@
 //// fn(method: String, parameters: Option(Json)) -> Result(Dynamic, RequestError)
 //// ```
 //// 
-//// By using this callback you can take advantage of the generated protocol encoders/decoders 
+//// By using this callback you can take advantage of the generated protocol encoders/decoders
 //// while also passing in your browser subject to direct the command to, and passing along additional
 //// arguments, like the `sessionId` which is required for some operations.
 //// 

@@ -44,7 +44,7 @@ pub type LogEntry {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `source` of `LogEntry`
 pub type LogEntrySource {
   LogEntrySourceXml
@@ -105,7 +105,7 @@ pub fn decode__log_entry_source() {
   }
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `level` of `LogEntry`
 pub type LogEntryLevel {
   LogEntryLevelVerbose
@@ -139,7 +139,7 @@ pub fn decode__log_entry_level() {
   }
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `category` of `LogEntry`
 pub type LogEntryCategory {
   LogEntryCategoryCors
@@ -266,7 +266,7 @@ pub type ViolationSetting {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `name` of `ViolationSetting`
 pub type ViolationSettingName {
   ViolationSettingNameLongTask

@@ -26,7 +26,7 @@ pub type ScreenOrientation {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `ScreenOrientation`
 pub type ScreenOrientationType {
   ScreenOrientationTypePortraitPrimary
@@ -99,7 +99,7 @@ pub type DisplayFeature {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `orientation` of `DisplayFeature`
 pub type DisplayFeatureOrientation {
   DisplayFeatureOrientationVertical
@@ -162,7 +162,7 @@ pub type DevicePosture {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `DevicePosture`
 pub type DevicePostureType {
   DevicePostureTypeContinuous
@@ -369,7 +369,7 @@ pub fn set_emulated_vision_deficiency(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `setEmulatedVisionDeficiency`
 pub type SetEmulatedVisionDeficiencyType {
   SetEmulatedVisionDeficiencyTypeNone

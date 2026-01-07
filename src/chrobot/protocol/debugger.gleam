@@ -190,7 +190,7 @@ pub type Scope {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `Scope`
 pub type ScopeType {
   ScopeTypeGlobal
@@ -335,7 +335,7 @@ pub type BreakLocation {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `BreakLocation`
 pub type BreakLocationType {
   BreakLocationTypeDebuggerStatement
@@ -448,7 +448,7 @@ pub type DebugSymbols {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `DebugSymbols`
 pub type DebugSymbolsType {
   DebugSymbolsTypeNone
@@ -724,7 +724,7 @@ pub fn continue_to_location(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `targetCallFrames` of `continueToLocation`
 pub type ContinueToLocationTargetCallFrames {
   ContinueToLocationTargetCallFramesAny
@@ -1091,7 +1091,7 @@ pub fn set_instrumentation_breakpoint(
   |> result.replace_error(chrome.ProtocolError)
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `instrumentation` of `setInstrumentationBreakpoint`
 pub type SetInstrumentationBreakpointInstrumentation {
   SetInstrumentationBreakpointInstrumentationBeforeScriptExecution
@@ -1229,7 +1229,7 @@ pub fn set_pause_on_exceptions(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `state` of `setPauseOnExceptions`
 pub type SetPauseOnExceptionsState {
   SetPauseOnExceptionsStateNone

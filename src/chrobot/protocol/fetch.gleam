@@ -160,7 +160,7 @@ pub type AuthChallenge {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `source` of `AuthChallenge`
 pub type AuthChallengeSource {
   AuthChallengeSourceServer
@@ -239,7 +239,7 @@ pub type AuthChallengeResponse {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `response` of `AuthChallengeResponse`
 pub type AuthChallengeResponseResponse {
   AuthChallengeResponseResponseDefault

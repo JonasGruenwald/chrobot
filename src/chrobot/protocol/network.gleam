@@ -532,7 +532,7 @@ pub type Request {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `referrerPolicy` of `Request`
 pub type RequestReferrerPolicy {
   RequestReferrerPolicyUnsafeUrl
@@ -1665,7 +1665,7 @@ pub type Initiator {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `Initiator`
 pub type InitiatorType {
   InitiatorTypeParser

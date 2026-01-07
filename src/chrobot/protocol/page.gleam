@@ -797,7 +797,7 @@ pub fn capture_screenshot(
   |> result.replace_error(chrome.ProtocolError)
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `format` of `captureScreenshot`
 pub type CaptureScreenshotFormat {
   CaptureScreenshotFormatJpeg

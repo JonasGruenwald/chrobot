@@ -274,7 +274,7 @@ pub fn dispatch_key_event(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `dispatchKeyEvent`
 pub type DispatchKeyEventType {
   DispatchKeyEventTypeKeyDown
@@ -391,7 +391,7 @@ pub fn dispatch_mouse_event(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `dispatchMouseEvent`
 pub type DispatchMouseEventType {
   DispatchMouseEventTypeMousePressed
@@ -429,7 +429,7 @@ pub fn decode__dispatch_mouse_event_type() {
   }
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `pointerType` of `dispatchMouseEvent`
 pub type DispatchMouseEventPointerType {
   DispatchMouseEventPointerTypeMouse
@@ -501,7 +501,7 @@ pub fn dispatch_touch_event(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `dispatchTouchEvent`
 pub type DispatchTouchEventType {
   DispatchTouchEventTypeTouchStart

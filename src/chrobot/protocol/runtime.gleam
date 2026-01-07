@@ -57,7 +57,7 @@ pub type SerializationOptions {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `serialization` of `SerializationOptions`
 pub type SerializationOptionsSerialization {
   SerializationOptionsSerializationDeep
@@ -156,7 +156,7 @@ pub type DeepSerializedValue {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `DeepSerializedValue`
 pub type DeepSerializedValueType {
   DeepSerializedValueTypeUndefined
@@ -365,7 +365,7 @@ pub type RemoteObject {
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `type` of `RemoteObject`
 pub type RemoteObjectType {
   RemoteObjectTypeObject
@@ -411,7 +411,7 @@ pub fn decode__remote_object_type() {
   }
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `subtype` of `RemoteObject`
 pub type RemoteObjectSubtype {
   RemoteObjectSubtypeArray

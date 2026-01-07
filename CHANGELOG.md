@@ -1,3 +1,7 @@
+## [4.0.0] 2026-01-07
+
+- Upgrade to `dynamic/decode` and current latest stdlib, erlang and otp packages, thanks [ John Downey ](https://github.com/jtdowney)
+
 ## [3.0.4] 2024-12-10
 
 - Move to `envoy` since `gleam_erlang` `os.get_env` was removed

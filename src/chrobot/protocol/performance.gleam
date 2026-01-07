@@ -91,7 +91,7 @@ pub fn enable(
   )
 }
 
-/// This type is not part of the protocol spec, it has been generated dynamically 
+/// This type is not part of the protocol spec, it has been generated dynamically
 /// to represent the possible values of the enum property `timeDomain` of `enable`
 pub type EnableTimeDomain {
   EnableTimeDomainTimeTicks
