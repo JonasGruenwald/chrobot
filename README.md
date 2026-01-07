@@ -41,7 +41,7 @@ You could use it for
 Install as a Gleam package
 
 ```sh
-gleam add chrobot
+gleam add chrobot@4
 ```
 
 Install as an Elixir dependency with mix
@@ -50,7 +50,7 @@ Install as an Elixir dependency with mix
 # in your mix.exs
 defp deps do
   [
-    {:chrobot, "~> 3.0.0", app: false, manager: :rebar3}
+    {:chrobot, "~> 4.0.0", app: false, manager: :rebar3}
   ]
 end
 ```
