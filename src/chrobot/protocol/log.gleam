@@ -13,10 +13,9 @@
 import chrobot/internal/utils
 import chrobot/protocol/network
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
-import gleam/result
 
 /// Log entry.
 pub type LogEntry {
@@ -84,30 +83,25 @@ pub fn encode__log_entry_source(value__: LogEntrySource) {
 }
 
 @internal
-pub fn decode__log_entry_source(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("xml") -> Ok(LogEntrySourceXml)
-    Ok("javascript") -> Ok(LogEntrySourceJavascript)
-    Ok("network") -> Ok(LogEntrySourceNetwork)
-    Ok("storage") -> Ok(LogEntrySourceStorage)
-    Ok("appcache") -> Ok(LogEntrySourceAppcache)
-    Ok("rendering") -> Ok(LogEntrySourceRendering)
-    Ok("security") -> Ok(LogEntrySourceSecurity)
-    Ok("deprecation") -> Ok(LogEntrySourceDeprecation)
-    Ok("worker") -> Ok(LogEntrySourceWorker)
-    Ok("violation") -> Ok(LogEntrySourceViolation)
-    Ok("intervention") -> Ok(LogEntrySourceIntervention)
-    Ok("recommendation") -> Ok(LogEntrySourceRecommendation)
-    Ok("other") -> Ok(LogEntrySourceOther)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__log_entry_source() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "xml" -> decode.success(LogEntrySourceXml)
+      "javascript" -> decode.success(LogEntrySourceJavascript)
+      "network" -> decode.success(LogEntrySourceNetwork)
+      "storage" -> decode.success(LogEntrySourceStorage)
+      "appcache" -> decode.success(LogEntrySourceAppcache)
+      "rendering" -> decode.success(LogEntrySourceRendering)
+      "security" -> decode.success(LogEntrySourceSecurity)
+      "deprecation" -> decode.success(LogEntrySourceDeprecation)
+      "worker" -> decode.success(LogEntrySourceWorker)
+      "violation" -> decode.success(LogEntrySourceViolation)
+      "intervention" -> decode.success(LogEntrySourceIntervention)
+      "recommendation" -> decode.success(LogEntrySourceRecommendation)
+      "other" -> decode.success(LogEntrySourceOther)
+      _ -> decode.failure(LogEntrySourceXml, "valid enum property")
+    }
   }
 }
 
@@ -132,21 +126,16 @@ pub fn encode__log_entry_level(value__: LogEntryLevel) {
 }
 
 @internal
-pub fn decode__log_entry_level(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("verbose") -> Ok(LogEntryLevelVerbose)
-    Ok("info") -> Ok(LogEntryLevelInfo)
-    Ok("warning") -> Ok(LogEntryLevelWarning)
-    Ok("error") -> Ok(LogEntryLevelError)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__log_entry_level() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "verbose" -> decode.success(LogEntryLevelVerbose)
+      "info" -> decode.success(LogEntryLevelInfo)
+      "warning" -> decode.success(LogEntryLevelWarning)
+      "error" -> decode.success(LogEntryLevelError)
+      _ -> decode.failure(LogEntryLevelVerbose, "valid enum property")
+    }
   }
 }
 
@@ -165,18 +154,13 @@ pub fn encode__log_entry_category(value__: LogEntryCategory) {
 }
 
 @internal
-pub fn decode__log_entry_category(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("cors") -> Ok(LogEntryCategoryCors)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__log_entry_category() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "cors" -> decode.success(LogEntryCategoryCors)
+      _ -> decode.failure(LogEntryCategoryCors, "valid enum property")
+    }
   }
 }
 
@@ -214,56 +198,62 @@ pub fn encode__log_entry(value__: LogEntry) {
 }
 
 @internal
-pub fn decode__log_entry(value__: dynamic.Dynamic) {
-  use source <- result.try(dynamic.field("source", decode__log_entry_source)(
-    value__,
-  ))
-  use level <- result.try(dynamic.field("level", decode__log_entry_level)(
-    value__,
-  ))
-  use text <- result.try(dynamic.field("text", dynamic.string)(value__))
-  use category <- result.try(dynamic.optional_field(
-    "category",
-    decode__log_entry_category,
-  )(value__))
-  use timestamp <- result.try(dynamic.field(
-    "timestamp",
-    runtime.decode__timestamp,
-  )(value__))
-  use url <- result.try(dynamic.optional_field("url", dynamic.string)(value__))
-  use line_number <- result.try(dynamic.optional_field(
-    "lineNumber",
-    dynamic.int,
-  )(value__))
-  use stack_trace <- result.try(dynamic.optional_field(
-    "stackTrace",
-    runtime.decode__stack_trace,
-  )(value__))
-  use network_request_id <- result.try(dynamic.optional_field(
-    "networkRequestId",
-    network.decode__request_id,
-  )(value__))
-  use worker_id <- result.try(dynamic.optional_field("workerId", dynamic.string)(
-    value__,
-  ))
-  use args <- result.try(dynamic.optional_field(
-    "args",
-    dynamic.list(runtime.decode__remote_object),
-  )(value__))
+pub fn decode__log_entry() {
+  {
+    use source <- decode.field("source", decode__log_entry_source())
+    use level <- decode.field("level", decode__log_entry_level())
+    use text <- decode.field("text", decode.string)
+    use category <- decode.optional_field(
+      "category",
+      option.None,
+      decode.optional(decode__log_entry_category()),
+    )
+    use timestamp <- decode.field("timestamp", runtime.decode__timestamp())
+    use url <- decode.optional_field(
+      "url",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use line_number <- decode.optional_field(
+      "lineNumber",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use stack_trace <- decode.optional_field(
+      "stackTrace",
+      option.None,
+      decode.optional(runtime.decode__stack_trace()),
+    )
+    use network_request_id <- decode.optional_field(
+      "networkRequestId",
+      option.None,
+      decode.optional(network.decode__request_id()),
+    )
+    use worker_id <- decode.optional_field(
+      "workerId",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use args <- decode.optional_field(
+      "args",
+      option.None,
+      decode.optional(decode.list(runtime.decode__remote_object())),
+    )
 
-  Ok(LogEntry(
-    source: source,
-    level: level,
-    text: text,
-    category: category,
-    timestamp: timestamp,
-    url: url,
-    line_number: line_number,
-    stack_trace: stack_trace,
-    network_request_id: network_request_id,
-    worker_id: worker_id,
-    args: args,
-  ))
+    decode.success(LogEntry(
+      source: source,
+      level: level,
+      text: text,
+      category: category,
+      timestamp: timestamp,
+      url: url,
+      line_number: line_number,
+      stack_trace: stack_trace,
+      network_request_id: network_request_id,
+      worker_id: worker_id,
+      args: args,
+    ))
+  }
 }
 
 /// Violation configuration setting.
@@ -303,24 +293,20 @@ pub fn encode__violation_setting_name(value__: ViolationSettingName) {
 }
 
 @internal
-pub fn decode__violation_setting_name(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("longTask") -> Ok(ViolationSettingNameLongTask)
-    Ok("longLayout") -> Ok(ViolationSettingNameLongLayout)
-    Ok("blockedEvent") -> Ok(ViolationSettingNameBlockedEvent)
-    Ok("blockedParser") -> Ok(ViolationSettingNameBlockedParser)
-    Ok("discouragedAPIUse") -> Ok(ViolationSettingNameDiscouragedApiUse)
-    Ok("handler") -> Ok(ViolationSettingNameHandler)
-    Ok("recurringHandler") -> Ok(ViolationSettingNameRecurringHandler)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__violation_setting_name() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "longTask" -> decode.success(ViolationSettingNameLongTask)
+      "longLayout" -> decode.success(ViolationSettingNameLongLayout)
+      "blockedEvent" -> decode.success(ViolationSettingNameBlockedEvent)
+      "blockedParser" -> decode.success(ViolationSettingNameBlockedParser)
+      "discouragedAPIUse" ->
+        decode.success(ViolationSettingNameDiscouragedApiUse)
+      "handler" -> decode.success(ViolationSettingNameHandler)
+      "recurringHandler" -> decode.success(ViolationSettingNameRecurringHandler)
+      _ -> decode.failure(ViolationSettingNameLongTask, "valid enum property")
+    }
   }
 }
 
@@ -333,13 +319,13 @@ pub fn encode__violation_setting(value__: ViolationSetting) {
 }
 
 @internal
-pub fn decode__violation_setting(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", decode__violation_setting_name)(
-    value__,
-  ))
-  use threshold <- result.try(dynamic.field("threshold", dynamic.float)(value__))
+pub fn decode__violation_setting() {
+  {
+    use name <- decode.field("name", decode__violation_setting_name())
+    use threshold <- decode.field("threshold", decode.float)
 
-  Ok(ViolationSetting(name: name, threshold: threshold))
+    decode.success(ViolationSetting(name: name, threshold: threshold))
+  }
 }
 
 /// Clears the log.

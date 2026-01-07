@@ -16,7 +16,7 @@ import chrobot/internal/utils
 import chrobot/protocol/runtime
 import chrobot/protocol/security
 import gleam/dict
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option
@@ -70,35 +70,30 @@ pub fn encode__resource_type(value__: ResourceType) {
 }
 
 @internal
-pub fn decode__resource_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Document") -> Ok(ResourceTypeDocument)
-    Ok("Stylesheet") -> Ok(ResourceTypeStylesheet)
-    Ok("Image") -> Ok(ResourceTypeImage)
-    Ok("Media") -> Ok(ResourceTypeMedia)
-    Ok("Font") -> Ok(ResourceTypeFont)
-    Ok("Script") -> Ok(ResourceTypeScript)
-    Ok("TextTrack") -> Ok(ResourceTypeTextTrack)
-    Ok("XHR") -> Ok(ResourceTypeXhr)
-    Ok("Fetch") -> Ok(ResourceTypeFetch)
-    Ok("Prefetch") -> Ok(ResourceTypePrefetch)
-    Ok("EventSource") -> Ok(ResourceTypeEventSource)
-    Ok("WebSocket") -> Ok(ResourceTypeWebSocket)
-    Ok("Manifest") -> Ok(ResourceTypeManifest)
-    Ok("SignedExchange") -> Ok(ResourceTypeSignedExchange)
-    Ok("Ping") -> Ok(ResourceTypePing)
-    Ok("CSPViolationReport") -> Ok(ResourceTypeCspViolationReport)
-    Ok("Preflight") -> Ok(ResourceTypePreflight)
-    Ok("Other") -> Ok(ResourceTypeOther)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__resource_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Document" -> decode.success(ResourceTypeDocument)
+      "Stylesheet" -> decode.success(ResourceTypeStylesheet)
+      "Image" -> decode.success(ResourceTypeImage)
+      "Media" -> decode.success(ResourceTypeMedia)
+      "Font" -> decode.success(ResourceTypeFont)
+      "Script" -> decode.success(ResourceTypeScript)
+      "TextTrack" -> decode.success(ResourceTypeTextTrack)
+      "XHR" -> decode.success(ResourceTypeXhr)
+      "Fetch" -> decode.success(ResourceTypeFetch)
+      "Prefetch" -> decode.success(ResourceTypePrefetch)
+      "EventSource" -> decode.success(ResourceTypeEventSource)
+      "WebSocket" -> decode.success(ResourceTypeWebSocket)
+      "Manifest" -> decode.success(ResourceTypeManifest)
+      "SignedExchange" -> decode.success(ResourceTypeSignedExchange)
+      "Ping" -> decode.success(ResourceTypePing)
+      "CSPViolationReport" -> decode.success(ResourceTypeCspViolationReport)
+      "Preflight" -> decode.success(ResourceTypePreflight)
+      "Other" -> decode.success(ResourceTypeOther)
+      _ -> decode.failure(ResourceTypeDocument, "valid enum property")
+    }
   }
 }
 
@@ -115,8 +110,11 @@ pub fn encode__loader_id(value__: LoaderId) {
 }
 
 @internal
-pub fn decode__loader_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(LoaderId, dynamic.string)
+pub fn decode__loader_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(LoaderId(value__))
+  }
 }
 
 /// Unique request identifier.
@@ -132,8 +130,11 @@ pub fn encode__request_id(value__: RequestId) {
 }
 
 @internal
-pub fn decode__request_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(RequestId, dynamic.string)
+pub fn decode__request_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(RequestId(value__))
+  }
 }
 
 /// Unique intercepted request identifier.
@@ -149,8 +150,11 @@ pub fn encode__interception_id(value__: InterceptionId) {
 }
 
 @internal
-pub fn decode__interception_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(InterceptionId, dynamic.string)
+pub fn decode__interception_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(InterceptionId(value__))
+  }
 }
 
 /// Network level fetch failure reason.
@@ -193,31 +197,26 @@ pub fn encode__error_reason(value__: ErrorReason) {
 }
 
 @internal
-pub fn decode__error_reason(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Failed") -> Ok(ErrorReasonFailed)
-    Ok("Aborted") -> Ok(ErrorReasonAborted)
-    Ok("TimedOut") -> Ok(ErrorReasonTimedOut)
-    Ok("AccessDenied") -> Ok(ErrorReasonAccessDenied)
-    Ok("ConnectionClosed") -> Ok(ErrorReasonConnectionClosed)
-    Ok("ConnectionReset") -> Ok(ErrorReasonConnectionReset)
-    Ok("ConnectionRefused") -> Ok(ErrorReasonConnectionRefused)
-    Ok("ConnectionAborted") -> Ok(ErrorReasonConnectionAborted)
-    Ok("ConnectionFailed") -> Ok(ErrorReasonConnectionFailed)
-    Ok("NameNotResolved") -> Ok(ErrorReasonNameNotResolved)
-    Ok("InternetDisconnected") -> Ok(ErrorReasonInternetDisconnected)
-    Ok("AddressUnreachable") -> Ok(ErrorReasonAddressUnreachable)
-    Ok("BlockedByClient") -> Ok(ErrorReasonBlockedByClient)
-    Ok("BlockedByResponse") -> Ok(ErrorReasonBlockedByResponse)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__error_reason() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Failed" -> decode.success(ErrorReasonFailed)
+      "Aborted" -> decode.success(ErrorReasonAborted)
+      "TimedOut" -> decode.success(ErrorReasonTimedOut)
+      "AccessDenied" -> decode.success(ErrorReasonAccessDenied)
+      "ConnectionClosed" -> decode.success(ErrorReasonConnectionClosed)
+      "ConnectionReset" -> decode.success(ErrorReasonConnectionReset)
+      "ConnectionRefused" -> decode.success(ErrorReasonConnectionRefused)
+      "ConnectionAborted" -> decode.success(ErrorReasonConnectionAborted)
+      "ConnectionFailed" -> decode.success(ErrorReasonConnectionFailed)
+      "NameNotResolved" -> decode.success(ErrorReasonNameNotResolved)
+      "InternetDisconnected" -> decode.success(ErrorReasonInternetDisconnected)
+      "AddressUnreachable" -> decode.success(ErrorReasonAddressUnreachable)
+      "BlockedByClient" -> decode.success(ErrorReasonBlockedByClient)
+      "BlockedByResponse" -> decode.success(ErrorReasonBlockedByResponse)
+      _ -> decode.failure(ErrorReasonFailed, "valid enum property")
+    }
   }
 }
 
@@ -234,8 +233,11 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
 }
 
 @internal
-pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
+pub fn decode__time_since_epoch() {
+  {
+    use value__ <- decode.then(decode.float)
+    decode.success(TimeSinceEpoch(value__))
+  }
 }
 
 /// Monotonically increasing time in seconds since an arbitrary point in the past.
@@ -251,8 +253,11 @@ pub fn encode__monotonic_time(value__: MonotonicTime) {
 }
 
 @internal
-pub fn decode__monotonic_time(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(MonotonicTime, dynamic.float)
+pub fn decode__monotonic_time() {
+  {
+    use value__ <- decode.then(decode.float)
+    decode.success(MonotonicTime(value__))
+  }
 }
 
 /// Request / response headers as keys / values of JSON object.
@@ -271,9 +276,11 @@ pub fn encode__headers(value__: Headers) {
 }
 
 @internal
-pub fn decode__headers(value__: dynamic.Dynamic) {
-  value__
-  |> dynamic.decode1(Headers, dynamic.dict(dynamic.string, dynamic.string))
+pub fn decode__headers() {
+  {
+    use value__ <- decode.then(decode.dict(decode.string, decode.string))
+    decode.success(Headers(value__))
+  }
 }
 
 /// The underlying connection technology that the browser is supposedly using.
@@ -306,26 +313,21 @@ pub fn encode__connection_type(value__: ConnectionType) {
 }
 
 @internal
-pub fn decode__connection_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("none") -> Ok(ConnectionTypeNone)
-    Ok("cellular2g") -> Ok(ConnectionTypeCellular2g)
-    Ok("cellular3g") -> Ok(ConnectionTypeCellular3g)
-    Ok("cellular4g") -> Ok(ConnectionTypeCellular4g)
-    Ok("bluetooth") -> Ok(ConnectionTypeBluetooth)
-    Ok("ethernet") -> Ok(ConnectionTypeEthernet)
-    Ok("wifi") -> Ok(ConnectionTypeWifi)
-    Ok("wimax") -> Ok(ConnectionTypeWimax)
-    Ok("other") -> Ok(ConnectionTypeOther)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__connection_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "none" -> decode.success(ConnectionTypeNone)
+      "cellular2g" -> decode.success(ConnectionTypeCellular2g)
+      "cellular3g" -> decode.success(ConnectionTypeCellular3g)
+      "cellular4g" -> decode.success(ConnectionTypeCellular4g)
+      "bluetooth" -> decode.success(ConnectionTypeBluetooth)
+      "ethernet" -> decode.success(ConnectionTypeEthernet)
+      "wifi" -> decode.success(ConnectionTypeWifi)
+      "wimax" -> decode.success(ConnectionTypeWimax)
+      "other" -> decode.success(ConnectionTypeOther)
+      _ -> decode.failure(ConnectionTypeNone, "valid enum property")
+    }
   }
 }
 
@@ -348,20 +350,15 @@ pub fn encode__cookie_same_site(value__: CookieSameSite) {
 }
 
 @internal
-pub fn decode__cookie_same_site(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Strict") -> Ok(CookieSameSiteStrict)
-    Ok("Lax") -> Ok(CookieSameSiteLax)
-    Ok("None") -> Ok(CookieSameSiteNone)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__cookie_same_site() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Strict" -> decode.success(CookieSameSiteStrict)
+      "Lax" -> decode.success(CookieSameSiteLax)
+      "None" -> decode.success(CookieSameSiteNone)
+      _ -> decode.failure(CookieSameSiteStrict, "valid enum property")
+    }
   }
 }
 
@@ -415,47 +412,36 @@ pub fn encode__resource_timing(value__: ResourceTiming) {
 }
 
 @internal
-pub fn decode__resource_timing(value__: dynamic.Dynamic) {
-  use request_time <- result.try(dynamic.field("requestTime", dynamic.float)(
-    value__,
-  ))
-  use proxy_start <- result.try(dynamic.field("proxyStart", dynamic.float)(
-    value__,
-  ))
-  use proxy_end <- result.try(dynamic.field("proxyEnd", dynamic.float)(value__))
-  use dns_start <- result.try(dynamic.field("dnsStart", dynamic.float)(value__))
-  use dns_end <- result.try(dynamic.field("dnsEnd", dynamic.float)(value__))
-  use connect_start <- result.try(dynamic.field("connectStart", dynamic.float)(
-    value__,
-  ))
-  use connect_end <- result.try(dynamic.field("connectEnd", dynamic.float)(
-    value__,
-  ))
-  use ssl_start <- result.try(dynamic.field("sslStart", dynamic.float)(value__))
-  use ssl_end <- result.try(dynamic.field("sslEnd", dynamic.float)(value__))
-  use send_start <- result.try(dynamic.field("sendStart", dynamic.float)(
-    value__,
-  ))
-  use send_end <- result.try(dynamic.field("sendEnd", dynamic.float)(value__))
-  use receive_headers_end <- result.try(dynamic.field(
-    "receiveHeadersEnd",
-    dynamic.float,
-  )(value__))
+pub fn decode__resource_timing() {
+  {
+    use request_time <- decode.field("requestTime", decode.float)
+    use proxy_start <- decode.field("proxyStart", decode.float)
+    use proxy_end <- decode.field("proxyEnd", decode.float)
+    use dns_start <- decode.field("dnsStart", decode.float)
+    use dns_end <- decode.field("dnsEnd", decode.float)
+    use connect_start <- decode.field("connectStart", decode.float)
+    use connect_end <- decode.field("connectEnd", decode.float)
+    use ssl_start <- decode.field("sslStart", decode.float)
+    use ssl_end <- decode.field("sslEnd", decode.float)
+    use send_start <- decode.field("sendStart", decode.float)
+    use send_end <- decode.field("sendEnd", decode.float)
+    use receive_headers_end <- decode.field("receiveHeadersEnd", decode.float)
 
-  Ok(ResourceTiming(
-    request_time: request_time,
-    proxy_start: proxy_start,
-    proxy_end: proxy_end,
-    dns_start: dns_start,
-    dns_end: dns_end,
-    connect_start: connect_start,
-    connect_end: connect_end,
-    ssl_start: ssl_start,
-    ssl_end: ssl_end,
-    send_start: send_start,
-    send_end: send_end,
-    receive_headers_end: receive_headers_end,
-  ))
+    decode.success(ResourceTiming(
+      request_time: request_time,
+      proxy_start: proxy_start,
+      proxy_end: proxy_end,
+      dns_start: dns_start,
+      dns_end: dns_end,
+      connect_start: connect_start,
+      connect_end: connect_end,
+      ssl_start: ssl_start,
+      ssl_end: ssl_end,
+      send_start: send_start,
+      send_end: send_end,
+      receive_headers_end: receive_headers_end,
+    ))
+  }
 }
 
 /// Loading priority of a resource request.
@@ -480,22 +466,17 @@ pub fn encode__resource_priority(value__: ResourcePriority) {
 }
 
 @internal
-pub fn decode__resource_priority(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("VeryLow") -> Ok(ResourcePriorityVeryLow)
-    Ok("Low") -> Ok(ResourcePriorityLow)
-    Ok("Medium") -> Ok(ResourcePriorityMedium)
-    Ok("High") -> Ok(ResourcePriorityHigh)
-    Ok("VeryHigh") -> Ok(ResourcePriorityVeryHigh)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__resource_priority() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "VeryLow" -> decode.success(ResourcePriorityVeryLow)
+      "Low" -> decode.success(ResourcePriorityLow)
+      "Medium" -> decode.success(ResourcePriorityMedium)
+      "High" -> decode.success(ResourcePriorityHigh)
+      "VeryHigh" -> decode.success(ResourcePriorityVeryHigh)
+      _ -> decode.failure(ResourcePriorityVeryLow, "valid enum property")
+    }
   }
 }
 
@@ -515,12 +496,16 @@ pub fn encode__post_data_entry(value__: PostDataEntry) {
 }
 
 @internal
-pub fn decode__post_data_entry(value__: dynamic.Dynamic) {
-  use bytes <- result.try(dynamic.optional_field("bytes", dynamic.string)(
-    value__,
-  ))
+pub fn decode__post_data_entry() {
+  {
+    use bytes <- decode.optional_field(
+      "bytes",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(PostDataEntry(bytes: bytes))
+    decode.success(PostDataEntry(bytes: bytes))
+  }
 }
 
 /// HTTP request data.
@@ -577,28 +562,23 @@ pub fn encode__request_referrer_policy(value__: RequestReferrerPolicy) {
 }
 
 @internal
-pub fn decode__request_referrer_policy(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("unsafe-url") -> Ok(RequestReferrerPolicyUnsafeUrl)
-    Ok("no-referrer-when-downgrade") ->
-      Ok(RequestReferrerPolicyNoReferrerWhenDowngrade)
-    Ok("no-referrer") -> Ok(RequestReferrerPolicyNoReferrer)
-    Ok("origin") -> Ok(RequestReferrerPolicyOrigin)
-    Ok("origin-when-cross-origin") ->
-      Ok(RequestReferrerPolicyOriginWhenCrossOrigin)
-    Ok("same-origin") -> Ok(RequestReferrerPolicySameOrigin)
-    Ok("strict-origin") -> Ok(RequestReferrerPolicyStrictOrigin)
-    Ok("strict-origin-when-cross-origin") ->
-      Ok(RequestReferrerPolicyStrictOriginWhenCrossOrigin)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__request_referrer_policy() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "unsafe-url" -> decode.success(RequestReferrerPolicyUnsafeUrl)
+      "no-referrer-when-downgrade" ->
+        decode.success(RequestReferrerPolicyNoReferrerWhenDowngrade)
+      "no-referrer" -> decode.success(RequestReferrerPolicyNoReferrer)
+      "origin" -> decode.success(RequestReferrerPolicyOrigin)
+      "origin-when-cross-origin" ->
+        decode.success(RequestReferrerPolicyOriginWhenCrossOrigin)
+      "same-origin" -> decode.success(RequestReferrerPolicySameOrigin)
+      "strict-origin" -> decode.success(RequestReferrerPolicyStrictOrigin)
+      "strict-origin-when-cross-origin" ->
+        decode.success(RequestReferrerPolicyStrictOriginWhenCrossOrigin)
+      _ -> decode.failure(RequestReferrerPolicyUnsafeUrl, "valid enum property")
+    }
   }
 }
 
@@ -631,46 +611,52 @@ pub fn encode__request(value__: Request) {
 }
 
 @internal
-pub fn decode__request(value__: dynamic.Dynamic) {
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use url_fragment <- result.try(dynamic.optional_field(
-    "urlFragment",
-    dynamic.string,
-  )(value__))
-  use method <- result.try(dynamic.field("method", dynamic.string)(value__))
-  use headers <- result.try(dynamic.field("headers", decode__headers)(value__))
-  use has_post_data <- result.try(dynamic.optional_field(
-    "hasPostData",
-    dynamic.bool,
-  )(value__))
-  use mixed_content_type <- result.try(dynamic.optional_field(
-    "mixedContentType",
-    security.decode__mixed_content_type,
-  )(value__))
-  use initial_priority <- result.try(dynamic.field(
-    "initialPriority",
-    decode__resource_priority,
-  )(value__))
-  use referrer_policy <- result.try(dynamic.field(
-    "referrerPolicy",
-    decode__request_referrer_policy,
-  )(value__))
-  use is_link_preload <- result.try(dynamic.optional_field(
-    "isLinkPreload",
-    dynamic.bool,
-  )(value__))
+pub fn decode__request() {
+  {
+    use url <- decode.field("url", decode.string)
+    use url_fragment <- decode.optional_field(
+      "urlFragment",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use method <- decode.field("method", decode.string)
+    use headers <- decode.field("headers", decode__headers())
+    use has_post_data <- decode.optional_field(
+      "hasPostData",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use mixed_content_type <- decode.optional_field(
+      "mixedContentType",
+      option.None,
+      decode.optional(security.decode__mixed_content_type()),
+    )
+    use initial_priority <- decode.field(
+      "initialPriority",
+      decode__resource_priority(),
+    )
+    use referrer_policy <- decode.field(
+      "referrerPolicy",
+      decode__request_referrer_policy(),
+    )
+    use is_link_preload <- decode.optional_field(
+      "isLinkPreload",
+      option.None,
+      decode.optional(decode.bool),
+    )
 
-  Ok(Request(
-    url: url,
-    url_fragment: url_fragment,
-    method: method,
-    headers: headers,
-    has_post_data: has_post_data,
-    mixed_content_type: mixed_content_type,
-    initial_priority: initial_priority,
-    referrer_policy: referrer_policy,
-    is_link_preload: is_link_preload,
-  ))
+    decode.success(Request(
+      url: url,
+      url_fragment: url_fragment,
+      method: method,
+      headers: headers,
+      has_post_data: has_post_data,
+      mixed_content_type: mixed_content_type,
+      initial_priority: initial_priority,
+      referrer_policy: referrer_policy,
+      is_link_preload: is_link_preload,
+    ))
+  }
 }
 
 /// Details of a signed certificate timestamp (SCT).
@@ -711,38 +697,28 @@ pub fn encode__signed_certificate_timestamp(value__: SignedCertificateTimestamp)
 }
 
 @internal
-pub fn decode__signed_certificate_timestamp(value__: dynamic.Dynamic) {
-  use status <- result.try(dynamic.field("status", dynamic.string)(value__))
-  use origin <- result.try(dynamic.field("origin", dynamic.string)(value__))
-  use log_description <- result.try(dynamic.field(
-    "logDescription",
-    dynamic.string,
-  )(value__))
-  use log_id <- result.try(dynamic.field("logId", dynamic.string)(value__))
-  use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
-  use hash_algorithm <- result.try(dynamic.field(
-    "hashAlgorithm",
-    dynamic.string,
-  )(value__))
-  use signature_algorithm <- result.try(dynamic.field(
-    "signatureAlgorithm",
-    dynamic.string,
-  )(value__))
-  use signature_data <- result.try(dynamic.field(
-    "signatureData",
-    dynamic.string,
-  )(value__))
+pub fn decode__signed_certificate_timestamp() {
+  {
+    use status <- decode.field("status", decode.string)
+    use origin <- decode.field("origin", decode.string)
+    use log_description <- decode.field("logDescription", decode.string)
+    use log_id <- decode.field("logId", decode.string)
+    use timestamp <- decode.field("timestamp", decode.float)
+    use hash_algorithm <- decode.field("hashAlgorithm", decode.string)
+    use signature_algorithm <- decode.field("signatureAlgorithm", decode.string)
+    use signature_data <- decode.field("signatureData", decode.string)
 
-  Ok(SignedCertificateTimestamp(
-    status: status,
-    origin: origin,
-    log_description: log_description,
-    log_id: log_id,
-    timestamp: timestamp,
-    hash_algorithm: hash_algorithm,
-    signature_algorithm: signature_algorithm,
-    signature_data: signature_data,
-  ))
+    decode.success(SignedCertificateTimestamp(
+      status: status,
+      origin: origin,
+      log_description: log_description,
+      log_id: log_id,
+      timestamp: timestamp,
+      hash_algorithm: hash_algorithm,
+      signature_algorithm: signature_algorithm,
+      signature_data: signature_data,
+    ))
+  }
 }
 
 /// Security details about a request.
@@ -827,70 +803,66 @@ pub fn encode__security_details(value__: SecurityDetails) {
 }
 
 @internal
-pub fn decode__security_details(value__: dynamic.Dynamic) {
-  use protocol <- result.try(dynamic.field("protocol", dynamic.string)(value__))
-  use key_exchange <- result.try(dynamic.field("keyExchange", dynamic.string)(
-    value__,
-  ))
-  use key_exchange_group <- result.try(dynamic.optional_field(
-    "keyExchangeGroup",
-    dynamic.string,
-  )(value__))
-  use cipher <- result.try(dynamic.field("cipher", dynamic.string)(value__))
-  use mac <- result.try(dynamic.optional_field("mac", dynamic.string)(value__))
-  use certificate_id <- result.try(dynamic.field(
-    "certificateId",
-    security.decode__certificate_id,
-  )(value__))
-  use subject_name <- result.try(dynamic.field("subjectName", dynamic.string)(
-    value__,
-  ))
-  use san_list <- result.try(dynamic.field(
-    "sanList",
-    dynamic.list(dynamic.string),
-  )(value__))
-  use issuer <- result.try(dynamic.field("issuer", dynamic.string)(value__))
-  use valid_from <- result.try(dynamic.field(
-    "validFrom",
-    decode__time_since_epoch,
-  )(value__))
-  use valid_to <- result.try(dynamic.field("validTo", decode__time_since_epoch)(
-    value__,
-  ))
-  use signed_certificate_timestamp_list <- result.try(dynamic.field(
-    "signedCertificateTimestampList",
-    dynamic.list(decode__signed_certificate_timestamp),
-  )(value__))
-  use certificate_transparency_compliance <- result.try(dynamic.field(
-    "certificateTransparencyCompliance",
-    decode__certificate_transparency_compliance,
-  )(value__))
-  use server_signature_algorithm <- result.try(dynamic.optional_field(
-    "serverSignatureAlgorithm",
-    dynamic.int,
-  )(value__))
-  use encrypted_client_hello <- result.try(dynamic.field(
-    "encryptedClientHello",
-    dynamic.bool,
-  )(value__))
+pub fn decode__security_details() {
+  {
+    use protocol <- decode.field("protocol", decode.string)
+    use key_exchange <- decode.field("keyExchange", decode.string)
+    use key_exchange_group <- decode.optional_field(
+      "keyExchangeGroup",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use cipher <- decode.field("cipher", decode.string)
+    use mac <- decode.optional_field(
+      "mac",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use certificate_id <- decode.field(
+      "certificateId",
+      security.decode__certificate_id(),
+    )
+    use subject_name <- decode.field("subjectName", decode.string)
+    use san_list <- decode.field("sanList", decode.list(decode.string))
+    use issuer <- decode.field("issuer", decode.string)
+    use valid_from <- decode.field("validFrom", decode__time_since_epoch())
+    use valid_to <- decode.field("validTo", decode__time_since_epoch())
+    use signed_certificate_timestamp_list <- decode.field(
+      "signedCertificateTimestampList",
+      decode.list(decode__signed_certificate_timestamp()),
+    )
+    use certificate_transparency_compliance <- decode.field(
+      "certificateTransparencyCompliance",
+      decode__certificate_transparency_compliance(),
+    )
+    use server_signature_algorithm <- decode.optional_field(
+      "serverSignatureAlgorithm",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use encrypted_client_hello <- decode.field(
+      "encryptedClientHello",
+      decode.bool,
+    )
 
-  Ok(SecurityDetails(
-    protocol: protocol,
-    key_exchange: key_exchange,
-    key_exchange_group: key_exchange_group,
-    cipher: cipher,
-    mac: mac,
-    certificate_id: certificate_id,
-    subject_name: subject_name,
-    san_list: san_list,
-    issuer: issuer,
-    valid_from: valid_from,
-    valid_to: valid_to,
-    signed_certificate_timestamp_list: signed_certificate_timestamp_list,
-    certificate_transparency_compliance: certificate_transparency_compliance,
-    server_signature_algorithm: server_signature_algorithm,
-    encrypted_client_hello: encrypted_client_hello,
-  ))
+    decode.success(SecurityDetails(
+      protocol: protocol,
+      key_exchange: key_exchange,
+      key_exchange_group: key_exchange_group,
+      cipher: cipher,
+      mac: mac,
+      certificate_id: certificate_id,
+      subject_name: subject_name,
+      san_list: san_list,
+      issuer: issuer,
+      valid_from: valid_from,
+      valid_to: valid_to,
+      signed_certificate_timestamp_list: signed_certificate_timestamp_list,
+      certificate_transparency_compliance: certificate_transparency_compliance,
+      server_signature_algorithm: server_signature_algorithm,
+      encrypted_client_hello: encrypted_client_hello,
+    ))
+  }
 }
 
 /// Whether the request complied with Certificate Transparency policy.
@@ -913,20 +885,20 @@ pub fn encode__certificate_transparency_compliance(
 }
 
 @internal
-pub fn decode__certificate_transparency_compliance(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("unknown") -> Ok(CertificateTransparencyComplianceUnknown)
-    Ok("not-compliant") -> Ok(CertificateTransparencyComplianceNotCompliant)
-    Ok("compliant") -> Ok(CertificateTransparencyComplianceCompliant)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__certificate_transparency_compliance() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "unknown" -> decode.success(CertificateTransparencyComplianceUnknown)
+      "not-compliant" ->
+        decode.success(CertificateTransparencyComplianceNotCompliant)
+      "compliant" -> decode.success(CertificateTransparencyComplianceCompliant)
+      _ ->
+        decode.failure(
+          CertificateTransparencyComplianceUnknown,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -969,32 +941,29 @@ pub fn encode__blocked_reason(value__: BlockedReason) {
 }
 
 @internal
-pub fn decode__blocked_reason(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("other") -> Ok(BlockedReasonOther)
-    Ok("csp") -> Ok(BlockedReasonCsp)
-    Ok("mixed-content") -> Ok(BlockedReasonMixedContent)
-    Ok("origin") -> Ok(BlockedReasonOrigin)
-    Ok("inspector") -> Ok(BlockedReasonInspector)
-    Ok("subresource-filter") -> Ok(BlockedReasonSubresourceFilter)
-    Ok("content-type") -> Ok(BlockedReasonContentType)
-    Ok("coep-frame-resource-needs-coep-header") ->
-      Ok(BlockedReasonCoepFrameResourceNeedsCoepHeader)
-    Ok("coop-sandboxed-iframe-cannot-navigate-to-coop-page") ->
-      Ok(BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage)
-    Ok("corp-not-same-origin") -> Ok(BlockedReasonCorpNotSameOrigin)
-    Ok("corp-not-same-origin-after-defaulted-to-same-origin-by-coep") ->
-      Ok(BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep)
-    Ok("corp-not-same-site") -> Ok(BlockedReasonCorpNotSameSite)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__blocked_reason() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "other" -> decode.success(BlockedReasonOther)
+      "csp" -> decode.success(BlockedReasonCsp)
+      "mixed-content" -> decode.success(BlockedReasonMixedContent)
+      "origin" -> decode.success(BlockedReasonOrigin)
+      "inspector" -> decode.success(BlockedReasonInspector)
+      "subresource-filter" -> decode.success(BlockedReasonSubresourceFilter)
+      "content-type" -> decode.success(BlockedReasonContentType)
+      "coep-frame-resource-needs-coep-header" ->
+        decode.success(BlockedReasonCoepFrameResourceNeedsCoepHeader)
+      "coop-sandboxed-iframe-cannot-navigate-to-coop-page" ->
+        decode.success(BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage)
+      "corp-not-same-origin" -> decode.success(BlockedReasonCorpNotSameOrigin)
+      "corp-not-same-origin-after-defaulted-to-same-origin-by-coep" ->
+        decode.success(
+          BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep,
+        )
+      "corp-not-same-site" -> decode.success(BlockedReasonCorpNotSameSite)
+      _ -> decode.failure(BlockedReasonOther, "valid enum property")
+    }
   }
 }
 
@@ -1093,74 +1062,76 @@ pub fn encode__cors_error(value__: CorsError) {
 }
 
 @internal
-pub fn decode__cors_error(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("DisallowedByMode") -> Ok(CorsErrorDisallowedByMode)
-    Ok("InvalidResponse") -> Ok(CorsErrorInvalidResponse)
-    Ok("WildcardOriginNotAllowed") -> Ok(CorsErrorWildcardOriginNotAllowed)
-    Ok("MissingAllowOriginHeader") -> Ok(CorsErrorMissingAllowOriginHeader)
-    Ok("MultipleAllowOriginValues") -> Ok(CorsErrorMultipleAllowOriginValues)
-    Ok("InvalidAllowOriginValue") -> Ok(CorsErrorInvalidAllowOriginValue)
-    Ok("AllowOriginMismatch") -> Ok(CorsErrorAllowOriginMismatch)
-    Ok("InvalidAllowCredentials") -> Ok(CorsErrorInvalidAllowCredentials)
-    Ok("CorsDisabledScheme") -> Ok(CorsErrorCorsDisabledScheme)
-    Ok("PreflightInvalidStatus") -> Ok(CorsErrorPreflightInvalidStatus)
-    Ok("PreflightDisallowedRedirect") ->
-      Ok(CorsErrorPreflightDisallowedRedirect)
-    Ok("PreflightWildcardOriginNotAllowed") ->
-      Ok(CorsErrorPreflightWildcardOriginNotAllowed)
-    Ok("PreflightMissingAllowOriginHeader") ->
-      Ok(CorsErrorPreflightMissingAllowOriginHeader)
-    Ok("PreflightMultipleAllowOriginValues") ->
-      Ok(CorsErrorPreflightMultipleAllowOriginValues)
-    Ok("PreflightInvalidAllowOriginValue") ->
-      Ok(CorsErrorPreflightInvalidAllowOriginValue)
-    Ok("PreflightAllowOriginMismatch") ->
-      Ok(CorsErrorPreflightAllowOriginMismatch)
-    Ok("PreflightInvalidAllowCredentials") ->
-      Ok(CorsErrorPreflightInvalidAllowCredentials)
-    Ok("PreflightMissingAllowExternal") ->
-      Ok(CorsErrorPreflightMissingAllowExternal)
-    Ok("PreflightInvalidAllowExternal") ->
-      Ok(CorsErrorPreflightInvalidAllowExternal)
-    Ok("PreflightMissingAllowPrivateNetwork") ->
-      Ok(CorsErrorPreflightMissingAllowPrivateNetwork)
-    Ok("PreflightInvalidAllowPrivateNetwork") ->
-      Ok(CorsErrorPreflightInvalidAllowPrivateNetwork)
-    Ok("InvalidAllowMethodsPreflightResponse") ->
-      Ok(CorsErrorInvalidAllowMethodsPreflightResponse)
-    Ok("InvalidAllowHeadersPreflightResponse") ->
-      Ok(CorsErrorInvalidAllowHeadersPreflightResponse)
-    Ok("MethodDisallowedByPreflightResponse") ->
-      Ok(CorsErrorMethodDisallowedByPreflightResponse)
-    Ok("HeaderDisallowedByPreflightResponse") ->
-      Ok(CorsErrorHeaderDisallowedByPreflightResponse)
-    Ok("RedirectContainsCredentials") ->
-      Ok(CorsErrorRedirectContainsCredentials)
-    Ok("InsecurePrivateNetwork") -> Ok(CorsErrorInsecurePrivateNetwork)
-    Ok("InvalidPrivateNetworkAccess") ->
-      Ok(CorsErrorInvalidPrivateNetworkAccess)
-    Ok("UnexpectedPrivateNetworkAccess") ->
-      Ok(CorsErrorUnexpectedPrivateNetworkAccess)
-    Ok("NoCorsRedirectModeNotFollow") ->
-      Ok(CorsErrorNoCorsRedirectModeNotFollow)
-    Ok("PreflightMissingPrivateNetworkAccessId") ->
-      Ok(CorsErrorPreflightMissingPrivateNetworkAccessId)
-    Ok("PreflightMissingPrivateNetworkAccessName") ->
-      Ok(CorsErrorPreflightMissingPrivateNetworkAccessName)
-    Ok("PrivateNetworkAccessPermissionUnavailable") ->
-      Ok(CorsErrorPrivateNetworkAccessPermissionUnavailable)
-    Ok("PrivateNetworkAccessPermissionDenied") ->
-      Ok(CorsErrorPrivateNetworkAccessPermissionDenied)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__cors_error() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "DisallowedByMode" -> decode.success(CorsErrorDisallowedByMode)
+      "InvalidResponse" -> decode.success(CorsErrorInvalidResponse)
+      "WildcardOriginNotAllowed" ->
+        decode.success(CorsErrorWildcardOriginNotAllowed)
+      "MissingAllowOriginHeader" ->
+        decode.success(CorsErrorMissingAllowOriginHeader)
+      "MultipleAllowOriginValues" ->
+        decode.success(CorsErrorMultipleAllowOriginValues)
+      "InvalidAllowOriginValue" ->
+        decode.success(CorsErrorInvalidAllowOriginValue)
+      "AllowOriginMismatch" -> decode.success(CorsErrorAllowOriginMismatch)
+      "InvalidAllowCredentials" ->
+        decode.success(CorsErrorInvalidAllowCredentials)
+      "CorsDisabledScheme" -> decode.success(CorsErrorCorsDisabledScheme)
+      "PreflightInvalidStatus" ->
+        decode.success(CorsErrorPreflightInvalidStatus)
+      "PreflightDisallowedRedirect" ->
+        decode.success(CorsErrorPreflightDisallowedRedirect)
+      "PreflightWildcardOriginNotAllowed" ->
+        decode.success(CorsErrorPreflightWildcardOriginNotAllowed)
+      "PreflightMissingAllowOriginHeader" ->
+        decode.success(CorsErrorPreflightMissingAllowOriginHeader)
+      "PreflightMultipleAllowOriginValues" ->
+        decode.success(CorsErrorPreflightMultipleAllowOriginValues)
+      "PreflightInvalidAllowOriginValue" ->
+        decode.success(CorsErrorPreflightInvalidAllowOriginValue)
+      "PreflightAllowOriginMismatch" ->
+        decode.success(CorsErrorPreflightAllowOriginMismatch)
+      "PreflightInvalidAllowCredentials" ->
+        decode.success(CorsErrorPreflightInvalidAllowCredentials)
+      "PreflightMissingAllowExternal" ->
+        decode.success(CorsErrorPreflightMissingAllowExternal)
+      "PreflightInvalidAllowExternal" ->
+        decode.success(CorsErrorPreflightInvalidAllowExternal)
+      "PreflightMissingAllowPrivateNetwork" ->
+        decode.success(CorsErrorPreflightMissingAllowPrivateNetwork)
+      "PreflightInvalidAllowPrivateNetwork" ->
+        decode.success(CorsErrorPreflightInvalidAllowPrivateNetwork)
+      "InvalidAllowMethodsPreflightResponse" ->
+        decode.success(CorsErrorInvalidAllowMethodsPreflightResponse)
+      "InvalidAllowHeadersPreflightResponse" ->
+        decode.success(CorsErrorInvalidAllowHeadersPreflightResponse)
+      "MethodDisallowedByPreflightResponse" ->
+        decode.success(CorsErrorMethodDisallowedByPreflightResponse)
+      "HeaderDisallowedByPreflightResponse" ->
+        decode.success(CorsErrorHeaderDisallowedByPreflightResponse)
+      "RedirectContainsCredentials" ->
+        decode.success(CorsErrorRedirectContainsCredentials)
+      "InsecurePrivateNetwork" ->
+        decode.success(CorsErrorInsecurePrivateNetwork)
+      "InvalidPrivateNetworkAccess" ->
+        decode.success(CorsErrorInvalidPrivateNetworkAccess)
+      "UnexpectedPrivateNetworkAccess" ->
+        decode.success(CorsErrorUnexpectedPrivateNetworkAccess)
+      "NoCorsRedirectModeNotFollow" ->
+        decode.success(CorsErrorNoCorsRedirectModeNotFollow)
+      "PreflightMissingPrivateNetworkAccessId" ->
+        decode.success(CorsErrorPreflightMissingPrivateNetworkAccessId)
+      "PreflightMissingPrivateNetworkAccessName" ->
+        decode.success(CorsErrorPreflightMissingPrivateNetworkAccessName)
+      "PrivateNetworkAccessPermissionUnavailable" ->
+        decode.success(CorsErrorPrivateNetworkAccessPermissionUnavailable)
+      "PrivateNetworkAccessPermissionDenied" ->
+        decode.success(CorsErrorPrivateNetworkAccessPermissionDenied)
+      _ -> decode.failure(CorsErrorDisallowedByMode, "valid enum property")
+    }
   }
 }
 
@@ -1177,16 +1148,16 @@ pub fn encode__cors_error_status(value__: CorsErrorStatus) {
 }
 
 @internal
-pub fn decode__cors_error_status(value__: dynamic.Dynamic) {
-  use cors_error <- result.try(dynamic.field("corsError", decode__cors_error)(
-    value__,
-  ))
-  use failed_parameter <- result.try(dynamic.field(
-    "failedParameter",
-    dynamic.string,
-  )(value__))
+pub fn decode__cors_error_status() {
+  {
+    use cors_error <- decode.field("corsError", decode__cors_error())
+    use failed_parameter <- decode.field("failedParameter", decode.string)
 
-  Ok(CorsErrorStatus(cors_error: cors_error, failed_parameter: failed_parameter))
+    decode.success(CorsErrorStatus(
+      cors_error: cors_error,
+      failed_parameter: failed_parameter,
+    ))
+  }
 }
 
 /// Source of serviceworker response.
@@ -1211,21 +1182,20 @@ pub fn encode__service_worker_response_source(
 }
 
 @internal
-pub fn decode__service_worker_response_source(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("cache-storage") -> Ok(ServiceWorkerResponseSourceCacheStorage)
-    Ok("http-cache") -> Ok(ServiceWorkerResponseSourceHttpCache)
-    Ok("fallback-code") -> Ok(ServiceWorkerResponseSourceFallbackCode)
-    Ok("network") -> Ok(ServiceWorkerResponseSourceNetwork)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__service_worker_response_source() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "cache-storage" -> decode.success(ServiceWorkerResponseSourceCacheStorage)
+      "http-cache" -> decode.success(ServiceWorkerResponseSourceHttpCache)
+      "fallback-code" -> decode.success(ServiceWorkerResponseSourceFallbackCode)
+      "network" -> decode.success(ServiceWorkerResponseSourceNetwork)
+      _ ->
+        decode.failure(
+          ServiceWorkerResponseSourceCacheStorage,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -1250,22 +1220,18 @@ pub fn encode__service_worker_router_source(value__: ServiceWorkerRouterSource) 
 }
 
 @internal
-pub fn decode__service_worker_router_source(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("network") -> Ok(ServiceWorkerRouterSourceNetwork)
-    Ok("cache") -> Ok(ServiceWorkerRouterSourceCache)
-    Ok("fetch-event") -> Ok(ServiceWorkerRouterSourceFetchEvent)
-    Ok("race-network-and-fetch-handler") ->
-      Ok(ServiceWorkerRouterSourceRaceNetworkAndFetchHandler)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__service_worker_router_source() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "network" -> decode.success(ServiceWorkerRouterSourceNetwork)
+      "cache" -> decode.success(ServiceWorkerRouterSourceCache)
+      "fetch-event" -> decode.success(ServiceWorkerRouterSourceFetchEvent)
+      "race-network-and-fetch-handler" ->
+        decode.success(ServiceWorkerRouterSourceRaceNetworkAndFetchHandler)
+      _ ->
+        decode.failure(ServiceWorkerRouterSourceNetwork, "valid enum property")
+    }
   }
 }
 
@@ -1388,107 +1354,113 @@ pub fn encode__response(value__: Response) {
 }
 
 @internal
-pub fn decode__response(value__: dynamic.Dynamic) {
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use status <- result.try(dynamic.field("status", dynamic.int)(value__))
-  use status_text <- result.try(dynamic.field("statusText", dynamic.string)(
-    value__,
-  ))
-  use headers <- result.try(dynamic.field("headers", decode__headers)(value__))
-  use mime_type <- result.try(dynamic.field("mimeType", dynamic.string)(value__))
-  use charset <- result.try(dynamic.field("charset", dynamic.string)(value__))
-  use request_headers <- result.try(dynamic.optional_field(
-    "requestHeaders",
-    decode__headers,
-  )(value__))
-  use connection_reused <- result.try(dynamic.field(
-    "connectionReused",
-    dynamic.bool,
-  )(value__))
-  use connection_id <- result.try(dynamic.field("connectionId", dynamic.float)(
-    value__,
-  ))
-  use remote_ip_address <- result.try(dynamic.optional_field(
-    "remoteIPAddress",
-    dynamic.string,
-  )(value__))
-  use remote_port <- result.try(dynamic.optional_field(
-    "remotePort",
-    dynamic.int,
-  )(value__))
-  use from_disk_cache <- result.try(dynamic.optional_field(
-    "fromDiskCache",
-    dynamic.bool,
-  )(value__))
-  use from_service_worker <- result.try(dynamic.optional_field(
-    "fromServiceWorker",
-    dynamic.bool,
-  )(value__))
-  use from_prefetch_cache <- result.try(dynamic.optional_field(
-    "fromPrefetchCache",
-    dynamic.bool,
-  )(value__))
-  use from_early_hints <- result.try(dynamic.optional_field(
-    "fromEarlyHints",
-    dynamic.bool,
-  )(value__))
-  use encoded_data_length <- result.try(dynamic.field(
-    "encodedDataLength",
-    dynamic.float,
-  )(value__))
-  use timing <- result.try(dynamic.optional_field(
-    "timing",
-    decode__resource_timing,
-  )(value__))
-  use service_worker_response_source <- result.try(dynamic.optional_field(
-    "serviceWorkerResponseSource",
-    decode__service_worker_response_source,
-  )(value__))
-  use response_time <- result.try(dynamic.optional_field(
-    "responseTime",
-    decode__time_since_epoch,
-  )(value__))
-  use cache_storage_cache_name <- result.try(dynamic.optional_field(
-    "cacheStorageCacheName",
-    dynamic.string,
-  )(value__))
-  use protocol <- result.try(dynamic.optional_field("protocol", dynamic.string)(
-    value__,
-  ))
-  use security_state <- result.try(dynamic.field(
-    "securityState",
-    security.decode__security_state,
-  )(value__))
-  use security_details <- result.try(dynamic.optional_field(
-    "securityDetails",
-    decode__security_details,
-  )(value__))
+pub fn decode__response() {
+  {
+    use url <- decode.field("url", decode.string)
+    use status <- decode.field("status", decode.int)
+    use status_text <- decode.field("statusText", decode.string)
+    use headers <- decode.field("headers", decode__headers())
+    use mime_type <- decode.field("mimeType", decode.string)
+    use charset <- decode.field("charset", decode.string)
+    use request_headers <- decode.optional_field(
+      "requestHeaders",
+      option.None,
+      decode.optional(decode__headers()),
+    )
+    use connection_reused <- decode.field("connectionReused", decode.bool)
+    use connection_id <- decode.field("connectionId", decode.float)
+    use remote_ip_address <- decode.optional_field(
+      "remoteIPAddress",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use remote_port <- decode.optional_field(
+      "remotePort",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use from_disk_cache <- decode.optional_field(
+      "fromDiskCache",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use from_service_worker <- decode.optional_field(
+      "fromServiceWorker",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use from_prefetch_cache <- decode.optional_field(
+      "fromPrefetchCache",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use from_early_hints <- decode.optional_field(
+      "fromEarlyHints",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use encoded_data_length <- decode.field("encodedDataLength", decode.float)
+    use timing <- decode.optional_field(
+      "timing",
+      option.None,
+      decode.optional(decode__resource_timing()),
+    )
+    use service_worker_response_source <- decode.optional_field(
+      "serviceWorkerResponseSource",
+      option.None,
+      decode.optional(decode__service_worker_response_source()),
+    )
+    use response_time <- decode.optional_field(
+      "responseTime",
+      option.None,
+      decode.optional(decode__time_since_epoch()),
+    )
+    use cache_storage_cache_name <- decode.optional_field(
+      "cacheStorageCacheName",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use protocol <- decode.optional_field(
+      "protocol",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use security_state <- decode.field(
+      "securityState",
+      security.decode__security_state(),
+    )
+    use security_details <- decode.optional_field(
+      "securityDetails",
+      option.None,
+      decode.optional(decode__security_details()),
+    )
 
-  Ok(Response(
-    url: url,
-    status: status,
-    status_text: status_text,
-    headers: headers,
-    mime_type: mime_type,
-    charset: charset,
-    request_headers: request_headers,
-    connection_reused: connection_reused,
-    connection_id: connection_id,
-    remote_ip_address: remote_ip_address,
-    remote_port: remote_port,
-    from_disk_cache: from_disk_cache,
-    from_service_worker: from_service_worker,
-    from_prefetch_cache: from_prefetch_cache,
-    from_early_hints: from_early_hints,
-    encoded_data_length: encoded_data_length,
-    timing: timing,
-    service_worker_response_source: service_worker_response_source,
-    response_time: response_time,
-    cache_storage_cache_name: cache_storage_cache_name,
-    protocol: protocol,
-    security_state: security_state,
-    security_details: security_details,
-  ))
+    decode.success(Response(
+      url: url,
+      status: status,
+      status_text: status_text,
+      headers: headers,
+      mime_type: mime_type,
+      charset: charset,
+      request_headers: request_headers,
+      connection_reused: connection_reused,
+      connection_id: connection_id,
+      remote_ip_address: remote_ip_address,
+      remote_port: remote_port,
+      from_disk_cache: from_disk_cache,
+      from_service_worker: from_service_worker,
+      from_prefetch_cache: from_prefetch_cache,
+      from_early_hints: from_early_hints,
+      encoded_data_length: encoded_data_length,
+      timing: timing,
+      service_worker_response_source: service_worker_response_source,
+      response_time: response_time,
+      cache_storage_cache_name: cache_storage_cache_name,
+      protocol: protocol,
+      security_state: security_state,
+      security_details: security_details,
+    ))
+  }
 }
 
 /// WebSocket request data.
@@ -1501,14 +1473,18 @@ pub type WebSocketRequest {
 
 @internal
 pub fn encode__web_socket_request(value__: WebSocketRequest) {
-  json.object([#("headers", encode__headers(value__.headers))])
+  json.object([
+    #("headers", encode__headers(value__.headers)),
+  ])
 }
 
 @internal
-pub fn decode__web_socket_request(value__: dynamic.Dynamic) {
-  use headers <- result.try(dynamic.field("headers", decode__headers)(value__))
+pub fn decode__web_socket_request() {
+  {
+    use headers <- decode.field("headers", decode__headers())
 
-  Ok(WebSocketRequest(headers: headers))
+    decode.success(WebSocketRequest(headers: headers))
+  }
 }
 
 /// WebSocket response data.
@@ -1550,33 +1526,36 @@ pub fn encode__web_socket_response(value__: WebSocketResponse) {
 }
 
 @internal
-pub fn decode__web_socket_response(value__: dynamic.Dynamic) {
-  use status <- result.try(dynamic.field("status", dynamic.int)(value__))
-  use status_text <- result.try(dynamic.field("statusText", dynamic.string)(
-    value__,
-  ))
-  use headers <- result.try(dynamic.field("headers", decode__headers)(value__))
-  use headers_text <- result.try(dynamic.optional_field(
-    "headersText",
-    dynamic.string,
-  )(value__))
-  use request_headers <- result.try(dynamic.optional_field(
-    "requestHeaders",
-    decode__headers,
-  )(value__))
-  use request_headers_text <- result.try(dynamic.optional_field(
-    "requestHeadersText",
-    dynamic.string,
-  )(value__))
+pub fn decode__web_socket_response() {
+  {
+    use status <- decode.field("status", decode.int)
+    use status_text <- decode.field("statusText", decode.string)
+    use headers <- decode.field("headers", decode__headers())
+    use headers_text <- decode.optional_field(
+      "headersText",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use request_headers <- decode.optional_field(
+      "requestHeaders",
+      option.None,
+      decode.optional(decode__headers()),
+    )
+    use request_headers_text <- decode.optional_field(
+      "requestHeadersText",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(WebSocketResponse(
-    status: status,
-    status_text: status_text,
-    headers: headers,
-    headers_text: headers_text,
-    request_headers: request_headers,
-    request_headers_text: request_headers_text,
-  ))
+    decode.success(WebSocketResponse(
+      status: status,
+      status_text: status_text,
+      headers: headers,
+      headers_text: headers_text,
+      request_headers: request_headers,
+      request_headers_text: request_headers_text,
+    ))
+  }
 }
 
 /// WebSocket message data. This represents an entire WebSocket message, not just a fragmented frame as the name suggests.
@@ -1603,14 +1582,18 @@ pub fn encode__web_socket_frame(value__: WebSocketFrame) {
 }
 
 @internal
-pub fn decode__web_socket_frame(value__: dynamic.Dynamic) {
-  use opcode <- result.try(dynamic.field("opcode", dynamic.float)(value__))
-  use mask <- result.try(dynamic.field("mask", dynamic.bool)(value__))
-  use payload_data <- result.try(dynamic.field("payloadData", dynamic.string)(
-    value__,
-  ))
+pub fn decode__web_socket_frame() {
+  {
+    use opcode <- decode.field("opcode", decode.float)
+    use mask <- decode.field("mask", decode.bool)
+    use payload_data <- decode.field("payloadData", decode.string)
 
-  Ok(WebSocketFrame(opcode: opcode, mask: mask, payload_data: payload_data))
+    decode.success(WebSocketFrame(
+      opcode: opcode,
+      mask: mask,
+      payload_data: payload_data,
+    ))
+  }
 }
 
 /// Information about the cached resource.
@@ -1642,21 +1625,24 @@ pub fn encode__cached_resource(value__: CachedResource) {
 }
 
 @internal
-pub fn decode__cached_resource(value__: dynamic.Dynamic) {
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use type_ <- result.try(dynamic.field("type", decode__resource_type)(value__))
-  use response <- result.try(dynamic.optional_field(
-    "response",
-    decode__response,
-  )(value__))
-  use body_size <- result.try(dynamic.field("bodySize", dynamic.float)(value__))
+pub fn decode__cached_resource() {
+  {
+    use url <- decode.field("url", decode.string)
+    use type_ <- decode.field("type", decode__resource_type())
+    use response <- decode.optional_field(
+      "response",
+      option.None,
+      decode.optional(decode__response()),
+    )
+    use body_size <- decode.field("bodySize", decode.float)
 
-  Ok(CachedResource(
-    url: url,
-    type_: type_,
-    response: response,
-    body_size: body_size,
-  ))
+    decode.success(CachedResource(
+      url: url,
+      type_: type_,
+      response: response,
+      body_size: body_size,
+    ))
+  }
 }
 
 /// Information about the request initiator.
@@ -1704,30 +1690,27 @@ pub fn encode__initiator_type(value__: InitiatorType) {
 }
 
 @internal
-pub fn decode__initiator_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("parser") -> Ok(InitiatorTypeParser)
-    Ok("script") -> Ok(InitiatorTypeScript)
-    Ok("preload") -> Ok(InitiatorTypePreload)
-    Ok("SignedExchange") -> Ok(InitiatorTypeSignedExchange)
-    Ok("preflight") -> Ok(InitiatorTypePreflight)
-    Ok("other") -> Ok(InitiatorTypeOther)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__initiator_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "parser" -> decode.success(InitiatorTypeParser)
+      "script" -> decode.success(InitiatorTypeScript)
+      "preload" -> decode.success(InitiatorTypePreload)
+      "SignedExchange" -> decode.success(InitiatorTypeSignedExchange)
+      "preflight" -> decode.success(InitiatorTypePreflight)
+      "other" -> decode.success(InitiatorTypeOther)
+      _ -> decode.failure(InitiatorTypeParser, "valid enum property")
+    }
   }
 }
 
 @internal
 pub fn encode__initiator(value__: Initiator) {
   json.object(
-    [#("type", encode__initiator_type(value__.type_))]
+    [
+      #("type", encode__initiator_type(value__.type_)),
+    ]
     |> utils.add_optional(value__.stack, fn(inner_value__) {
       #("stack", runtime.encode__stack_trace(inner_value__))
     })
@@ -1747,34 +1730,44 @@ pub fn encode__initiator(value__: Initiator) {
 }
 
 @internal
-pub fn decode__initiator(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", decode__initiator_type)(value__))
-  use stack <- result.try(dynamic.optional_field(
-    "stack",
-    runtime.decode__stack_trace,
-  )(value__))
-  use url <- result.try(dynamic.optional_field("url", dynamic.string)(value__))
-  use line_number <- result.try(dynamic.optional_field(
-    "lineNumber",
-    dynamic.float,
-  )(value__))
-  use column_number <- result.try(dynamic.optional_field(
-    "columnNumber",
-    dynamic.float,
-  )(value__))
-  use request_id <- result.try(dynamic.optional_field(
-    "requestId",
-    decode__request_id,
-  )(value__))
+pub fn decode__initiator() {
+  {
+    use type_ <- decode.field("type", decode__initiator_type())
+    use stack <- decode.optional_field(
+      "stack",
+      option.None,
+      decode.optional(runtime.decode__stack_trace()),
+    )
+    use url <- decode.optional_field(
+      "url",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use line_number <- decode.optional_field(
+      "lineNumber",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use column_number <- decode.optional_field(
+      "columnNumber",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use request_id <- decode.optional_field(
+      "requestId",
+      option.None,
+      decode.optional(decode__request_id()),
+    )
 
-  Ok(Initiator(
-    type_: type_,
-    stack: stack,
-    url: url,
-    line_number: line_number,
-    column_number: column_number,
-    request_id: request_id,
-  ))
+    decode.success(Initiator(
+      type_: type_,
+      stack: stack,
+      url: url,
+      line_number: line_number,
+      column_number: column_number,
+      request_id: request_id,
+    ))
+  }
 }
 
 /// Cookie object
@@ -1824,33 +1817,36 @@ pub fn encode__cookie(value__: Cookie) {
 }
 
 @internal
-pub fn decode__cookie(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
-  use domain <- result.try(dynamic.field("domain", dynamic.string)(value__))
-  use path <- result.try(dynamic.field("path", dynamic.string)(value__))
-  use expires <- result.try(dynamic.field("expires", dynamic.float)(value__))
-  use size <- result.try(dynamic.field("size", dynamic.int)(value__))
-  use http_only <- result.try(dynamic.field("httpOnly", dynamic.bool)(value__))
-  use secure <- result.try(dynamic.field("secure", dynamic.bool)(value__))
-  use session <- result.try(dynamic.field("session", dynamic.bool)(value__))
-  use same_site <- result.try(dynamic.optional_field(
-    "sameSite",
-    decode__cookie_same_site,
-  )(value__))
+pub fn decode__cookie() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.string)
+    use domain <- decode.field("domain", decode.string)
+    use path <- decode.field("path", decode.string)
+    use expires <- decode.field("expires", decode.float)
+    use size <- decode.field("size", decode.int)
+    use http_only <- decode.field("httpOnly", decode.bool)
+    use secure <- decode.field("secure", decode.bool)
+    use session <- decode.field("session", decode.bool)
+    use same_site <- decode.optional_field(
+      "sameSite",
+      option.None,
+      decode.optional(decode__cookie_same_site()),
+    )
 
-  Ok(Cookie(
-    name: name,
-    value: value,
-    domain: domain,
-    path: path,
-    expires: expires,
-    size: size,
-    http_only: http_only,
-    secure: secure,
-    session: session,
-    same_site: same_site,
-  ))
+    decode.success(Cookie(
+      name: name,
+      value: value,
+      domain: domain,
+      path: path,
+      expires: expires,
+      size: size,
+      http_only: http_only,
+      secure: secure,
+      session: session,
+      same_site: same_site,
+    ))
+  }
 }
 
 /// Cookie parameter object
@@ -1910,40 +1906,58 @@ pub fn encode__cookie_param(value__: CookieParam) {
 }
 
 @internal
-pub fn decode__cookie_param(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
-  use url <- result.try(dynamic.optional_field("url", dynamic.string)(value__))
-  use domain <- result.try(dynamic.optional_field("domain", dynamic.string)(
-    value__,
-  ))
-  use path <- result.try(dynamic.optional_field("path", dynamic.string)(value__))
-  use secure <- result.try(dynamic.optional_field("secure", dynamic.bool)(
-    value__,
-  ))
-  use http_only <- result.try(dynamic.optional_field("httpOnly", dynamic.bool)(
-    value__,
-  ))
-  use same_site <- result.try(dynamic.optional_field(
-    "sameSite",
-    decode__cookie_same_site,
-  )(value__))
-  use expires <- result.try(dynamic.optional_field(
-    "expires",
-    decode__time_since_epoch,
-  )(value__))
+pub fn decode__cookie_param() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.string)
+    use url <- decode.optional_field(
+      "url",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use domain <- decode.optional_field(
+      "domain",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use path <- decode.optional_field(
+      "path",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use secure <- decode.optional_field(
+      "secure",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use http_only <- decode.optional_field(
+      "httpOnly",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use same_site <- decode.optional_field(
+      "sameSite",
+      option.None,
+      decode.optional(decode__cookie_same_site()),
+    )
+    use expires <- decode.optional_field(
+      "expires",
+      option.None,
+      decode.optional(decode__time_since_epoch()),
+    )
 
-  Ok(CookieParam(
-    name: name,
-    value: value,
-    url: url,
-    domain: domain,
-    path: path,
-    secure: secure,
-    http_only: http_only,
-    same_site: same_site,
-    expires: expires,
-  ))
+    decode.success(CookieParam(
+      name: name,
+      value: value,
+      url: url,
+      domain: domain,
+      path: path,
+      secure: secure,
+      http_only: http_only,
+      same_site: same_site,
+      expires: expires,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1956,13 +1970,12 @@ pub type GetCookiesResponse {
 }
 
 @internal
-pub fn decode__get_cookies_response(value__: dynamic.Dynamic) {
-  use cookies <- result.try(dynamic.field(
-    "cookies",
-    dynamic.list(decode__cookie),
-  )(value__))
+pub fn decode__get_cookies_response() {
+  {
+    use cookies <- decode.field("cookies", decode.list(decode__cookie()))
 
-  Ok(GetCookiesResponse(cookies: cookies))
+    decode.success(GetCookiesResponse(cookies: cookies))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1977,13 +1990,16 @@ pub type GetResponseBodyResponse {
 }
 
 @internal
-pub fn decode__get_response_body_response(value__: dynamic.Dynamic) {
-  use body <- result.try(dynamic.field("body", dynamic.string)(value__))
-  use base64_encoded <- result.try(dynamic.field("base64Encoded", dynamic.bool)(
-    value__,
-  ))
+pub fn decode__get_response_body_response() {
+  {
+    use body <- decode.field("body", decode.string)
+    use base64_encoded <- decode.field("base64Encoded", decode.bool)
 
-  Ok(GetResponseBodyResponse(body: body, base64_encoded: base64_encoded))
+    decode.success(GetResponseBodyResponse(
+      body: body,
+      base64_encoded: base64_encoded,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1996,10 +2012,12 @@ pub type GetRequestPostDataResponse {
 }
 
 @internal
-pub fn decode__get_request_post_data_response(value__: dynamic.Dynamic) {
-  use post_data <- result.try(dynamic.field("postData", dynamic.string)(value__))
+pub fn decode__get_request_post_data_response() {
+  {
+    use post_data <- decode.field("postData", decode.string)
 
-  Ok(GetRequestPostDataResponse(post_data: post_data))
+    decode.success(GetRequestPostDataResponse(post_data: post_data))
+  }
 }
 
 /// Clears browser cache.
@@ -2038,7 +2056,9 @@ pub fn delete_cookies(
   callback__(
     "Network.deleteCookies",
     option.Some(json.object(
-      [#("name", json.string(name))]
+      [
+        #("name", json.string(name)),
+      ]
       |> utils.add_optional(url, fn(inner_value__) {
         #("url", json.string(inner_value__))
       })
@@ -2140,7 +2160,7 @@ pub fn get_cookies(callback__, urls urls: option.Option(List(String))) {
     )),
   ))
 
-  decode__get_cookies_response(result__)
+  decode.run(result__, decode__get_cookies_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -2156,10 +2176,14 @@ pub fn get_cookies(callback__, urls urls: option.Option(List(String))) {
 pub fn get_response_body(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getResponseBody",
-    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+      ]),
+    ),
   ))
 
-  decode__get_response_body_response(result__)
+  decode.run(result__, decode__get_response_body_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -2174,10 +2198,14 @@ pub fn get_response_body(callback__, request_id request_id: RequestId) {
 pub fn get_request_post_data(callback__, request_id request_id: RequestId) {
   use result__ <- result.try(callback__(
     "Network.getRequestPostData",
-    option.Some(json.object([#("requestId", encode__request_id(request_id))])),
+    option.Some(
+      json.object([
+        #("requestId", encode__request_id(request_id)),
+      ]),
+    ),
   ))
 
-  decode__get_request_post_data_response(result__)
+  decode.run(result__, decode__get_request_post_data_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -2191,7 +2219,11 @@ pub fn get_request_post_data(callback__, request_id request_id: RequestId) {
 pub fn set_bypass_service_worker(callback__, bypass bypass: Bool) {
   callback__(
     "Network.setBypassServiceWorker",
-    option.Some(json.object([#("bypass", json.bool(bypass))])),
+    option.Some(
+      json.object([
+        #("bypass", json.bool(bypass)),
+      ]),
+    ),
   )
 }
 
@@ -2205,7 +2237,11 @@ pub fn set_bypass_service_worker(callback__, bypass bypass: Bool) {
 pub fn set_cache_disabled(callback__, cache_disabled cache_disabled: Bool) {
   callback__(
     "Network.setCacheDisabled",
-    option.Some(json.object([#("cacheDisabled", json.bool(cache_disabled))])),
+    option.Some(
+      json.object([
+        #("cacheDisabled", json.bool(cache_disabled)),
+      ]),
+    ),
   )
 }
 
@@ -2240,7 +2276,10 @@ pub fn set_cookie(
   callback__(
     "Network.setCookie",
     option.Some(json.object(
-      [#("name", json.string(name)), #("value", json.string(value))]
+      [
+        #("name", json.string(name)),
+        #("value", json.string(value)),
+      ]
       |> utils.add_optional(url, fn(inner_value__) {
         #("url", json.string(inner_value__))
       })
@@ -2277,7 +2316,9 @@ pub fn set_cookies(callback__, cookies cookies: List(CookieParam)) {
   callback__(
     "Network.setCookies",
     option.Some(
-      json.object([#("cookies", json.array(cookies, of: encode__cookie_param))]),
+      json.object([
+        #("cookies", json.array(cookies, of: encode__cookie_param)),
+      ]),
     ),
   )
 }
@@ -2292,7 +2333,11 @@ pub fn set_cookies(callback__, cookies cookies: List(CookieParam)) {
 pub fn set_extra_http_headers(callback__, headers headers: Headers) {
   callback__(
     "Network.setExtraHTTPHeaders",
-    option.Some(json.object([#("headers", encode__headers(headers))])),
+    option.Some(
+      json.object([
+        #("headers", encode__headers(headers)),
+      ]),
+    ),
   )
 }
 
@@ -2314,7 +2359,9 @@ pub fn set_user_agent_override(
   callback__(
     "Network.setUserAgentOverride",
     option.Some(json.object(
-      [#("userAgent", json.string(user_agent))]
+      [
+        #("userAgent", json.string(user_agent)),
+      ]
       |> utils.add_optional(accept_language, fn(inner_value__) {
         #("acceptLanguage", json.string(inner_value__))
       })

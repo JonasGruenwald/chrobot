@@ -31,7 +31,7 @@ pub fn start() {
     }
     |> mist.new
     |> mist.port(get_port())
-    |> mist.start_http
+    |> mist.start
 
   case result {
     Ok(_) -> Nil

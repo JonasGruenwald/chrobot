@@ -20,6 +20,7 @@ import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/runtime
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -37,8 +38,11 @@ pub fn encode__node_id(value__: NodeId) {
 }
 
 @internal
-pub fn decode__node_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(NodeId, dynamic.int)
+pub fn decode__node_id() {
+  {
+    use value__ <- decode.then(decode.int)
+    decode.success(NodeId(value__))
+  }
 }
 
 /// Unique DOM node identifier used to reference a node that may not have been pushed to the
@@ -55,8 +59,11 @@ pub fn encode__backend_node_id(value__: BackendNodeId) {
 }
 
 @internal
-pub fn decode__backend_node_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(BackendNodeId, dynamic.int)
+pub fn decode__backend_node_id() {
+  {
+    use value__ <- decode.then(decode.int)
+    decode.success(BackendNodeId(value__))
+  }
 }
 
 /// Backend node with a friendly name.
@@ -80,19 +87,21 @@ pub fn encode__backend_node(value__: BackendNode) {
 }
 
 @internal
-pub fn decode__backend_node(value__: dynamic.Dynamic) {
-  use node_type <- result.try(dynamic.field("nodeType", dynamic.int)(value__))
-  use node_name <- result.try(dynamic.field("nodeName", dynamic.string)(value__))
-  use backend_node_id <- result.try(dynamic.field(
-    "backendNodeId",
-    decode__backend_node_id,
-  )(value__))
+pub fn decode__backend_node() {
+  {
+    use node_type <- decode.field("nodeType", decode.int)
+    use node_name <- decode.field("nodeName", decode.string)
+    use backend_node_id <- decode.field(
+      "backendNodeId",
+      decode__backend_node_id(),
+    )
 
-  Ok(BackendNode(
-    node_type: node_type,
-    node_name: node_name,
-    backend_node_id: backend_node_id,
-  ))
+    decode.success(BackendNode(
+      node_type: node_type,
+      node_name: node_name,
+      backend_node_id: backend_node_id,
+    ))
+  }
 }
 
 /// Pseudo element type.
@@ -161,44 +170,40 @@ pub fn encode__pseudo_type(value__: PseudoType) {
 }
 
 @internal
-pub fn decode__pseudo_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("first-line") -> Ok(PseudoTypeFirstLine)
-    Ok("first-letter") -> Ok(PseudoTypeFirstLetter)
-    Ok("before") -> Ok(PseudoTypeBefore)
-    Ok("after") -> Ok(PseudoTypeAfter)
-    Ok("marker") -> Ok(PseudoTypeMarker)
-    Ok("backdrop") -> Ok(PseudoTypeBackdrop)
-    Ok("selection") -> Ok(PseudoTypeSelection)
-    Ok("target-text") -> Ok(PseudoTypeTargetText)
-    Ok("spelling-error") -> Ok(PseudoTypeSpellingError)
-    Ok("grammar-error") -> Ok(PseudoTypeGrammarError)
-    Ok("highlight") -> Ok(PseudoTypeHighlight)
-    Ok("first-line-inherited") -> Ok(PseudoTypeFirstLineInherited)
-    Ok("scroll-marker") -> Ok(PseudoTypeScrollMarker)
-    Ok("scroll-markers") -> Ok(PseudoTypeScrollMarkers)
-    Ok("scrollbar") -> Ok(PseudoTypeScrollbar)
-    Ok("scrollbar-thumb") -> Ok(PseudoTypeScrollbarThumb)
-    Ok("scrollbar-button") -> Ok(PseudoTypeScrollbarButton)
-    Ok("scrollbar-track") -> Ok(PseudoTypeScrollbarTrack)
-    Ok("scrollbar-track-piece") -> Ok(PseudoTypeScrollbarTrackPiece)
-    Ok("scrollbar-corner") -> Ok(PseudoTypeScrollbarCorner)
-    Ok("resizer") -> Ok(PseudoTypeResizer)
-    Ok("input-list-button") -> Ok(PseudoTypeInputListButton)
-    Ok("view-transition") -> Ok(PseudoTypeViewTransition)
-    Ok("view-transition-group") -> Ok(PseudoTypeViewTransitionGroup)
-    Ok("view-transition-image-pair") -> Ok(PseudoTypeViewTransitionImagePair)
-    Ok("view-transition-old") -> Ok(PseudoTypeViewTransitionOld)
-    Ok("view-transition-new") -> Ok(PseudoTypeViewTransitionNew)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__pseudo_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "first-line" -> decode.success(PseudoTypeFirstLine)
+      "first-letter" -> decode.success(PseudoTypeFirstLetter)
+      "before" -> decode.success(PseudoTypeBefore)
+      "after" -> decode.success(PseudoTypeAfter)
+      "marker" -> decode.success(PseudoTypeMarker)
+      "backdrop" -> decode.success(PseudoTypeBackdrop)
+      "selection" -> decode.success(PseudoTypeSelection)
+      "target-text" -> decode.success(PseudoTypeTargetText)
+      "spelling-error" -> decode.success(PseudoTypeSpellingError)
+      "grammar-error" -> decode.success(PseudoTypeGrammarError)
+      "highlight" -> decode.success(PseudoTypeHighlight)
+      "first-line-inherited" -> decode.success(PseudoTypeFirstLineInherited)
+      "scroll-marker" -> decode.success(PseudoTypeScrollMarker)
+      "scroll-markers" -> decode.success(PseudoTypeScrollMarkers)
+      "scrollbar" -> decode.success(PseudoTypeScrollbar)
+      "scrollbar-thumb" -> decode.success(PseudoTypeScrollbarThumb)
+      "scrollbar-button" -> decode.success(PseudoTypeScrollbarButton)
+      "scrollbar-track" -> decode.success(PseudoTypeScrollbarTrack)
+      "scrollbar-track-piece" -> decode.success(PseudoTypeScrollbarTrackPiece)
+      "scrollbar-corner" -> decode.success(PseudoTypeScrollbarCorner)
+      "resizer" -> decode.success(PseudoTypeResizer)
+      "input-list-button" -> decode.success(PseudoTypeInputListButton)
+      "view-transition" -> decode.success(PseudoTypeViewTransition)
+      "view-transition-group" -> decode.success(PseudoTypeViewTransitionGroup)
+      "view-transition-image-pair" ->
+        decode.success(PseudoTypeViewTransitionImagePair)
+      "view-transition-old" -> decode.success(PseudoTypeViewTransitionOld)
+      "view-transition-new" -> decode.success(PseudoTypeViewTransitionNew)
+      _ -> decode.failure(PseudoTypeFirstLine, "valid enum property")
+    }
   }
 }
 
@@ -220,20 +225,15 @@ pub fn encode__shadow_root_type(value__: ShadowRootType) {
 }
 
 @internal
-pub fn decode__shadow_root_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("user-agent") -> Ok(ShadowRootTypeUserAgent)
-    Ok("open") -> Ok(ShadowRootTypeOpen)
-    Ok("closed") -> Ok(ShadowRootTypeClosed)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__shadow_root_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "user-agent" -> decode.success(ShadowRootTypeUserAgent)
+      "open" -> decode.success(ShadowRootTypeOpen)
+      "closed" -> decode.success(ShadowRootTypeClosed)
+      _ -> decode.failure(ShadowRootTypeUserAgent, "valid enum property")
+    }
   }
 }
 
@@ -255,20 +255,15 @@ pub fn encode__compatibility_mode(value__: CompatibilityMode) {
 }
 
 @internal
-pub fn decode__compatibility_mode(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("QuirksMode") -> Ok(CompatibilityModeQuirksMode)
-    Ok("LimitedQuirksMode") -> Ok(CompatibilityModeLimitedQuirksMode)
-    Ok("NoQuirksMode") -> Ok(CompatibilityModeNoQuirksMode)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__compatibility_mode() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "QuirksMode" -> decode.success(CompatibilityModeQuirksMode)
+      "LimitedQuirksMode" -> decode.success(CompatibilityModeLimitedQuirksMode)
+      "NoQuirksMode" -> decode.success(CompatibilityModeNoQuirksMode)
+      _ -> decode.failure(CompatibilityModeQuirksMode, "valid enum property")
+    }
   }
 }
 
@@ -290,20 +285,15 @@ pub fn encode__physical_axes(value__: PhysicalAxes) {
 }
 
 @internal
-pub fn decode__physical_axes(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Horizontal") -> Ok(PhysicalAxesHorizontal)
-    Ok("Vertical") -> Ok(PhysicalAxesVertical)
-    Ok("Both") -> Ok(PhysicalAxesBoth)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__physical_axes() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Horizontal" -> decode.success(PhysicalAxesHorizontal)
+      "Vertical" -> decode.success(PhysicalAxesVertical)
+      "Both" -> decode.success(PhysicalAxesBoth)
+      _ -> decode.failure(PhysicalAxesHorizontal, "valid enum property")
+    }
   }
 }
 
@@ -325,20 +315,15 @@ pub fn encode__logical_axes(value__: LogicalAxes) {
 }
 
 @internal
-pub fn decode__logical_axes(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("Inline") -> Ok(LogicalAxesInline)
-    Ok("Block") -> Ok(LogicalAxesBlock)
-    Ok("Both") -> Ok(LogicalAxesBoth)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__logical_axes() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "Inline" -> decode.success(LogicalAxesInline)
+      "Block" -> decode.success(LogicalAxesBlock)
+      "Both" -> decode.success(LogicalAxesBoth)
+      _ -> decode.failure(LogicalAxesInline, "valid enum property")
+    }
   }
 }
 
@@ -358,19 +343,14 @@ pub fn encode__scroll_orientation(value__: ScrollOrientation) {
 }
 
 @internal
-pub fn decode__scroll_orientation(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("horizontal") -> Ok(ScrollOrientationHorizontal)
-    Ok("vertical") -> Ok(ScrollOrientationVertical)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__scroll_orientation() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "horizontal" -> decode.success(ScrollOrientationHorizontal)
+      "vertical" -> decode.success(ScrollOrientationVertical)
+      _ -> decode.failure(ScrollOrientationHorizontal, "valid enum property")
+    }
   }
 }
 
@@ -529,140 +509,171 @@ pub fn encode__node(value__: Node) {
 }
 
 @internal
-pub fn decode__node(value__: dynamic.Dynamic) {
-  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
-  use parent_id <- result.try(dynamic.optional_field(
-    "parentId",
-    decode__node_id,
-  )(value__))
-  use backend_node_id <- result.try(dynamic.field(
-    "backendNodeId",
-    decode__backend_node_id,
-  )(value__))
-  use node_type <- result.try(dynamic.field("nodeType", dynamic.int)(value__))
-  use node_name <- result.try(dynamic.field("nodeName", dynamic.string)(value__))
-  use local_name <- result.try(dynamic.field("localName", dynamic.string)(
-    value__,
-  ))
-  use node_value <- result.try(dynamic.field("nodeValue", dynamic.string)(
-    value__,
-  ))
-  use child_node_count <- result.try(dynamic.optional_field(
-    "childNodeCount",
-    dynamic.int,
-  )(value__))
-  use children <- result.try(dynamic.optional_field(
-    "children",
-    dynamic.list(decode__node),
-  )(value__))
-  use attributes <- result.try(dynamic.optional_field(
-    "attributes",
-    dynamic.list(dynamic.string),
-  )(value__))
-  use document_url <- result.try(dynamic.optional_field(
-    "documentURL",
-    dynamic.string,
-  )(value__))
-  use base_url <- result.try(dynamic.optional_field("baseURL", dynamic.string)(
-    value__,
-  ))
-  use public_id <- result.try(dynamic.optional_field("publicId", dynamic.string)(
-    value__,
-  ))
-  use system_id <- result.try(dynamic.optional_field("systemId", dynamic.string)(
-    value__,
-  ))
-  use internal_subset <- result.try(dynamic.optional_field(
-    "internalSubset",
-    dynamic.string,
-  )(value__))
-  use xml_version <- result.try(dynamic.optional_field(
-    "xmlVersion",
-    dynamic.string,
-  )(value__))
-  use name <- result.try(dynamic.optional_field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.optional_field("value", dynamic.string)(
-    value__,
-  ))
-  use pseudo_type <- result.try(dynamic.optional_field(
-    "pseudoType",
-    decode__pseudo_type,
-  )(value__))
-  use pseudo_identifier <- result.try(dynamic.optional_field(
-    "pseudoIdentifier",
-    dynamic.string,
-  )(value__))
-  use shadow_root_type <- result.try(dynamic.optional_field(
-    "shadowRootType",
-    decode__shadow_root_type,
-  )(value__))
-  use frame_id <- result.try(dynamic.optional_field("frameId", dynamic.string)(
-    value__,
-  ))
-  use content_document <- result.try(dynamic.optional_field(
-    "contentDocument",
-    decode__node,
-  )(value__))
-  use shadow_roots <- result.try(dynamic.optional_field(
-    "shadowRoots",
-    dynamic.list(decode__node),
-  )(value__))
-  use template_content <- result.try(dynamic.optional_field(
-    "templateContent",
-    decode__node,
-  )(value__))
-  use pseudo_elements <- result.try(dynamic.optional_field(
-    "pseudoElements",
-    dynamic.list(decode__node),
-  )(value__))
-  use distributed_nodes <- result.try(dynamic.optional_field(
-    "distributedNodes",
-    dynamic.list(decode__backend_node),
-  )(value__))
-  use is_svg <- result.try(dynamic.optional_field("isSVG", dynamic.bool)(
-    value__,
-  ))
-  use compatibility_mode <- result.try(dynamic.optional_field(
-    "compatibilityMode",
-    decode__compatibility_mode,
-  )(value__))
-  use assigned_slot <- result.try(dynamic.optional_field(
-    "assignedSlot",
-    decode__backend_node,
-  )(value__))
+pub fn decode__node() {
+  {
+    use node_id <- decode.field("nodeId", decode__node_id())
+    use parent_id <- decode.optional_field(
+      "parentId",
+      option.None,
+      decode.optional(decode__node_id()),
+    )
+    use backend_node_id <- decode.field(
+      "backendNodeId",
+      decode__backend_node_id(),
+    )
+    use node_type <- decode.field("nodeType", decode.int)
+    use node_name <- decode.field("nodeName", decode.string)
+    use local_name <- decode.field("localName", decode.string)
+    use node_value <- decode.field("nodeValue", decode.string)
+    use child_node_count <- decode.optional_field(
+      "childNodeCount",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use children <- decode.optional_field(
+      "children",
+      option.None,
+      decode.optional(decode.list(decode__node())),
+    )
+    use attributes <- decode.optional_field(
+      "attributes",
+      option.None,
+      decode.optional(decode.list(decode.string)),
+    )
+    use document_url <- decode.optional_field(
+      "documentURL",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use base_url <- decode.optional_field(
+      "baseURL",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use public_id <- decode.optional_field(
+      "publicId",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use system_id <- decode.optional_field(
+      "systemId",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use internal_subset <- decode.optional_field(
+      "internalSubset",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use xml_version <- decode.optional_field(
+      "xmlVersion",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use name <- decode.optional_field(
+      "name",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use value <- decode.optional_field(
+      "value",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use pseudo_type <- decode.optional_field(
+      "pseudoType",
+      option.None,
+      decode.optional(decode__pseudo_type()),
+    )
+    use pseudo_identifier <- decode.optional_field(
+      "pseudoIdentifier",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use shadow_root_type <- decode.optional_field(
+      "shadowRootType",
+      option.None,
+      decode.optional(decode__shadow_root_type()),
+    )
+    use frame_id <- decode.optional_field(
+      "frameId",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use content_document <- decode.optional_field(
+      "contentDocument",
+      option.None,
+      decode.optional(decode__node()),
+    )
+    use shadow_roots <- decode.optional_field(
+      "shadowRoots",
+      option.None,
+      decode.optional(decode.list(decode__node())),
+    )
+    use template_content <- decode.optional_field(
+      "templateContent",
+      option.None,
+      decode.optional(decode__node()),
+    )
+    use pseudo_elements <- decode.optional_field(
+      "pseudoElements",
+      option.None,
+      decode.optional(decode.list(decode__node())),
+    )
+    use distributed_nodes <- decode.optional_field(
+      "distributedNodes",
+      option.None,
+      decode.optional(decode.list(decode__backend_node())),
+    )
+    use is_svg <- decode.optional_field(
+      "isSVG",
+      option.None,
+      decode.optional(decode.bool),
+    )
+    use compatibility_mode <- decode.optional_field(
+      "compatibilityMode",
+      option.None,
+      decode.optional(decode__compatibility_mode()),
+    )
+    use assigned_slot <- decode.optional_field(
+      "assignedSlot",
+      option.None,
+      decode.optional(decode__backend_node()),
+    )
 
-  Ok(Node(
-    node_id: node_id,
-    parent_id: parent_id,
-    backend_node_id: backend_node_id,
-    node_type: node_type,
-    node_name: node_name,
-    local_name: local_name,
-    node_value: node_value,
-    child_node_count: child_node_count,
-    children: children,
-    attributes: attributes,
-    document_url: document_url,
-    base_url: base_url,
-    public_id: public_id,
-    system_id: system_id,
-    internal_subset: internal_subset,
-    xml_version: xml_version,
-    name: name,
-    value: value,
-    pseudo_type: pseudo_type,
-    pseudo_identifier: pseudo_identifier,
-    shadow_root_type: shadow_root_type,
-    frame_id: frame_id,
-    content_document: content_document,
-    shadow_roots: shadow_roots,
-    template_content: template_content,
-    pseudo_elements: pseudo_elements,
-    distributed_nodes: distributed_nodes,
-    is_svg: is_svg,
-    compatibility_mode: compatibility_mode,
-    assigned_slot: assigned_slot,
-  ))
+    decode.success(Node(
+      node_id: node_id,
+      parent_id: parent_id,
+      backend_node_id: backend_node_id,
+      node_type: node_type,
+      node_name: node_name,
+      local_name: local_name,
+      node_value: node_value,
+      child_node_count: child_node_count,
+      children: children,
+      attributes: attributes,
+      document_url: document_url,
+      base_url: base_url,
+      public_id: public_id,
+      system_id: system_id,
+      internal_subset: internal_subset,
+      xml_version: xml_version,
+      name: name,
+      value: value,
+      pseudo_type: pseudo_type,
+      pseudo_identifier: pseudo_identifier,
+      shadow_root_type: shadow_root_type,
+      frame_id: frame_id,
+      content_document: content_document,
+      shadow_roots: shadow_roots,
+      template_content: template_content,
+      pseudo_elements: pseudo_elements,
+      distributed_nodes: distributed_nodes,
+      is_svg: is_svg,
+      compatibility_mode: compatibility_mode,
+      assigned_slot: assigned_slot,
+    ))
+  }
 }
 
 /// A structure holding an RGBA color.
@@ -694,13 +705,19 @@ pub fn encode__rgba(value__: RGBA) {
 }
 
 @internal
-pub fn decode__rgba(value__: dynamic.Dynamic) {
-  use r <- result.try(dynamic.field("r", dynamic.int)(value__))
-  use g <- result.try(dynamic.field("g", dynamic.int)(value__))
-  use b <- result.try(dynamic.field("b", dynamic.int)(value__))
-  use a <- result.try(dynamic.optional_field("a", dynamic.float)(value__))
+pub fn decode__rgba() {
+  {
+    use r <- decode.field("r", decode.int)
+    use g <- decode.field("g", decode.int)
+    use b <- decode.field("b", decode.int)
+    use a <- decode.optional_field(
+      "a",
+      option.None,
+      decode.optional(decode.float),
+    )
 
-  Ok(RGBA(r: r, g: g, b: b, a: a))
+    decode.success(RGBA(r: r, g: g, b: b, a: a))
+  }
 }
 
 /// An array of quad vertices, x immediately followed by y for each point, points clock-wise.
@@ -716,8 +733,11 @@ pub fn encode__quad(value__: Quad) {
 }
 
 @internal
-pub fn decode__quad(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(Quad, dynamic.list(dynamic.float))
+pub fn decode__quad() {
+  {
+    use value__ <- decode.then(decode.list(decode.float))
+    decode.success(Quad(value__))
+  }
 }
 
 /// Box model.
@@ -758,27 +778,30 @@ pub fn encode__box_model(value__: BoxModel) {
 }
 
 @internal
-pub fn decode__box_model(value__: dynamic.Dynamic) {
-  use content <- result.try(dynamic.field("content", decode__quad)(value__))
-  use padding <- result.try(dynamic.field("padding", decode__quad)(value__))
-  use border <- result.try(dynamic.field("border", decode__quad)(value__))
-  use margin <- result.try(dynamic.field("margin", decode__quad)(value__))
-  use width <- result.try(dynamic.field("width", dynamic.int)(value__))
-  use height <- result.try(dynamic.field("height", dynamic.int)(value__))
-  use shape_outside <- result.try(dynamic.optional_field(
-    "shapeOutside",
-    decode__shape_outside_info,
-  )(value__))
+pub fn decode__box_model() {
+  {
+    use content <- decode.field("content", decode__quad())
+    use padding <- decode.field("padding", decode__quad())
+    use border <- decode.field("border", decode__quad())
+    use margin <- decode.field("margin", decode__quad())
+    use width <- decode.field("width", decode.int)
+    use height <- decode.field("height", decode.int)
+    use shape_outside <- decode.optional_field(
+      "shapeOutside",
+      option.None,
+      decode.optional(decode__shape_outside_info()),
+    )
 
-  Ok(BoxModel(
-    content: content,
-    padding: padding,
-    border: border,
-    margin: margin,
-    width: width,
-    height: height,
-    shape_outside: shape_outside,
-  ))
+    decode.success(BoxModel(
+      content: content,
+      padding: padding,
+      border: border,
+      margin: margin,
+      width: width,
+      height: height,
+      shape_outside: shape_outside,
+    ))
+  }
 }
 
 /// CSS Shape Outside details.
@@ -811,17 +834,18 @@ pub fn encode__shape_outside_info(value__: ShapeOutsideInfo) {
 }
 
 @internal
-pub fn decode__shape_outside_info(value__: dynamic.Dynamic) {
-  use bounds <- result.try(dynamic.field("bounds", decode__quad)(value__))
-  use shape <- result.try(dynamic.field("shape", dynamic.list(dynamic.dynamic))(
-    value__,
-  ))
-  use margin_shape <- result.try(dynamic.field(
-    "marginShape",
-    dynamic.list(dynamic.dynamic),
-  )(value__))
+pub fn decode__shape_outside_info() {
+  {
+    use bounds <- decode.field("bounds", decode__quad())
+    use shape <- decode.field("shape", decode.list(decode.dynamic))
+    use margin_shape <- decode.field("marginShape", decode.list(decode.dynamic))
 
-  Ok(ShapeOutsideInfo(bounds: bounds, shape: shape, margin_shape: margin_shape))
+    decode.success(ShapeOutsideInfo(
+      bounds: bounds,
+      shape: shape,
+      margin_shape: margin_shape,
+    ))
+  }
 }
 
 /// Rectangle.
@@ -849,13 +873,15 @@ pub fn encode__rect(value__: Rect) {
 }
 
 @internal
-pub fn decode__rect(value__: dynamic.Dynamic) {
-  use x <- result.try(dynamic.field("x", dynamic.float)(value__))
-  use y <- result.try(dynamic.field("y", dynamic.float)(value__))
-  use width <- result.try(dynamic.field("width", dynamic.float)(value__))
-  use height <- result.try(dynamic.field("height", dynamic.float)(value__))
+pub fn decode__rect() {
+  {
+    use x <- decode.field("x", decode.float)
+    use y <- decode.field("y", decode.float)
+    use width <- decode.field("width", decode.float)
+    use height <- decode.field("height", decode.float)
 
-  Ok(Rect(x: x, y: y, width: width, height: height))
+    decode.success(Rect(x: x, y: y, width: width, height: height))
+  }
 }
 
 pub type CSSComputedStyleProperty {
@@ -876,11 +902,13 @@ pub fn encode__css_computed_style_property(value__: CSSComputedStyleProperty) {
 }
 
 @internal
-pub fn decode__css_computed_style_property(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.string)(value__))
+pub fn decode__css_computed_style_property() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.string)
 
-  Ok(CSSComputedStyleProperty(name: name, value: value))
+    decode.success(CSSComputedStyleProperty(name: name, value: value))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -893,10 +921,12 @@ pub type DescribeNodeResponse {
 }
 
 @internal
-pub fn decode__describe_node_response(value__: dynamic.Dynamic) {
-  use node <- result.try(dynamic.field("node", decode__node)(value__))
+pub fn decode__describe_node_response() {
+  {
+    use node <- decode.field("node", decode__node())
 
-  Ok(DescribeNodeResponse(node: node))
+    decode.success(DescribeNodeResponse(node: node))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -909,13 +939,12 @@ pub type GetAttributesResponse {
 }
 
 @internal
-pub fn decode__get_attributes_response(value__: dynamic.Dynamic) {
-  use attributes <- result.try(dynamic.field(
-    "attributes",
-    dynamic.list(dynamic.string),
-  )(value__))
+pub fn decode__get_attributes_response() {
+  {
+    use attributes <- decode.field("attributes", decode.list(decode.string))
 
-  Ok(GetAttributesResponse(attributes: attributes))
+    decode.success(GetAttributesResponse(attributes: attributes))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -928,10 +957,12 @@ pub type GetBoxModelResponse {
 }
 
 @internal
-pub fn decode__get_box_model_response(value__: dynamic.Dynamic) {
-  use model <- result.try(dynamic.field("model", decode__box_model)(value__))
+pub fn decode__get_box_model_response() {
+  {
+    use model <- decode.field("model", decode__box_model())
 
-  Ok(GetBoxModelResponse(model: model))
+    decode.success(GetBoxModelResponse(model: model))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -944,10 +975,12 @@ pub type GetDocumentResponse {
 }
 
 @internal
-pub fn decode__get_document_response(value__: dynamic.Dynamic) {
-  use root <- result.try(dynamic.field("root", decode__node)(value__))
+pub fn decode__get_document_response() {
+  {
+    use root <- decode.field("root", decode__node())
 
-  Ok(GetDocumentResponse(root: root))
+    decode.success(GetDocumentResponse(root: root))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -964,21 +997,25 @@ pub type GetNodeForLocationResponse {
 }
 
 @internal
-pub fn decode__get_node_for_location_response(value__: dynamic.Dynamic) {
-  use backend_node_id <- result.try(dynamic.field(
-    "backendNodeId",
-    decode__backend_node_id,
-  )(value__))
-  use frame_id <- result.try(dynamic.field("frameId", dynamic.string)(value__))
-  use node_id <- result.try(dynamic.optional_field("nodeId", decode__node_id)(
-    value__,
-  ))
+pub fn decode__get_node_for_location_response() {
+  {
+    use backend_node_id <- decode.field(
+      "backendNodeId",
+      decode__backend_node_id(),
+    )
+    use frame_id <- decode.field("frameId", decode.string)
+    use node_id <- decode.optional_field(
+      "nodeId",
+      option.None,
+      decode.optional(decode__node_id()),
+    )
 
-  Ok(GetNodeForLocationResponse(
-    backend_node_id: backend_node_id,
-    frame_id: frame_id,
-    node_id: node_id,
-  ))
+    decode.success(GetNodeForLocationResponse(
+      backend_node_id: backend_node_id,
+      frame_id: frame_id,
+      node_id: node_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -991,12 +1028,12 @@ pub type GetOuterHtmlResponse {
 }
 
 @internal
-pub fn decode__get_outer_html_response(value__: dynamic.Dynamic) {
-  use outer_html <- result.try(dynamic.field("outerHTML", dynamic.string)(
-    value__,
-  ))
+pub fn decode__get_outer_html_response() {
+  {
+    use outer_html <- decode.field("outerHTML", decode.string)
 
-  Ok(GetOuterHtmlResponse(outer_html: outer_html))
+    decode.success(GetOuterHtmlResponse(outer_html: outer_html))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1009,10 +1046,12 @@ pub type MoveToResponse {
 }
 
 @internal
-pub fn decode__move_to_response(value__: dynamic.Dynamic) {
-  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+pub fn decode__move_to_response() {
+  {
+    use node_id <- decode.field("nodeId", decode__node_id())
 
-  Ok(MoveToResponse(node_id: node_id))
+    decode.success(MoveToResponse(node_id: node_id))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1025,10 +1064,12 @@ pub type QuerySelectorResponse {
 }
 
 @internal
-pub fn decode__query_selector_response(value__: dynamic.Dynamic) {
-  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+pub fn decode__query_selector_response() {
+  {
+    use node_id <- decode.field("nodeId", decode__node_id())
 
-  Ok(QuerySelectorResponse(node_id: node_id))
+    decode.success(QuerySelectorResponse(node_id: node_id))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1041,13 +1082,12 @@ pub type QuerySelectorAllResponse {
 }
 
 @internal
-pub fn decode__query_selector_all_response(value__: dynamic.Dynamic) {
-  use node_ids <- result.try(dynamic.field(
-    "nodeIds",
-    dynamic.list(decode__node_id),
-  )(value__))
+pub fn decode__query_selector_all_response() {
+  {
+    use node_ids <- decode.field("nodeIds", decode.list(decode__node_id()))
 
-  Ok(QuerySelectorAllResponse(node_ids: node_ids))
+    decode.success(QuerySelectorAllResponse(node_ids: node_ids))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1060,10 +1100,12 @@ pub type RequestNodeResponse {
 }
 
 @internal
-pub fn decode__request_node_response(value__: dynamic.Dynamic) {
-  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+pub fn decode__request_node_response() {
+  {
+    use node_id <- decode.field("nodeId", decode__node_id())
 
-  Ok(RequestNodeResponse(node_id: node_id))
+    decode.success(RequestNodeResponse(node_id: node_id))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1076,13 +1118,12 @@ pub type ResolveNodeResponse {
 }
 
 @internal
-pub fn decode__resolve_node_response(value__: dynamic.Dynamic) {
-  use object <- result.try(dynamic.field(
-    "object",
-    runtime.decode__remote_object,
-  )(value__))
+pub fn decode__resolve_node_response() {
+  {
+    use object <- decode.field("object", runtime.decode__remote_object())
 
-  Ok(ResolveNodeResponse(object: object))
+    decode.success(ResolveNodeResponse(object: object))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -1095,10 +1136,12 @@ pub type SetNodeNameResponse {
 }
 
 @internal
-pub fn decode__set_node_name_response(value__: dynamic.Dynamic) {
-  use node_id <- result.try(dynamic.field("nodeId", decode__node_id)(value__))
+pub fn decode__set_node_name_response() {
+  {
+    use node_id <- decode.field("nodeId", decode__node_id())
 
-  Ok(SetNodeNameResponse(node_id: node_id))
+    decode.success(SetNodeNameResponse(node_id: node_id))
+  }
 }
 
 /// Describes node given its id, does not require domain to be enabled. Does not start tracking any
@@ -1146,7 +1189,7 @@ pub fn describe_node(
     )),
   ))
 
-  decode__describe_node_response(result__)
+  decode.run(result__, decode__describe_node_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1249,10 +1292,14 @@ pub fn focus(
 pub fn get_attributes(callback__, node_id node_id: NodeId) {
   use result__ <- result.try(callback__(
     "DOM.getAttributes",
-    option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+      ]),
+    ),
   ))
 
-  decode__get_attributes_response(result__)
+  decode.run(result__, decode__get_attributes_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1288,7 +1335,7 @@ pub fn get_box_model(
     )),
   ))
 
-  decode__get_box_model_response(result__)
+  decode.run(result__, decode__get_box_model_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1322,7 +1369,7 @@ pub fn get_document(
     )),
   ))
 
-  decode__get_document_response(result__)
+  decode.run(result__, decode__get_document_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1352,7 +1399,10 @@ pub fn get_node_for_location(
   use result__ <- result.try(callback__(
     "DOM.getNodeForLocation",
     option.Some(json.object(
-      [#("x", json.int(x)), #("y", json.int(y))]
+      [
+        #("x", json.int(x)),
+        #("y", json.int(y)),
+      ]
       |> utils.add_optional(include_user_agent_shadow_dom, fn(inner_value__) {
         #("includeUserAgentShadowDOM", json.bool(inner_value__))
       })
@@ -1362,7 +1412,7 @@ pub fn get_node_for_location(
     )),
   ))
 
-  decode__get_node_for_location_response(result__)
+  decode.run(result__, decode__get_node_for_location_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1398,7 +1448,7 @@ pub fn get_outer_html(
     )),
   ))
 
-  decode__get_outer_html_response(result__)
+  decode.run(result__, decode__get_outer_html_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1450,7 +1500,7 @@ pub fn move_to(
     )),
   ))
 
-  decode__move_to_response(result__)
+  decode.run(result__, decode__move_to_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1478,7 +1528,7 @@ pub fn query_selector(
     ),
   ))
 
-  decode__query_selector_response(result__)
+  decode.run(result__, decode__query_selector_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1506,7 +1556,7 @@ pub fn query_selector_all(
     ),
   ))
 
-  decode__query_selector_all_response(result__)
+  decode.run(result__, decode__query_selector_all_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1540,7 +1590,11 @@ pub fn remove_attribute(callback__, node_id node_id: NodeId, name name: String) 
 pub fn remove_node(callback__, node_id node_id: NodeId) {
   callback__(
     "DOM.removeNode",
-    option.Some(json.object([#("nodeId", encode__node_id(node_id))])),
+    option.Some(
+      json.object([
+        #("nodeId", encode__node_id(node_id)),
+      ]),
+    ),
   )
 }
 
@@ -1566,7 +1620,9 @@ pub fn request_child_nodes(
   callback__(
     "DOM.requestChildNodes",
     option.Some(json.object(
-      [#("nodeId", encode__node_id(node_id))]
+      [
+        #("nodeId", encode__node_id(node_id)),
+      ]
       |> utils.add_optional(depth, fn(inner_value__) {
         #("depth", json.int(inner_value__))
       })
@@ -1591,11 +1647,13 @@ pub fn request_node(callback__, object_id object_id: runtime.RemoteObjectId) {
   use result__ <- result.try(callback__(
     "DOM.requestNode",
     option.Some(
-      json.object([#("objectId", runtime.encode__remote_object_id(object_id))]),
+      json.object([
+        #("objectId", runtime.encode__remote_object_id(object_id)),
+      ]),
     ),
   ))
 
-  decode__request_node_response(result__)
+  decode.run(result__, decode__request_node_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1641,7 +1699,7 @@ pub fn resolve_node(
     )),
   ))
 
-  decode__resolve_node_response(result__)
+  decode.run(result__, decode__resolve_node_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1692,7 +1750,10 @@ pub fn set_attributes_as_text(
   callback__(
     "DOM.setAttributesAsText",
     option.Some(json.object(
-      [#("nodeId", encode__node_id(node_id)), #("text", json.string(text))]
+      [
+        #("nodeId", encode__node_id(node_id)),
+        #("text", json.string(text)),
+      ]
       |> utils.add_optional(name, fn(inner_value__) {
         #("name", json.string(inner_value__))
       }),
@@ -1720,7 +1781,9 @@ pub fn set_file_input_files(
   callback__(
     "DOM.setFileInputFiles",
     option.Some(json.object(
-      [#("files", json.array(files, of: json.string))]
+      [
+        #("files", json.array(files, of: json.string)),
+      ]
       |> utils.add_optional(node_id, fn(inner_value__) {
         #("nodeId", encode__node_id(inner_value__))
       })
@@ -1754,7 +1817,7 @@ pub fn set_node_name(callback__, node_id node_id: NodeId, name name: String) {
     ),
   ))
 
-  decode__set_node_name_response(result__)
+  decode.run(result__, decode__set_node_name_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 

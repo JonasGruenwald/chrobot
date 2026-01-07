@@ -12,7 +12,7 @@
 
 import chrobot/chrome
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -29,8 +29,11 @@ pub fn encode__target_id(value__: TargetID) {
 }
 
 @internal
-pub fn decode__target_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(TargetID, dynamic.string)
+pub fn decode__target_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(TargetID(value__))
+  }
 }
 
 /// Unique identifier of attached debugging session.
@@ -46,8 +49,11 @@ pub fn encode__session_id(value__: SessionID) {
 }
 
 @internal
-pub fn decode__session_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(SessionID, dynamic.string)
+pub fn decode__session_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(SessionID(value__))
+  }
 }
 
 pub type TargetInfo {
@@ -81,27 +87,28 @@ pub fn encode__target_info(value__: TargetInfo) {
 }
 
 @internal
-pub fn decode__target_info(value__: dynamic.Dynamic) {
-  use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
-    value__,
-  ))
-  use type_ <- result.try(dynamic.field("type", dynamic.string)(value__))
-  use title <- result.try(dynamic.field("title", dynamic.string)(value__))
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use attached <- result.try(dynamic.field("attached", dynamic.bool)(value__))
-  use opener_id <- result.try(dynamic.optional_field(
-    "openerId",
-    decode__target_id,
-  )(value__))
+pub fn decode__target_info() {
+  {
+    use target_id <- decode.field("targetId", decode__target_id())
+    use type_ <- decode.field("type", decode.string)
+    use title <- decode.field("title", decode.string)
+    use url <- decode.field("url", decode.string)
+    use attached <- decode.field("attached", decode.bool)
+    use opener_id <- decode.optional_field(
+      "openerId",
+      option.None,
+      decode.optional(decode__target_id()),
+    )
 
-  Ok(TargetInfo(
-    target_id: target_id,
-    type_: type_,
-    title: title,
-    url: url,
-    attached: attached,
-    opener_id: opener_id,
-  ))
+    decode.success(TargetInfo(
+      target_id: target_id,
+      type_: type_,
+      title: title,
+      url: url,
+      attached: attached,
+      opener_id: opener_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -114,12 +121,12 @@ pub type AttachToTargetResponse {
 }
 
 @internal
-pub fn decode__attach_to_target_response(value__: dynamic.Dynamic) {
-  use session_id <- result.try(dynamic.field("sessionId", decode__session_id)(
-    value__,
-  ))
+pub fn decode__attach_to_target_response() {
+  {
+    use session_id <- decode.field("sessionId", decode__session_id())
 
-  Ok(AttachToTargetResponse(session_id: session_id))
+    decode.success(AttachToTargetResponse(session_id: session_id))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -132,13 +139,14 @@ pub type CreateBrowserContextResponse {
 }
 
 @internal
-pub fn decode__create_browser_context_response(value__: dynamic.Dynamic) {
-  use browser_context_id <- result.try(dynamic.field(
-    "browserContextId",
-    dynamic.string,
-  )(value__))
+pub fn decode__create_browser_context_response() {
+  {
+    use browser_context_id <- decode.field("browserContextId", decode.string)
 
-  Ok(CreateBrowserContextResponse(browser_context_id: browser_context_id))
+    decode.success(CreateBrowserContextResponse(
+      browser_context_id: browser_context_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -151,13 +159,17 @@ pub type GetBrowserContextsResponse {
 }
 
 @internal
-pub fn decode__get_browser_contexts_response(value__: dynamic.Dynamic) {
-  use browser_context_ids <- result.try(dynamic.field(
-    "browserContextIds",
-    dynamic.list(dynamic.string),
-  )(value__))
+pub fn decode__get_browser_contexts_response() {
+  {
+    use browser_context_ids <- decode.field(
+      "browserContextIds",
+      decode.list(decode.string),
+    )
 
-  Ok(GetBrowserContextsResponse(browser_context_ids: browser_context_ids))
+    decode.success(GetBrowserContextsResponse(
+      browser_context_ids: browser_context_ids,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -170,12 +182,12 @@ pub type CreateTargetResponse {
 }
 
 @internal
-pub fn decode__create_target_response(value__: dynamic.Dynamic) {
-  use target_id <- result.try(dynamic.field("targetId", decode__target_id)(
-    value__,
-  ))
+pub fn decode__create_target_response() {
+  {
+    use target_id <- decode.field("targetId", decode__target_id())
 
-  Ok(CreateTargetResponse(target_id: target_id))
+    decode.success(CreateTargetResponse(target_id: target_id))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -188,13 +200,15 @@ pub type GetTargetsResponse {
 }
 
 @internal
-pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
-  use target_infos <- result.try(dynamic.field(
-    "targetInfos",
-    dynamic.list(decode__target_info),
-  )(value__))
+pub fn decode__get_targets_response() {
+  {
+    use target_infos <- decode.field(
+      "targetInfos",
+      decode.list(decode__target_info()),
+    )
 
-  Ok(GetTargetsResponse(target_infos: target_infos))
+    decode.success(GetTargetsResponse(target_infos: target_infos))
+  }
 }
 
 /// Activates (focuses) the target.
@@ -207,7 +221,11 @@ pub fn decode__get_targets_response(value__: dynamic.Dynamic) {
 pub fn activate_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.activateTarget",
-    option.Some(json.object([#("targetId", encode__target_id(target_id))])),
+    option.Some(
+      json.object([
+        #("targetId", encode__target_id(target_id)),
+      ]),
+    ),
   )
 }
 
@@ -230,14 +248,16 @@ pub fn attach_to_target(
   use result__ <- result.try(callback__(
     "Target.attachToTarget",
     option.Some(json.object(
-      [#("targetId", encode__target_id(target_id))]
+      [
+        #("targetId", encode__target_id(target_id)),
+      ]
       |> utils.add_optional(flatten, fn(inner_value__) {
         #("flatten", json.bool(inner_value__))
       }),
     )),
   ))
 
-  decode__attach_to_target_response(result__)
+  decode.run(result__, decode__attach_to_target_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -251,7 +271,11 @@ pub fn attach_to_target(
 pub fn close_target(callback__, target_id target_id: TargetID) {
   callback__(
     "Target.closeTarget",
-    option.Some(json.object([#("targetId", encode__target_id(target_id))])),
+    option.Some(
+      json.object([
+        #("targetId", encode__target_id(target_id)),
+      ]),
+    ),
   )
 }
 
@@ -269,7 +293,7 @@ pub fn create_browser_context(callback__) {
     option.None,
   ))
 
-  decode__create_browser_context_response(result__)
+  decode.run(result__, decode__create_browser_context_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -282,7 +306,7 @@ pub fn get_browser_contexts(callback__) {
     option.None,
   ))
 
-  decode__get_browser_contexts_response(result__)
+  decode.run(result__, decode__get_browser_contexts_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -310,7 +334,9 @@ pub fn create_target(
   use result__ <- result.try(callback__(
     "Target.createTarget",
     option.Some(json.object(
-      [#("url", json.string(url))]
+      [
+        #("url", json.string(url)),
+      ]
       |> utils.add_optional(width, fn(inner_value__) {
         #("width", json.int(inner_value__))
       })
@@ -326,7 +352,7 @@ pub fn create_target(
     )),
   ))
 
-  decode__create_target_response(result__)
+  decode.run(result__, decode__create_target_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -367,7 +393,9 @@ pub fn dispose_browser_context(
   callback__(
     "Target.disposeBrowserContext",
     option.Some(
-      json.object([#("browserContextId", json.string(browser_context_id))]),
+      json.object([
+        #("browserContextId", json.string(browser_context_id)),
+      ]),
     ),
   )
 }
@@ -382,7 +410,7 @@ pub fn dispose_browser_context(
 pub fn get_targets(callback__) {
   use result__ <- result.try(callback__("Target.getTargets", option.None))
 
-  decode__get_targets_response(result__)
+  decode.run(result__, decode__get_targets_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -426,6 +454,10 @@ pub fn set_auto_attach(
 pub fn set_discover_targets(callback__, discover discover: Bool) {
   callback__(
     "Target.setDiscoverTargets",
-    option.Some(json.object([#("discover", json.bool(discover))])),
+    option.Some(
+      json.object([
+        #("discover", json.bool(discover)),
+      ]),
+    ),
   )
 }

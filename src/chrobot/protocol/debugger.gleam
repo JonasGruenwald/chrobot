@@ -14,7 +14,7 @@
 import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -32,8 +32,11 @@ pub fn encode__breakpoint_id(value__: BreakpointId) {
 }
 
 @internal
-pub fn decode__breakpoint_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(BreakpointId, dynamic.string)
+pub fn decode__breakpoint_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(BreakpointId(value__))
+  }
 }
 
 /// Call frame identifier.
@@ -49,8 +52,11 @@ pub fn encode__call_frame_id(value__: CallFrameId) {
 }
 
 @internal
-pub fn decode__call_frame_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(CallFrameId, dynamic.string)
+pub fn decode__call_frame_id() {
+  {
+    use value__ <- decode.then(decode.string)
+    decode.success(CallFrameId(value__))
+  }
 }
 
 /// Location in the source code.
@@ -79,24 +85,22 @@ pub fn encode__location(value__: Location) {
 }
 
 @internal
-pub fn decode__location(value__: dynamic.Dynamic) {
-  use script_id <- result.try(dynamic.field(
-    "scriptId",
-    runtime.decode__script_id,
-  )(value__))
-  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
-    value__,
-  ))
-  use column_number <- result.try(dynamic.optional_field(
-    "columnNumber",
-    dynamic.int,
-  )(value__))
+pub fn decode__location() {
+  {
+    use script_id <- decode.field("scriptId", runtime.decode__script_id())
+    use line_number <- decode.field("lineNumber", decode.int)
+    use column_number <- decode.optional_field(
+      "columnNumber",
+      option.None,
+      decode.optional(decode.int),
+    )
 
-  Ok(Location(
-    script_id: script_id,
-    line_number: line_number,
-    column_number: column_number,
-  ))
+    decode.success(Location(
+      script_id: script_id,
+      line_number: line_number,
+      column_number: column_number,
+    ))
+  }
 }
 
 /// JavaScript call frame. Array of call frames form the call stack.
@@ -139,42 +143,34 @@ pub fn encode__call_frame(value__: CallFrame) {
 }
 
 @internal
-pub fn decode__call_frame(value__: dynamic.Dynamic) {
-  use call_frame_id <- result.try(dynamic.field(
-    "callFrameId",
-    decode__call_frame_id,
-  )(value__))
-  use function_name <- result.try(dynamic.field("functionName", dynamic.string)(
-    value__,
-  ))
-  use function_location <- result.try(dynamic.optional_field(
-    "functionLocation",
-    decode__location,
-  )(value__))
-  use location <- result.try(dynamic.field("location", decode__location)(
-    value__,
-  ))
-  use scope_chain <- result.try(dynamic.field(
-    "scopeChain",
-    dynamic.list(decode__scope),
-  )(value__))
-  use this <- result.try(dynamic.field("this", runtime.decode__remote_object)(
-    value__,
-  ))
-  use return_value <- result.try(dynamic.optional_field(
-    "returnValue",
-    runtime.decode__remote_object,
-  )(value__))
+pub fn decode__call_frame() {
+  {
+    use call_frame_id <- decode.field("callFrameId", decode__call_frame_id())
+    use function_name <- decode.field("functionName", decode.string)
+    use function_location <- decode.optional_field(
+      "functionLocation",
+      option.None,
+      decode.optional(decode__location()),
+    )
+    use location <- decode.field("location", decode__location())
+    use scope_chain <- decode.field("scopeChain", decode.list(decode__scope()))
+    use this <- decode.field("this", runtime.decode__remote_object())
+    use return_value <- decode.optional_field(
+      "returnValue",
+      option.None,
+      decode.optional(runtime.decode__remote_object()),
+    )
 
-  Ok(CallFrame(
-    call_frame_id: call_frame_id,
-    function_name: function_name,
-    function_location: function_location,
-    location: location,
-    scope_chain: scope_chain,
-    this: this,
-    return_value: return_value,
-  ))
+    decode.success(CallFrame(
+      call_frame_id: call_frame_id,
+      function_name: function_name,
+      function_location: function_location,
+      location: location,
+      scope_chain: scope_chain,
+      this: this,
+      return_value: return_value,
+    ))
+  }
 }
 
 /// Scope description.
@@ -227,27 +223,22 @@ pub fn encode__scope_type(value__: ScopeType) {
 }
 
 @internal
-pub fn decode__scope_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("global") -> Ok(ScopeTypeGlobal)
-    Ok("local") -> Ok(ScopeTypeLocal)
-    Ok("with") -> Ok(ScopeTypeWith)
-    Ok("closure") -> Ok(ScopeTypeClosure)
-    Ok("catch") -> Ok(ScopeTypeCatch)
-    Ok("block") -> Ok(ScopeTypeBlock)
-    Ok("script") -> Ok(ScopeTypeScript)
-    Ok("eval") -> Ok(ScopeTypeEval)
-    Ok("module") -> Ok(ScopeTypeModule)
-    Ok("wasm-expression-stack") -> Ok(ScopeTypeWasmExpressionStack)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__scope_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "global" -> decode.success(ScopeTypeGlobal)
+      "local" -> decode.success(ScopeTypeLocal)
+      "with" -> decode.success(ScopeTypeWith)
+      "closure" -> decode.success(ScopeTypeClosure)
+      "catch" -> decode.success(ScopeTypeCatch)
+      "block" -> decode.success(ScopeTypeBlock)
+      "script" -> decode.success(ScopeTypeScript)
+      "eval" -> decode.success(ScopeTypeEval)
+      "module" -> decode.success(ScopeTypeModule)
+      "wasm-expression-stack" -> decode.success(ScopeTypeWasmExpressionStack)
+      _ -> decode.failure(ScopeTypeGlobal, "valid enum property")
+    }
   }
 }
 
@@ -271,29 +262,34 @@ pub fn encode__scope(value__: Scope) {
 }
 
 @internal
-pub fn decode__scope(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", decode__scope_type)(value__))
-  use object <- result.try(dynamic.field(
-    "object",
-    runtime.decode__remote_object,
-  )(value__))
-  use name <- result.try(dynamic.optional_field("name", dynamic.string)(value__))
-  use start_location <- result.try(dynamic.optional_field(
-    "startLocation",
-    decode__location,
-  )(value__))
-  use end_location <- result.try(dynamic.optional_field(
-    "endLocation",
-    decode__location,
-  )(value__))
+pub fn decode__scope() {
+  {
+    use type_ <- decode.field("type", decode__scope_type())
+    use object <- decode.field("object", runtime.decode__remote_object())
+    use name <- decode.optional_field(
+      "name",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use start_location <- decode.optional_field(
+      "startLocation",
+      option.None,
+      decode.optional(decode__location()),
+    )
+    use end_location <- decode.optional_field(
+      "endLocation",
+      option.None,
+      decode.optional(decode__location()),
+    )
 
-  Ok(Scope(
-    type_: type_,
-    object: object,
-    name: name,
-    start_location: start_location,
-    end_location: end_location,
-  ))
+    decode.success(Scope(
+      type_: type_,
+      object: object,
+      name: name,
+      start_location: start_location,
+      end_location: end_location,
+    ))
+  }
 }
 
 /// Search match for resource.
@@ -315,15 +311,16 @@ pub fn encode__search_match(value__: SearchMatch) {
 }
 
 @internal
-pub fn decode__search_match(value__: dynamic.Dynamic) {
-  use line_number <- result.try(dynamic.field("lineNumber", dynamic.float)(
-    value__,
-  ))
-  use line_content <- result.try(dynamic.field("lineContent", dynamic.string)(
-    value__,
-  ))
+pub fn decode__search_match() {
+  {
+    use line_number <- decode.field("lineNumber", decode.float)
+    use line_content <- decode.field("lineContent", decode.string)
 
-  Ok(SearchMatch(line_number: line_number, line_content: line_content))
+    decode.success(SearchMatch(
+      line_number: line_number,
+      line_content: line_content,
+    ))
+  }
 }
 
 pub type BreakLocation {
@@ -357,20 +354,19 @@ pub fn encode__break_location_type(value__: BreakLocationType) {
 }
 
 @internal
-pub fn decode__break_location_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("debuggerStatement") -> Ok(BreakLocationTypeDebuggerStatement)
-    Ok("call") -> Ok(BreakLocationTypeCall)
-    Ok("return") -> Ok(BreakLocationTypeReturn)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__break_location_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "debuggerStatement" -> decode.success(BreakLocationTypeDebuggerStatement)
+      "call" -> decode.success(BreakLocationTypeCall)
+      "return" -> decode.success(BreakLocationTypeReturn)
+      _ ->
+        decode.failure(
+          BreakLocationTypeDebuggerStatement,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -391,29 +387,28 @@ pub fn encode__break_location(value__: BreakLocation) {
 }
 
 @internal
-pub fn decode__break_location(value__: dynamic.Dynamic) {
-  use script_id <- result.try(dynamic.field(
-    "scriptId",
-    runtime.decode__script_id,
-  )(value__))
-  use line_number <- result.try(dynamic.field("lineNumber", dynamic.int)(
-    value__,
-  ))
-  use column_number <- result.try(dynamic.optional_field(
-    "columnNumber",
-    dynamic.int,
-  )(value__))
-  use type_ <- result.try(dynamic.optional_field(
-    "type",
-    decode__break_location_type,
-  )(value__))
+pub fn decode__break_location() {
+  {
+    use script_id <- decode.field("scriptId", runtime.decode__script_id())
+    use line_number <- decode.field("lineNumber", decode.int)
+    use column_number <- decode.optional_field(
+      "columnNumber",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use type_ <- decode.optional_field(
+      "type",
+      option.None,
+      decode.optional(decode__break_location_type()),
+    )
 
-  Ok(BreakLocation(
-    script_id: script_id,
-    line_number: line_number,
-    column_number: column_number,
-    type_: type_,
-  ))
+    decode.success(BreakLocation(
+      script_id: script_id,
+      line_number: line_number,
+      column_number: column_number,
+      type_: type_,
+    ))
+  }
 }
 
 /// Enum of possible script languages.
@@ -432,19 +427,14 @@ pub fn encode__script_language(value__: ScriptLanguage) {
 }
 
 @internal
-pub fn decode__script_language(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("JavaScript") -> Ok(ScriptLanguageJavaScript)
-    Ok("WebAssembly") -> Ok(ScriptLanguageWebAssembly)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__script_language() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "JavaScript" -> decode.success(ScriptLanguageJavaScript)
+      "WebAssembly" -> decode.success(ScriptLanguageWebAssembly)
+      _ -> decode.failure(ScriptLanguageJavaScript, "valid enum property")
+    }
   }
 }
 
@@ -479,28 +469,25 @@ pub fn encode__debug_symbols_type(value__: DebugSymbolsType) {
 }
 
 @internal
-pub fn decode__debug_symbols_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("None") -> Ok(DebugSymbolsTypeNone)
-    Ok("SourceMap") -> Ok(DebugSymbolsTypeSourceMap)
-    Ok("EmbeddedDWARF") -> Ok(DebugSymbolsTypeEmbeddedDwarf)
-    Ok("ExternalDWARF") -> Ok(DebugSymbolsTypeExternalDwarf)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__debug_symbols_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "None" -> decode.success(DebugSymbolsTypeNone)
+      "SourceMap" -> decode.success(DebugSymbolsTypeSourceMap)
+      "EmbeddedDWARF" -> decode.success(DebugSymbolsTypeEmbeddedDwarf)
+      "ExternalDWARF" -> decode.success(DebugSymbolsTypeExternalDwarf)
+      _ -> decode.failure(DebugSymbolsTypeNone, "valid enum property")
+    }
   }
 }
 
 @internal
 pub fn encode__debug_symbols(value__: DebugSymbols) {
   json.object(
-    [#("type", encode__debug_symbols_type(value__.type_))]
+    [
+      #("type", encode__debug_symbols_type(value__.type_)),
+    ]
     |> utils.add_optional(value__.external_url, fn(inner_value__) {
       #("externalURL", json.string(inner_value__))
     }),
@@ -508,16 +495,17 @@ pub fn encode__debug_symbols(value__: DebugSymbols) {
 }
 
 @internal
-pub fn decode__debug_symbols(value__: dynamic.Dynamic) {
-  use type_ <- result.try(dynamic.field("type", decode__debug_symbols_type)(
-    value__,
-  ))
-  use external_url <- result.try(dynamic.optional_field(
-    "externalURL",
-    dynamic.string,
-  )(value__))
+pub fn decode__debug_symbols() {
+  {
+    use type_ <- decode.field("type", decode__debug_symbols_type())
+    use external_url <- decode.optional_field(
+      "externalURL",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(DebugSymbols(type_: type_, external_url: external_url))
+    decode.success(DebugSymbols(type_: type_, external_url: external_url))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -532,20 +520,20 @@ pub type EvaluateOnCallFrameResponse {
 }
 
 @internal
-pub fn decode__evaluate_on_call_frame_response(value__: dynamic.Dynamic) {
-  use result <- result.try(dynamic.field(
-    "result",
-    runtime.decode__remote_object,
-  )(value__))
-  use exception_details <- result.try(dynamic.optional_field(
-    "exceptionDetails",
-    runtime.decode__exception_details,
-  )(value__))
+pub fn decode__evaluate_on_call_frame_response() {
+  {
+    use result <- decode.field("result", runtime.decode__remote_object())
+    use exception_details <- decode.optional_field(
+      "exceptionDetails",
+      option.None,
+      decode.optional(runtime.decode__exception_details()),
+    )
 
-  Ok(EvaluateOnCallFrameResponse(
-    result: result,
-    exception_details: exception_details,
-  ))
+    decode.success(EvaluateOnCallFrameResponse(
+      result: result,
+      exception_details: exception_details,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -558,13 +546,15 @@ pub type GetPossibleBreakpointsResponse {
 }
 
 @internal
-pub fn decode__get_possible_breakpoints_response(value__: dynamic.Dynamic) {
-  use locations <- result.try(dynamic.field(
-    "locations",
-    dynamic.list(decode__break_location),
-  )(value__))
+pub fn decode__get_possible_breakpoints_response() {
+  {
+    use locations <- decode.field(
+      "locations",
+      decode.list(decode__break_location()),
+    )
 
-  Ok(GetPossibleBreakpointsResponse(locations: locations))
+    decode.success(GetPossibleBreakpointsResponse(locations: locations))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -579,15 +569,20 @@ pub type GetScriptSourceResponse {
 }
 
 @internal
-pub fn decode__get_script_source_response(value__: dynamic.Dynamic) {
-  use script_source <- result.try(dynamic.field("scriptSource", dynamic.string)(
-    value__,
-  ))
-  use bytecode <- result.try(dynamic.optional_field("bytecode", dynamic.string)(
-    value__,
-  ))
+pub fn decode__get_script_source_response() {
+  {
+    use script_source <- decode.field("scriptSource", decode.string)
+    use bytecode <- decode.optional_field(
+      "bytecode",
+      option.None,
+      decode.optional(decode.string),
+    )
 
-  Ok(GetScriptSourceResponse(script_source: script_source, bytecode: bytecode))
+    decode.success(GetScriptSourceResponse(
+      script_source: script_source,
+      bytecode: bytecode,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -600,13 +595,12 @@ pub type SearchInContentResponse {
 }
 
 @internal
-pub fn decode__search_in_content_response(value__: dynamic.Dynamic) {
-  use result <- result.try(dynamic.field(
-    "result",
-    dynamic.list(decode__search_match),
-  )(value__))
+pub fn decode__search_in_content_response() {
+  {
+    use result <- decode.field("result", decode.list(decode__search_match()))
 
-  Ok(SearchInContentResponse(result: result))
+    decode.success(SearchInContentResponse(result: result))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -621,20 +615,16 @@ pub type SetBreakpointResponse {
 }
 
 @internal
-pub fn decode__set_breakpoint_response(value__: dynamic.Dynamic) {
-  use breakpoint_id <- result.try(dynamic.field(
-    "breakpointId",
-    decode__breakpoint_id,
-  )(value__))
-  use actual_location <- result.try(dynamic.field(
-    "actualLocation",
-    decode__location,
-  )(value__))
+pub fn decode__set_breakpoint_response() {
+  {
+    use breakpoint_id <- decode.field("breakpointId", decode__breakpoint_id())
+    use actual_location <- decode.field("actualLocation", decode__location())
 
-  Ok(SetBreakpointResponse(
-    breakpoint_id: breakpoint_id,
-    actual_location: actual_location,
-  ))
+    decode.success(SetBreakpointResponse(
+      breakpoint_id: breakpoint_id,
+      actual_location: actual_location,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -647,13 +637,14 @@ pub type SetInstrumentationBreakpointResponse {
 }
 
 @internal
-pub fn decode__set_instrumentation_breakpoint_response(value__: dynamic.Dynamic) {
-  use breakpoint_id <- result.try(dynamic.field(
-    "breakpointId",
-    decode__breakpoint_id,
-  )(value__))
+pub fn decode__set_instrumentation_breakpoint_response() {
+  {
+    use breakpoint_id <- decode.field("breakpointId", decode__breakpoint_id())
 
-  Ok(SetInstrumentationBreakpointResponse(breakpoint_id: breakpoint_id))
+    decode.success(SetInstrumentationBreakpointResponse(
+      breakpoint_id: breakpoint_id,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -668,20 +659,16 @@ pub type SetBreakpointByUrlResponse {
 }
 
 @internal
-pub fn decode__set_breakpoint_by_url_response(value__: dynamic.Dynamic) {
-  use breakpoint_id <- result.try(dynamic.field(
-    "breakpointId",
-    decode__breakpoint_id,
-  )(value__))
-  use locations <- result.try(dynamic.field(
-    "locations",
-    dynamic.list(decode__location),
-  )(value__))
+pub fn decode__set_breakpoint_by_url_response() {
+  {
+    use breakpoint_id <- decode.field("breakpointId", decode__breakpoint_id())
+    use locations <- decode.field("locations", decode.list(decode__location()))
 
-  Ok(SetBreakpointByUrlResponse(
-    breakpoint_id: breakpoint_id,
-    locations: locations,
-  ))
+    decode.success(SetBreakpointByUrlResponse(
+      breakpoint_id: breakpoint_id,
+      locations: locations,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -694,13 +681,16 @@ pub type SetScriptSourceResponse {
 }
 
 @internal
-pub fn decode__set_script_source_response(value__: dynamic.Dynamic) {
-  use exception_details <- result.try(dynamic.optional_field(
-    "exceptionDetails",
-    runtime.decode__exception_details,
-  )(value__))
+pub fn decode__set_script_source_response() {
+  {
+    use exception_details <- decode.optional_field(
+      "exceptionDetails",
+      option.None,
+      decode.optional(runtime.decode__exception_details()),
+    )
 
-  Ok(SetScriptSourceResponse(exception_details: exception_details))
+    decode.success(SetScriptSourceResponse(exception_details: exception_details))
+  }
 }
 
 /// Continues execution until specific location is reached.
@@ -721,7 +711,9 @@ pub fn continue_to_location(
   callback__(
     "Debugger.continueToLocation",
     option.Some(json.object(
-      [#("location", encode__location(location))]
+      [
+        #("location", encode__location(location)),
+      ]
       |> utils.add_optional(target_call_frames, fn(inner_value__) {
         #(
           "targetCallFrames",
@@ -751,19 +743,18 @@ pub fn encode__continue_to_location_target_call_frames(
 }
 
 @internal
-pub fn decode__continue_to_location_target_call_frames(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("any") -> Ok(ContinueToLocationTargetCallFramesAny)
-    Ok("current") -> Ok(ContinueToLocationTargetCallFramesCurrent)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__continue_to_location_target_call_frames() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "any" -> decode.success(ContinueToLocationTargetCallFramesAny)
+      "current" -> decode.success(ContinueToLocationTargetCallFramesCurrent)
+      _ ->
+        decode.failure(
+          ContinueToLocationTargetCallFramesAny,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -837,7 +828,7 @@ pub fn evaluate_on_call_frame(
     )),
   ))
 
-  decode__evaluate_on_call_frame_response(result__)
+  decode.run(result__, decode__evaluate_on_call_frame_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -862,7 +853,9 @@ pub fn get_possible_breakpoints(
   use result__ <- result.try(callback__(
     "Debugger.getPossibleBreakpoints",
     option.Some(json.object(
-      [#("start", encode__location(start))]
+      [
+        #("start", encode__location(start)),
+      ]
       |> utils.add_optional(end, fn(inner_value__) {
         #("end", encode__location(inner_value__))
       })
@@ -872,7 +865,7 @@ pub fn get_possible_breakpoints(
     )),
   ))
 
-  decode__get_possible_breakpoints_response(result__)
+  decode.run(result__, decode__get_possible_breakpoints_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -889,11 +882,13 @@ pub fn get_script_source(callback__, script_id script_id: runtime.ScriptId) {
   use result__ <- result.try(callback__(
     "Debugger.getScriptSource",
     option.Some(
-      json.object([#("scriptId", runtime.encode__script_id(script_id))]),
+      json.object([
+        #("scriptId", runtime.encode__script_id(script_id)),
+      ]),
     ),
   ))
 
-  decode__get_script_source_response(result__)
+  decode.run(result__, decode__get_script_source_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -914,7 +909,9 @@ pub fn remove_breakpoint(callback__, breakpoint_id breakpoint_id: BreakpointId) 
   callback__(
     "Debugger.removeBreakpoint",
     option.Some(
-      json.object([#("breakpointId", encode__breakpoint_id(breakpoint_id))]),
+      json.object([
+        #("breakpointId", encode__breakpoint_id(breakpoint_id)),
+      ]),
     ),
   )
 }
@@ -942,7 +939,9 @@ pub fn restart_frame(callback__, call_frame_id call_frame_id: CallFrameId) {
   callback__(
     "Debugger.restartFrame",
     option.Some(
-      json.object([#("callFrameId", encode__call_frame_id(call_frame_id))]),
+      json.object([
+        #("callFrameId", encode__call_frame_id(call_frame_id)),
+      ]),
     ),
   )
 }
@@ -1007,7 +1006,7 @@ pub fn search_in_content(
     )),
   ))
 
-  decode__search_in_content_response(result__)
+  decode.run(result__, decode__search_in_content_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1022,7 +1021,11 @@ pub fn search_in_content(
 pub fn set_async_call_stack_depth(callback__, max_depth max_depth: Int) {
   callback__(
     "Debugger.setAsyncCallStackDepth",
-    option.Some(json.object([#("maxDepth", json.int(max_depth))])),
+    option.Some(
+      json.object([
+        #("maxDepth", json.int(max_depth)),
+      ]),
+    ),
   )
 }
 
@@ -1045,14 +1048,16 @@ pub fn set_breakpoint(
   use result__ <- result.try(callback__(
     "Debugger.setBreakpoint",
     option.Some(json.object(
-      [#("location", encode__location(location))]
+      [
+        #("location", encode__location(location)),
+      ]
       |> utils.add_optional(condition, fn(inner_value__) {
         #("condition", json.string(inner_value__))
       }),
     )),
   ))
 
-  decode__set_breakpoint_response(result__)
+  decode.run(result__, decode__set_breakpoint_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1082,7 +1087,7 @@ pub fn set_instrumentation_breakpoint(
     ),
   ))
 
-  decode__set_instrumentation_breakpoint_response(result__)
+  decode.run(result__, decode__set_instrumentation_breakpoint_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1107,25 +1112,24 @@ pub fn encode__set_instrumentation_breakpoint_instrumentation(
 }
 
 @internal
-pub fn decode__set_instrumentation_breakpoint_instrumentation(
-  value__: dynamic.Dynamic,
-) {
-  case dynamic.string(value__) {
-    Ok("beforeScriptExecution") ->
-      Ok(SetInstrumentationBreakpointInstrumentationBeforeScriptExecution)
-    Ok("beforeScriptWithSourceMapExecution") ->
-      Ok(
-        SetInstrumentationBreakpointInstrumentationBeforeScriptWithSourceMapExecution,
-      )
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__set_instrumentation_breakpoint_instrumentation() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "beforeScriptExecution" ->
+        decode.success(
+          SetInstrumentationBreakpointInstrumentationBeforeScriptExecution,
+        )
+      "beforeScriptWithSourceMapExecution" ->
+        decode.success(
+          SetInstrumentationBreakpointInstrumentationBeforeScriptWithSourceMapExecution,
+        )
+      _ ->
+        decode.failure(
+          SetInstrumentationBreakpointInstrumentationBeforeScriptExecution,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -1160,7 +1164,9 @@ pub fn set_breakpoint_by_url(
   use result__ <- result.try(callback__(
     "Debugger.setBreakpointByUrl",
     option.Some(json.object(
-      [#("lineNumber", json.int(line_number))]
+      [
+        #("lineNumber", json.int(line_number)),
+      ]
       |> utils.add_optional(url, fn(inner_value__) {
         #("url", json.string(inner_value__))
       })
@@ -1179,7 +1185,7 @@ pub fn set_breakpoint_by_url(
     )),
   ))
 
-  decode__set_breakpoint_by_url_response(result__)
+  decode.run(result__, decode__set_breakpoint_by_url_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1193,7 +1199,11 @@ pub fn set_breakpoint_by_url(
 pub fn set_breakpoints_active(callback__, active active: Bool) {
   callback__(
     "Debugger.setBreakpointsActive",
-    option.Some(json.object([#("active", json.bool(active))])),
+    option.Some(
+      json.object([
+        #("active", json.bool(active)),
+      ]),
+    ),
   )
 }
 
@@ -1212,7 +1222,9 @@ pub fn set_pause_on_exceptions(
   callback__(
     "Debugger.setPauseOnExceptions",
     option.Some(
-      json.object([#("state", encode__set_pause_on_exceptions_state(state))]),
+      json.object([
+        #("state", encode__set_pause_on_exceptions_state(state)),
+      ]),
     ),
   )
 }
@@ -1238,21 +1250,16 @@ pub fn encode__set_pause_on_exceptions_state(value__: SetPauseOnExceptionsState)
 }
 
 @internal
-pub fn decode__set_pause_on_exceptions_state(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("none") -> Ok(SetPauseOnExceptionsStateNone)
-    Ok("caught") -> Ok(SetPauseOnExceptionsStateCaught)
-    Ok("uncaught") -> Ok(SetPauseOnExceptionsStateUncaught)
-    Ok("all") -> Ok(SetPauseOnExceptionsStateAll)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__set_pause_on_exceptions_state() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "none" -> decode.success(SetPauseOnExceptionsStateNone)
+      "caught" -> decode.success(SetPauseOnExceptionsStateCaught)
+      "uncaught" -> decode.success(SetPauseOnExceptionsStateUncaught)
+      "all" -> decode.success(SetPauseOnExceptionsStateAll)
+      _ -> decode.failure(SetPauseOnExceptionsStateNone, "valid enum property")
+    }
   }
 }
 
@@ -1292,7 +1299,7 @@ pub fn set_script_source(
     )),
   ))
 
-  decode__set_script_source_response(result__)
+  decode.run(result__, decode__set_script_source_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -1306,7 +1313,11 @@ pub fn set_script_source(
 pub fn set_skip_all_pauses(callback__, skip skip: Bool) {
   callback__(
     "Debugger.setSkipAllPauses",
-    option.Some(json.object([#("skip", json.bool(skip))])),
+    option.Some(
+      json.object([
+        #("skip", json.bool(skip)),
+      ]),
+    ),
   )
 }
 

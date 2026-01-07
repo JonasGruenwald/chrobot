@@ -12,7 +12,7 @@
 
 import chrobot/chrome
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -35,27 +35,22 @@ pub type GetVersionResponse {
 }
 
 @internal
-pub fn decode__get_version_response(value__: dynamic.Dynamic) {
-  use protocol_version <- result.try(dynamic.field(
-    "protocolVersion",
-    dynamic.string,
-  )(value__))
-  use product <- result.try(dynamic.field("product", dynamic.string)(value__))
-  use revision <- result.try(dynamic.field("revision", dynamic.string)(value__))
-  use user_agent <- result.try(dynamic.field("userAgent", dynamic.string)(
-    value__,
-  ))
-  use js_version <- result.try(dynamic.field("jsVersion", dynamic.string)(
-    value__,
-  ))
+pub fn decode__get_version_response() {
+  {
+    use protocol_version <- decode.field("protocolVersion", decode.string)
+    use product <- decode.field("product", decode.string)
+    use revision <- decode.field("revision", decode.string)
+    use user_agent <- decode.field("userAgent", decode.string)
+    use js_version <- decode.field("jsVersion", decode.string)
 
-  Ok(GetVersionResponse(
-    protocol_version: protocol_version,
-    product: product,
-    revision: revision,
-    user_agent: user_agent,
-    js_version: js_version,
-  ))
+    decode.success(GetVersionResponse(
+      protocol_version: protocol_version,
+      product: product,
+      revision: revision,
+      user_agent: user_agent,
+      js_version: js_version,
+    ))
+  }
 }
 
 /// Reset all permission management for all origins.
@@ -96,7 +91,7 @@ pub fn close(callback__) {
 pub fn get_version(callback__) {
   use result__ <- result.try(callback__("Browser.getVersion", option.None))
 
-  decode__get_version_response(result__)
+  decode.run(result__, decode__get_version_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -111,6 +106,10 @@ pub fn get_version(callback__) {
 pub fn add_privacy_sandbox_enrollment_override(callback__, url url: String) {
   callback__(
     "Browser.addPrivacySandboxEnrollmentOverride",
-    option.Some(json.object([#("url", json.string(url))])),
+    option.Some(
+      json.object([
+        #("url", json.string(url)),
+      ]),
+    ),
   )
 }

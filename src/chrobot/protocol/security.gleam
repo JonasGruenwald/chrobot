@@ -11,10 +11,9 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
-import gleam/result
 
 /// An internal certificate ID value.
 pub type CertificateId {
@@ -29,8 +28,11 @@ pub fn encode__certificate_id(value__: CertificateId) {
 }
 
 @internal
-pub fn decode__certificate_id(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(CertificateId, dynamic.int)
+pub fn decode__certificate_id() {
+  {
+    use value__ <- decode.then(decode.int)
+    decode.success(CertificateId(value__))
+  }
 }
 
 /// A description of mixed content (HTTP resources on HTTPS pages), as defined by
@@ -52,20 +54,16 @@ pub fn encode__mixed_content_type(value__: MixedContentType) {
 }
 
 @internal
-pub fn decode__mixed_content_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("blockable") -> Ok(MixedContentTypeBlockable)
-    Ok("optionally-blockable") -> Ok(MixedContentTypeOptionallyBlockable)
-    Ok("none") -> Ok(MixedContentTypeNone)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__mixed_content_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "blockable" -> decode.success(MixedContentTypeBlockable)
+      "optionally-blockable" ->
+        decode.success(MixedContentTypeOptionallyBlockable)
+      "none" -> decode.success(MixedContentTypeNone)
+      _ -> decode.failure(MixedContentTypeBlockable, "valid enum property")
+    }
   }
 }
 
@@ -93,23 +91,18 @@ pub fn encode__security_state(value__: SecurityState) {
 }
 
 @internal
-pub fn decode__security_state(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("unknown") -> Ok(SecurityStateUnknown)
-    Ok("neutral") -> Ok(SecurityStateNeutral)
-    Ok("insecure") -> Ok(SecurityStateInsecure)
-    Ok("secure") -> Ok(SecurityStateSecure)
-    Ok("info") -> Ok(SecurityStateInfo)
-    Ok("insecure-broken") -> Ok(SecurityStateInsecureBroken)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__security_state() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "unknown" -> decode.success(SecurityStateUnknown)
+      "neutral" -> decode.success(SecurityStateNeutral)
+      "insecure" -> decode.success(SecurityStateInsecure)
+      "secure" -> decode.success(SecurityStateSecure)
+      "info" -> decode.success(SecurityStateInfo)
+      "insecure-broken" -> decode.success(SecurityStateInsecureBroken)
+      _ -> decode.failure(SecurityStateUnknown, "valid enum property")
+    }
   }
 }
 
@@ -154,38 +147,36 @@ pub fn encode__security_state_explanation(value__: SecurityStateExplanation) {
 }
 
 @internal
-pub fn decode__security_state_explanation(value__: dynamic.Dynamic) {
-  use security_state <- result.try(dynamic.field(
-    "securityState",
-    decode__security_state,
-  )(value__))
-  use title <- result.try(dynamic.field("title", dynamic.string)(value__))
-  use summary <- result.try(dynamic.field("summary", dynamic.string)(value__))
-  use description <- result.try(dynamic.field("description", dynamic.string)(
-    value__,
-  ))
-  use mixed_content_type <- result.try(dynamic.field(
-    "mixedContentType",
-    decode__mixed_content_type,
-  )(value__))
-  use certificate <- result.try(dynamic.field(
-    "certificate",
-    dynamic.list(dynamic.string),
-  )(value__))
-  use recommendations <- result.try(dynamic.optional_field(
-    "recommendations",
-    dynamic.list(dynamic.string),
-  )(value__))
+pub fn decode__security_state_explanation() {
+  {
+    use security_state <- decode.field(
+      "securityState",
+      decode__security_state(),
+    )
+    use title <- decode.field("title", decode.string)
+    use summary <- decode.field("summary", decode.string)
+    use description <- decode.field("description", decode.string)
+    use mixed_content_type <- decode.field(
+      "mixedContentType",
+      decode__mixed_content_type(),
+    )
+    use certificate <- decode.field("certificate", decode.list(decode.string))
+    use recommendations <- decode.optional_field(
+      "recommendations",
+      option.None,
+      decode.optional(decode.list(decode.string)),
+    )
 
-  Ok(SecurityStateExplanation(
-    security_state: security_state,
-    title: title,
-    summary: summary,
-    description: description,
-    mixed_content_type: mixed_content_type,
-    certificate: certificate,
-    recommendations: recommendations,
-  ))
+    decode.success(SecurityStateExplanation(
+      security_state: security_state,
+      title: title,
+      summary: summary,
+      description: description,
+      mixed_content_type: mixed_content_type,
+      certificate: certificate,
+      recommendations: recommendations,
+    ))
+  }
 }
 
 /// The action to take when a certificate error occurs. continue will continue processing the
@@ -205,19 +196,14 @@ pub fn encode__certificate_error_action(value__: CertificateErrorAction) {
 }
 
 @internal
-pub fn decode__certificate_error_action(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("continue") -> Ok(CertificateErrorActionContinue)
-    Ok("cancel") -> Ok(CertificateErrorActionCancel)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__certificate_error_action() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "continue" -> decode.success(CertificateErrorActionContinue)
+      "cancel" -> decode.success(CertificateErrorActionCancel)
+      _ -> decode.failure(CertificateErrorActionContinue, "valid enum property")
+    }
   }
 }
 
@@ -243,6 +229,10 @@ pub fn enable(callback__) {
 pub fn set_ignore_certificate_errors(callback__, ignore ignore: Bool) {
   callback__(
     "Security.setIgnoreCertificateErrors",
-    option.Some(json.object([#("ignore", json.bool(ignore))])),
+    option.Some(
+      json.object([
+        #("ignore", json.bool(ignore)),
+      ]),
+    ),
   )
 }

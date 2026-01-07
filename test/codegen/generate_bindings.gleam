@@ -1,38 +1,38 @@
 //// This script generates gleam bindings to the Chrome DevTools Protocol
 //// based on the protocol spec which is loaded from a local json file
-//// 
+////
 //// 1. The protocol JSON file is first parsed into an internal representation
-//// 
-//// Parsing Notes:  
+////
+//// Parsing Notes:
 //// We use the common 'Type' type to deal with the base concept of types in the
 //// protocol, this includes top  level type definitions, object properties,
-//// command parameters and command returns, which all wrap 'Type' with some 
+//// command parameters and command returns, which all wrap 'Type' with some
 //// additional attributes on top.
-//// 
+////
 //// 2. The parsed protocol is processed
 ////  - A stable version of the protocol is generated with experimental and deprecated items removed (can be toggled)
 ////  - Hardcoded patches are applied to the protocol to make it possible to generate bindings (e.g. replacing references with actual types to avoid circular dependencies)
-//// 
+////
 //// 3. Files are generated based on the parsed protocol
-//// 
+////
 //// Codegen Notes:
 //// - A root file `src/protocol.gleam` is generated with general information
 //// - A module is generated for each domain in the protocol under `src/protocol/`
 //// - Generated files should be put through `gleam format` before committing
-//// 
+////
 //// This script will panic if anything goes wrong, do not import this module anywere except for tests
-//// 
+////
 
 // TODO: Attach comments to variants generated in type definitions
 
-import gleam/dynamic.{field, optional_field} as d
+import chrobot/internal/utils
+import gleam/dynamic/decode
 import gleam/int
 import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/regexp
-import gleam/result
 import gleam/string
 import gleam/string_tree as st
 import justin_fork.{pascal_case, snake_case}
@@ -40,57 +40,57 @@ import simplifile as file
 
 const root_module_comment = "
 This is the protocol definition entrypoint, it contains an overview of the protocol structure,
-and a function to retrieve the version of the protocol used to generate the current bindings.  
-The protocol version is also displayed in the box above, which appears on every generated module.  
+and a function to retrieve the version of the protocol used to generate the current bindings.
+The protocol version is also displayed in the box above, which appears on every generated module.
 
 ## ⚠️ Really Important Notes
-   
-1) It's best never to work with the DOM domain for automation, 
-[an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).  
+
+1) It's best never to work with the DOM domain for automation,
+[an explanation of why can be found here](https://github.com/puppeteer/puppeteer/pull/71#issuecomment-314599749).
 Instead, to automate DOM interaction, JavaScript can be injected using the Runtime domain.
-  
-2) Unfortunately, I haven't found a good way to map dynamic properties to gleam attributes bidirectionally.  
-**This means all dynamic values you supply to commands will be silently dropped**!  
-It's important to realize this to avoid confusion, for example in `runtime.call_function_on` 
-you may want to supply arguments which can be any value, but it won't work.  
+
+2) Unfortunately, I haven't found a good way to map dynamic properties to gleam attributes bidirectionally.
+**This means all dynamic values you supply to commands will be silently dropped**!
+It's important to realize this to avoid confusion, for example in `runtime.call_function_on`
+you may want to supply arguments which can be any value, but it won't work.
 The only path to do that as far as I can tell, is write the protocol call logic yourself,
-perhaps taking the codegen code as a basis.  
+perhaps taking the codegen code as a basis.
 Check the `call_custom_function_on` function from `chrobot` which does this for the mentioned function
 
 ## Structure
 
-Each domain in the protocol is represented as a module under `protocol/`. 
+Each domain in the protocol is represented as a module under `protocol/`.
 
-In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol), 
+In general, the bindings are generated through codegen, directly from the JSON protocol schema [published here](https://github.com/ChromeDevTools/devtools-protocol),
 however there are some little adjustments that needed to be made, to make the protocol schema usable, mainly due to
-what I believe are minor bugs in the protocol.  
+what I believe are minor bugs in the protocol.
 To see these changes, check the `apply_protocol_patches` function in `chrobot/internal/generate_bindings`.
 
 Domains may depend on the types of other domains, these dependencies are mirrored in the generated bindings where possible.
 In some case, type references to other modules have been replaced by the respective inner type, because the references would
 create a circular dependency.
 
-## Types 
+## Types
 
 The generated bindings include a mirror of the type defitions of each type in the protocol spec,
 alongside with an `encode__` function to encode the type into JSON in order to send it to the browser
 and a `decode__` function in order to decode the type out of a payload sent from the browser. Encoders and
 decoders are marked internal and should be used through command functions which are described below.
 
-Notes:  
+Notes:
 - Some object properties in the protocol have the type `any`, in this case the value is considered as dynamic
 by decoders, and encoders will not encode it, setting it to `null` instead in the payload
-- Object types that don't specify any properties are treated as a `Dict(String,String)` 
+- Object types that don't specify any properties are treated as a `Dict(String,String)`
 
-Additional type definitions and encoders / decoders are generated, 
-for any enumerable property in the protocol, as well as the return values of commands.  
-These special type definitions are marked with a comment to indicate 
+Additional type definitions and encoders / decoders are generated,
+for any enumerable property in the protocol, as well as the return values of commands.
+These special type definitions are marked with a comment to indicate
 the fact that they are not part of the protocol spec, but rather generated dynamically to support the bindings.
 
 
 ## Commands
 
-A function is generated for each command, named after the command (in snake case).  
+A function is generated for each command, named after the command (in snake case).
 The function handles both encoding the parameters to sent to the browser via the protocol, and decoding the response.
 A `ProtocolError` error is returned if the decoding fails, this would mean there is a bug in the protocol
 or the generated bindings.
@@ -101,7 +101,7 @@ The first parameter to the command function is always a `callback` of the form
 fn(method: String, parameters: Option(Json)) -> Result(Dynamic, RequestError)
 ```
 
-By using this callback you can take advantage of the generated protocol encoders/decoders 
+By using this callback you can take advantage of the generated protocol encoders/decoders
 while also passing in your browser subject to direct the command to, and passing along additional
 arguments, like the `sessionId` which is required for some operations.
 
@@ -427,7 +427,7 @@ fn get_stable_type(
   }
 }
 
-/// Return the protocol with experimental and deprecated domains, types, commands, parameters and events removed.  
+/// Return the protocol with experimental and deprecated domains, types, commands, parameters and events removed.
 /// Note that this might leave some optional lists as empty if all items are experimental / deprecated.
 pub fn get_stable_protocol(
   protocol: Protocol,
@@ -703,45 +703,79 @@ fn print_protocol_stats(protocol: Protocol) {
 
 // --- PARSING ---
 
-fn parse_type_def(
-  input: d.Dynamic,
-) -> Result(TypeDefinition, List(d.DecodeError)) {
-  d.decode5(
-    TypeDefinition,
-    field("id", d.string),
-    optional_field("description", d.string),
-    optional_field("experimental", d.bool),
-    optional_field("deprecated", d.bool),
-    // actual type is on the 'inner' attribute
-    parse_type,
-  )(input)
+fn parse_type_def_decoder() -> decode.Decoder(TypeDefinition) {
+  use id <- decode.field("id", decode.string)
+  use description <- decode.optional_field(
+    "description",
+    None,
+    decode.optional(decode.string),
+  )
+  use experimental <- decode.optional_field(
+    "experimental",
+    None,
+    decode.optional(decode.bool),
+  )
+  use deprecated <- decode.optional_field(
+    "deprecated",
+    None,
+    decode.optional(decode.bool),
+  )
+  use inner <- decode.then(parse_type_decoder())
+  decode.success(TypeDefinition(
+    id:,
+    description:,
+    experimental:,
+    deprecated:,
+    inner:,
+  ))
 }
 
-fn parse_property_def(
-  input: d.Dynamic,
-) -> Result(PropertyDefinition, List(d.DecodeError)) {
-  d.decode6(
-    PropertyDefinition,
-    field("name", d.string),
-    optional_field("description", d.string),
-    optional_field("experimental", d.bool),
-    optional_field("deprecated", d.bool),
-    optional_field("optional", d.bool),
-    // property always wraps a type (or reference to a type)
-    parse_type,
-  )(input)
+fn parse_property_def_decoder() -> decode.Decoder(PropertyDefinition) {
+  use name <- decode.field("name", decode.string)
+  use description <- decode.optional_field(
+    "description",
+    None,
+    decode.optional(decode.string),
+  )
+  use experimental <- decode.optional_field(
+    "experimental",
+    None,
+    decode.optional(decode.bool),
+  )
+  use deprecated <- decode.optional_field(
+    "deprecated",
+    None,
+    decode.optional(decode.bool),
+  )
+  use optional <- decode.optional_field(
+    "optional",
+    None,
+    decode.optional(decode.bool),
+  )
+  use inner <- decode.then(parse_type_decoder())
+  decode.success(PropertyDefinition(
+    name:,
+    description:,
+    experimental:,
+    deprecated:,
+    optional:,
+    inner:,
+  ))
 }
 
 /// For arrays we handle only primitive types or refs
-fn parse_array_type_item(
-  input: d.Dynamic,
-) -> Result(ArrayTypeItem, List(d.DecodeError)) {
-  let ref = field("$ref", d.string)(input)
-  let type_name = field("type", d.string)(input)
+fn parse_array_type_item_decoder() -> decode.Decoder(ArrayTypeItem) {
+  use ref <- decode.optional_field("$ref", None, decode.optional(decode.string))
+  use type_name <- decode.optional_field(
+    "type",
+    None,
+    decode.optional(decode.string),
+  )
   case ref, type_name {
-    Ok(ref_target), _ -> Ok(ReferenceItem(ref_target))
-    _, Ok(type_name_val) -> Ok(PrimitiveItem(type_name_val))
-    Error(any), _ -> Error(any)
+    Some(ref_target), _ -> decode.success(ReferenceItem(ref_target))
+    _, Some(type_name_val) -> decode.success(PrimitiveItem(type_name_val))
+    None, None ->
+      decode.failure(PrimitiveItem(""), "ArrayTypeItem with $ref or type")
   }
 }
 
@@ -749,95 +783,178 @@ fn parse_array_type_item(
 /// This is also used to parse parameters and returns
 /// Therefore it also parses and returns '$ref' types
 /// which are not present in the top-level 'types' field
-fn parse_type(input: d.Dynamic) -> Result(Type, List(d.DecodeError)) {
-  let primitive_type_decoder = d.decode1(PrimitiveType, field("type", d.string))
-  let enum_type_decoder = d.decode1(EnumType, field("enum", d.list(d.string)))
-  let object_type_decoder =
-    d.decode1(
-      ObjectType,
-      optional_field("properties", d.list(parse_property_def)),
-    )
-  let array_type_decoder =
-    d.decode1(
-      ArrayType,
-      // you may think 'items' is an array, but nah, it's an object!
-      field("items", parse_array_type_item),
-    )
-  let ref_type_decoder = d.decode1(RefType, field("$ref", d.string))
-  let type_name = field("type", d.string)(input)
-  use enum <- result.try(optional_field("enum", d.list(d.string))(input))
-  use ref <- result.try(optional_field("$ref", d.string)(input))
-  case type_name, enum, ref {
-    Ok("string"), Some(_enum), _ -> enum_type_decoder(input)
-    Ok("string"), None, _
-    | Ok("boolean"), _, _
-    | Ok("number"), _, _
-    | Ok("any"), _, _
-    | Ok("integer"), _, _
-    -> primitive_type_decoder(input)
-    Ok("object"), _, _ -> object_type_decoder(input)
-    Ok("array"), _, _ -> array_type_decoder(input)
-    _, _, Some(_ref) -> ref_type_decoder(input)
-    Ok(unknown), _, _ ->
-      Error([
-        d.DecodeError(
-          expected: "A type with a valid 'type' field",
-          found: unknown,
-          path: ["parse_type"],
-        ),
-      ])
-    Error(any), _, _ -> Error(any)
+fn parse_type_decoder() -> decode.Decoder(Type) {
+  use type_name <- decode.optional_field(
+    "type",
+    None,
+    decode.optional(decode.string),
+  )
+  use enum <- decode.optional_field(
+    "enum",
+    None,
+    decode.optional(decode.list(decode.string)),
+  )
+  use ref <- decode.optional_field("$ref", None, decode.optional(decode.string))
+  use properties <- decode.optional_field(
+    "properties",
+    None,
+    decode.optional(decode.list(parse_property_def_decoder())),
+  )
+  use items <- decode.optional_field(
+    "items",
+    None,
+    decode.optional(parse_array_type_item_decoder()),
+  )
+  case type_name, enum, ref, properties, items {
+    Some("string"), Some(enum_values), _, _, _ ->
+      decode.success(EnumType(enum_values))
+    Some("string"), None, _, _, _
+    | Some("boolean"), _, _, _, _
+    | Some("number"), _, _, _, _
+    | Some("any"), _, _, _, _
+    | Some("integer"), _, _, _, _
+    -> {
+      case type_name {
+        Some(name) -> decode.success(PrimitiveType(name))
+      }
+    }
+    Some("object"), _, _, props, _ -> decode.success(ObjectType(props))
+    Some("array"), _, _, _, Some(item) -> decode.success(ArrayType(item))
+    _, _, Some(ref_target), _, _ -> decode.success(RefType(ref_target))
+    Some(_), _, _, _, _ | None, _, _, _, _ ->
+      decode.failure(PrimitiveType(""), "A valid type")
   }
 }
 
 pub fn parse_protocol(path from: String) -> Result(Protocol, json.DecodeError) {
   let assert Ok(json_string) = file.read(from: from)
 
-  let command_decoder =
-    d.decode6(
-      Command,
-      field("name", d.string),
-      optional_field("description", d.string),
-      optional_field("experimental", d.bool),
-      optional_field("deprecated", d.bool),
-      optional_field("parameters", d.list(parse_property_def)),
-      optional_field("returns", d.list(parse_property_def)),
+  let command_decoder = {
+    use name <- decode.field("name", decode.string)
+    use description <- decode.optional_field(
+      "description",
+      None,
+      decode.optional(decode.string),
     )
-
-  let event_decoder =
-    d.decode5(
-      Event,
-      field("name", d.string),
-      optional_field("description", d.string),
-      optional_field("experimental", d.bool),
-      optional_field("deprecated", d.bool),
-      optional_field("parameters", d.list(parse_property_def)),
+    use experimental <- decode.optional_field(
+      "experimental",
+      None,
+      decode.optional(decode.bool),
     )
-
-  let domain_decoder =
-    d.decode8(
-      Domain,
-      field("domain", d.string),
-      optional_field("experimental", d.bool),
-      optional_field("deprecated", d.bool),
-      optional_field("dependencies", d.list(d.string)),
-      optional_field("types", d.list(parse_type_def)),
-      field("commands", d.list(command_decoder)),
-      optional_field("events", d.list(event_decoder)),
-      optional_field("description", d.string),
+    use deprecated <- decode.optional_field(
+      "deprecated",
+      None,
+      decode.optional(decode.bool),
     )
-
-  let version_decoder =
-    d.decode2(Version, field("major", d.string), field("minor", d.string))
-
-  let protocol_decoder =
-    d.decode2(
-      Protocol,
-      field("version", version_decoder),
-      field("domains", d.list(domain_decoder)),
+    use parameters <- decode.optional_field(
+      "parameters",
+      None,
+      decode.optional(decode.list(parse_property_def_decoder())),
     )
+    use returns <- decode.optional_field(
+      "returns",
+      None,
+      decode.optional(decode.list(parse_property_def_decoder())),
+    )
+    decode.success(Command(
+      name:,
+      description:,
+      experimental:,
+      deprecated:,
+      parameters:,
+      returns:,
+    ))
+  }
 
-  json.decode(from: json_string, using: protocol_decoder)
+  let event_decoder = {
+    use name <- decode.field("name", decode.string)
+    use description <- decode.optional_field(
+      "description",
+      None,
+      decode.optional(decode.string),
+    )
+    use experimental <- decode.optional_field(
+      "experimental",
+      None,
+      decode.optional(decode.bool),
+    )
+    use deprecated <- decode.optional_field(
+      "deprecated",
+      None,
+      decode.optional(decode.bool),
+    )
+    use parameters <- decode.optional_field(
+      "parameters",
+      None,
+      decode.optional(decode.list(parse_property_def_decoder())),
+    )
+    decode.success(Event(
+      name:,
+      description:,
+      experimental:,
+      deprecated:,
+      parameters:,
+    ))
+  }
+
+  let domain_decoder = {
+    use domain <- decode.field("domain", decode.string)
+    use experimental <- decode.optional_field(
+      "experimental",
+      None,
+      decode.optional(decode.bool),
+    )
+    use deprecated <- decode.optional_field(
+      "deprecated",
+      None,
+      decode.optional(decode.bool),
+    )
+    use dependencies <- decode.optional_field(
+      "dependencies",
+      None,
+      decode.optional(decode.list(decode.string)),
+    )
+    use types <- decode.optional_field(
+      "types",
+      None,
+      decode.optional(decode.list(parse_type_def_decoder())),
+    )
+    use commands <- decode.field("commands", decode.list(command_decoder))
+    use events <- decode.optional_field(
+      "events",
+      None,
+      decode.optional(decode.list(event_decoder)),
+    )
+    use description <- decode.optional_field(
+      "description",
+      None,
+      decode.optional(decode.string),
+    )
+    decode.success(Domain(
+      domain:,
+      experimental:,
+      deprecated:,
+      dependencies:,
+      types:,
+      commands:,
+      events:,
+      description:,
+    ))
+  }
+
+  let version_decoder = {
+    use major <- decode.field("major", decode.string)
+    use minor <- decode.field("minor", decode.string)
+    decode.success(Version(major:, minor:))
+  }
+
+  let protocol_decoder = {
+    use version <- decode.field("version", version_decoder)
+    use domains <- decode.field("domains", decode.list(domain_decoder))
+    decode.success(Protocol(version:, domains:))
+  }
+
+  json.parse(from: json_string, using: protocol_decoder)
 }
 
 // --- CODEGEN ---
@@ -882,7 +999,7 @@ fn to_gleam_primitive(protocol_primitive: String) {
     "boolean" -> "Bool"
     "any" -> "dynamic.Dynamic"
     _ -> {
-      io.debug(protocol_primitive)
+      echo protocol_primitive
       panic as "can't translate to gleam primitive"
     }
   }
@@ -896,7 +1013,7 @@ fn to_gleam_primitive_function(protocol_primitive: String) {
     "boolean" -> "bool"
     "any" -> "dynamic"
     _ -> {
-      io.debug(protocol_primitive)
+      echo protocol_primitive
       panic as "can't translate to gleam primitive function"
     }
   }
@@ -964,11 +1081,12 @@ fn gen_imports(domain: Domain) {
   [
     "import chrobot/chrome\n",
     "import gleam/dict\n",
-    "import gleam/list\n",
     "import gleam/dynamic\n",
-    "import gleam/result\n",
-    "import gleam/option\n",
+    "import gleam/dynamic/decode\n",
     "import gleam/json\n",
+    "import gleam/list\n",
+    "import gleam/option\n",
+    "import gleam/result\n",
     "import chrobot/internal/utils\n",
     ..domain_imports
   ]
@@ -1002,7 +1120,7 @@ fn gen_domain_module_header(protocol: Protocol, domain: Domain) {
 }
 
 // Returns the enum definition of the attribute
-// And in case of an enum attribute, the definition of the enum type that 
+// And in case of an enum attribute, the definition of the enum type that
 // the attribute references
 // otherwise an empty string ("")
 fn gen_attribute(
@@ -1029,7 +1147,7 @@ fn gen_attribute(
       let enum_type_name = pascal_case(root_name) <> pascal_case(name)
       let enum_type_def =
         gen_attached_comment(
-          "This type is not part of the protocol spec, it has been generated dynamically 
+          "This type is not part of the protocol spec, it has been generated dynamically
 to represent the possible values of the enum property `"
           <> name
           <> "` of `"
@@ -1056,7 +1174,7 @@ to represent the possible values of the enum property `"
       #("dict.Dict(String,String)", "")
     }
     ObjectType(Some(_)) -> {
-      io.debug(#(root_name, name, t, optional))
+      echo #(root_name, name, t, optional)
       panic as "Tried to generate an attribute from unsupported type (Object with properties)"
     }
   }
@@ -1166,7 +1284,7 @@ fn get_internal_function_name(internal_descriptor: String, type_name: String) {
       <> "__"
       <> snake_case(val)
     _ -> {
-      io.debug(#(internal_descriptor, type_name))
+      echo #(internal_descriptor, type_name)
       panic as "Can't get internal name from passed type_name"
     }
   }
@@ -1198,26 +1316,34 @@ pub fn gen_enum_encoder(enum_type_name: String, enum: List(String)) {
 }
 
 pub fn gen_enum_decoder(enum_type_name: String, enum: List(String)) {
+  // Get the first variant for use in failure case
+  let first_variant = case list.first(enum) {
+    Ok(v) -> pascal_case(v)
+    Error(_) -> ""
+  }
+
   get_decoder_name(enum_type_name)
   |> internal_fn(
-    "value__: dynamic.Dynamic\n",
-    "case dynamic.string(value__){\n"
+    "",
+    "{\nuse value__ <- decode.then(decode.string)\ncase value__ {\n"
       <> list.fold(enum, "", fn(acc, current) {
       acc
-      <> "Ok(\""
+      <> "\""
       <> current
-      <> "\") -> Ok("
+      <> "\" -> decode.success("
       <> enum_type_name
       <> pascal_case(current)
       <> ")\n"
     })
-      <> "Error(error) -> Error(error)\nOk(other) -> Error([dynamic.DecodeError(expected: \"valid enum property\", found:other, path: [\"enum decoder\"])])"
-      <> "}\n",
+      <> "_ -> decode.failure("
+      <> enum_type_name
+      <> first_variant
+      <> ", \"valid enum property\")\n}\n}",
   )
 }
 
 /// Context: https://github.com/gleam-lang/json?tab=readme-ov-file#encoding
-/// Given the value_name "value.lives" 
+/// Given the value_name "value.lives"
 /// and its corresponding type PrimitiveType("int")
 /// it should output: `json.int(value.lives))`
 /// The root name and attribute name are just there to construct the function name of Enum encoders
@@ -1265,7 +1391,7 @@ fn gen_property_encoder(
       get_encoder_name(ref_target) <> "(" <> value_name <> ")"
     }
     ObjectType(Some(_properties)) -> {
-      io.debug(#(root_name, attribute_name, value_type))
+      echo #(root_name, attribute_name, value_type)
       panic as "Attempting nested object encoder generation"
     }
     ObjectType(None) -> {
@@ -1280,16 +1406,16 @@ fn gen_property_encoder(
 /// #("name", string(cat.name)),
 /// #("lives", int(cat.lives)),
 /// -> Returned as element 0 of the tuple
-/// 
+///
 /// OR for optional properties, a pipe to a function like this:
 /// |> add_optional(cat.owner, fn(owner) { #("owner", json.string(owner)) })
 /// -> Returned as element 1 of the tuple
-/// 
+///
 /// The root name is just there to construct the function name of Enum encoders
 /// value_accessor is the path prefix under which to access the property, for encoder functions
 /// this is "value__." as the properties are all under the single parameter, for command functions
 /// there is no accessor as the properties are passed directly as parameters to the function, so "" will be passed
-/// 
+///
 /// The return tuple works lik
 fn gen_object_property_encoder(
   root_name: String,
@@ -1378,7 +1504,7 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
       get_encoder_name(type_def.id)
       |> internal_fn(
         "value__: " <> type_def.id <> "\n",
-        "case value__{\n" <> type_def.id <> "(inner_value__) -> 
+        "case value__{\n" <> type_def.id <> "(inner_value__) ->
       dict.to_list(inner_value__)
       |> list.map(fn(i) { #(i.0, json.string(i.1)) })
       |> json.object
@@ -1387,18 +1513,18 @@ fn gen_type_def_encoder(type_def: TypeDefinition) {
     }
     // Below are not implemented because they currently don't occur
     ArrayType(items: ReferenceItem(_ref_target)) -> {
-      io.debug(type_def)
+      echo type_def
       panic as "tried to generate type def encoder for an array of refs"
     }
     RefType(_) -> {
-      io.debug(type_def)
+      echo type_def
       panic as "tried to generate type def encoder for a type which is a ref!"
     }
   }
 }
 
-/// Generates a decoder function for a given value, wich can be called with the value
-/// E.g. `dynamic.string`
+/// Generates a decoder expression that returns a Decoder(T)
+/// E.g. `decode.string`
 fn gen_property_decoder(
   root_name: String,
   attribute_name: String,
@@ -1406,49 +1532,66 @@ fn gen_property_decoder(
 ) {
   case value_type {
     PrimitiveType(type_name) -> {
-      "dynamic." <> to_gleam_primitive_function(type_name)
+      "decode." <> to_gleam_primitive_function(type_name)
     }
     ArrayType(PrimitiveItem(type_name)) -> {
-      "dynamic.list(dynamic." <> to_gleam_primitive_function(type_name) <> ")"
+      "decode.list(decode." <> to_gleam_primitive_function(type_name) <> ")"
     }
     ArrayType(ReferenceItem(ref_target)) -> {
-      "dynamic.list(" <> get_decoder_name(ref_target) <> ")"
+      "decode.list(" <> get_decoder_name(ref_target) <> "())"
     }
     EnumType(_enum) -> {
       get_decoder_name(pascal_case(root_name) <> pascal_case(attribute_name))
+      <> "()"
     }
-    RefType(ref_target) -> get_decoder_name(ref_target)
+    RefType(ref_target) -> get_decoder_name(ref_target) <> "()"
     ObjectType(Some(_properties)) -> {
-      io.debug(#(root_name, attribute_name, value_type))
+      echo #(root_name, attribute_name, value_type)
       panic as "Attempting nested object decoder generation"
     }
     ObjectType(None) -> {
-      "dynamic.dict(dynamic.string, dynamic.string)"
+      "decode.dict(decode.string, decode.string)"
     }
   }
 }
 
-/// Generate an object property encoder statement like:
+/// Generate an object property decoder statement like:
 /// gleam```
-///   use width <- result.try(
-///    dynamic.field("field", dynamic.int)(value__)
-///  )
+///   use width <- decode.field("field", decode.int)
 /// ```
 /// This is to be inserted into the function body of an object decoder function
 fn gen_object_property_decoder(root_name: String, prop_def: PropertyDefinition) {
-  let base_decoder = case prop_def.optional {
-    Some(True) -> "optional_field"
-    _ -> "field"
+  let inner_decoder =
+    gen_property_decoder(root_name, prop_def.name, prop_def.inner)
+  case prop_def.optional, prop_def.inner {
+    // Special case: optional dynamic fields need to preserve null vs missing
+    // Using decode.map(option.Some) ensures null becomes Some(dynamic_nil)
+    // rather than None (which would be indistinguishable from missing field)
+    Some(True), PrimitiveType("any") ->
+      "use "
+      <> safe_snake_case(prop_def.name)
+      <> " <- decode.optional_field(\""
+      <> prop_def.name
+      <> "\", option.None, "
+      <> inner_decoder
+      <> " |> decode.map(option.Some))\n"
+    Some(True), _ ->
+      "use "
+      <> safe_snake_case(prop_def.name)
+      <> " <- decode.optional_field(\""
+      <> prop_def.name
+      <> "\", option.None, decode.optional("
+      <> inner_decoder
+      <> "))\n"
+    _, _ ->
+      "use "
+      <> safe_snake_case(prop_def.name)
+      <> " <- decode.field(\""
+      <> prop_def.name
+      <> "\", "
+      <> inner_decoder
+      <> ")\n"
   }
-  "use "
-  <> safe_snake_case(prop_def.name)
-  <> " <- result.try(dynamic."
-  <> base_decoder
-  <> "(\""
-  <> prop_def.name
-  <> "\","
-  <> gen_property_decoder(root_name, prop_def.name, prop_def.inner)
-  <> ")(value__))\n"
 }
 
 fn gen_type_def_decoder(type_def: TypeDefinition) {
@@ -1456,12 +1599,12 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
     PrimitiveType(primitive_type) -> {
       get_decoder_name(type_def.id)
       |> internal_fn(
-        "value__: dynamic.Dynamic",
-        "value__ |> dynamic.decode1("
-          <> type_def.id
-          <> ", dynamic."
+        "",
+        "{\nuse value__ <- decode.then(decode."
           <> to_gleam_primitive_function(primitive_type)
-          <> ")",
+          <> ")\ndecode.success("
+          <> type_def.id
+          <> "(value__))\n}",
       )
     }
     EnumType(enum) -> {
@@ -1470,23 +1613,23 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
     ArrayType(items: PrimitiveItem(primitive_type)) -> {
       get_decoder_name(type_def.id)
       |> internal_fn(
-        "value__: dynamic.Dynamic",
-        "value__ |> dynamic.decode1("
-          <> type_def.id
-          <> ", dynamic.list(dynamic."
+        "",
+        "{\nuse value__ <- decode.then(decode.list(decode."
           <> to_gleam_primitive_function(primitive_type)
-          <> "))",
+          <> "))\ndecode.success("
+          <> type_def.id
+          <> "(value__))\n}",
       )
     }
     ObjectType(Some(properties)) -> {
-      let prop_encoder_lines =
+      let prop_decoder_lines =
         list.map(properties, fn(p) {
           gen_object_property_decoder(type_def.id, p)
         })
         |> string.join("")
 
       let return_statement =
-        "Ok("
+        "decode.success("
         <> type_def.id
         <> "(\n"
         <> {
@@ -1499,26 +1642,26 @@ fn gen_type_def_decoder(type_def: TypeDefinition) {
 
       get_decoder_name(type_def.id)
       |> internal_fn(
-        "value__: dynamic.Dynamic",
-        prop_encoder_lines <> "\n" <> return_statement,
+        "",
+        "{\n" <> prop_decoder_lines <> "\n" <> return_statement <> "\n}",
       )
     }
     ObjectType(None) -> {
       get_decoder_name(type_def.id)
       |> internal_fn(
-        "value__: dynamic.Dynamic",
-        "value__ |> dynamic.decode1("
+        "",
+        "{\nuse value__ <- decode.then(decode.dict(decode.string, decode.string))\ndecode.success("
           <> type_def.id
-          <> ", dynamic.dict(dynamic.string, dynamic.string))",
+          <> "(value__))\n}",
       )
     }
     // Below are not implemented because they currently don't occur
     ArrayType(items: ReferenceItem(_ref_target)) -> {
-      io.debug(type_def)
+      echo type_def
       panic as "tried to generate type def encoder for an array of refs"
     }
     RefType(_) -> {
-      io.debug(type_def)
+      echo type_def
       panic as "tried to generate type def encoder for a type which is a ref!"
     }
   }
@@ -1571,7 +1714,7 @@ fn gen_command_parameters(command: Command) {
       let param_definitions =
         list.map(param_definitions, fn(d) {
           let assert Ok(#(parameter_name, _)) =
-            list.pop(string.split(d, ":"), fn(_) { True })
+            utils.find_remove(string.split(d, ":"), fn(_) { True })
           parameter_name <> " " <> d
         })
 
@@ -1617,9 +1760,9 @@ fn gen_command_body(command: Command, domain: Domain) {
       None | Some([]) -> #("", base_encoder_part <> "\n")
       Some(_) -> {
         #(
-          "\n"
+          "\ndecode.run(result__, "
             <> get_decoder_name(pascal_case(command.name) <> "Response")
-            <> "(result__)"
+            <> "())"
             <> "\n|> result.replace_error(chrome.ProtocolError)\n",
           "use result__ <- result.try(" <> base_encoder_part <> ")\n",
         )
@@ -1709,7 +1852,7 @@ fn remove_import_if_unused(
   }
 }
 
-/// Remove unused imports from the generated code 
+/// Remove unused imports from the generated code
 fn remove_unused_imports(builder: st.StringTree) -> st.StringTree {
   let full_string = st.to_string(builder)
   string.split(full_string, "\n")

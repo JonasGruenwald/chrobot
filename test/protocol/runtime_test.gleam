@@ -2,20 +2,21 @@ import birdie
 import chrobot/chrome
 import chrobot/protocol/runtime
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleeunit/should
 import simplifile as file
 
-/// This module havs some types with dynamic values.
+/// This module has some types with dynamic values.
 /// We can't currently encode them, which could lead to confusion,
 /// encoders also don't have a failure mode, so we can't return an error.
 /// We should ensure a message is logged to stdio when this happens.
 pub fn enocde_dynamic_test() {
   // We can't assert that it actually logs, but we can **hope**
   runtime.encode__call_argument(runtime.CallArgument(
-    value: Some(dynamic.from("My dynamic value")),
+    value: Some(dynamic.string("My dynamic value")),
     unserializable_value: None,
     object_id: Some(runtime.RemoteObjectId("1")),
   ))
@@ -38,7 +39,7 @@ pub fn evaluate_test() {
 
     let assert Ok(response_file) =
       file.read("test_assets/runtime_evaluate_response.json")
-    let assert Ok(response) = json.decode(response_file, dynamic.dynamic)
+    let assert Ok(response) = json.parse(response_file, using: decode.dynamic)
 
     Ok(response)
   }

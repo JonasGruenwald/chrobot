@@ -13,7 +13,7 @@
 import chrobot/chrome
 import chrobot/internal/utils
 import chrobot/protocol/runtime
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -63,36 +63,40 @@ pub fn encode__profile_node(value__: ProfileNode) {
 }
 
 @internal
-pub fn decode__profile_node(value__: dynamic.Dynamic) {
-  use id <- result.try(dynamic.field("id", dynamic.int)(value__))
-  use call_frame <- result.try(dynamic.field(
-    "callFrame",
-    runtime.decode__call_frame,
-  )(value__))
-  use hit_count <- result.try(dynamic.optional_field("hitCount", dynamic.int)(
-    value__,
-  ))
-  use children <- result.try(dynamic.optional_field(
-    "children",
-    dynamic.list(dynamic.int),
-  )(value__))
-  use deopt_reason <- result.try(dynamic.optional_field(
-    "deoptReason",
-    dynamic.string,
-  )(value__))
-  use position_ticks <- result.try(dynamic.optional_field(
-    "positionTicks",
-    dynamic.list(decode__position_tick_info),
-  )(value__))
+pub fn decode__profile_node() {
+  {
+    use id <- decode.field("id", decode.int)
+    use call_frame <- decode.field("callFrame", runtime.decode__call_frame())
+    use hit_count <- decode.optional_field(
+      "hitCount",
+      option.None,
+      decode.optional(decode.int),
+    )
+    use children <- decode.optional_field(
+      "children",
+      option.None,
+      decode.optional(decode.list(decode.int)),
+    )
+    use deopt_reason <- decode.optional_field(
+      "deoptReason",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use position_ticks <- decode.optional_field(
+      "positionTicks",
+      option.None,
+      decode.optional(decode.list(decode__position_tick_info())),
+    )
 
-  Ok(ProfileNode(
-    id: id,
-    call_frame: call_frame,
-    hit_count: hit_count,
-    children: children,
-    deopt_reason: deopt_reason,
-    position_ticks: position_ticks,
-  ))
+    decode.success(ProfileNode(
+      id: id,
+      call_frame: call_frame,
+      hit_count: hit_count,
+      children: children,
+      deopt_reason: deopt_reason,
+      position_ticks: position_ticks,
+    ))
+  }
 }
 
 /// Profile.
@@ -130,31 +134,30 @@ pub fn encode__profile(value__: Profile) {
 }
 
 @internal
-pub fn decode__profile(value__: dynamic.Dynamic) {
-  use nodes <- result.try(dynamic.field(
-    "nodes",
-    dynamic.list(decode__profile_node),
-  )(value__))
-  use start_time <- result.try(dynamic.field("startTime", dynamic.float)(
-    value__,
-  ))
-  use end_time <- result.try(dynamic.field("endTime", dynamic.float)(value__))
-  use samples <- result.try(dynamic.optional_field(
-    "samples",
-    dynamic.list(dynamic.int),
-  )(value__))
-  use time_deltas <- result.try(dynamic.optional_field(
-    "timeDeltas",
-    dynamic.list(dynamic.int),
-  )(value__))
+pub fn decode__profile() {
+  {
+    use nodes <- decode.field("nodes", decode.list(decode__profile_node()))
+    use start_time <- decode.field("startTime", decode.float)
+    use end_time <- decode.field("endTime", decode.float)
+    use samples <- decode.optional_field(
+      "samples",
+      option.None,
+      decode.optional(decode.list(decode.int)),
+    )
+    use time_deltas <- decode.optional_field(
+      "timeDeltas",
+      option.None,
+      decode.optional(decode.list(decode.int)),
+    )
 
-  Ok(Profile(
-    nodes: nodes,
-    start_time: start_time,
-    end_time: end_time,
-    samples: samples,
-    time_deltas: time_deltas,
-  ))
+    decode.success(Profile(
+      nodes: nodes,
+      start_time: start_time,
+      end_time: end_time,
+      samples: samples,
+      time_deltas: time_deltas,
+    ))
+  }
 }
 
 /// Specifies a number of samples attributed to a certain source position.
@@ -176,11 +179,13 @@ pub fn encode__position_tick_info(value__: PositionTickInfo) {
 }
 
 @internal
-pub fn decode__position_tick_info(value__: dynamic.Dynamic) {
-  use line <- result.try(dynamic.field("line", dynamic.int)(value__))
-  use ticks <- result.try(dynamic.field("ticks", dynamic.int)(value__))
+pub fn decode__position_tick_info() {
+  {
+    use line <- decode.field("line", decode.int)
+    use ticks <- decode.field("ticks", decode.int)
 
-  Ok(PositionTickInfo(line: line, ticks: ticks))
+    decode.success(PositionTickInfo(line: line, ticks: ticks))
+  }
 }
 
 /// Coverage data for a source range.
@@ -205,18 +210,18 @@ pub fn encode__coverage_range(value__: CoverageRange) {
 }
 
 @internal
-pub fn decode__coverage_range(value__: dynamic.Dynamic) {
-  use start_offset <- result.try(dynamic.field("startOffset", dynamic.int)(
-    value__,
-  ))
-  use end_offset <- result.try(dynamic.field("endOffset", dynamic.int)(value__))
-  use count <- result.try(dynamic.field("count", dynamic.int)(value__))
+pub fn decode__coverage_range() {
+  {
+    use start_offset <- decode.field("startOffset", decode.int)
+    use end_offset <- decode.field("endOffset", decode.int)
+    use count <- decode.field("count", decode.int)
 
-  Ok(CoverageRange(
-    start_offset: start_offset,
-    end_offset: end_offset,
-    count: count,
-  ))
+    decode.success(CoverageRange(
+      start_offset: start_offset,
+      end_offset: end_offset,
+      count: count,
+    ))
+  }
 }
 
 /// Coverage data for a JavaScript function.
@@ -241,24 +246,18 @@ pub fn encode__function_coverage(value__: FunctionCoverage) {
 }
 
 @internal
-pub fn decode__function_coverage(value__: dynamic.Dynamic) {
-  use function_name <- result.try(dynamic.field("functionName", dynamic.string)(
-    value__,
-  ))
-  use ranges <- result.try(dynamic.field(
-    "ranges",
-    dynamic.list(decode__coverage_range),
-  )(value__))
-  use is_block_coverage <- result.try(dynamic.field(
-    "isBlockCoverage",
-    dynamic.bool,
-  )(value__))
+pub fn decode__function_coverage() {
+  {
+    use function_name <- decode.field("functionName", decode.string)
+    use ranges <- decode.field("ranges", decode.list(decode__coverage_range()))
+    use is_block_coverage <- decode.field("isBlockCoverage", decode.bool)
 
-  Ok(FunctionCoverage(
-    function_name: function_name,
-    ranges: ranges,
-    is_block_coverage: is_block_coverage,
-  ))
+    decode.success(FunctionCoverage(
+      function_name: function_name,
+      ranges: ranges,
+      is_block_coverage: is_block_coverage,
+    ))
+  }
 }
 
 /// Coverage data for a JavaScript script.
@@ -283,18 +282,21 @@ pub fn encode__script_coverage(value__: ScriptCoverage) {
 }
 
 @internal
-pub fn decode__script_coverage(value__: dynamic.Dynamic) {
-  use script_id <- result.try(dynamic.field(
-    "scriptId",
-    runtime.decode__script_id,
-  )(value__))
-  use url <- result.try(dynamic.field("url", dynamic.string)(value__))
-  use functions <- result.try(dynamic.field(
-    "functions",
-    dynamic.list(decode__function_coverage),
-  )(value__))
+pub fn decode__script_coverage() {
+  {
+    use script_id <- decode.field("scriptId", runtime.decode__script_id())
+    use url <- decode.field("url", decode.string)
+    use functions <- decode.field(
+      "functions",
+      decode.list(decode__function_coverage()),
+    )
 
-  Ok(ScriptCoverage(script_id: script_id, url: url, functions: functions))
+    decode.success(ScriptCoverage(
+      script_id: script_id,
+      url: url,
+      functions: functions,
+    ))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -307,13 +309,12 @@ pub type GetBestEffortCoverageResponse {
 }
 
 @internal
-pub fn decode__get_best_effort_coverage_response(value__: dynamic.Dynamic) {
-  use result <- result.try(dynamic.field(
-    "result",
-    dynamic.list(decode__script_coverage),
-  )(value__))
+pub fn decode__get_best_effort_coverage_response() {
+  {
+    use result <- decode.field("result", decode.list(decode__script_coverage()))
 
-  Ok(GetBestEffortCoverageResponse(result: result))
+    decode.success(GetBestEffortCoverageResponse(result: result))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -326,10 +327,12 @@ pub type StartPreciseCoverageResponse {
 }
 
 @internal
-pub fn decode__start_precise_coverage_response(value__: dynamic.Dynamic) {
-  use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
+pub fn decode__start_precise_coverage_response() {
+  {
+    use timestamp <- decode.field("timestamp", decode.float)
 
-  Ok(StartPreciseCoverageResponse(timestamp: timestamp))
+    decode.success(StartPreciseCoverageResponse(timestamp: timestamp))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -342,10 +345,12 @@ pub type StopResponse {
 }
 
 @internal
-pub fn decode__stop_response(value__: dynamic.Dynamic) {
-  use profile <- result.try(dynamic.field("profile", decode__profile)(value__))
+pub fn decode__stop_response() {
+  {
+    use profile <- decode.field("profile", decode__profile())
 
-  Ok(StopResponse(profile: profile))
+    decode.success(StopResponse(profile: profile))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -360,14 +365,16 @@ pub type TakePreciseCoverageResponse {
 }
 
 @internal
-pub fn decode__take_precise_coverage_response(value__: dynamic.Dynamic) {
-  use result <- result.try(dynamic.field(
-    "result",
-    dynamic.list(decode__script_coverage),
-  )(value__))
-  use timestamp <- result.try(dynamic.field("timestamp", dynamic.float)(value__))
+pub fn decode__take_precise_coverage_response() {
+  {
+    use result <- decode.field("result", decode.list(decode__script_coverage()))
+    use timestamp <- decode.field("timestamp", decode.float)
 
-  Ok(TakePreciseCoverageResponse(result: result, timestamp: timestamp))
+    decode.success(TakePreciseCoverageResponse(
+      result: result,
+      timestamp: timestamp,
+    ))
+  }
 }
 
 /// This generated protocol command has no description
@@ -392,7 +399,7 @@ pub fn get_best_effort_coverage(callback__) {
     option.None,
   ))
 
-  decode__get_best_effort_coverage_response(result__)
+  decode.run(result__, decode__get_best_effort_coverage_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -406,7 +413,11 @@ pub fn get_best_effort_coverage(callback__) {
 pub fn set_sampling_interval(callback__, interval interval: Int) {
   callback__(
     "Profiler.setSamplingInterval",
-    option.Some(json.object([#("interval", json.int(interval))])),
+    option.Some(
+      json.object([
+        #("interval", json.int(interval)),
+      ]),
+    ),
   )
 }
 
@@ -450,7 +461,7 @@ pub fn start_precise_coverage(
     )),
   ))
 
-  decode__start_precise_coverage_response(result__)
+  decode.run(result__, decode__start_precise_coverage_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -460,7 +471,7 @@ pub fn start_precise_coverage(
 pub fn stop(callback__) {
   use result__ <- result.try(callback__("Profiler.stop", option.None))
 
-  decode__stop_response(result__)
+  decode.run(result__, decode__stop_response())
   |> result.replace_error(chrome.ProtocolError)
 }
 
@@ -482,6 +493,6 @@ pub fn take_precise_coverage(callback__) {
     option.None,
   ))
 
-  decode__take_precise_coverage_response(result__)
+  decode.run(result__, decode__take_precise_coverage_response())
   |> result.replace_error(chrome.ProtocolError)
 }

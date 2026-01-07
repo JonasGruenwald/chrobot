@@ -11,10 +11,9 @@
 // ---------------------------------------------------------------------------
 
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
-import gleam/result
 
 pub type TouchPoint {
   TouchPoint(
@@ -43,7 +42,10 @@ pub type TouchPoint {
 @internal
 pub fn encode__touch_point(value__: TouchPoint) {
   json.object(
-    [#("x", json.float(value__.x)), #("y", json.float(value__.y))]
+    [
+      #("x", json.float(value__.x)),
+      #("y", json.float(value__.y)),
+    ]
     |> utils.add_optional(value__.radius_x, fn(inner_value__) {
       #("radiusX", json.float(inner_value__))
     })
@@ -69,41 +71,58 @@ pub fn encode__touch_point(value__: TouchPoint) {
 }
 
 @internal
-pub fn decode__touch_point(value__: dynamic.Dynamic) {
-  use x <- result.try(dynamic.field("x", dynamic.float)(value__))
-  use y <- result.try(dynamic.field("y", dynamic.float)(value__))
-  use radius_x <- result.try(dynamic.optional_field("radiusX", dynamic.float)(
-    value__,
-  ))
-  use radius_y <- result.try(dynamic.optional_field("radiusY", dynamic.float)(
-    value__,
-  ))
-  use rotation_angle <- result.try(dynamic.optional_field(
-    "rotationAngle",
-    dynamic.float,
-  )(value__))
-  use force <- result.try(dynamic.optional_field("force", dynamic.float)(
-    value__,
-  ))
-  use tilt_x <- result.try(dynamic.optional_field("tiltX", dynamic.float)(
-    value__,
-  ))
-  use tilt_y <- result.try(dynamic.optional_field("tiltY", dynamic.float)(
-    value__,
-  ))
-  use id <- result.try(dynamic.optional_field("id", dynamic.float)(value__))
+pub fn decode__touch_point() {
+  {
+    use x <- decode.field("x", decode.float)
+    use y <- decode.field("y", decode.float)
+    use radius_x <- decode.optional_field(
+      "radiusX",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use radius_y <- decode.optional_field(
+      "radiusY",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use rotation_angle <- decode.optional_field(
+      "rotationAngle",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use force <- decode.optional_field(
+      "force",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use tilt_x <- decode.optional_field(
+      "tiltX",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use tilt_y <- decode.optional_field(
+      "tiltY",
+      option.None,
+      decode.optional(decode.float),
+    )
+    use id <- decode.optional_field(
+      "id",
+      option.None,
+      decode.optional(decode.float),
+    )
 
-  Ok(TouchPoint(
-    x: x,
-    y: y,
-    radius_x: radius_x,
-    radius_y: radius_y,
-    rotation_angle: rotation_angle,
-    force: force,
-    tilt_x: tilt_x,
-    tilt_y: tilt_y,
-    id: id,
-  ))
+    decode.success(TouchPoint(
+      x: x,
+      y: y,
+      radius_x: radius_x,
+      radius_y: radius_y,
+      rotation_angle: rotation_angle,
+      force: force,
+      tilt_x: tilt_x,
+      tilt_y: tilt_y,
+      id: id,
+    ))
+  }
 }
 
 pub type MouseButton {
@@ -129,23 +148,18 @@ pub fn encode__mouse_button(value__: MouseButton) {
 }
 
 @internal
-pub fn decode__mouse_button(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("none") -> Ok(MouseButtonNone)
-    Ok("left") -> Ok(MouseButtonLeft)
-    Ok("middle") -> Ok(MouseButtonMiddle)
-    Ok("right") -> Ok(MouseButtonRight)
-    Ok("back") -> Ok(MouseButtonBack)
-    Ok("forward") -> Ok(MouseButtonForward)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__mouse_button() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "none" -> decode.success(MouseButtonNone)
+      "left" -> decode.success(MouseButtonLeft)
+      "middle" -> decode.success(MouseButtonMiddle)
+      "right" -> decode.success(MouseButtonRight)
+      "back" -> decode.success(MouseButtonBack)
+      "forward" -> decode.success(MouseButtonForward)
+      _ -> decode.failure(MouseButtonNone, "valid enum property")
+    }
   }
 }
 
@@ -162,8 +176,11 @@ pub fn encode__time_since_epoch(value__: TimeSinceEpoch) {
 }
 
 @internal
-pub fn decode__time_since_epoch(value__: dynamic.Dynamic) {
-  value__ |> dynamic.decode1(TimeSinceEpoch, dynamic.float)
+pub fn decode__time_since_epoch() {
+  {
+    use value__ <- decode.then(decode.float)
+    decode.success(TimeSinceEpoch(value__))
+  }
 }
 
 /// Dispatches a key event to the page.
@@ -211,7 +228,9 @@ pub fn dispatch_key_event(
   callback__(
     "Input.dispatchKeyEvent",
     option.Some(json.object(
-      [#("type", encode__dispatch_key_event_type(type_))]
+      [
+        #("type", encode__dispatch_key_event_type(type_)),
+      ]
       |> utils.add_optional(modifiers, fn(inner_value__) {
         #("modifiers", json.int(inner_value__))
       })
@@ -276,21 +295,16 @@ pub fn encode__dispatch_key_event_type(value__: DispatchKeyEventType) {
 }
 
 @internal
-pub fn decode__dispatch_key_event_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("keyDown") -> Ok(DispatchKeyEventTypeKeyDown)
-    Ok("keyUp") -> Ok(DispatchKeyEventTypeKeyUp)
-    Ok("rawKeyDown") -> Ok(DispatchKeyEventTypeRawKeyDown)
-    Ok("char") -> Ok(DispatchKeyEventTypeChar)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dispatch_key_event_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "keyDown" -> decode.success(DispatchKeyEventTypeKeyDown)
+      "keyUp" -> decode.success(DispatchKeyEventTypeKeyUp)
+      "rawKeyDown" -> decode.success(DispatchKeyEventTypeRawKeyDown)
+      "char" -> decode.success(DispatchKeyEventTypeChar)
+      _ -> decode.failure(DispatchKeyEventTypeKeyDown, "valid enum property")
+    }
   }
 }
 
@@ -398,21 +412,20 @@ pub fn encode__dispatch_mouse_event_type(value__: DispatchMouseEventType) {
 }
 
 @internal
-pub fn decode__dispatch_mouse_event_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("mousePressed") -> Ok(DispatchMouseEventTypeMousePressed)
-    Ok("mouseReleased") -> Ok(DispatchMouseEventTypeMouseReleased)
-    Ok("mouseMoved") -> Ok(DispatchMouseEventTypeMouseMoved)
-    Ok("mouseWheel") -> Ok(DispatchMouseEventTypeMouseWheel)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dispatch_mouse_event_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "mousePressed" -> decode.success(DispatchMouseEventTypeMousePressed)
+      "mouseReleased" -> decode.success(DispatchMouseEventTypeMouseReleased)
+      "mouseMoved" -> decode.success(DispatchMouseEventTypeMouseMoved)
+      "mouseWheel" -> decode.success(DispatchMouseEventTypeMouseWheel)
+      _ ->
+        decode.failure(
+          DispatchMouseEventTypeMousePressed,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -435,19 +448,18 @@ pub fn encode__dispatch_mouse_event_pointer_type(
 }
 
 @internal
-pub fn decode__dispatch_mouse_event_pointer_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("mouse") -> Ok(DispatchMouseEventPointerTypeMouse)
-    Ok("pen") -> Ok(DispatchMouseEventPointerTypePen)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dispatch_mouse_event_pointer_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "mouse" -> decode.success(DispatchMouseEventPointerTypeMouse)
+      "pen" -> decode.success(DispatchMouseEventPointerTypePen)
+      _ ->
+        decode.failure(
+          DispatchMouseEventPointerTypeMouse,
+          "valid enum property",
+        )
+    }
   }
 }
 
@@ -510,21 +522,17 @@ pub fn encode__dispatch_touch_event_type(value__: DispatchTouchEventType) {
 }
 
 @internal
-pub fn decode__dispatch_touch_event_type(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("touchStart") -> Ok(DispatchTouchEventTypeTouchStart)
-    Ok("touchEnd") -> Ok(DispatchTouchEventTypeTouchEnd)
-    Ok("touchMove") -> Ok(DispatchTouchEventTypeTouchMove)
-    Ok("touchCancel") -> Ok(DispatchTouchEventTypeTouchCancel)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__dispatch_touch_event_type() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "touchStart" -> decode.success(DispatchTouchEventTypeTouchStart)
+      "touchEnd" -> decode.success(DispatchTouchEventTypeTouchEnd)
+      "touchMove" -> decode.success(DispatchTouchEventTypeTouchMove)
+      "touchCancel" -> decode.success(DispatchTouchEventTypeTouchCancel)
+      _ ->
+        decode.failure(DispatchTouchEventTypeTouchStart, "valid enum property")
+    }
   }
 }
 
@@ -544,6 +552,10 @@ pub fn cancel_dragging(callback__) {
 pub fn set_ignore_input_events(callback__, ignore ignore: Bool) {
   callback__(
     "Input.setIgnoreInputEvents",
-    option.Some(json.object([#("ignore", json.bool(ignore))])),
+    option.Some(
+      json.object([
+        #("ignore", json.bool(ignore)),
+      ]),
+    ),
   )
 }

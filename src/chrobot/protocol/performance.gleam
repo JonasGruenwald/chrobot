@@ -12,7 +12,7 @@
 
 import chrobot/chrome
 import chrobot/internal/utils
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option
 import gleam/result
@@ -36,11 +36,13 @@ pub fn encode__metric(value__: Metric) {
 }
 
 @internal
-pub fn decode__metric(value__: dynamic.Dynamic) {
-  use name <- result.try(dynamic.field("name", dynamic.string)(value__))
-  use value <- result.try(dynamic.field("value", dynamic.float)(value__))
+pub fn decode__metric() {
+  {
+    use name <- decode.field("name", decode.string)
+    use value <- decode.field("value", decode.float)
 
-  Ok(Metric(name: name, value: value))
+    decode.success(Metric(name: name, value: value))
+  }
 }
 
 /// This type is not part of the protocol spec, it has been generated dynamically
@@ -53,13 +55,12 @@ pub type GetMetricsResponse {
 }
 
 @internal
-pub fn decode__get_metrics_response(value__: dynamic.Dynamic) {
-  use metrics <- result.try(dynamic.field(
-    "metrics",
-    dynamic.list(decode__metric),
-  )(value__))
+pub fn decode__get_metrics_response() {
+  {
+    use metrics <- decode.field("metrics", decode.list(decode__metric()))
 
-  Ok(GetMetricsResponse(metrics: metrics))
+    decode.success(GetMetricsResponse(metrics: metrics))
+  }
 }
 
 /// Disable collecting and reporting metrics.
@@ -107,19 +108,14 @@ pub fn encode__enable_time_domain(value__: EnableTimeDomain) {
 }
 
 @internal
-pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
-  case dynamic.string(value__) {
-    Ok("timeTicks") -> Ok(EnableTimeDomainTimeTicks)
-    Ok("threadTicks") -> Ok(EnableTimeDomainThreadTicks)
-    Error(error) -> Error(error)
-    Ok(other) ->
-      Error([
-        dynamic.DecodeError(
-          expected: "valid enum property",
-          found: other,
-          path: ["enum decoder"],
-        ),
-      ])
+pub fn decode__enable_time_domain() {
+  {
+    use value__ <- decode.then(decode.string)
+    case value__ {
+      "timeTicks" -> decode.success(EnableTimeDomainTimeTicks)
+      "threadTicks" -> decode.success(EnableTimeDomainThreadTicks)
+      _ -> decode.failure(EnableTimeDomainTimeTicks, "valid enum property")
+    }
   }
 }
 
@@ -129,6 +125,6 @@ pub fn decode__enable_time_domain(value__: dynamic.Dynamic) {
 pub fn get_metrics(callback__) {
   use result__ <- result.try(callback__("Performance.getMetrics", option.None))
 
-  decode__get_metrics_response(result__)
+  decode.run(result__, decode__get_metrics_response())
   |> result.replace_error(chrome.ProtocolError)
 }
