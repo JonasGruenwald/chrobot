@@ -22,6 +22,9 @@ jobs:
       - run: |
           ${{ steps.setup-chrome.outputs.chrome-path }} --version
       - run: gleam deps download
+      # See: https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
+      - name: Disable AppArmor
+        run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       - run: gleam test
         env:
           CHROBOT_TEST_BROWSER_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
