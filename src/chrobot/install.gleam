@@ -406,7 +406,7 @@ fn assert_ok(
     Error(err) -> {
       io.println("")
       utils.err(human_error)
-      echo err
+      io.println(string.inspect(err))
       Error(InstallationError)
     }
   }

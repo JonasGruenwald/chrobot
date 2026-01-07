@@ -1,6 +1,7 @@
 [tools]
 erlang = "28"
 gleam = "1.14"
+rebar = "3.25.1"
 
 [tasks.codegen]
 run = "./codegen.sh"
