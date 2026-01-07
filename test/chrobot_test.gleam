@@ -86,7 +86,7 @@ pub fn eval_test() {
   use page <- test_utils.with_reference_page()
   let expression = "2 * Math.PI"
   chrobot.eval(page, expression)
-  |> chrobot.as_value(decode.run(_, decode.float))
+  |> chrobot.as_value(decode.float)
   |> should.be_ok()
   |> should.equal(6.283185307179586)
 }
@@ -96,7 +96,7 @@ pub fn eval_async_test() {
   let expression =
     "new Promise((resolve, reject) => setTimeout(() => resolve(42), 50))"
   chrobot.eval_async(page, expression)
-  |> chrobot.as_value(decode.run(_, decode.int))
+  |> chrobot.as_value(decode.int)
   |> should.be_ok()
   |> should.equal(42)
 }
@@ -271,7 +271,7 @@ pub fn get_property_test() {
     chrobot.select(page, "#demo-checkbox")
     |> should.be_ok
 
-  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
+  chrobot.get_property(page, object_id, "checked", decode.bool)
   |> should.be_ok
   |> should.be_true
 }
@@ -284,7 +284,7 @@ pub fn click_test() {
     chrobot.select(page, "#demo-checkbox")
     |> should.be_ok
 
-  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
+  chrobot.get_property(page, object_id, "checked", decode.bool)
   |> should.be_ok
   |> should.be_true
 
@@ -293,7 +293,7 @@ pub fn click_test() {
   |> should.be_ok
 
   // After clicking the checkbox, it should be unchecked
-  chrobot.get_property(page, object_id, "checked", decode.run(_, decode.bool))
+  chrobot.get_property(page, object_id, "checked", decode.bool)
   |> should.be_ok
   |> should.be_false
 }
@@ -310,7 +310,7 @@ pub fn type_test() {
   chrobot.type_text(page, "Hello, World!")
   |> should.be_ok
 
-  chrobot.get_property(page, object_id, "value", decode.run(_, decode.string))
+  chrobot.get_property(page, object_id, "value", decode.string)
   |> should.be_ok
   |> should.equal("Hello, World!")
 }
@@ -327,7 +327,7 @@ pub fn press_key_test() {
   chrobot.press_key(page, "Enter")
   |> should.be_ok
 
-  chrobot.get_property(page, object_id, "value", decode.run(_, decode.string))
+  chrobot.get_property(page, object_id, "value", decode.string)
   |> should.be_ok
   |> should.equal("ENTER KEY PRESSED")
 }

@@ -365,11 +365,11 @@ pub fn to_value(
 /// ```
 pub fn as_value(
   result: Result(runtime.RemoteObject, chrome.RequestError),
-  decoder,
+  decoder: decode.Decoder(a),
 ) {
   case result {
     Ok(runtime.RemoteObject(value: Some(value), ..)) -> {
-      decoder(value)
+      decode.run(value, decoder)
       |> result.replace_error(chrome.ProtocolError)
     }
     Error(something) -> Error(something)
@@ -402,7 +402,7 @@ pub fn get_attribute(
     declaration,
     item,
     [StringArg(attribute_name)],
-    decode.run(_, decode.string),
+    decode.string,
   )
 }
 
@@ -631,26 +631,26 @@ pub fn get_property(
 /// Returns the [`HTMLElement.innerText`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText) property via JavaScript, NOT `Node.textContent`.
 /// Learn about the differences [here](https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent#differences_from_innertext).
 pub fn get_text(on page: Page, from item: runtime.RemoteObjectId) {
-  get_property(page, item, "innerText", decode.run(_, decode.string))
+  get_property(page, item, "innerText", decode.string)
 }
 
 /// Get the inner HTML of an element.
 /// Returns the [`Element.innerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML) JavaScript property.
 pub fn get_inner_html(on page: Page, from item: runtime.RemoteObjectId) {
-  get_property(page, item, "innerHTML", decode.run(_, decode.string))
+  get_property(page, item, "innerHTML", decode.string)
 }
 
 /// Get the outer HTML of an element.
 /// Returns the [`Element.outerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML) JavaScript property.
 pub fn get_outer_html(on page: Page, from item: runtime.RemoteObjectId) {
-  get_property(page, item, "outerHTML", decode.run(_, decode.string))
+  get_property(page, item, "outerHTML", decode.string)
 }
 
 /// Return the entire HTML of the page as a string.
 /// Returns `document.documentElement.outerHTML` via JavaScript.
 pub fn get_all_html(on page: Page) {
   eval(page, "window.document.documentElement.outerHTML")
-  |> as_value(decode.run(_, decode.string))
+  |> as_value(decode.string)
 }
 
 /// Run [`document.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector) on the page
@@ -1007,7 +1007,7 @@ pub fn call_custom_function_on(
   function_declaration function_declaration: String,
   object_id object_id: runtime.RemoteObjectId,
   args arguments: List(CallArgument),
-  value_decoder value_decoder,
+  value_decoder value_decoder: decode.Decoder(a),
 ) {
   // Make call
   let encoded_arguments = encode_custom_arguments(arguments)
@@ -1041,7 +1041,7 @@ pub fn call_custom_function_on(
       runtime.RemoteObject(value: Some(value), ..),
       None,
     ) -> {
-      value_decoder(value)
+      decode.run(value, value_decoder)
       |> result.replace_error(chrome.ProtocolError)
     }
     _ -> Error(chrome.NotFoundError)
