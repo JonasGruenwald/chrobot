@@ -29,7 +29,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
 import gleam/result
 import gleam/string
-import gleam/string_tree as st
 import simplifile as file
 
 pub const default_timeout: Int = 10_000
@@ -487,7 +486,7 @@ fn create_init_fn(cfg: BrowserConfig) {
       Ok(port) -> {
         let instance = BrowserInstance(port)
         let initial_state =
-          BrowserState(instance, 0, [], [], st.new(), None, cfg.log_level)
+          BrowserState(instance, 0, [], [], "", None, cfg.log_level)
         log_info(initial_state, "Port opened successfully, actor initialized")
 
         // Create a selector for port messages AND the actor subject
@@ -552,18 +551,15 @@ fn map_non_data_port_msg(msg: d.Dynamic) -> Message {
 @internal
 pub fn process_port_message(
   input: String,
-  buffer: st.StringTree,
-) -> #(List(String), st.StringTree) {
+  buffer: String,
+) -> #(List(String), String) {
   case string.split(input, "\u{0000}") {
-    [unterminated_msg] -> #([], st.append(buffer, unterminated_msg))
+    [unterminated_msg] -> #([], buffer <> unterminated_msg)
     // Match on this case directly even though it would be handled by the next case
     // because it is the most common case and we want to avoid the overhead of the list recursion
-    [single_msg, ""] -> #(
-      [st.append(buffer, single_msg) |> st.to_string()],
-      st.new(),
-    )
+    [single_msg, ""] -> #([buffer <> single_msg], "")
     [first, ..rest] -> {
-      let complete_parts = [st.append(buffer, first) |> st.to_string(), ..rest]
+      let complete_parts = [buffer <> first, ..rest]
       process_port_message_parts(complete_parts, [])
     }
     [] -> #([], buffer)
@@ -578,18 +574,18 @@ pub fn process_port_message(
 fn process_port_message_parts(
   parts: List(String),
   collector: List(String),
-) -> #(List(String), st.StringTree) {
+) -> #(List(String), String) {
   case parts {
     // Last message is terminated, return the collector and an empty buffer
-    [""] -> #(list.reverse(collector), st.new())
+    [""] -> #(list.reverse(collector), "")
     // Last message is unterminated, return the collector and new buffer with
     // the the contents of the unterminated message
-    [overflow] -> #(list.reverse(collector), st.new() |> st.append(overflow))
+    [overflow] -> #(list.reverse(collector), overflow)
     // Append the current message to the collector and continue with the rest
     [cur, ..rest] -> process_port_message_parts(rest, [cur, ..collector])
     // This case should never happen, since we hancle [one] and never pass
     // an empty list, it's just to avoid the compiler error
-    [] -> #(list.reverse(collector), st.new())
+    [] -> #(list.reverse(collector), "")
   }
 }
 
@@ -599,7 +595,7 @@ type BrowserState {
     next_id: Int,
     unanswered_requests: List(PendingRequest),
     event_listeners: List(#(String, Subject(d.Dynamic))),
-    message_buffer: st.StringTree,
+    message_buffer: String,
     shutdown_request: Option(Subject(Nil)),
     log_level: LogLevel,
   )
@@ -686,7 +682,7 @@ fn loop(state: BrowserState, message: Message) {
       let #(chunks, buffer) = process_port_message(data, state.message_buffer)
 
       // For debugging
-      case st.is_empty(buffer) {
+      case buffer == "" {
         False -> log_info(state, "buffering browser message!")
         True -> Nil
       }
