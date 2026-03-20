@@ -3,7 +3,6 @@ import chrobot/internal/os
 import gleam/json
 import gleam/list
 import gleam/option
-import gleam/string_tree as sb
 import gleeunit/should
 import test_utils
 
@@ -470,30 +469,30 @@ pub fn handle_protocol_error_2_test() {
 pub fn process_port_message_test() {
   // Simplest possible message
   let message = "a\u{0000}"
-  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, "")
 
   chunks
   |> should.equal(["a"])
-  sb.is_empty(buffer)
-  |> should.equal(True)
+  buffer
+  |> should.equal("")
 
   // Several packets in one message
   let message = "a\u{0000}b\u{0000}c\u{0000}"
-  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, "")
 
   chunks
   |> should.equal(["a", "b", "c"])
-  sb.is_empty(buffer)
-  |> should.equal(True)
+  buffer
+  |> should.equal("")
 
   // Buffering messages
   let message = "some message\u{0000}some unfinished"
-  let #(chunks, buffer) = chrome.process_port_message(message, sb.new())
+  let #(chunks, buffer) = chrome.process_port_message(message, "")
   chunks
   |> should.equal(["some message"])
-  sb.is_empty(buffer)
-  |> should.equal(False)
-  sb.to_string(buffer)
+  buffer
+  |> should.not_equal("")
+  buffer
   |> should.equal("some unfinished")
 
   let second_message = " message\u{0000}:)\u{0000}"
@@ -501,6 +500,6 @@ pub fn process_port_message_test() {
 
   chunks
   |> should.equal(["some unfinished message", ":)"])
-  sb.is_empty(buffer)
-  |> should.equal(True)
+  buffer
+  |> should.equal("")
 }
