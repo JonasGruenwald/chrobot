@@ -7,14 +7,14 @@ import gleeunit/should
 import simplifile as file
 
 /// Try to get the path to the browser to use for tests
-/// If the CHROBOT_TEST_BROWSER_PATH environment variable is not set, this will return an error
+/// If the CHROBOT_BROWSER_PATH environment variable is not set, this will return an error
 /// -> use in test setup to validate that the environment variable is set
 pub fn try_get_browser_path() {
-  envoy.get("CHROBOT_TEST_BROWSER_PATH")
+  envoy.get("CHROBOT_BROWSER_PATH")
 }
 
 /// Get the path to the browser to use for tests
-/// If the CHROBOT_TEST_BROWSER_PATH environment variable is not set, this will panic
+/// If the CHROBOT_BROWSER_PATH environment variable is not set, this will panic
 /// -> use in tests to get the browser path
 /// -> we can assume that the environment variable is set, as we have already validated it in the test setup
 pub fn get_browser_path() {
@@ -23,15 +23,8 @@ pub fn get_browser_path() {
 }
 
 pub fn get_browser_instance() {
-  let browser_path = get_browser_path()
-  let config =
-    chrome.BrowserConfig(
-      path: browser_path,
-      args: chrome.get_default_chrome_args(),
-      start_timeout: 5000,
-      log_level: chrome.LogLevelWarnings,
-    )
-  let browser = should.be_ok(chrome.launch_with_config(config))
+  // Use chrome.launch_with_env() which handles CHROBOT_BROWSER_PATH and CHROBOT_BROWSER_ARGS
+  let browser = should.be_ok(chrome.launch_with_env())
   browser
 }
 

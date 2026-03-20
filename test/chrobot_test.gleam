@@ -14,7 +14,7 @@ import mock_server
 import test_utils
 
 /// TEST SETUP
-/// The tests will only run if a browser path is set in the environment variable `CHROBOT_TEST_BROWSER_PATH`.
+/// The tests will only run if a browser path is set in the environment variable `CHROBOT_BROWSER_PATH`.
 pub fn main() {
   let test_browser_path = test_utils.try_get_browser_path()
   mock_server.start()
@@ -26,7 +26,7 @@ pub fn main() {
     }
     Error(_) -> {
       utils.err(
-        "No test browser path was set! Please set the environment variable `CHROBOT_TEST_BROWSER_PATH` to run the tests.\n",
+        "No test browser path was set! Please set the environment variable `CHROBOT_BROWSER_PATH` to run the tests.\n",
       )
       let available_browser_path =
         result.lazy_or(
@@ -39,7 +39,7 @@ pub fn main() {
             "A chrome path was detected on your system, you can run tests like this:",
           )
           utils.show_cmd(
-            "CHROBOT_TEST_BROWSER_PATH=\"" <> browser_path <> "\" gleam test\n",
+            "CHROBOT_BROWSER_PATH=\"" <> browser_path <> "\" gleam test\n",
           )
         }
         Error(_) -> {
