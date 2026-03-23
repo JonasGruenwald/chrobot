@@ -95,7 +95,7 @@ pub type RequestError {
   /// OTP actor down
   ChromeAgentDown
 
-  /// The ProtocolError variant is used by `/protocol` domains 
+  /// The ProtocolError variant is used by `/protocol` domains
   /// to return a homogeneous error type for all requests.
   ProtocolError
 
@@ -258,19 +258,25 @@ pub fn launch_with_env() -> Result(Subject(Message), LaunchError) {
   }
 }
 
-/// Quit the browser and shut down the actor.  
+/// Quit the browser and shut down the actor.
 /// This function will attempt graceful shutdown, if the browser does not respond in time,
 /// it will also send a kill signal to the actor to force it to shut down.
-/// The result typing reflects the success of graceful shutdown.
-pub fn quit(browser: Subject(Message)) -> Result(Nil, RequestError) {
+///
+/// ## Panics
+///
+/// This function may panic if the browser actor is down or does not respond in time.
+pub fn quit(browser: Subject(Message)) -> Nil {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
   let _ = process.send_after(browser, default_timeout * 2, Kill)
   // invoke graceful shutdown of the browser
-  utils.try_call(browser, Shutdown, default_timeout)
-  |> result.map_error(map_call_error)
+  process.call(browser, waiting: default_timeout, sending: Shutdown)
 }
 
 /// Issue a protocol call to the browser and expect a response
+///
+/// ## Panics
+///
+/// This function may panic if the browser actor is down or does not respond in time.
 pub fn call(
   browser: Subject(Message),
   method: String,
@@ -278,30 +284,35 @@ pub fn call(
   session_id: Option(String),
   time_out,
 ) -> Result(d.Dynamic, RequestError) {
-  case utils.try_call(browser, Call(_, method, params, session_id), time_out) {
-    Ok(nested_result) -> nested_result
-    Error(err) -> Error(map_call_error(err))
-  }
+  process.call(browser, waiting: time_out, sending: Call(
+    _,
+    method,
+    params,
+    session_id,
+  ))
 }
 
 /// A blocking call that waits for a specified event to arrive once,
 /// and then resolves, removing the event listener.
+///
+/// ## Panics
+///
+/// This function may panic if the event does not arrive before the timeout.
 pub fn listen_once(
   browser: Subject(Message),
   method: String,
   time_out,
-) -> Result(d.Dynamic, RequestError) {
+) -> d.Dynamic {
   let event_subject = process.new_subject()
-  let call_response =
-    utils.try_call_with_subject(
-      browser,
-      AddListener(_, method),
-      event_subject,
-      time_out,
-    )
+  process.send(browser, AddListener(event_subject, method))
+  let result =
+    process.new_selector()
+    |> process.select(event_subject)
+    |> process.selector_receive(within: time_out)
   process.send(browser, RemoveListener(event_subject))
-  call_response
-  |> result.map_error(map_call_error)
+  let assert Ok(event_data) = result
+    as "listen_once timed out waiting for event"
+  event_data
 }
 
 /// Add an event listener
@@ -1117,13 +1128,6 @@ fn log_debug(state: BrowserState, callback: fn() -> String) {
       )
     }
     _ -> Nil
-  }
-}
-
-fn map_call_error(err: utils.CallError) -> RequestError {
-  case err {
-    utils.CallTimeout -> ChromeAgentTimeout
-    utils.CalleeDown(..) -> ChromeAgentDown
   }
 }
 

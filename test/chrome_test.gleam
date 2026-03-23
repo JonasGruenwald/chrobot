@@ -394,7 +394,7 @@ pub fn launch_with_config_test() {
     )
   let browser_subject = should.be_ok(chrome.launch_with_config(config))
   should.be_ok(chrome.get_version(browser_subject))
-  should.be_ok(chrome.quit(browser_subject))
+  chrome.quit(browser_subject)
 }
 
 // Ensure the call function correctly handles errors sent by the browser
@@ -435,7 +435,7 @@ pub fn handle_protocol_error_test() {
     Ok(_) -> panic as "didn't receive error from call with invalid payload"
     _ -> panic as "didn't receive correct error from call with invalid payload"
   }
-  should.be_ok(chrome.quit(browser_subject))
+  chrome.quit(browser_subject)
 }
 
 pub fn handle_protocol_error_2_test() {
@@ -463,7 +463,7 @@ pub fn handle_protocol_error_2_test() {
     _ -> panic as "didn't receive correct error from call with invalid method"
   }
 
-  should.be_ok(chrome.quit(browser_subject))
+  chrome.quit(browser_subject)
 }
 
 pub fn process_port_message_test() {

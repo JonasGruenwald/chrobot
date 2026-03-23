@@ -739,7 +739,7 @@ pub fn await_load_event(browser, page: Page) {
   use _ <- result.try(page.enable(page_caller(page)))
 
   // // Wait for the load event to fire
-  chrome.listen_once(browser, "Page.loadEventFired", page.time_out)
+  Ok(chrome.listen_once(browser, "Page.loadEventFired", page.time_out))
 }
 
 /// Quit the browser (alias for [`chrome.quit`](/chrobot/chrome.html#quit))
