@@ -780,8 +780,7 @@ fn do_poll(
   // available time before current polling attempt
   let available_time = deadline - utils.get_time_ms()
 
-  // We guard against negative time because it would cause a panic in try_await
-  // but realistically this should never happen anyways
+  // We guard against negative time as it means the deadline has already passed
   use <- bool.guard(available_time < 0, Error(chrome.ChromeAgentTimeout))
 
   let subject = process.new_subject()

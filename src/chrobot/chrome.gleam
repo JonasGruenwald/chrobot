@@ -89,11 +89,8 @@ pub type LaunchError {
 pub type RequestError {
   // Port communication failed
   PortError
-  /// OTP actor timeout
+  /// Polling timeout — the polling deadline was exceeded
   ChromeAgentTimeout
-
-  /// OTP actor down
-  ChromeAgentDown
 
   /// The ProtocolError variant is used by `/protocol` domains
   /// to return a homogeneous error type for all requests.
@@ -261,10 +258,7 @@ pub fn launch_with_env() -> Result(Subject(Message), LaunchError) {
 /// Quit the browser and shut down the actor.
 /// This function will attempt graceful shutdown, if the browser does not respond in time,
 /// it will also send a kill signal to the actor to force it to shut down.
-///
-/// ## Panics
-///
-/// This function may panic if the browser actor is down or does not respond in time.
+/// Be aware that this function may panic if the browser actor is down or does not respond in time.
 pub fn quit(browser: Subject(Message)) -> Nil {
   // set a deadline for a kill signal to be sent if the browser does not respond in time
   let _ = process.send_after(browser, default_timeout * 2, Kill)
@@ -272,11 +266,8 @@ pub fn quit(browser: Subject(Message)) -> Nil {
   process.call(browser, waiting: default_timeout, sending: Shutdown)
 }
 
-/// Issue a protocol call to the browser and expect a response
-///
-/// ## Panics
-///
-/// This function may panic if the browser actor is down or does not respond in time.
+/// Issue a protocol call to the browser and expect a response.
+/// Be aware that this function may panic if the browser actor is down or does not respond in time.
 pub fn call(
   browser: Subject(Message),
   method: String,
@@ -294,10 +285,7 @@ pub fn call(
 
 /// A blocking call that waits for a specified event to arrive once,
 /// and then resolves, removing the event listener.
-///
-/// ## Panics
-///
-/// This function may panic if the event does not arrive before the timeout.
+/// Be aware that this function may panic if the event does not arrive before the timeout.
 pub fn listen_once(
   browser: Subject(Message),
   method: String,
