@@ -739,7 +739,7 @@ pub fn await_load_event(browser, page: Page) {
   use _ <- result.try(page.enable(page_caller(page)))
 
   // // Wait for the load event to fire
-  chrome.listen_once(browser, "Page.loadEventFired", page.time_out)
+  Ok(chrome.listen_once(browser, "Page.loadEventFired", page.time_out))
 }
 
 /// Quit the browser (alias for [`chrome.quit`](/chrobot/chrome.html#quit))
@@ -780,8 +780,7 @@ fn do_poll(
   // available time before current polling attempt
   let available_time = deadline - utils.get_time_ms()
 
-  // We guard against negative time because it would cause a panic in try_await
-  // but realistically this should never happen anyways
+  // We guard against negative time as it means the deadline has already passed
   use <- bool.guard(available_time < 0, Error(chrome.ChromeAgentTimeout))
 
   let subject = process.new_subject()
