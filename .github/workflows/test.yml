@@ -28,6 +28,7 @@ jobs:
       - run: gleam test
         env:
           CHROBOT_BROWSER_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          CHROBOT_LOG_LEVEL: info
           CHROBOT_BROWSER_ARGS: |
             --headless
             --disable-accelerated-2d-canvas
