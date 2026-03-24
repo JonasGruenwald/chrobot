@@ -1062,7 +1062,9 @@ fn get_first_existing_path(paths: List(String)) -> Result(String, LaunchError) {
 pub fn resolve_env_cofig() -> Result(BrowserConfig, Nil) {
   use path <- result.try(envoy.get("CHROBOT_BROWSER_PATH"))
   let args = case envoy.get("CHROBOT_BROWSER_ARGS") {
-    Ok(args_string) -> string.split(args_string, "\n")
+    Ok(args_string) ->
+      string.split(args_string, "\n")
+      |> list.filter(fn(s) { !string.is_empty(s) })
     Error(Nil) -> get_default_chrome_args()
   }
   let time_out = case envoy.get("CHROBOT_BROWSER_TIMEOUT") {
